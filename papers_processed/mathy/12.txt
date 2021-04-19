@@ -1,0 +1,1371 @@
+                         Matrix Completion from a Few Entries
+                 Raghunandan H. Keshavan∗, Andrea Montanari∗†, and Sewoong Oh∗
+                                                  March 17, 2009
+                                                     Abstract
+           Let M be a random nα × n matrix of rank r ≪ n, and assume that a uniformly random
+       subset E of its entries is observed. We describe an efficient algorithm that reconstructs M from
+       |E| = O(r n) observed entries with relative root mean square error
+                                                               1/2
+                                                             nr
+                                          RMSE ≤ C(α)                .
+                                                            |E|
+       Further, if r = O(1), M can be reconstructed exactly from |E| = O(n log n) entries. These results
+       apply beyond random matrices to general low-rank incoherent matrices.
+           This settles (in the case of bounded rank) a question left open by Candès and Recht and
+       improves over the guarantees for their reconstruction algorithm. The complexity of our algorithm
+       is O(|E|r log n), which opens the way to its use for massive data sets. In the process of proving
+       these statements, we obtain a generalization of a celebrated result by Friedman-Kahn-Szemerédi
+       and Feige-Ofek on the spectrum of sparse random matrices.
+1      Introduction
+Imagine that each of m customers watches and rates a subset of the n movies available through a
+movie rental service. This yields a dataset of customer-movie pairs (i, j) ∈ E ⊆ [m] × [n] and, for
+each such pair, a rating Mij ∈ R. The objective of collaborative filtering is to predict the rating for
+the missing pairs in such a way as to provide targeted suggestions.1 The general question we address
+here is: Under which conditions do the known ratings provide sufficient information to infer the
+unknown ones? Can this inference problem be solved efficiently? The second question is particularly
+important in view of the massive size of actual data sets.
+1.1     Model definition
+A simple mathematical model for such data assumes that the (unknown) matrix of ratings has rank
+r ≪ m, n. More precisely, we denote by M the matrix whose entry (i, j) ∈ [m] × [n] corresponds
+to the rating user i would assign to movie j. We assume that there exist matrices U , of dimensions
+m × r, and V , of dimensions n × r, and a diagonal matrix Σ, of dimensions r × r such that
+                                                 M = U ΣV T .                                                    (1)
+   ∗
+     Department of Electrical Engineering, Stanford University
+   †
+     Departments of Statistics, Stanford University
+   1
+     Indeed, in 2006, Netflix made public such a dataset with m ≈ 5 · 105 , n ≈ 2 · 104 and |E| ≈ 108 and challenged
+the research community to predict the missing ratings with root mean square error below 0.8563 [Net].
+                                                         1
+
+For justification of these assumptions and background on the use of low rank matrices in information
+retrieval, we refer to [BDJ99]. Since we are interested in very large data sets, we shall focus on the
+limit m, n → ∞ with m/n = α bounded away from 0 and ∞.
+    We further assume that the factors U , V are unstructured. This notion is formalized by the
+incoherence condition introduced by Candés and Recht [CR08], and defined in Section 2. In particular
+the incoherence condition is satisfied with high probability if M = U ΣV T with U and V uniformly
+random matrices with U T U = m1 and V T V = n1. Alternatively, incoherence holds if the entries of
+U and V are i.i.d. bounded random variables.
+    Out of the m × n entries of M , a subset E ⊆ [m] × [n] (the user/movie pairs for which a rating
+is available) is revealed. We let M E be the m × n matrix that contains the revealed entries of M ,
+and is filled with 0’s in the other positions
+                                           
+                                     E        Mi,j if (i, j) ∈ E ,
+                                   Mi,j =                                                            (2)
+                                                 0 otherwise.
+The set E will be uniformly random given its size |E|.
+1.2    Algorithm
+A naive algorithm consists of the following projection operation.
+Projection. Compute the singular value decomposition (SVD) of M E (with σ1 ≥ σ2 ≥ · · · ≥ 0)
+                                                min(m,n)
+                                                  X
+                                            E
+                                         M    =          σi xi yiT ,                                 (3)
+                                                  i=1
+                                              P
+and return the matrix Tr (M E ) = (mn/|E|) ri=1 σi xi yiT obtained by setting to 0 all but the r largest
+singular values. Notice that, apart from the rescaling factor (mn/|E|), Tr (M E ) is the orthogonal
+projection of M E onto the set of rank-r matrices. The rescaling factor compensates the smaller
+average size of the entries of M E with respect to M .
+    It turns out that, if |E| = Θ(n), this algorithm performs very poorly. The reason is that the
+matrix M E contains columns and rows withpΘ(log n/ log log n) non-zero (revealed) entries. The
+largest singular values of M E are of order Θ( log n/ log log n). The corresponding singular vectors
+are highly concentrated on high-weight column or row indices (respectively, for left and right singular
+vectors). Such singular vectors are an artifact of the high-weight columns/rows and do not provide
+useful information about the hidden entries of M . This motivates the definition of the following
+operation (hereafter the degree of a column or of a row is the number of its revealed entries).
+Trimming. Set to zero all columns in M E with degree larger that 2|E|/n. Set to 0 all rows with
+degree larger than 2|E|/m.
+    Figure 1 shows the singular value distributions of M E and M     fE for a random rank-3 matrix M .
+The surprise is that trimming (which amounts to ‘throwing out information’) makes the underlying
+rank-3 structure much more apparent. This effect becomes even more important when the number
+of revealed entries per row/column follows a heavy tail distribution, as for real data.
+    In terms of the above routines, our algorithm has the following structure.
+     Spectral Matrix Completion( matrix M E )
+     1: Trim M E , and let M  fE be the output;
+     2: Project M  fE to Tr (M fE );
+     3: Clean residual errors by minimizing the discrepancy F (X, Y ).
+                                                    2
+
+                                                              35
+      40
+                                                              30
+      35
+                                                              25
+      30
+      25                                                      20
+      20
+                                                              15
+      15
+                                                              10
+      10
+                                σ4 σ3 σ2      σ1                                             σ3 σ2 σ1
+                                                               5
+       5
+       0                                                       0
+        0     10     20    30    40      50     60              0  5  10 15     20  25 30 35   40   45
+Figure 1: Histogram of the singular values of a partially revealed matrix M E before trimming (left) and after
+trimming (right) for 104 × 104 random rank-3 matrix M with ǫ = 30 and Σ = diag(1, 1.1, 1.2). After trimming
+the underlying rank-3 structure becomes clear. Here the number of revealed entries per row follows a heavy
+tail distribution with P{N = k} = const./k 3 .
+     The last step of the above algorithm allows to reduce (or eliminate) small discrepancies between
+Tr (MfE ) and M , and is described below.
+Cleaning. Various implementation are possible, but we found the following one particularly appeal-
+ing. Given X ∈ Rm×r , Y ∈ Rn×r with X T X = m1 and Y T Y = n1, we define
+                                 F (X, Y ) ≡        min F(X, Y, S) ,                                      (4)
+                                                   S∈Rr×r
+                                                   1 X
+                               F(X, Y, S) ≡                  (Mij − (XSY T )ij )2 .                       (5)
+                                                   2
+                                                     (i,j)∈E
+The cleaning step consists in writing Tr (M fE ) = X0 S0 Y T and minimizing F (X, Y ) locally with initial
+                                                                 0
+condition X = X0 , Y = Y0 .
+     Notice that F (X, Y ) is easy to evaluate since it is defined by minimizing the quadratic function
+S 7→ F(X, Y, S) over the low-dimensional matrix S. Further it depends on X and Y only through
+their column spaces. In geometric terms, F is a function defined over the cartesian product of
+two Grassmann manifolds (we refer to Section 5 for background and references). Optimization
+over Grassmann manifolds is a well understood topic [EAS99] and efficient algorithms (in particular
+Newton and conjugate gradient) can be applied. To be definite, we assume that gradient descent
+with line search is used to minimize F (X, Y ).
+     Finally, the implementation proposed here implicitly assumes that the rank r is known. In
+practice this is a non-issue. Since r ≪ n, a loop over the value of r can be added at little extra cost.
+For instance, in collaborative filtering applications, r ranges between 10 and 30.
+1.3      Main results
+Notice that computing Tr (M   fE ) only requires to find the first r singular vectors of a sparse matrix.
+Our main result establishes that this simple procedure achieves arbitrarily small relative root mean
+                                                          3
+
+square error from O(nr) revealed entries. We define the relative root mean square error as
+                                                                   1/2
+                                             1             fE )||2F
+                               RMSE ≡           ||M − Tr (M              .                           (6)
+                                           mnr
+where we denote by ||A||F the Frobenius norm of matrix A. Notice that the factor (1/mn) corresponds
+to the usual normalization by the number of entries. The factor (1/r) is instead necessary because
+                                                                         √
+(as described in Section 2), the typical size of the entries of M is r.
+Theorem 1.1. Assume M to be a rank r ≤ n1/2 matrix that satisfies the incoherence condition A2
+(in particular, this is the case for random orthogonal matrices U, V ). Then with high probability
+                                   1             fE )||2F ≤ C(α) nr .
+                                      ||M − Tr (M                                                    (7)
+                                 mnr                               |E|
+    The proof is provided in Section 3.
+    Notice that the top r singular values and singular vectors of the sparse matrix M       fE can be
+computed efficiently by subspace iteration [Ber92]. Each iteration requires O(|E|r) operations. As
+proved in Section 3, the (r + 1)-th singular value is smaller than one half of the r-th one. As a
+consequence, subspace iteration converges exponentially. A simple calculation shows that O(log n)
+iterations are sufficient to ensure the error bound mentioned.
+    The ‘cleaning’ step in the above pseudocode improves systematically over Tr (M   fE ) and, for large
+enough |E|, reconstructs M exactly.
+Theorem 1.2. Assume M to be a rank r ≤ n1/2 matrix that satisfies the incoherence conditions A1
+and A2. Further, assume Σmin ≤ Σ1 , . . . , Σr ≤ Σmax with Σmin , Σmax bounded away from 0 and ∞.
+Then there exists C ′ (α) such that, if
+                                    |E| ≥ C ′ (α)nr max{log n, r} ,                                  (8)
+then the cleaning procedure in Spectral Matrix Completion converges, with high probability, to
+the matrix M .
+    The proof is provided in Section 5. The basic intuition is that, for |E| ≥ C ′ (α)nr max{log n, r},
+    fE ) is so close to M that the cost function is well approximated by a quadratic function.
+Tr (M
+    Theorem 1.1 is optimal: the number of degrees of freedom in M is of order nr, without the same
+number of observations is impossible to fix them. The extra log n factor in Theorem 1.2 is due to a
+coupon-collector effect [CR08, KMO08, KOM09]: it is necessary that E contains at least one entry
+per row and one per column and this happens only for |E| ≥ Cn log n. As a consequence, for rank r
+bounded, Theorem 1.2 is optimal. It is suboptimal by a polylogarithmic factor for r = O(log n).
+1.4    Related work
+Beyond collaborative filtering, low rank models are used for clustering, information retrieval, machine
+learning, and image processing. In [Faz02], the NP-hard problem of finding a matrix of minimum
+rank satisfying a set of affine constraints was addresses through convex relaxation. This problem is
+analogous to the problem of finding the sparsest vector satisfying a set of affine constraints, which
+is at the heart of compressed sensing [Don06, CRT06]. The connection with compressed sensing was
+emphasized in [RFP07], that provided performance guarantees under appropriate conditions on the
+constraints.
+                                                     4
+
+     In the case of collaborative filtering, we are interested in finding a matrix M of minimum rank
+that matches the known entries {Mij : (i, j) ∈ E}. Each known entry thus provides an affine
+constraint. Candès and Recht [CR08] introduced the incoherent model for M . Within this model,
+they proved that, if E is random, the convex relaxation correctly reconstructs M as long as |E| ≥
+C r n6/5 log n. On the other hand, from a purely information theoretic point of view (i.e. disregarding
+algorithmic considerations), it is clear that |E| = O(n r) observations should allow to reconstruct M
+with arbitrary precision. Indeed this point was raised in [CR08] and proved in [KMO08], through a
+counting argument.
+     The present paper describes an efficient algorithm that reconstructs a rank-r matrix from O(n r)
+random observations. The most complex component of our algorithm is the SVD in step 2. We were
+able to treat realistic data sets with n ≈ 105 . This must be compared with the O(n4 ) complexity of
+semidefinite programming [CR08].
+     Cai, Candès and Shen [CCS08] recently proposed a low-complexity procedure to solve the convex
+program posed in [CR08]. Our spectral method is akin to a single step of this procedure, with the
+important novelty of the trimming step that improves significantly its performances. Our analysis
+techniques might provide a new tool for characterizing the convex relaxation as well.
+     Theorem 1.1 can also be compared with a copious line of work in the theoretical computer science
+literature [FKV04, AFK+ 01, AM07]. An important motivation in this context is the development of
+fast algorithms for low-rank approximation. In particular, Achlioptas and McSherry [AM07] prove
+a theorem analogous to 1.1, but holding only for |E| ≥ (8 log n)4 n (in the case of square matrices).
+     A short account of our results was submitted to the 2009 International Symposium on Information
+Theory [KOM09]. While the present paper was under completion, Cándes and Tao posted online
+a preprint proving a theorem analogous to 1.2 [CT09]. Once more, their approach is substantially
+different from ours.
+1.5     Open problems and future directions
+It is worth pointing out some limitations of our results, and interesting research directions:
+     1. Optimal RMSE with O(n) entries. Numerical simulations with the Spectral Matrix Com-
+pletion algorithm suggest that the RMSE decays much faster with the number of observations
+per degree of freedom (|E|/nr), than indicated by Eq. (7). This improved behavior is a product of
+the cleaning step in the algorithm. It would be important to characterize the decay of RMSE with
+(|E|/nr).
+     2. Threshold for exact completion. As pointed out, Theorem 1.2 is order optimal for r bounded.
+It would nevertheless be useful to derive quantitatively sharp estimates in this regime. A systematic
+numerical study was initiated in [KMO08]. It appears that available theoretical estimates (including
+the recent ones in [CT09]) are for larger values of the rank, we expect that our arguments can be
+strenghtened to prove exact reconstruction for |E| ≥ C ′ (α)nr log n for all values of r.
+     3. More general models. The model studied here and introduced in [CR08] presents obvious
+limitations. In applications to collaborative filtering, the subset of observed entries E is far from
+uniformly random. A recent paper [SC09] investigates the uniqueness of the solution of the matrix
+completion problem for general sets E. In applications to fast low-rank approximation, it would be
+desirable to consider non-incoherent matrices as well (as in [AM07]).
+                                                     5
+
+2       Incoherence property and some notations
+The matrix M to be reconstructed takes the form (1) where U ∈ Rm×r , V ∈ Rn×r . We write
+                                                                                                                  √
+U = [u1 , u2 , . . . , ur ] and V = [v1 , v2 , . . . , vr ] for the columns of the two factors, with ||ui || = m,
+          √
+||vi || = n and uTi uj = 0, viT vj = 0 for i 6= j (there is no loss of generality in this, since normalizations
+can be adsorbed by redefining Σ). We shall further write Σ = diag(Σ1 , . . . , Σr ) with Σ1 ≥ Σ2 ≥
+· · · ≥ Σr ≥ 0.
+      The matrices U , V and Σ will be said to be incoherent if they satisfy the following properties:
+                                                                                                      P
+ A1. There exists a constant µ0 > 0 such that for all i ∈ [m], j ∈ [n] we have rk=1 Ui,k                      2 ≤ µ r,
+                                                                                                                   0
+        Pr       2
+          k=1 Vi,k ≤ µ0 r.
+                                        Pr
+ A2. There exists µ1 such that |           k=1 Ui,k Σk Vj,k |      ≤ µ1 r 1/2 .
+      Apart from difference in normalization, these assumptions coincide with the ones in [CR08].
+      In the proof of Theorem 1.1, we only require the second incoherence assumption A2. In the
+following, whenever we write that a property A holds with high probability (w.h.p.), we mean that
+there exists a function f (n) = f (n; α, µ1 ) such that P(A) ≥ 1 − f (n) and f (n) → 0 for µ1 bounded
+away from 0 and ∞. In the case of exact completion (i.e. in the proof of Theorem 1.2) f ( · ) can also
+depend on µ0 , Σmin , Σmax , and f (n) → 0 for µ0 , Σmin , Σmax bounded away from 0 and ∞.
+      Probability is taken with respect to the uniformly random subset E ⊆ [m] × [n]. It is convenient
+                                                                                                            √
+to work with a model in which each entry         √ is revealed        independently
+                                                                              √         with probability ǫ/ mn. Since,
+                                   √                             √
+with high probability |E| ∈ [ǫ α n − A n log n, ǫ α n − A n log n], any guarantee on the algorithm
+performances that holds within one model, holds within the other model as well if we allow for a
+vanishing shift in ǫ. Finally, we will use C, C ′ etc. to denote generic constants that depend uniquely
+on α, µ1 and, when proving Theorem 1.2, µ0 , Σmin , Σmax .
+                                                                                                           ′
+      Given a vector x ∈ Rn , ||x|| will denote its Euclidean norm. For a matrix X ∈ Rn×n , ||X||F is its
+Frobenius norm, and ||X||2 its operator norm (i.e. ||X||2 = supu6=0 ||Xu||/||u||). The standard scalar
+product between vectors or matrices will sometimes be indicated by hx, yi or hX, Y i, respectively.
+Finally, we use the standard combinatorics notation [N ] = {1, 2, . . . , N } to denote the set of first N
+integers.
+3       Proof of Theorem 1.1 and technical results
+As explained in the previous section, the crucial idea is to consider the singular value decomposition
+of the trimmed matrix M       fE instead of the original matrix M E , as in Eq. (3). We shall then redefine
+{σi }, {xi }, {yi }, by letting
+                                                         min(m,n)
+                                                             X
+                                             MfE =                  σi xi yiT .                                    (9)
+                                                             i=1
+Here ||xi || = ||yi || = 1, xTi xj = yiT yj = 0 for i 6= j and σ1 ≥ σ2 ≥ · · · ≥ 0.
+      We will prove Theorem 1.1 by controlling the operator norm of M − Tr (M                   fE ).
+Theorem 3.1. There exists C(α) < ∞ such that, with high probability,
+                                     1                                        r 1/2
+                                   √         M − Tr (M      fE )      ≤C              .                           (10)
+                                     mn                             2           ǫ
+                                                                 6
+
+    This result is proved later in this section. The proof of Theorem 1.1 is a direct application the
+of above theorem.
+Proof. (Theorem 1.1) Since M − Tr (M     fE ) has rank at most 2r, it immediately follows that
+                                                                                          
+                      1                                  √           1
+                   √                   f  E
+                            M − Tr (M ) F ≤                 2r    √                  fE
+                                                                            M − Tr (M ) 2
+                     mnr                                            mnr
+                                                              r 1/2
+                                                    ≤ C                ,
+                                                               ǫ
+which implies the thesis.
+    To prove Theorem 3.1, we will use following key technical results.
+Lemma 3.2. There exists a constant C > 0 such that, with high probability
+                                                            
+                                            ǫ                            √
+                                 x T
+                                        √      M −M    f   E
+                                                               y ≤ C rǫ ,                                   (11)
+                                           mn
+for any x ∈ Rm and y ∈ Rn such that ||x|| = ||y|| = 1.
+    The proof of this lemma is given in Section 4. The next lemma, which is a direct consequence of
+Lemma 3.2, relates the singular values of the trimmed matrix M             fE to the singular values of M .
+Lemma 3.3. There exists a constant C > 0 such that, with high probability
+                                         σq                  r 1/2
+                                              − Σq ≤ C                 ,                                    (12)
+                                          ǫ                   ǫ
+where it is understood that Σq = 0 for q > r.
+    This lemma is proved later in this section. We can now prove Theorem 3.1.
+Proof. (Theorem 3.1) Consider x ∈ Rn and y ∈ Rm such that ||x|| = ||y|| = 1. Then,
+                                                   √                        √                   
+          T           f E               T              mn fE                T     mn fE        f E
+        x (M − Tr (M ))y ≤ x                  M−            M      y + x             M − Tr (M ) y
+                                                       ǫ                          ǫ
+                                       √       r 1 √            σr+1
+                                                     2
+                                ≤ C mn                  + mn
+                                                 ǫ                  ǫ
+                                        √       r1
+                                                      2
+                                ≤ C ′ mn                 ,
+                                                  ǫ
+where we used Lemma 3.2 for the second inequality and Lemma 3.3 for the last inequality. This
+                                                    1
+               1
+implies that √mn    M − Tr (MfE ) ≤ C ′ (r/ǫ) 2 .
+                                     2
+    We end this section with the proof of Lemma 3.3.
+Proof. (Lemma 3.3) Recall the variational characterization of the singular values.
+                              σq =              min               max      ||MfE y||                        (13)
+                                         H,dim(H)=n−q+1 y∈H,||y||=1
+                                   =          max           min       ||MfE y|| .                           (14)
+                                         H,dim(H)=q y∈H,||y||=1
+Here H is understood to be a linear subspace of Rn .
+                                                          7
+
+     Using Eq. (13) with H the orthogonal complement of span(v1 , . . . , vq−1 ), we have, by Lemma 3.2,
+               σq ≤      max       fE y
+                                   M
+                      y∈H,||y||=1
+                                                                                           
+                         ǫ                                               T   fE        ǫ
+                    ≤ √           max      My       +      max          x    M −√          M y
+                         mn y∈H,||y||=1               y∈H,||y||=||x||=1                mn
+                                √
+                    ≤ ǫΣq + C rǫ
+     In order to get a lower bound, we use Eq. (14) with H = span(v1 , . . . , vq ). By Lemma 3.2 we
+have
+               σq ≥      min       fE y
+                                   M
+                      y∈H,||y||=1
+                                                                                           
+                         ǫ                                               T   fE        ǫ
+                    ≥ √           min      My       −      max          x    M −√          M y
+                         mn y∈H,||y||=1               y∈H,||y||=||x||=1                mn
+                                √
+                    ≥ ǫΣq − C rǫ
+Combining the upper and lower bounds, we get the desired result.
+4      Proof of Lemma 3.2
+We want to show that |xT (M     fE − √ ǫ M )y| ≤ C √rǫ for each x ∈ Rm , y ∈ Rn such that ||x|| =
+                                        mn
+||y|| = 1. Following the technique of [FKS89], this will be done by first reducing ourselves to x, y
+belonging to finite sets. We define
+                                                       n               
+                                                     ∆
+                                  Tn =       x∈ √ Z            : ||x|| ≤ 1 ,
+                                                      n
+Notice that Tn ⊆ Sn ≡ {x ∈ Rn : ||x|| ≤ 1}. The next two remarks are proved in [FKS89, FO05],
+and relate the original problem to the discretized one.
+Remark 4.1. Let R ∈ Rm×n be a matrix. If |xT Ry| ≤ B for all x ∈ Tm and y ∈ Tn , then
+|x′T Ry ′ | ≤ (1 − ∆)−2 B for all x′ ∈ Sm and y ′ ∈ Sn .
+Remark 4.2. |Tm | ≤ (10/∆)m .
+     Hence it is enough to show that |xT (M  fE − √ ǫ M )y| ≤ C √rǫ for all x ∈ Tm and y ∈ Tn . There
+                                                      mn
+are two parts to the proof of this claim. One bounds the contribution of light couples L ⊆ [m] × [n],
+defined as
+                                                             rǫ 1/2 
+                                L = (i, j) : |xi Mij yj | ≤                ,
+                                                                mn
+and the other bounds the contribution of its complement L, which we call heavy couples. We have
+                                         X                                     X
+             x T   fE − √ ǫ M
+                   M                y ≤             fE yj − √ ǫ xT M y +
+                                                 xi M                                     fE yj
+                                                                                       xi M             (15)
+                                                     ij                                    ij
+                           mn                                   mn
+                                         (i,j)∈L                               (i,j)∈L
+                                                                                                         √
+In the next two subsections, we will prove that the first contribution is upper bounded by C1 rǫ
+                        √                                                                fE − √ ǫ M )y|, this
+and the second by C2 rǫ for all x ∈ Tm , y ∈ Tn . Applying Remark 4.1 to |xT (M                 mn
+proves the thesis.
+                                                       8
+
+4.1     Bounding the contribution of light couples
+Let us define the subset of row and column indices which have not been trimmed as Al and Ar :
+                                                                       2ǫ
+                                  Al = {i ∈ [m] : deg(i) ≤ √ } ,
+                                                                         α
+                                                                         √
+                                  Ar = {j ∈ [n] : deg(j) ≤ 2ǫ α} ,
+where deg(·) denotes the degree (number of revealed entries) of a row or a column. Notice that
+A = (Al , Ar ) is a function of the random set E. It is easy to get a rough estimate of the sizes of Al ,
+Ar .
+Remark 4.3. There exists C1 and C2 depending only on α such that, with probability larger than
+1 − 1/n3 , |Al | ≥ m − max{e−C1 ǫ m, C2 α}, and |Ar | ≥ n − max{e−C1 ǫ n, C2 }.
+     For the proof of this claim, we refer to Appendix A. For any E ⊆ [m] × [n] and A = (Al , Ar )
+with Al ⊆ [m], Ar ⊆ [n], we define M E,A by setting to zero the entries of M that are not in E, those
+whose row index is not in Al , and those whose column index not in Ar . Consider the event
+                                                                                         
+                                        X           E,A           ǫ     T            √ 
+                H(E, A) = ∃ x, y :               xi Mij yj − √        x M y > C1 rǫ ,                    (16)
+                                                                 mn                      
+                                       (i,j)∈L
+where it is understood that x and y belong, respectively, to Tm and Tn . Note that M            fE = M E,A ,
+and hence we want to bound P{H(E, A)}. We proceed as follows
+                                          X
+                      P {H(E, A)} =             P {H(E, A), A = A}
+                                            A
+                                                X                                    1
+                                     ≤                   P {H(E, A), A = A} +
+                                                                                     n3
+                                          |Al |≥m(1−δ),
+                                           |Ar |≥n(1−δ)
+                                                                                        1
+                                     ≤ 2(n+m)H(δ)            max      P {H(E; A)} +        ,             (17)
+                                                        |Al |≥m(1−δ),                   n3
+                                                         |Ar |≥n(1−δ)
+with δ ≡ max{e−C1 ǫ , C2 /n} and H(x) the binary entropy function.
+     We are now left with the task of bounding P {H(E; A)} uniformly over A where H is defined as
+in Eq. (16). The key step consists in proving the following tail estimate
+                                            P
+Lemma 4.4. Let x ∈ Sm , y ∈ Sn , Z = (i,j)∈L xi MijE,A yj − √mn        ǫ
+                                                                           xT M y, and assume |Al | ≥ m(1−δ),
+|Ar | ≥ n(1 − δ) with δ small enough. Then
+                                  √              n nα1/2                     o
+                         P Z > L rǫ ≤ exp −                     L − 2µ21 − µ1      .
+                                                          2
+Proof. We begin by bounding the mean of Z as follows (for the proof of this statement we refer to
+Appendix B).
+                                    √
+Remark 4.5. |E [Z]| ≤ µ1 + µ21         rǫ.
+                                                        9
+
+    For A = (Al , Ar ), let M A be the matrix obtained from M by setting to zero those entries whose
+row index is not in Al , and those whose column index not in Ar . Define the potential contribution
+of the light couples aij and independent random variables Zij as
+                                       (
+                                          xi MijA yj if |xi MijA yj | ≤ (rǫ/mn)1/2 ,
+                            aij =
+                                                     0 otherwise,
+                                                          √
+                                          ai,j w.p. ǫ/ mn,
+                            Zij =                                √
+                                              0 w.p. 1 − ǫ/ mn,
+           P                                                                P              P                 2
+Let Z1 =                                   √ ǫ xT M y. Note that                   a2ij ≤           x   M Ay     ≤ µ21 r. Fix
+              i,j Zij so that Z = Z1 −        mn                               i,j             i,j     i ij j
+λ = (mn/4rǫ)1/2 so that |λai,j | ≤     1/2, whence e     λa ij − 1 ≤ λaij +        2(λaij )2 . It then follows that
+                                      n ǫ X                       X                     λǫ T           o
+                    E[eλZ ] = exp √                    λai,j + 2         (λai,j )2 − √           x My
+                                          mn                                               mn
+                                                   i,j               i,j
+                                      n                      λ2 o
+                            ≤ exp λE[Z] + 2rǫµ21 1/2 .
+                                                          nα
+The thesis follows by Chernoff bound P(Z > a) ≤ e−λa E[eλZ ] after simple calculus.
+                            √
+    Note that P (−Z > L rǫ) can also be bounded analogously. We can now finish the upper bound
+on the light couples contribution. Consider the error event Eq. (16). Using Remark 4.2, we can
+apply union bound over Tm and Tn to Eq. (17) to obtain
+                                                      n+m
+                                                   20                      2        1/2 n/2       1
+                         P{H(E, A)} ≤ 2                        e−(C1 −2µ1 −µ1 )α            +        ,
+                                                    ∆                                            n3
+If C1 is a large enough constant, the first term is of order e−Θ(n) (for, say, ǫ ≥ r) thus finishing the
+proof.
+4.2    Bounding the contribution of heavy couples
+Let Q be an m×n matrix with Qij = 1 if (i, j) ∈ E and i 6∈ Ar , j 6∈ Al (i.e. entry (i, j) is not trimmed
+by our algorithm), and Qij = 0 otherwise. Duep             to the incoherence assumption A2, |Mij | ≤ µ1 r 1/2
+                                                                                   √
+and therefore the heavy couples satisfy |xi yj | ≥ ǫ/(µ21 mn) = C ǫ/n. We then have
+                                X                           √ X
+                                         fijE yj
+                                      xi M           ≤ µ1 r               Qij |xi yj |
+                              (i,j)∈L                            (i,j)∈L
+                                                            √          X
+                                                     ≤ µ1 r                      Qij |xi yj | .
+                                                                    (i,j)∈E:
+                                                                           √
+                                                                |xi yj |≥C ǫ/n
+Notice that Q is the adjacency matrix of a random bipartite graph with vertex sets [m] and [n]
+and maximum degree bounded by 2ǫ max(α1/2 , α−1/2 ). The following remark strengthens a result of
+[FO05].
+                                                 ′                                          √
+Remark 4.6. Given vectors x,       P   y, let L = {(i, j) ∈ E : |xi yj | ≥ C ǫ/n}. Then there exist a
+                                                                  √
+constant C ′ such that, w.h.p., (i,j)∈L′ Qij |xi yj | ≤ C ′ ǫ, for all x ∈ Tm , y ∈ Tn .
+                                                          10
+
+    For the reader’s convenience, a proof of this fact is proposed in Appendix C. The analogous result
+in [FO05] (for the adjacency matrix of a non-bipartite graph) is proved to hold only with probability
+larger than 1 − e−Cǫ . The stronger statement quoted here can be proved using concentration of
+measure inequalities. The last remark implies that for all x ∈ Tm , y ∈ Tn and for large enough C
+                                                                  √
+the contribution of heavy couples is, w.h.p., bounded by C2 rǫ for some C2 < ∞.
+5     Minimization on Grassmann manifolds and proof of Theorem 1.2
+The function F (X, Y ) defined in Eq. (4) and to be minimized in the last part of the algorithm
+can naturally be viewed as defined on Grassmann manifolds. Here we recall from [EAS99] a few
+important facts on the geometry of Grassmann manifold and related optimization algorithms. We
+then prove Theorem 1.2. Technical calculations are deferred to section Sections 6, 7, and to the
+appendices.
+    We recall that, for the proof of Theorem 1.2, it is assumed that Σmin , Σmax are bounded away from
+0 and ∞. Constants (denoted by C, C ′ , . . . ) depend implicitly on Σmin , Σmax . Finally, throughout
+this section, we use the notation X (i) ∈ Rr to refer to the i-th row of the matrix X ∈ Rm×n or
+X ∈ Rn×r .
+5.1    Geometry of the Grassmann manifold
+Denote by O(d) the orthogonal group of d × d matrices. The Grassmann manifold is defined as the
+quotient G(n, r) ≃ O(n)/O(r) × O(n − r). In other words, a point in the manifold is the equivalence
+class of an n × r orthogonal matrix A
+                                          [A] = {AQ : Q ∈ O(r)} .                                   (18)
+For consistency with the rest of the paper, we will assume the normalization AT A = n 1. To represent
+a point in G(n, r), we will use an explicit representative of this form. More abstractly, G(n, r) is the
+manifold of r-dimensional subspaces of Rn .
+    It is easy to see that F (X, Y ) depends on the matrices X, Y only through their equivalence
+classes [X], [Y ]. We will therefore interpret it as a function defined on the manifold M(m, n) ≡
+G(m, r) × G(n, r):
+                                           F : M(m, n) → R ,                                        (19)
+                                              ([X], [Y ]) 7→ F (X, Y ) .                            (20)
+In the following, a point in this manifold will be represented as a pair x = (X, Y ), with X an n × r
+orthogonal matrix and Y an m × r orthogonal matrix. Boldface symbols will be reserved for elements
+of M(m, n) or of its tangent space, and we shall use u = (U, V ) for the point corresponding to the
+matrix M = U ΣV T to be reconstructed.
+    Given x = (X, Y ) ∈ M(m, n), the tangent space at x is denoted by Tx and can be identified with
+the vector space of matrix pairs w = (W, Z), W ∈ Rm×r , Z ∈ Rn×r such that W T X = Z T Y = 0.
+The ‘canonical’ Riemann metric on the Grassmann manifold corresponds to the usual scalar product
+hW, W ′ i ≡ Tr(W T W ′ ). The induced scalar product on Tx between w = (W, Z) and w′ = (W ′ , Z ′ )
+is hw, w′ i = hW, W ′ i + hZ, Z ′ i.
+    This metric induces a canonical notion of distance on M(m, n) which we denote by d(x1 , x2 )
+(geodesic or arc-length distance). If x1 = (X1 , Y1 ) and x2 = (X2 , Y2 ) then
+                                                p
+                                  d(x1 , x2 ) ≡ d(X1 , X2 )2 + d(Y1 , Y2 )2                         (21)
+                                                         11
+
+where the arc-length distances d(X1 , X2 ), d(Y1 , Y2 ) on the Grassmann manifold can be defined ex-
+plicitly as follows. Let cos θ = (cos θ1 , . . . , cos θr ), θi ∈ [−π/2, π/2] be the singular values of X1T X2 /n.
+Then
+                                               d(X1 , X2 ) = ||θ||2 .                                        (22)
+The θi ’s are called the ‘principal angles’ between the subspaces spanned by the columns of X1 and
+X2 . It is useful to introduce two equivalent notions of distance:
+                                1
+              dc (X1 , X2 ) = √        min ||X1 Q1 − X2 Q2 ||F                  (chordal distance),          (23)
+                                 n Q1 ,Q2∈O(r)
+                                 1
+              dp (X1 , X2 ) = √ ||X1 X1T − X2 X2T ||F                           (projection distance).       (24)
+                                 2n
+Notice that dc and dp do not depend on the specific representatives X1 , X2 , but only on the equiv-
+alence classesp[X1 ] and [X2 ]. Distances on M(m, n) are defined through Pythagorean theorem, e.g.
+dc (x1 , x2 ) = dc (X1 , X2 )2 + dc (Y1 , Y2 )2 .
+Remark 5.1. The geodesic, chordal and projection distance are equivalent, namely
+                 2                 1
+                   d(X1 , X2 ) ≤ √ dc (X1 , X2 ) ≤ dp (X1 , X2 ) ≤ dc (X1 , X2 ) ≤ d(X1 , X2 ) .             (25)
+                π                   2
+    For the reader’s convenience, a proof of this fact is proposed in Section D.
+    An important remark is that geodesics with respect to the canonical Riemann metric admit an
+explicit and efficiently computable form. Given u ∈ M(m, n), w ∈ Tx the corresponding geodesic
+is a curve t 7→ x(t), with x(t) = u + wt + O(t2 ) which minimizes arc-length. If u = (U, V ) and
+w = (W, Z) then x(t) = (X(t), Y (t)) where X(t) can be expressed in terms of the singular value
+decomposition W = LΘRT [EAS99]:
+                                   X(t) = U R cos(Θt)RT + L sin(Θt)RT ,                                      (26)
+which can be evaluated in time of order O(nr). An analogous expression holds for Y (t).
+5.2      Gradient and incoherence
+The gradient of F at x is the vector grad F (x) ∈ Tx such that, for any smooth curve t 7→ x(t) ∈
+M(m, n) with x(t) = x + w t + O(t2 ), one has
+                                F (x(t)) = F (x) + hgrad F (x), wi t + O(t2 ) .                              (27)
+In order to write an explicit representation of the gradient of our cost function F , it is convenient to
+introduce the projector operator
+                                                    
+                                                       Mij if (i, j) ∈ E,
+                                      PE (M )ij =                                                            (28)
+                                                       0       otherwise.
+The two components of the gradient are then
+                               grad F (x)X     = PE (XSY T − M )Y S T − XQX ,                                (29)
+                                                                T       T
+                               grad F (x)Y     = PE (XSY           − M ) XS − Y QY ,                         (30)
+where QX , QY ∈ Rr×r are determined by the condition grad F (x) ∈ Tx . This yields
+                                                  1 T
+                                      QX   =        X PE (M − XSY T )Y S T ,                                 (31)
+                                                 m
+                                                 1 T
+                                      QY   =       Y PE (M − XSY T )T XS .                                   (32)
+                                                 n
+                                                            12
+
+5.3     Algorithm
+At this point the gradient descent algorithm is fully specified. It takes as input the factors of Tr (M fE ),
+to be denoted as x0 = (X0 , Y0 ), and minimizes a regularized cost function
+                Fe(X, Y ) = F (X, Y ) + ρ G(X, Y )                                                       (33)
+                                               m
+                                                                    !     n
+                                                                                                !
+                                             X          ||X (i) ||2      X          ||Y (j) ||2
+                             ≡ F (X, Y ) + ρ      G1                  +ρ      G1                  ,      (34)
+                                                          2µ0 r                       2µ0 r
+                                              i=1                        j=1
+where X (i) denotes the i-th row of X, and Y (j) the j-th row of Y . The role of the regularization is
+to force x to remain incoherent during the execution of the algorithm.
+                                           
+                                              0               if z ≤ 1,
+                                  G1 (z) =     (z−1)2                                                    (35)
+                                              e       − 1 if z ≥ 1.
+We will take ρ = nǫ. Notice that G(X, Y ) is again naturally defined on the Grassmann manifold,
+i.e. G(X, Y ) = G(XQ, Y Q′ ) for any Q, Q′ ∈ O(r).
+     Let
+                              n                                                      o
+                    K(µ′ ) ≡ (X, Y ) such that ||X (i) ||2 ≤ µ′ r, ||Y (j) ||2 ≤ µ′ r .                  (36)
+We have G(X, Y ) = 0 on K(2µ0 ). Notice that u ∈ K(µ0 ) by the incoherence property. Without loss
+of generality we can assume x0 ∈ K(2µ0 ), because otherwise we can rescale all lines of X0 , Y0 that
+violate the constraint.
+      Gradient descent( matrix M E , factors x0 )
+      1: For k = 0, 1, . . . do:
+      2:    Compute wk = grad Fe(xk );
+      4:    Let t 7→ xk (t) be the geodesic with xk (t) = xk + wk t + O(t2 );
+      5:    Minimize t 7→ Fe (xk (t)) for t ≥ 0, subject to d(xk (t), x0 ) ≤ γ;
+      6:    Set xk+1 = xk (tk ) where tk is the minimum location;
+      7: End For.
+     In the above, γ must be set in such a way that d(u, x0 ) ≤ γ. The next remark determines the
+correct scale.
+Remark 5.2. Let U, X ∈ Rn×r with U T U = X T X = m1, V, Y ∈ Rm×r with V T V = Y T Y = n1,
+and M = U ΣV T , M  c = XSY T for Σ = diag(Σ1 , . . . , Σr ) and S ∈ Rr×r . If Σ1 , . . . , Σr ≥ Σmin , then
+                                1           c||F                          1             c||F
+               dp (U, X) ≤          ||M − M        ,     dp (V, Y ) ≤          ||M − M                   (37)
+                             mΣmin                                     nΣmin
+                                                                                                    √
+     As a consequence of this remark and Theorem 1.1, we can assume that d(u, x0 ) ≤ C r/ ǫ. We
+                          √
+shall then set γ = C ′ r/ ǫ (the value of C ′ is set in the course of the proof).
+     Before passing to the proof of Theorem 1.2, it is worth discussing a few important points con-
+cerning the gradient descent algorithm.
+   (i) The appropriate choice of γ might seem to pose a difficulty. In reality, this parameter is
+       introduced only to simplify the proof. We will see that the constraint d(xk (t), x0 ) ≤ γ is, with
+       high probability, never saturated.
+                                                      13
+
+  (ii) Indeed, the line minimization instruction 5 (which might appear complex to implement) can
+       be replaced by a standard step selection procedure, such as the one in [Arm66].
+ (iii) Similarly, there is no need to know the actual value of µ0 in the regularization term. One can
+       start with µ0 = 1 and then repeat the optimization doubling it at each step.
+ (iv) The Hessian of F can be computed explicitly as well. This opens the way to quadratically
+       convergent minimization algorithms (e.g. the Newton method).
+5.4     Proof of Theorem 1.2
+The proof of Theorem 1.2 breaks down in two lemmas. The first one implies that, in a sufficiently
+small neighborhood of u, the function x 7→ F (x) is well approximated by a parabola.
+Lemma 5.3. Assume ǫ ≥ A max{r log n, r 2 } with A large enough. Then there exists constants
+C1 , C2 , δ > 0 (independent of m, n, ǫ and r) such that, with high probability
+                                                     
+                        C1 nǫ d(x, u)2 + ||S − Σ||2F ≤ F (x) ≤ C2 nǫ d(x, u)2                        (38)
+for all x ∈ M(m, n) ∩ K(3µ0 ) such that d(x, u) ≤ δ (where S ∈ Rr×r is the matrix realizing the
+minimum in Eq. (4)).
+     The second Lemma implies that x 7→ F (x) does not have any other stationary point (apart from
+u) within such a neighborhood.
+Lemma 5.4. Assume ǫ ≥ A max{r log n, r 2 } with A large enough. Then there exists constants
+C, δ > 0 (independent of m, n, ǫ and r) such that, with high probability
+                                   ||grad Fe(x)||2 ≥ C nǫ2 d(x, u)2                                  (39)
+for all x ∈ M(m, n) ∩ K(3µ0 ) such that d(x, u) ≤ δ.
+     We can now prove Theorem 1.2.
+Proof. (Theorem 1.2) Let δ > 0 be such that Lemma 5.3        p and Lemma 5.4 are verified, and C1 , C2
+be defined as in Lemma 5.3. We further assume δ ≤ (e1/4 − 1)/C1 . Take ǫ large enough that
+                  √
+d(u, x0 ) ≤ C r/ ǫ ≤ min(1, (C1 /2C2 )1/2 )δ/10. Further, set the algorithm parameter to γ = δ/4.
+     We make the following claims:
+    1. xk ∈ K(3µ0 ) for all k.
+       Indeed x0 ∈ K(2µ0 ) whence Fe (x0 ) = F (x0 ) ≤ C2 nǫ δ2 . The claim follows because Fe(xk ) is
+       non-increasing and Fe(x) ≥ ρ G(X, Y ) ≥ nǫ(e1/4 − 1) for x 6∈ K(3µ0 ).
+    2. d(xk , u) ≤ δ/10 for all k.
+       Indeed by triangular inequality we can assume to have d(xk , u) ≤ δ/2. Since d(x0 , u) ≤
+       (C1 /2C2 )1/2 δ/10, we have Fe(x) ≥ F (x) ≥ F (x0 ) for all x such that d(x, u) ∈ [δ/10, δ]. Since
+       Fe(xk ) is non-increasing and Fe(x0 ) = F (x0 ), the claim follows.
+     Notice that, by the last observation, the constraint d(xk (t), x0 ) ≤ γ is never saturated, and
+therefore our procedure is just gradient discent with exact line search. Therefore [Arm66] this must
+converge to the unique stationary point of Fe in K(3µ0 ) ∩ {x : d(x, u) ≤ δ/10, which, by Lemma 5.4,
+is u.
+                                                     14
+
+6     Proof of Lemma 5.3
+We will make use of the following Lemma.
+Lemma 6.1. Assume ǫ = A log n with A large enough. Then there exists C > 0 such that with high
+probability
+                                  X                   Cǫ                     √
+                                          xi yj ≤         ||x||1 ||y||1 + C ǫ||x||2 ||y||2 .                                  (40)
+                                                      n
+                                (i,j)∈E
+for all x ∈ Rm , y ∈ Rn .
+                                             P
+Proof. Write xi = x0 + x′i where                    ′
+                                                 i xi = 0. Then
+                                    X                      X                    X
+                                            xi yj = x0          deg(j)yj +            x′i yj ,                                (41)
+                                  (i,j)∈E                 j∈[n]               (i,j)∈E
+                                                                                                           P
+where we recall that deg(j) = {i ∈ [m] : such that (i, j) ∈ E}. Further |x0 | = |                             i xi /n| ≤ ||x||1 /n.
+The first term is upper bounded by
+                                x0 max deg(j)||y||1 ≤ max deg(j)||x||1 ||y||1 /n .                                            (42)
+                                       j                          j
+For ǫ = A log n, the maximum degree is with high probability of the same order as the average one,
+and therefore this term is at most Cǫ||x||1 ||y||1 /n.
+                                                              √
+    The second term is upper bounded by C ǫ||x′ ||2 ||y||2 using Theorem 1.1 in [FO05] or, equiva-
+lently, Theorem 3.3 in the case r = 1. The thesis follows because ||x′ ||2 ≤ ||x||2 .
+Proof. (Lemma 5.3) Throughout the proof we assume m = n to simplify notations.
+    Let w = (W, Z) ∈ Tu , and t 7→ (X(t), Y (t)) be the geodesic such that (X(t), Y (t)) = (U, V ) +
+(W, Z)t+O(t2 ). By setting (X, Y ) = (X(1), Y (1)), we establish a one-to-one correspondence between
+the points x as in the statement and a neighborhood of the origin in Tu . If we let W = LΘRT be
+the singular value decomposition of W (with LT L = n1 and RT R = 1), the explicit expression for
+geodesics in Eq. (26) yields
+                          X =U +W ,                 W = U R(cos Θ − 1)RT + L sin ΘRT .                                        (43)
+An analogous expression can obviously be written for Y = V + Z. Notice that, if u, x ∈ K(3µ0 ), then
+                                                                                                            (i)
+(W , Z) ∈ K(12µ0 ) and w ∈ K(48µ0 /π 2 ). In the first case this follows from ||W ||2 ≤ 2||X (i) ||2 +
+2||U (i) ||2 . In order to prove w ∈ K(48µ0 /π 2 ), we notice that
+                                                         4
+                    ||W (i) ||2 = ||ΘL(i) ||2 ≤             || sin ΘL(i) ||2
+                                                         π2
+                                        4       (i)                 T (i) 2       8  (i) 2             (i) 2
+                                                                                                              
+                                ≤          ||X      −  R  cos  ΘR     U   ||  ≤       ||X      || + ||U    ||   .
+                                       π2                                         π2
+The claim follows by showing a similar bound for ||Z (i) ||2 .
+    Denote by S ∈ Rr×r the matrix realizing the minimum in Eq. (4). We will start by proving the
+lower bound in Eq. (38):
+                                         1 X                                     T                         T
+                      F (X, Y ) =                    (U (S − Σ)V T + U SZ + W SV T + W SZ )2ij
+                                         2
+                                            (i,j)∈E
+                                         1 2
+                                  ≥        A − B2
+                                         4
+                                                                   15
+
+where in we used Cauchy-Schwarz inequality to argue that (1/2)(A + B)2 ≥ (A2 /4) − B 2 and defined
+                                         X                                T
+                               A2 ≡             (U (S − Σ)V T + U SZ + W SV T )2ij ,
+                                       (i,j)∈E
+                                         X             T
+                               B2 ≡             (W SZ )2ij .
+                                       (i,j)∈E
+We will show that, with high probability A2 ≥ Cnǫ||S − Σ||2F + Cnǫd(x, u)2 and B 2 ≤ (C/100)nǫ (1+
+||S − Σ||2F )d(x, u)2 whence the lower bound in Eq. (38) follows.
+    Lower bound on A. By Theorem 4.1 in [CR08], we have A2 ≥ (1 − ξ)E{A2 } with high probability
+for each ξ > 0. Further
+                      ǫ                            T
+      E{A2 } =          ||U (S − Σ)V T + U SZ + W SV T ||2F =
+                      n
+                      ǫ                          ǫ       T         ǫ
+               =        ||U (S − Σ)V T ||2F + ||U SZ ||2F + ||W SV T ||2F
+                      n                         n                  n
+                        2ǫ        T                2ǫ                             2ǫ       T
+                                            T
+                     + hU SZ , W SV i + hU (S − Σ)V T , W SV T i + hU SZ , U (S − Σ)V T i .
+                         n                         n                              n
+The first term is equal to nǫ||S − Σ||2F . The second and third terms are lower bounded by
+            ǫσmin (S)2 (||Z||2F + ||W ||2F ) ≥ Cσmin (S)2 nǫdc (x, u)2 ≥ C ′ σmin (S)2 nǫd(x, u)2 .
+    The absolute value of the fourth term can be written as
+                  ǫ          T                ǫ        T                    ǫ                T
+       E4 =         |hU SZ , W SV T i| ≤ ||U SZ ||F ||W SV T ||F ≤ σmax (S)2 ||W U ||F ||V T Z||F
+                 n                            n                             n
+                  ǫ            2     T    2         T   2
+             ≤      σmax (S) (||W U ||F + ||V Z||F ) .
+                 n
+In order proceed, consider Eq. (43). Since by tangency condition U T L = 0, we have U T W =
+nR(cos Θ − 1)RT whence
+                                                       n                    n
+                    ||U T W ||F = n|| cos θ − 1|| =       ||4 sin2 (θ/2)|| ≤ ||2 sin(θ/2)||2             (44)
+                                                       2                    2
+(here θ = (θ1 , . . . , θr ) is the vector containing the diagonal elements of Θ). A similar calculation
+reveals that ||W ||2F = n||2 sin(θ/2)||2 thus proving ||U T W ||2F ≤ ||W ||4F /4 ≤ Cnδ2 ||W ||2F . The bound
+||V T Z||2F ≤ Cnδ2 ||Z||2F is proved in the same way, thus yielding
+                                        E4 ≤ Cnǫσmax (S)2 δ2 d(x, u)2 .
+Proceeding analogously for the other terms in the expression of E{A2 }, we proved that with high
+probability
+                                                                                
+                A2 ≥ nǫ||S − Σ||2F + nǫ Cσmin (S)2 − C ′ δ2 σmax (S)2 d(x, u)2                           (45)
+                                               2            2            2       2 2
+                                                                                               2
+                        ≥ nǫ(1 − Cd(x, u) )||S − Σ||F + nǫ CΣmin − Cδ Σmax d(x, u) ,                     (46)
+where we used the bounds σmin (S)2 ≥ Σ2min /2 − ||S − Σ||2F and σmax (S)2 ≤ 2Σ2max + 2 ||S − Σ||2F .
+The above inequality implies the desired claim if we take d(x, u) ≤ δ small enough.
+                                                            16
+
+    Upper bound on B. By Lemma 6.1 we have
+                    X X              2 2
+ B 2 ≤ σmax (S)2                W ia Z jb                                                                         (47)
+                    a,b (i,j)∈E
+                                                                                            !1/2                1/2
+          Cǫ           X          (i)       (j)                    √ X X               (i)          X      (j) 4
+      ≤      σmax (S)2       ||W ||2 ||Z ||2 + Cσmax (S)2 ǫ                      ||W ||4              ||Z    || (48)
+           n
+                        i,j                                            a,b    i                     j
+                                                                                           !1/2              1/2
+          Cǫ           X          (i)       (j)                    √       X       (i)           X (j)
+      ≤      σmax (S)2       ||W ||2 ||Z ||2 + C ′ σmax (S)2 ǫr                ||W ||2              ||Z ||2  (49) .
+           n
+                        i,j                                                 i                     j
+where in the last step we used the incoherence condition. We conclude therefore that
+                                                                 √ 
+                        B 2 ≤ nσmax (S)2 Cǫ δ2 + C ′ ǫr d(x, u)2                                                  (50)
+                                                                           √
+                               ≤ Cnǫ(Σ2max + ||S − Σ||2F ) max(r/ ǫ, δ2 )d(x, u)2                                 (51)
+                                   √
+which implies the thesis for r/ ǫ, δ small enough.
+    In order to prove the upper bound in Eq. (38) we can set Σ = S, thus obtaining
+                                              1 X              T                        T
+                          F (X, Y ) =                    (U ΣZ + W ΣV T + W ΣZ )2ij
+                                              2
+                                                 (i,j)∈E
+                                        ≤ A +Bb2       b2 ,
+where we defined
+                                                    X           T
+                                      b2 ≡
+                                      A                   (U ΣZ + W ΣV T )2ij ,
+                                                  (i,j)∈E
+                                                    X            T
+                                      b2 ≡
+                                      B                   (W ΣZ )2ij .
+                                                  (i,j)∈E
+Bounds for these two quantities are derived as for A2 and B 2 . More precisely, by Theorem 4.1 in
+[CR08], we have A b2 ≤ (1 − ξ)E{A      b2 } and
+                               b2 } =       ǫ           T
+                           E{A                ||U ΣZ + W ΣV T ||2F =
+                                            n
+                                            2ǫ           T      2ǫ
+                                       =        ||U ΣZ ||2F + ||W ΣV T ||2F
+                                             n                   n
+                                       ≤ ǫΣ2max (||Z||2F + ||W ||2F ) ≤ Cnǫd(x, u)2 .
+Further by setting S = Σ in the derivation for B we get B            b 2 ≤ (C/100)nǫ d(x, u)2 .
+7     Proof of Lemma 5.4
+Throughout this proof we assume m = n to lighten the notation.
+    As in the proof of Lemma 5.3, we let t 7→ x(t) = (X(t), Y (t)) be the geodesic starting at x(0) = u
+with velocity ẋ(0) = w = (W, Z) ∈ Tu . We also define x = x(1) = (X, Y ) with X = U + W and
+Y = V + Z. Let w  b = ẋ(1) = (W        b be its velocity when passing through x. An explicit expression
+                                   c , Z)
+                                                            17
+
+is obtained in terms of the singular value decomposition of W and Z. If we let W = LΘRT , we
+obtain
+                                 c = −U RΘ sin Θ RT + LΘ cos Θ RT .
+                                 W                                                                           (52)
+An analogous expression holds for Z.   b Since LT U = 0, we have ||W       c ||2 = n||Θ sin Θ||2 +n||Θ cos Θ||2 =
+                                                                                 F               F            F
+      2
+n||θ|| . Hence ||w|| b  2            2
+                          = nd(x, u) . In order to prove the thesis, it is therefore sufficient to show
+that hgrad Fe(x), wi b ≥ Cnǫ d(x, u)2 . In the following we will indeed show that hgrad F (x), wi           b ≥
+             2
+Cnǫ d(x, u) , and hgrad G(x), wi   b ≥ 0.
+    As a preliminary remark, we notice that w        b ∈ K((3π 2 /2 + 96/π 2 )µ0 ). Indeed
+             c (i) ||2 ≤ 2||Θ sin ΘRT U (i) ||2 + 2||Θ cos ΘL(i) ||2 ≤     π 2 (i) 2
+           ||W                                                                 ||U || + 2||W (i) ||2 ,       (53)
+                                                                            2
+By assumption we have ||U (i) ||2 ≤ 3µ0 r and we proved ||W (i) ||2 ≤ 48µ0 r/π 2 in the previous section.
+7.1     Lower bound on grad F (x)
+Recalling that PE is the projector defined in Eq. (28), and using the expression (29), (30), for the
+gradient, we have
+               b = hPE (XSY T − M ), (XS ZbT + W
+  hgrad F (x), wi                                         c SY T )i
+                                        T                          T                                   c SZ T )i
+         = hPE (U (S − Σ)V T + U SZ + W SV T + W SZ ), (U S ZbT + W                 c SV T + W S ZbT + W
+         ≥ A − B1 − B2 − B3                                                                                  (54)
+where we defined
+                                             T
+                         A = hPE (U SZ + W SV T ), (U S ZbT + W           c SV T )i ,                        (55)
+                                              T                              c SZ T )i| ,
+                       B1 = |hPE (U SZ + W SV T ), (W S ZbT + W                                              (56)
+                                                                  T
+                       B2 = |hPE (U (S − Σ)V T + W SZ ), (U S ZbT + W              c SV T )i| ,              (57)
+                                                                  T           bT + Wc SZ T )i| .
+                       B3 = |hPE (U (S − Σ)V T + W SZ ), (W S Z                                              (58)
+At this point the proof becomes very similar to the one in the previous section and consists in lower
+bounding A and upper bounding B1 , B2 , B3 . One important fact that we will use is that W              c is well
+approximated by W or by W , and Zb is well approximated by Z or by Z. Before proceeding, it is
+worth deriving a few estimates of this type. In particular, using Eqs. (43) and (52) we get
+                                          c ||2
+                                        ||W         = ||W ||2F = n||θ||2 ,                                   (59)
+                                                F
+                                        ||W ||2F    = n||2 sin θ/2|| ,  2
+                                                                                                             (60)
+                                                           X r
+                                        c, W i = n
+                                       hW                      θa sin θa ,                                   (61)
+                                                           a=1
+                                                           X r
+                                        c, W i = n
+                                       hW                      θa2 cos θa ,                                  (62)
+                                                           a=1
+and therefore
+                                        X r
+                      c − W ||2
+                    ||W            = n        [(2 sin θa /2)2 + θa2 − 2θa sin θa ]                           (63)
+                               F
+                                         i=a
+                                        X r
+                                                                        n             n
+                                   ≤ n        (θa − 2 sin θa /2)2 ≤       2
+                                                                            ||θ||4 ≤ 2 d(u, x)4 .            (64)
+                                                                      24             24
+                                         i=a
+                                                          18
+
+Analogously
+                                          Xr
+                      c − W ||2F
+                    ||W             = n       [2θa2 − 2θa2 cos θa ] ≤ n ||θ||4 ≤ n d(u, x)4               (65)
+                                          i=a
+The last inequality implies in particular
+                                  c ||F = ||U T (W − W
+                            ||U T W                    c )||F ≤ nd(u, x)2 .                               (66)
+Similar bounds hold of course for Z, Z, b Z (for instance we have ||V T Z||     b F ≤ nd(u, x)2 ). Finally, we
+                                                2               2
+shall use repeatedly the fact that ||S − Σ||F ≤ Cd(x, u) , which follows from Lemma 5.3. This in
+turns implies
+                                    σmax (S) ≤ Σmax + C d(x, u)2 ,                                        (67)
+                                                                         2
+                                    σmin (S) ≥ Σmin − C d(x, u) .                                         (68)
+    We can now bound the various terms on Eq. (54).
+    Lower bound on A. Using Theorem 4.1 in [CR08] we obtain, with high probability for any ξ > 0:
+                    ǫ        T
+           A ≥        h(U SZ + W SV T ), (U S ZbT + W   c SV T )i                                         (69)
+                   n
+                      ξǫ        T
+                   − ||U SZ + W SV T ||F ||U S ZbT + W       c SV T ||F ≥ (1 − ξ)A0 − (1 + ξ)B0           (70)
+                       n
+where
+                           ǫ         T
+                 A0 =         ||U SZ + W SV T ||2F                                                        (71)
+                           n
+                           ǫ         T                             b T + (W − W  c )SV T ||F .
+                 B0 =         ||U SZ + W SV T ||F ||U S(Z − Z)                                            (72)
+                           n
+The term A0 is lower bounded analogously to E{A2 } in the proof of Lemma 5.3 (see Eq. (44) and
+below). Using the eigenvalue bounds Eq. (67) and (68), we obtain A0 ≥ Cnǫd(x, u)2 . As for the
+second term we notice that
+               B0 ≤ 2ǫTr(SS T (Z − Z)(Z   b         b T ) + 2ǫTr(S T S(W − W
+                                                 − Z)                           c )(W − W c )T )          (73)
+                     ≤ 2ǫσmax (S)(||Z − Z|| b 2F + ||W − W   c ||2F ) ≤ Cnǫd(x, u)4 .                     (74)
+Therefore for δ ≥ d(x, u) small enough A0 > 2B0 , whence A0 ≥ Cnǫd(x, u)2 /4.
+    Upper bound on B1 . We begin by using Cauchy-Schwarz inequality:
+                                      T                              bT + Wc SZ T )||F ,
+                   B1 ≤ ||PE (U SZ + W SV T )||F ||PE (W S Z                                              (75)
+Proceeding as above we obtain (with high probability)
+                         T                                ǫ         T
+             ||PE (U SZ + W SV T )||2F      ≤ (1 + ξ) ||U SZ + W SV T ||2F                                (76)
+                                                         n
+                                                         2ǫ           T
+                                            ≤ (1 + ξ) (||U SZ ||2F + ||W SV T ||2F )                      (77)
+                                                          n                                     
+                                                                         T                  T
+                                            ≤ (1 + ξ)2ǫ Tr(S T SZ Z) + Tr(SS T W W )                      (78)
+                                            ≤ Cnǫd(x, u)2 .                                               (79)
+                                                      19
+
+In order to estimate the second factor in Eq. (75), we first notice that ||PE (W S ZbT + W             c SZ T )||2 ≤
+                                                                                                                 F
+2||PE (W S ZbT )||2 + 2||PE (W c SZ T )||2 and then bound each of the two terms in the same way. Con-
+                  F                        F
+sider, to be definite, the first one:
+                                               X                               Xr     X
+                             bT )||2                                                         2
+                 ||PE (W S Z       F    =           (W S ZbT )2ij ≤ σmax (S)2              W ia Zbjb
+                                                                                                  2
+                                                                                                     .
+                                             (ij)∈E                           a,b=1 (ij)∈E
+At this point we can apply Lemma the same argument as after Eq. (47). Bounding σmax (S)2 and
+using the fact that both W , Zb ∈ K(Cµ0 ) we get
+                                                                    √
+                            ||PE (W S ZbT )||2F = Cnǫ max(r/ ǫ, δ2 )d(x, u)2 .
+Putting together Eqs. (79) and (80) we finally get
+                                   B1 = Cnǫ max(r 1/2 /ǫ1/4 , δ)d(x, u)2 ,
+                                             √
+which is smaller than A/100 for δ, r/ ǫ small enough.
+    Upper bound on B2 . We have
+             B2 ≤ ||PE (U S Z      bT + Wc SV T )||F ||W SZ T ||F + |hPE (U S ZbT ), U (S − Σ)V T i|
+                           +|hPE (W c SV T ), U (S − Σ)V T i|
+                   ≡ B2′ + B2′′ + B2′′′
+The upper bound on B2′ is obtained similarly to the the one on B1 . Indeed proceeding as above we
+obtain
+                        ||PE (U S ZbT + W  c SV T )||2F   ≤ Cnǫd(x, u)2 ,                                        (80)
+                                                   T                        √
+                                          ||W SZ ||2F     ≤ Cnǫ max(r/ ǫ, δ)d(x, u)2 ,                           (81)
+                                                √
+whence B2′ ≤ Cnǫd(x, u)2 /100 for δ, r/ ǫ small enough.
+    Consider now B2′′ . By Theorem 4.1 in [CR08], we have
+                              ǫ                                   ξǫ
+                   B2′′ ≤       |hU S ZbT , U (S − Σ)V T i| + ||U S ZbT ||F ||U (S − Σ)V T ||F                   (82)
+                              n                                   n
+                         ≤ σmax (S)ǫ||S − Σ||F ||ZbT V ||F + ξǫ||U S ZbT ||F ||S − Σ||F .                        (83)
+The first term is bounded using (the analogous of) Eq. (66) and ||S − Σ||F ≤ d(x, u). For the second
+                b 2 ≤ Cnd(x, u)2 , thus getting
+term we use ||Z||   F
+                        B2′′ ≤ Cnǫd(x, u)3 + Cnǫξd(x, u)2 ≤ Cnǫ(δ + ξ)d(x, u)2                                   (84)
+whence B2′′ ≤ Cnǫd(x, u)2 /100 for δ small enough. The same argument applies to B2′′′ thus proving
+the desired bound.
+    Upper bound on B3 . Finally for the last term it is sufficient to use a crude bound
+                                                                                                       
+    B3 ≤ 4 ||PE (W S Z   bT )||F + ||PE (W c SZ T )||F ||PE (U (S − Σ)V T )||F + ||PE (W SZ T )||F ,             (85)
+and all of the factors have been estimated above.
+                                                           20
+
+7.2    Lower bound on grad G(x)
+By the definition of G in Eq. (34), we have
+                                  m
+                                                        !                          n
+                                                                                                       !
+                            1 X ′ ||X (i) ||2                (i) c (i)         1 X ′       ||Y (i) ||2
+   hgrad G(x), wi  b =               G1                   hX , W i +                  G1                 hY (i) , Zb(i) i . (86)
+                           µ0 r                2µ0 r                        µ0 r             2µ0 r
+                                 i=1                                              j=1
+It is therefore sufficient to show that if ||X (i) ||2 > 2µ0 r, then hX (i) , W           c (i) i > 0, and if ||Y (j) ||2 >
+2µ0 r, then hY (j) , Zb(j) i > 0. We will just consider the first statement, the second being completely
+symmetrical.
+    From the explicit expressions (43) and (52) we get
+                                                     n                                o
+                                     X (i) = R cos Θ RT U (i) + sin Θ L(i) ,                                                (87)
+                                                     n                                   o
+                                     c (i) = R Θ cos ΘL(i) − Θ sin ΘRT U (i) .
+                                     W                                                                                      (88)
+From the first expression it follows that
+                            || sin Θ L(i) ||2 ≤ ||X (i) ||2 + || cos Θ RT U (i) ||2 ≤ 3 µ0 r .                              (89)
+On the other hand, by taking the difference of Eqs. (87) and (88) we have
+                 ||X (i) − Wc (i) || ≤ ||(sin Θ − Θ cos Θ)L(i) || + ||(cos Θ + Θ sin Θ)RT U (i) ||                          (90)
+                                                                                       p          √
+                                       ≤ max(θi2 )|| sin ΘL(i) || + ||U (i) || ≤ δ 3µ0 r + µ0 r .                           (91)
+                                               i
+where we used the inequality (sin ω − ω cos ω) ≤ ω 2 sin ω valid for ω ∈ [0, π/2]. For δ small enough
+we have therefore ||X (i) − W       c (i) || ≤ (9/10)√2µ0 r. To conclude, for ||X (i) || ≥ 2µ0 r
+                                                                                  p                  p
+                                                            c (i) || ≥ ||X (i) ||( 2µ0 r − (9/10) 2µ0 r) ≥ 0 .
+               c (i) i ≥ ||X (i) ||2 − ||X (i) || ||X (i) − W
+      hX (i) , W                                                                                                            (92)
+Acknowledgements
+We thank Emmanuel Candés and Benjamin Recht for stimulating discussions on the subject of this
+paper. This work was partially supported by a Terman fellowship and an NSF CAREER award
+(CCF-0743978).
+A      Proof of Remark 4.3
+The proof consists in showing that |Al | > max{e−C1 ǫ m, C2 α} with probability                     less than 1/2n3 , using
+                                                                    √
+Chernoff bound. In the case of large ǫ, when ǫ > 2 α log(n),                     we have P |Al | > C2 α ≤ 1/2n3 , for
+                                                          √                                                                 √
+C2 > 4/α. In the case of small ǫ, when ǫ ≤ 2 α log(n), P |Al | > e−C1 ǫ m ≤ 1/2n3 , for C1 < 1/4 α,
+which proves the thesis.                           
+    Analogously, we can prove that P |Ar | > max{e−C1 ǫ n, C2 } ≤ 1/2n3 , which finishes the proof
+of Remark 4.3.
+                                                                21
+
+B     Proof of Remark 4.5
+The expectation of the contribution of light couples, when each edge is independently revealed with
+                √
+probability ǫ/ mn, is
+                                                                                           
+                                                 ǫ        X
+                               E[Z] = √                            xi MijA yj − xT M y  ,
+                                                 mn
+                                                         (i,j)∈L
+where we define M A by setting to zero the rows of M whose index is not in Al and the columns of
+M whose index is not P    in Ar .
+    In order to bound (i,j)∈L xi MijA yj − xT M y, we write,
+                    X                                                                  X
+                          xi MijA yj − xT M y        =     xT M A − M y −                      xi MijA yj
+                  (i,j)∈L                                                              (i,j)∈L
+                                                                                         X
+                                                     ≤     xT M A − M y +                        xi MijA yj .
+                                                                                         (i,j)∈L
+    The first term can be bounded by noting that |(M A − M )ij | is positive only if i ∈                                 / Ar
+                                                                                                               / Al or j ∈
+                     A                   √
+in which case |(M − M )ij | ≤ µ1 r by the incoherence condition A2. Also, by Remark 4.3, there
+exists δ ≤ max{e−C1 ǫ , C2 /n} such that |i : i ∈      / Al | ≤ δm and |j : j ∈         / Ar | ≤ δn. Denoting by I( · ) the
+indicator function, we have
+                                   X                                               √
+          xT M A − M y ≤                    xi yj I(i ∈    / Al ) + I(j ∈    / Ar ) µ1 r
+                                      ij
+                                                                                                             
+                                        X                       X             X                      X             √
+                                =             xi I(i ∈/ Al )         yj +           yj I(j ∈ / Ar )       xi  µ 1 r
+                                          i                      j              j                      i
+                                     √ √              √ √  √
+                                ≤        δm n + δn m µ1 r
+                                         √
+                                     µ1 mnr
+                                ≤        √         .
+                                             ǫ
+         1
+for δ ≤  4ǫ . We can bound the second term as follows
+                                                                                   2
+                                 X                            X        xi MijA yj
+                                       xi MijA yj     ≤
+                              (i,j)∈L                       (i,j)∈L     xi MijA yj
+                                                            r
+                                                                mn X                        2
+                                                      ≤                        xi MijA yj
+                                                                 rǫ
+                                                                      (i,j)∈L
+                                                            r
+                                                                mn        X                     2
+                                                      ≤                             xi MijA yj
+                                                                 rǫ
+                                                                      i∈[m],j∈[n]
+                                                               2 √
+                                                            µ1 mnr
+                                                      ≤          √         ,
+                                                                    ǫ
+                                                              22
+
+where the second inequality follows from the definition of heavy couples and the last inequality is
+due to incoherence condition A2.
+    Hence summing two contributions, we get
+                                                                 √
+                                           |E [Z]| ≤ µ1 + µ21 rǫ .
+C     Proof of Remark 4.6
+We can associate to the matrix Q a bipartite graph G = ([m], [n], E). The proof is similar to the one
+in [FKS89, FO05] and is based on two properties of the graph cG:
+   1. The graph G has maximum degree bounded by a constant times the average degree:
+                                                                2ǫ
+                                                   deg(i) ≤   √ ,                                      (93)
+                                                                  α
+                                                                  √
+                                                  deg(j) ≤ 2ǫ α ,                                      (94)
+      for all i ∈ [m] and j ∈ [n].
+   2. Discrepancy. We will say that G (equivalently, the adjacency matrix Q) has the discrepancy
+      property if, for any A ⊆ [m] and B ⊆ [n], one of the following is true:
+                              e(A, B)
+                          1.          ≤ ξ1 ,                                                           (95)
+                              µ(A, B)
+                                         e(A, B)                                 √          
+                                                                                      mn
+                          2. e(A, B) ln              ≤ ξ2 max{|A|, α|B|} ln                      .     (96)
+                                          µ(A, B)                               max{|A|, α|B|}
+      for two numerical constants ξ1 , ξ2 (independent of n and ǫ). Here e(A, B) denotes the number
+      of edges between A and B and µ(A, B) = |A||B||E|/mn denotes the average number of edges
+      between A and B before trimming.
+We will prove that the discrepancy property holds with high probability later in this section, see
+Lemma C.1.
+    Let us partition row and column indices with respect to the value of xu and yv :
+                                                       ∆                    ∆
+                                Ai = {u ∈ [m] : √ 2i−1 ≤ |xu | < √ 2i } ,
+                                                        m                    m
+                                                      ∆ j−1               ∆ j
+                                Bj = {v ∈ [n] : √ 2          ≤ |yv | < √ 2 } ,
+                                                       n                   n
+                             √                                            √
+for i ∈ {1, 2, . . . , ⌈log ( m/∆)/ log 2⌉}, and j ∈ {1, 2, . . . , ⌈log ( n/∆)/ log 2⌉}, and we denote the
+size of subsets Ai and Bj by ai and bj respectively. Furthermore, we define ei,j to be the number
+                                                                             √
+of edges between two subsets Ai and Bj , and we let µi,j = ai bj (ǫ/ mn). Notice that all indices u
+of non zero xu fall into one of the subsets Ai ’s defined above, since, by discretization, the smallest
+                                                           √
+non-zero element of x ∈ Tm in absolute value is ∆/ m. The same applies for the entries of y ∈ Tn .
+                                                        23
+
+    By grouping the summation into Ai ’s and Bj ’s, we get
+                              X                                        X                ∆2i ∆2j
+                                        Quv |xu yv | ≤                             ei,j √ √
+                                                                              √           m n
+                             (u,v): √                          (i,j):2i+j ≥ 4C αǫ
+                                                                              ∆2
+                         |xu yv |≥ Cn ǫ
+                                                                    X             ǫ ei,j 2i 2j
+                                                          = ∆2           ai bj √           √ √
+                                                                                 mn µi,j m n
+                                                                        X 22i 22j ei,j √ǫ
+                                                                  2√
+                                                          = ∆ ǫ              ai     bj                 .
+                                                                                                 2i+j
+                                                                             | {zm} | {zn} |µi,j{z    }
+                                                                               αi      βj      σi,j
+Note that, by definition, we have
+                                                 X
+                                                      αi ≤ 4||x||2 /∆2 ,                                        (97)
+                                                  i
+                                                 X
+                                                      βi ≤ 4||y||2 /∆2 .                                        (98)
+                                                    i
+                                                  P
+We are now left with task of bounding                  αi βj σi,j , for Q that satisfies bounded degree property and
+discrepancy property.
+    Define,
+                                                          √                                          
+                                              i+j     4C αǫ
+                  C1 ≡          (i, j) : 2        ≥                and (Ai , Bj ) satisfies (95) ,              (99)
+                                                         ∆2
+                                                          √                                          
+                                                      4C αǫ
+                  C2 ≡          (i, j) : 2i+j ≥                    and (Ai , Bj ) satisfies (96) \ C1 .        (100)
+                                                         ∆2
+                          P
+We need to show that (i,j)∈C1 ∪C2 αi βj σi,j is bounded.
+    For the√ terms in C1 this bound is easy. Since summation is over pairs of indices (i, j) such that
+                                                             √                                           P
+2i+j ≥ 4C∆2αǫ , it follows that σi,j ≤ ξ1 ∆2 /4C α. By Eqs. (97) and (98), we have C1 αi βj σi,j ≤
+          √
+(ξ1 ∆2 /4C α)(2/∆)4 = O(1).
+    For the terms in C2 the bound is more complicated. We assume ai ≤ αbj for simplicity and
+the other case can be treated in the same manner. By change of notation the second discrepancy
+condition becomes
+                                                                                √           
+                                    ei,j                                             mn
+                       ei,j log               ≤ ξ2 max{ai , αbj } log                               .          (101)
+                                    µi,j                                      max{ai , αbj }
+We start by changing variables on both sides of Eq. (101).
+                                                                                  2j 
+                                 ei,j ai bj ǫ         ei,j                             2
+                                     √         log              ≤ ξ2 αbj log            √       .
+                                 µi,j mn              µi,j                           βj α
+                                         √
+Now, multiply each side by 2i /bj ǫ2j to get
+                                                
+                                            ei,j        ξ2 2i                          √ 
+                          σi,j αi log                ≤ √ j log(22j ) − log(βj α) .                             (102)
+                                           µi,j            ǫ2
+To achieve the desired bound, we partition the analysis into 5 cases:
+                                                                24
+
+                                                              P
+   1. σi,j ≤ 1 : By Eqs. (97) and (98), we have                  αi βj σi,j ≤ (2/∆)4 = O(1).
+              √                                                                                        √
+   2. 2i > ǫ2j : By the bounded degree propertyP                 in Eq. (94), we have ei,j ≤ aiP   2ǫ/ α, which implies
+                                                                                   √           √                    √
+      that ei,j /µi,j ≤ 2n/bj . For a fixed i we have, j βj σi,j I(2i > ǫ2j ) ≤ 2 ǫ j 2j−i I(2i > ǫ2j ) ≤
+                   P
+      4. Then,         αi βj σi,j ≤ 16/∆2 = O(1).
+                                                   √ 
+   3. log (ei,j /µi,j ) > 14 log(22j ) − log(βj α) : From Eq.(102), it immediately follows that σi,j αi ≤
+      4ξ    i                                                     √ j
+       √ 2 2j . Because of case 2, we can assume 2i ≤                ǫ2 , which implies that for a fixed j we have the
+        ǫ2
+                                   P                    P 2i           i     √ j
+      following inequality :         i σi,j αi ≤ 4ξ2        i ǫ2j I(2 ≤       ǫ2 ) ≤ 8ξ2 . Then it follows by Eq. (98)
+                                                              √
+               P                       2
+      that       αi βj σi,j ≤ 32ξ2 /∆ = O(1).
+                                √                                                                                        √ 
+   4. log(22j ) ≥ − log(βj α) : Because of case 3, we can assume log (ei,j /µi,j ) ≤ 41 log(22j ) − log(βj α) ,
+      which implies that log (ei,j /µi,j ) ≤ log(2j ). Further, because of case 1, we assume 1 < σi,j =
+           √                                                                           √
+      ei,j ǫ/µi,j 2i+j . Combining those two inequalities, we get 2i ≤ ǫ.
+      Since in defining C2 we excluded C1 , if (i, j) ∈ C2 then log (ei,j /µi,j ) ≥ 1. Applying Eq. (102)
+                                                                   √                        √                 √
+      we get σi,j αi ≤ σi,j αi log (ei,j /µi,j ) ≤ (ξ2 2i−j / ǫ) log(22j ) − log(βj α) ≤ 4ξ2 2i / ǫ.
+                                                                    P                 P 2i           √
+      Combining above two results, it follows that i σi,j αi ≤ 4ξ2 i √                      ǫ
+                                                                                              I(2i ≤ ǫ) ≤ 8ξ2 . Then,
+                                            P
+      we have the desired bound :              αi βj σi,j ≤ 32ξ    2
+                                                                ∆2 = O(1).
+                                 √                                                                          √
+   5. log(22j ) < − log(βj α) : Because of case 4, we assume                      log(22j ) ≤ − log(β   j α). Then it
+                                                                                                   √                  √
+      follows, since we’re not in case 3, that log (ei,j /µi,j ) ≤ 14 log(22j ) − log(βj α) ≤ − log(βj α).
+                                   √                                           √                √     √
+      Hence, ei,j /µi,j ≤ 1/βj α. This implies that σi,j = ei,j ǫ/µi,j 2i+j ≤ ǫ/βj α2i+j . Since the
+                                                                                   √                    P              ∆2
+      summation is over pairs of indices (i, j) such that 2i+j ≥ 4C αǫ/∆2 , we have j σi,j βj ≤ 2αC                       .
+                                  P                 2
+      Then it follows that          αi βj σi,j ≤ αC = O(1).
+    Summing up the results, we get that there exists a constant C ′ ≤                   16
+                                                                                       ∆4
+                                                                                            + C∆4ξ21√α + ∆ 16   32ξ2    2
+                                                                                                            2 + ∆2 + αC ,
+such that
+                                                 X
+                                                              αi βj σi,j ≤ C ′ .
+                                                         √
+                                                           αǫ
+                                         (i,j):2i+j ≥ 4C
+                                                        ∆2
+This finishes the proof of Remark 4.6.
+Lemma C.1. The adjacency matrix Q has discrepancy property with probability at least 1 − 1/n.
+Proof. The proof is a generalization of analogous result in [FKS89, FO05] which is proved to hold only
+with probability larger than 1−e−Cǫ . The stronger statement quoted here is a result of the observation
+that, when we trim the graph the number of edges between any two subsets does not increase. Define
+Q0 to be the adjacency matrix corresponding to original random matrix M E before trimming. If
+the discrepancy assumption holds for Q0 , then it also holds for Q, since eQ (A, B) ≤ eQ0 (A, B), for
+A ⊆ [m] and B ⊆ [n].
+    Now we need to show that the desired property is satisfied for Q0 . This is proved for the case
+of non-bipartite graph in Section 2.2.5 of [FO05], and analogous analysis for bipartite graph shows
+that for all subsets A ⊆ [m] and B ⊆ [n], with probability at least 1 − 1/n, the discrepancy condition
+                                                                          12
+holds with ξ1 = max{4, 2e} and ξ2 = max{12 + 15                α , 15 + α }.
+                                                               25
+
+D      Proof of remarks 5.1 and 5.2
+Proof. (Remark 5.1.) Let θ = (θ1 , . . . , θp ), θi ∈ [−π/2, π/2] be the principal angles between the
+planes spanned by the columns of X1 and X2 . It is known that dc (X1 , X2 ) = ||2 sin(θ/2)||2 and
+dp (X1 , X2 ) = || sin θ||2 . The thesis follows from the elementary inequalities
+                                  1      √
+                                    α ≤ 2 sin(α/2) ≤ sin α ≤ 2 sin(α/2)                           (103)
+                                  π
+valid for α ∈ [0, π/2].
+Proof. (Remark 5.2.) We start by observing that
+                                                    1
+                                    dp (V, Y ) = √        min ||V − Y A||F .                      (104)
+                                                     n A∈Rr×r
+Indeed the minimization on the right hand side can be performed explicitly (as ||V − Y A||2F is a
+quadratic function of A) and the minimum is achieved at A = Y T V /n. The inequality follows by
+simple algebraic manipulations.
+    Take A = S T X T U Σ−1 /n. Then
+                        ||V − Y A||F     =        sup    hB, (V − Y A)i                           (105)
+                                              B,||B||F ≤1
+                                                               1
+                                         =        sup    hB T , Σ−1 U T (U ΣV T − XSY T )i        (106)
+                                              B,||B||F ≤1      n
+                                              1                              c)i
+                                         =          sup hU Σ−1 B T , (M − M                       (107)
+                                              n B,||B||F ≤1
+                                              1                                 c||F .
+                                         ≤          sup ||U Σ−1 B T ||F ||M − M                   (108)
+                                              n B,||B||F ≤1
+On the other hand
+              ||U Σ−1 B T ||2F = Tr(BΣ−1 U T U Σ−1 B T ) = nTr(B T BΣ−2 ) ≤ nΣ−2             2
+                                                                                    min ||B||F ,
+whereby the last inequality follows from the fact that Σ is diagonal. Together (104) and (108), this
+implies the thesis.
+References
+[AFK+ 01] Y. Azar, A. Fiat, A. Karlin, F. McSherry, and J. Saia, Spectral analysis of data, Pro-
+             ceedings of the thirty-third annual ACM symposium on Theory of computing (New York,
+             NY, USA), ACM, 2001, pp. 619–626.
+[AM07]       D. Achlioptas and F. McSherry, Fast computation of low-rank matrix approximations, J.
+             ACM 54 (2007), no. 2, 9.
+[Arm66]      L. Armijo, Minimization of functions having lipschitz continuous first partial derivatives,
+             Pacific J. Math. 16 (1966), no. 1, 1–3.
+[BDJ99]      M. W. Berry, Z. Drmać, and E. R. Jessup, Matrices, vector spaces, and information
+             retrieval, SIAM Review 41 (1999), no. 2, 335–362.
+                                                           26
+
+[Ber92] M. W. Berry, Large scale sparse singular value computations, International Journal of
+        Supercomputer Applications 6 (1992), 13–49.
+[CCS08] J-F Cai, E. J. Candès, and Z. Shen, A singular value thresholding algorithm for matrix
+        completion, arXiv:0810.3286, 2008.
+[CR08]  E. J. Candès and B. Recht, Exact matrix completion via convex optimization,
+        arxiv:0805.4471, 2008.
+[CRT06] E. J. Candes, J. K. Romberg, and T. Tao, Robust uncertainty principles: exact signal
+        reconstruction from highly incomplete frequency information, IEEE Trans. on Inform.
+        Theory 52 (2006), 489– 509.
+[CT09]  E. J. Candès and T. Tao, The power of convex relaxation: Near-optimal matrix comple-
+        tion, arXiv:0903.1476, 2009.
+[Don06] D. L. Donoho, Compressed Sensing, IEEE Trans. on Inform. Theory 52 (2006), 1289–
+        1306.
+[EAS99] A. Edelman, T. A. Arias, and S. T. Smith, The geometry of algorithms with orthogonality
+        constraints, SIAM J. Matr. Anal. Appl. 20 (1999), 303–353.
+[Faz02] M. Fazel, Matrix rank minimization with applications, Ph.D. thesis, Stanford University,
+        2002.
+[FKS89] J. Friedman, J. Kahn, and E. Szemerédi, On the second eigenvalue in random regular
+        graphs, Proceedings of the Twenty-First Annual ACM Symposium on Theory of Com-
+        puting (Seattle, Washington, USA), ACM, may 1989, pp. 587–598.
+[FKV04] A. Frieze, R. Kannan, and S. Vempala, Fast monte-carlo algorithms for finding low-rank
+        approximations, J. ACM 51 (2004), no. 6, 1025–1041.
+[FO05]  U. Feige and E. Ofek, Spectral techniques applied to sparse random graphs, Random Struct.
+        Algorithms 27 (2005), no. 2, 251–275.
+[KMO08] R. H. Keshavan, A. Montanari, and S. Oh, Learning low rank matrices from O(n) entries,
+        Proc. of the Allerton Conf. on Commun., Control and Computing, September 2008.
+[KOM09] R. H. Keshavan, S. Oh, and A. Montanari, Matrix completion from a few entries,
+        arXiv:0901.3150, January 2009.
+[Net]   Netflix prize.
+[RFP07] B. Recht, M. Fazel, and P. Parrilo, Guaranteed minimum rank solutions of matrix equa-
+        tions via nuclear norm minimization, arxiv:0706.4138, 2007.
+[SC09]  A. Singer and M. Cucuringu, Uniqueness of low-rank matrix completion by rigidity theory,
+        arXiv:0902.3846, January 2009.
+                                               27
+

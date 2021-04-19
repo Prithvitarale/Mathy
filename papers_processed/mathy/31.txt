@@ -1,0 +1,568 @@
+                            Reduced-Rank Hidden Markov Models
+             Sajid M. Siddiqi                          Byron Boots                       Geoffrey J. Gordon
+             Robotics Institute               Machine Learning Department           Machine Learning Department
+        Carnegie Mellon University              Carnegie Mellon University             Carnegie Mellon University
+           Pittsburgh, PA 15213                    Pittsburgh, PA 15213                   Pittsburgh, PA 15213
+            siddiqi@google.com                        beb@cs.cmu.edu                       ggordon@cs.cmu.edu
+                        Abstract                                modeling systems with competitive inhibition: e.g., an
+                                                                HMM can predict that our next observation will be ei-
+      Hsu et al. (2009) recently proposed an ef-                ther image A or image B, while disallowing blends of
+      ficient, accurate spectral learning algorithm             A and B. In an LDS, the joint predictive distribution
+      for Hidden Markov Models (HMMs). In this                  over observations is log-concave, and thus cannot rep-
+      paper we relax their assumptions and prove a              resent competitive inhibition. However, LDSs model
+      tighter finite-sample error bound for the case            smooth state evolution, which HMMs can only model
+      of Reduced-Rank HMMs, i.e., HMMs with                     by discretizing the state space very finely. Ideally we
+      low-rank transition matrices. Since rank-k                would like to model both competitive inhibition and
+      RR-HMMs are a larger class of models than                 smooth evolution, but few models display both of these
+      k-state HMMs while being equally efficient to             properties. Those that do, e.g. Switching State Space
+      work with, this relaxation greatly increases              Models (Ghahramani & Hinton, 2000), typically rely
+      the learning algorithm’s scope. In addi-                  on on approximations for inference and learning.
+      tion, we generalize the algorithm and bounds
+                                                                HMMs are typically learned using Expectation-
+      to models where multiple observations are
+                                                                Maximization (EM) (Rabiner, 1989), which is prone
+      needed to disambiguate state, and to models
+                                                                to local optima, especially in large state spaces. On
+      that emit multivariate real-valued observa-
+                                                                the other hand, LDSs are often learned using Sub-
+      tions. Finally we prove consistency for learn-
+                                                                space Identification (Subspace ID) (Van Overschee &
+      ing Predictive State Representations, an even
+                                                                De Moor, 1996). The latter is a spectral method: it
+      larger class of models. Experiments on syn-
+                                                                finds an approximate factorization of the estimated co-
+      thetic data and a toy video, as well as on diffi-
+                                                                variance between past and future observations. And, it
+      cult robot vision data, yield accurate models
+                                                                learns an observable representation, whose parameters
+      that compare favorably with alternatives in
+                                                                can be simply related to directly-measurable quanti-
+      simulation quality and prediction accuracy.
+                                                                ties. In part because of these qualities, subspace ID is
+                                                                free of local optima and statistically consistent, though
+1     Introduction and Related Work                             (unlike EM) it does not typically find even a local op-
+                                                                timum of the log-likelihood for finite sample sizes.
+Models of stochastic discrete-time dynamical systems
+have important applications in a wide range of fields.          More recently, researchers have proposed two gen-
+Hidden Markov Models (HMMs) (Rabiner, 1989) and                 eralizations of HMMs: Observable Operator Models
+Linear Dynamical Systems (LDSs) (Kalman, 1960) are              (OOMs) (Jaeger, 2000) and Predictive State Repre-
+two examples of latent variable models which assume             sentations (PSRs) (Singh et al., 2004). These models
+that sequential data points are noisy, incomplete ob-           represent states as vectors of predicted probabilities
+servations of a latent state that evolves over time. The        of future events (called tests or characteristic events)
+distributional assumptions of HMMs and LDSs result              conditioned on past events (called histories or indica-
+in important differences in the evolution of their be-          tive events). This representation is observable, and so
+lief over time. The discrete state of HMMs is good for          we might hope to discover efficient, consistent spectral
+                                                                learning algorithms for PSRs and OOMs. But, despite
+Appearing in Proceedings of the 13th International Con-         much research in this area (summarized in Wingate
+ference on Artificial Intelligence and Statistics (AISTATS)     (2008)), there is still a lack of provably accurate learn-
+2010, Chia Laguna Resort, Sardinia, Italy. Volume 9 of          ing algorithms that have been demonstrated to work
+JMLR: W&CP 9. Copyright 2010 by the authors.                    well in practice. (Since PSRs and OOMs are largely
+                                                            741
+
+                                      Reduced-Rank Hidden Markov Models
+equivalent, we will refer to both as PSRs below.)             2    Reduced-Rank HMMs
+Recently, Hsu, Kakade and Zhang (HKZ for short)               Let ht ∈ 1, . . . , m denote the discrete hidden state of
+proposed a spectral algorithm which learns observable         an HMM at time t, and xt ∈ 1, . . . , n denote the dis-
+representations of HMMs (Hsu et al., 2009). The HKZ           crete observation. Assume for now that m ≤ n (we
+algorithm is free of local optima and statistically con-      relax this assumption in Section 3.4). Let T ∈ Rm×m
+sistent, with a finite-sample bound on L1 error in joint      be the state transition probability matrix with Tij =
+probability estimates. However, learning large-state-         Pr[ht+1 = i | ht = j]. Let O ∈ Rn×m be the observa-
+space HMMs is still difficult: the number of parame-          tion probability matrix, with Oij = Pr[xt = i | ht = j].
+ters grows prohibitively with the size of the state space.    Write Ox for the column of O corresponding to obser-
+                                                              vation x, and diag(Ox ) for a diagonal matrix with Ox
+In this paper, we extend the advantages of spectral
+                                                              on the diagonal. Let ~π ∈ Rm be the initial state dis-
+learning to a larger class of models. We propose a
+                                                              tribution, ~πi = Pr[h1 = i]. Let ~ht ∈ Rm denote the
+variant of HMMs called Reduced-Rank HMMs (RR-
+                                                              system’s belief, i.e., the distribution over hidden states
+HMMs) (Section 2), which have a large implicit state
+                                                              at time t given all observations up to time t.
+space but a low-rank transition matrix. RR-HMMs
+admit a compact observable representation (Defini-            In addition to the standard HMM notation above, as-
+tion 1) whose dimensionality depends on the rank              sume T has rank k and let T = RS where R ∈ Rm×k
+rather than the state space size, allowing inference and      and S ∈ Rk×m . Assume also that the initial state
+learning on rank-k RR-HMMs with arbitrarily large             distribution lies in the low dimensional space, i.e.,
+state spaces in O(N k 2 ) time, where N > k is the           ~π = R~πl for some vector ~πl ∈ Rk . As we show be-
+number of training samples. The large implicit state          low, these assumptions imply that the dynamics of
+space allows RR-HMMs to model smooth state tra-               the system can be expressed in Rk rather than Rm .
+jectories, and the compact representation allows effi-        We denote the k-dimensional projection of the hidden
+cient learning. We generalize the HKZ spectral algo-          state as ~lt , which is simply a vector of real numbers
+rithm and bounds to the RR-HMM, deriving tighter              rather than a stochastic vector. Figure 1(A) shows the
+bounds that depend on the rank and not the num-               RR-HMM graphical model. Figure 1(B) illustrates the
+ber of states (Section 3). Since rank-k RR-HMMs are           matrices R, S and O, the spaces they act on (discrete
+much more expressive than k-state HMMs, our gen-              latent space, low-rank continuous latent space, and
+eralization greatly increases the scope of the spectral       observation space), and the random variables within
+learning algorithm. Further, we prove that the spec-          those spaces. By convention, we think of S as project-
+tral method is statistically consistent for a class of un-    ing ht to lt and R as propagating lt to ht+1 .
+controlled PSRs (Section 3.3).
+                                                              To see how the probability of a sequence can be
+We also generalize spectral HMM learning in other im-         computed using these parameters, define Ax =
+portant ways. HKZ assumes that single observations            RS diag(Ox ), so that Ax ∈ Rm×m , and define Wx =
+are informative about the latent state (1-step observ-        S diag(Ox )R, so that Wx ∈ Rk×k . With these defini-
+ability) and that observations are discrete. In Sec-          tions, the joint probability of x1 , ..., xt , can be written
+tion 3.4 we describe and test a method for relaxing the       using {Ax }, but also using {Wx } (Jaeger, 2000), as
+former by combining observations to make them more
+informative. In Section 3.5 we show how to handle              Pr[x1 , ..., xt ] = ~1T               π = ~1T
+                                                                                     m Axt . . . Ax1 ~                      πl
+                                                                                                           m RWxt . . . Wx1 ~
+high-dimensional real-valued observations with Kernel         The latter parametrization casts a rank-k RR-HMM
+Density Estimation (KDE) (Silverman, 1986).                   as a k-dimensional PSR or transformed PSR (Rosen-
+Experiments (Section 4) show that our learning al-            crantz et al., 2004). Inference can be carried out in
+gorithm can recover the underlying RR-HMM in a                O(N k 2 ) time in this representation. However, since
+variety of synthetic domains, and show that RR-               every HMM is trivially a PSR, this leads to the ques-
+HMMs perform well compared to LDSs and HMMs                   tion of how expressive rank-k RR-HMMs are in com-
+on difficult video simulation and prediction tasks. Fi-       parison to k-state full-rank HMMs.
+nally, we demonstrate that RR-HMMs are able to
+compactly model smooth evolution and competitive              2.1 How Expressive are RR-HMMs?
+inhibition, both in a clock pendulum video and in             We give an example of an RR-HMM whose set of pos-
+real-world mobile robot vision data (see videos at            sible predictive distributions is easy to visualize and
+http://www.select.cs.cmu.edu/projects/RRHMM).                 describe. Our example has rank 3, 10 states, and 4
+                                                              observations. The observation probabilities in each
+                                                              state are of the form Oi = [ pi qi pi q i pi qi pi q i ]T
+                                                              for some 0 ≤ pi , qi ≤ 1, p = 1 − pi and q = 1 − qi .
+                                                              That is, there are 4 discrete observations, factored as
+                                                           742
+
+                                 Sajid M. Siddiqi, Byron Boots, Geoffrey J. Gordon
+             A.                           B.              n          simplex            C. 0.6                                                   RR-HMM
+                           lt                         R                                                                                       (m=10,rank 3)
+                  lt-1             lt+1                       xt .
+                                                                                        Pr(observation 2)
+                                                                               O
+                                                                                                                                                 HMM
+                                                      R
+                                                          m          simplex                                0.5                                  (m=3)
+                  ht-1     ht      ht+1                       ht .              R
+                                                          k                                                 0.4
+                           xt      xt+1       S       R       lt.
+                  xt-1
+                                                                                                                      0.4     0.5       0.6
+                                                                                                                        Pr(observation 1)
+Figure 1: (A) RR-HMM graphical model. (B) RR-HMM parameters and the spaces and random variables they act on.
+(C) Projection of sets of predictive distributions of a rank-3 RR-HMM and a 3-state HMM with similar parameters.
+two binary components which are independent given                         Definition 1 The observable representation of an
+the state. T and pi , qi are chosen to place the ver-                     RR-HMM comprises the parameters b1 , b∞ , {Bx }nx=1 :
+tices of the set of possible predictive distributions                         ~b1 = U T P~1                                (2a)
+on evenly spaced points along a circle in (p, q)-space:
+                                                                                ~b∞ = (P T U )+ P~1                                                                (2b)
+pi = [sin(2πi/m) + 1] /2, qi = [cos(2πi/m) + 1] /2 and                                  2,1
+                                                                                                                  T              T        +
+                                  2πj             2πj
+                                                                                Bx = (U P3,x,1 )(U P2,1 )                                      x = 1, . . . , n       (2c)
+            1
+                 2 + sin 2πi              2πi
+                                                     
+   Tij =   2m             m · sin m + cos m · cos m
+                                                                          where U ∈ Rn×k is such that U T OR is invertible.
+In Figure 1(C) we plot the marginal probability of each
+                                                                          Note that the RR-HMM dimensionality is determined
+component of the observation, for all achievable values
+                                                                          by k, not m: b1 ∈ Rk , b∞ ∈ Rk and ∀x Bx ∈ Rk×k .
+of the latent state vector, for the m = 10 case. These
+                                                                          Though these definitions seem arbitrary, they relate
+distributions are marginals of the rows of OT T . We
+                                                                          closely to the original RR-HMM parameters:
+also plot the corresponding marginals for the m = 3
+                                                                               ~b1 = (U T OR)πl = (U T O)π                  (3a)
+case, which is a full-rank 3-state HMM. In general,
+for an m-state HMM of any rank, the set of possible                          ~bT = 1T R(U T OR)−1                           (3b)
+                                                                                 ∞                          m
+predictive distributions is a polyhedron with at most
+                                                                                Bx = (U OR)Wx (U T OR)−1     T
+                                                                                                                                                x = 1, . . . , n      (3c)
+m vertices. So, rank-k RR-HMMs (which can have
+m  k states) can model sets of predictive distribu-                      Hence Bx is a similarity transform of the RR-HMM pa-
+tions which k-state HMMs cannot. For more on PSR                          rameter matrix Wx = S diag(Ox )R, and ~b1 and ~b∞ are
+expressivity, see Jaeger (2000) and Singh et al. (2004).                  the corresponding linear transformations of the initial
+                                                                          state distribution and the normalization vector. To il-
+2.2 The Observable Representation                                         lustrate, we prove equation 3(c); proofs of 3(a–b) are
+                                                                          similar (Siddiqi et al., 2009).
+We define a representation of an RR-HMM based
+only on observable quantities, which makes it easier                      Bx = U T P3,x,1 (U T P2,1 )+
+to learn. This idea is analogous to the HMM ob-                              = (U T OR)Wx S diag(~π )OT (U T P2,1 )+                                     (eq. 1(b))
+servable representation of HKZ. The observable rep-                                 T                                       T    −1
+resentation depends on the initial probability vector                        = (U OR)Wx (U OR)                                          T
+                                                                                                                                      (U OR)S diag(~π )OT (U T P2,1 )+
+P~1 ∈ Rn and on the covariance and “trivariance” ma-                         = (U T OR)Wx (U T OR)−1 (U T P2,1 )(U T P2,1 )+ (eq. 1(a))
+trices P2,1 ∈ Rn×n and P3,x,1 ∈ Rn×n for x = 1 . . . n:
+                                                                             = (U T OR)Wx (U T OR)−1                                                                   (4)
+                [P~1 ]i = Pr[x1 = i]
+                                                                          2.3       RR-HMM Inference in the Observable
+            [P2,1 ]i,j = Pr[x2 = i, x1 = j]                                         Representation
+           [P3,x,1 ]i,j = Pr[x3 = i, x2 = x, x1 = j]
+                                                                          For inference in the RR-HMM using the observable
+for i, j = 1, . . . , n. They can be expressed in terms of                representation, we define the internal state ~bt . Just
+RR-HMM parameters, e.g.                                                   as the parameter ~b1 is a linear transform of the initial
+                                                                          RR-HMM belief state, ~bt is a linear transform of the
+                  P2,1 = ORS diag(π)OT                          (1a)      belief state of the RR-HMM at time t:
+                                                  T
+                                                                                ~bt = (U T OR)~lt (x1:t−1 ) = (U T O)~ht (x1:t−1 ) (5)
+                P3,x,1 = ORWx S diag(π)O                        (1b)
+                                                                          ~bt can be updated to condition on observations and
+Note that P2,1 and P3,x,1 each have rank k because
+                                                                           evolve over time, just as we can update ~lt for RR-
+of the factor R. The primary intuition is that the
+                                                                           HMMs and ~ht for regular HMMs. Given a set of ob-
+distributions of tuples of observations reveal the low-
+                                                                           servable parameters, we can now easily compute se-
+rank structure in the transition matrix, and hence can
+                                                                           quence probabilities (eqn. 6(a)), update the internal
+be used to infer the observable parameters.
+                                                                       743
+
+                                               Reduced-Rank Hidden Markov Models
+state (eqn. 6(b)), and compute conditional probabili-                     to negative probability estimates, which is an intrin-
+ties (eqn. 6(c)) (proofs in Siddiqi et al. (2009)):                       sic aspect of linear PSRs (Wiewiora, 2007). These
+                                                                          are most harmful          when they cause the normalizers
+              c 1 , . . . , xt ] = bbT
+              Pr[x                    ∞ Bxt . . . Bx1 b1          (6a)   bbT B     bbt or P bbT B
+                                                                                               x ∞ x bt to be negative. However, in
+                                         b        b b
+                                                                               x
+                                                                           ∞
+                                                                              b                      b b
+                                                                                 t
+                                                                          our experiments, the latter was never negative and the
+                           bbt+1 = Bxt bt
+                                        b b
+                                                                  (6b)    former was very rarely negative; and, using real-valued
+                                    bbT B
+                                      ∞ xt bt
+                                          b b
+                                                                          observations (Section 3.5) makes negative normalizers
+                                         T
+              c t | x1:t−1 ] = Pb∞ Bxt bt                                 even less likely, since in this case the normalizer is a
+                                       b b b
+              Pr[x                                                (6c)
+                                           bT b b
+                                        x b∞ B x bt
+                                                                          weighted sum of several estimated probabilities. In
+                                                                          practice we recommend thresholding the normalizers
+                                                                          with a small positive number, and not trusting prob-
+3    Learning Reduced-Rank HMMs                                           ability estimates for a few steps if the normalizers fall
+We estimate the parameters of the RR-HMM observ-                          below the threshold.
+able representation from data using Singular Value De-
+composition (SVD) (Golub & Van Loan, 1996). The                           3.2 Theoretical Guarantees
+basic algorithm for estimating rank-k RR-HMMs is                          Theorem 2 bounds the L1 error in joint probability es-
+equivalent to the spectral learning algorithm of HKZ                      timates from the learned RR-HMM, generalizing The-
+for learning k-state HMMs. However, our relaxation                        orem 6 from HKZ to the case of low-rank T . This
+of their conditions (e.g., HKZ assume a full-rank tran-                   bound shows the consistency of the algorithm in learn-
+sition matrix, without which their bounds are vacu-                       ing a correct observable representation of the under-
+ous) leads to finite-sample performance guarantees for                    lying RR-HMM, without ever needing to recover the
+rank-k RR-HMMs. In addition, we provide (and ana-                         high-dimensional parameters R, S, O of the latent rep-
+lyze) generalizations to t-step observable RR-HMMs,                       resentation. Note that the number of samples needed
+to RR-HMMs with continuous observations, to indica-                       to achieve a certain error level is independent of m,
+tive and characteristic features (rather than events),                    the number of hidden states; instead, it depends on k,
+and to general PSRs. So, our new results allow us to                      the rank of the transition matrix, which can be much
+learn a much larger class of models.                                      smaller than m. Since HKZ explicitly assumes a full-
+                                                                          rank HMM transition matrix, and their bounds be-
+3.1 The Algorithm                                                         come vacuous otherwise, generalizing their guarantees
+The algorithm takes as input the desired rank k                           involves relaxing this condition.
+rather than the number of states m. Alternatively,                        Define σk (M ) to denote the k th largest singular value
+given a threshold, the algorithm can choose the rank                      of a matrix M . The sample complexity bounds depend
+of the HMM by examining the singular values of Pb2,1                      polynomially on 1/σk (P2,1 ) and 1/σk (OR). The larger
+(whose rank is k in the absence of noise) in Step 2. It                   σk (P2,1 ) is, the more well-separated are the dynamics
+assumes that we are given N independently sampled                         from noise. The larger σk (OR) is, the more informa-
+observation triples hx1 , x2 , x3 i from the HMM. In                      tive the observation is regarding state. For both these
+practice, we can use a single long sequence of observa-                   quantities, the larger the magnitude, the fewer sam-
+tions as long as we discount the bound on the number                      ples we need to learn a good model. The bounds also
+of samples based on the mixing rate of the HMM (i.e.                      depend on a term n0 (), which is the minimum number
+(1 − second eigenvalue of T )), in which case π must                      of observations that account for (1 − ) of probability
+correspond to the stationary distribution of the HMM                      mass, i.e. the number of “important” observations.
+to allow estimation of P~1 . The algorithm results in an                  Theorem 2 There exists a constant C > 0 such that
+estimated observable representation of the RR-HMM:                        the following holds. Pick any 0 ≤ , η ≤ 1 and
+  Algorithm: Learn-RR-HMM(k, N )                                          t ≥ 1. Assume ~π > 0 everywhere, rank(T ) = k,
+    1. Compute empirical estimates Pb1 , Pb2,1 , Pb3,x,1 of               rank (U T OR) ≥ k and rank(O) ≥ k. In addition,
+       P~1 , P2,1 , P3,x,1 (for x = 1, ..., n).                           assume rank(S diag(~π )OT ) ≥ k, kRk            p 1 ≤ 1, and for
+    2. Use SVD on Pb2,1 to compute U               b , the matrix         some column c of R,          √     kR    k
+                                                                                                                  c 2  ≤     k/m. Let ε =
+       of left singular vectors corresponding to the k                    σk (OR)σk (P2,1 )/(4t k). Assume
+                                                                                      t2
+                                                                                                                                           
+       largest singular values.                                                                      k                    k · n0 (ε)              1
+    3. Compute model parameter estimates:                                 N ≥C · 2                                   +                        log
+                                                                                       σk(OR)2 σk(P2,1 )4 σk(OR)2 σk(P2,1)2                      η
+        (a) bb1 = U  b T Pb1 ,
+                                                                          With probability ≥ 1 − η, the model returned by
+                          T b +b
+        (b) b∞ = (Pb2,1
+              b               U ) P1 ,                                    LearnRR-HMM(k, N ) satisfies
+                        Tb         b T Pb2,1 )+ ( x = 1, . . . , n)                  X
+        (c) Bx = U P3,x,1 (U
+              b       b                                                                                              c 1 , . . . , xt ]| ≤ 
+                                                                                            | Pr[x1 , . . . , xt ] − Pr[x
+Estimated RR-HMM parameters can, in theory, lead                                 x1 ,...,xt
+                                                                       744
+
+                                  Sajid M. Siddiqi, Byron Boots, Geoffrey J. Gordon
+Some of the assumptions above are similar to condi-               2006; Wingate, 2008). Here, we take an approach that
+tions in HKZ. Others (starting with “in addition”)                is closely related to Subspace ID and spectral HMM
+are unique to the low-rank setting. The condition on              learning: we discover a minimal set of core tests by
+rank(S diag(~π )OT ) is needed to ensure invertibility.           SVD of a matrix of probabilities of a larger set of tests,
+The condition on kRc k2 can be satisfied by choosing              choosing dimensionality based on the singular values.
+one column of R to be a near-uniform distribution.                This approach learns a representation called a Trans-
+The condition on kRk1 can be satisfied by scaling down            formed PSR (TPSR) (Rosencrantz et al., 2004), which
+R and scaling up S accordingly; however, this increases           is simply a similarity transform of an ordinary PSR.
+one of the terms in our bound, 1/σk (OR), so we pay               Let T = {τ1 , . . . , τn } and H = {h1 , . . . , hn } be the ini-
+a price by increasing the number of samples needed to             tial sets of n > k core tests and histories (in general
+attain a particular error bound. For details and proofs,          their sizes may differ, but for simplicity of notation we
+see Siddiqi et al. (2009).                                        assume they are the same). Let S ∈ Rk×n be the ma-
+                                                                  trix whose columns ~sh are prediction vectors for the
+3.3 Consistent Learning of PSRs                                   unknown set of k core tests given all histories h ∈ H.
+Observable representations of rank-k RR-HMMs are                  Let R ∈ Rn×k be the matrix whose rows ~rτ are lin-
+a subset of k-dimensional PSRs. In the finite data                ear coefficients for computing probabilities of all tests
+case we are not guaranteed that the observable repre-             τ ∈ T from the unknown set of k core tests. Now
+sentation learned by the spectral method corresponds              define P~1 , P2,1 and P3,x,1 as
+to any finite-state HMM or any RR-HMM. However,                                     [P~1 ]i = Pr[hi ]
+we can show that the spectral method is a statistically
+consistent PSR learning algorithm as well. This means                            [P2,1 ]i,j = Pr[τi , hj ]
+that we can apply it to situations where the underlying                        [P3,x,1 ]i,j = Pr[τi , x, hj ] x = 1, . . . , n
+model is not necessarily an RR-HMM and learn some-
+thing sensible in the limit. This is a first step towards         for i, j = 1, . . . , n. For brevity we will denote P~1 by
+deriving error bounds to general PSRs.                           ~π . It is now straightforward to show that [P2,1 ]i,j =
+                                                                 ~rτTi ~shj ~πhj and [P3,x,1 ]i,j = ~rτTi Mx~shj ~πhj , and hence
+PSRs have no transition or observation matrices.
+There are only observable operators (Jaeger, 2000),                                        P2,1 = RS diag(~π )                  (7a)
+which account for an observation and a transition si-                                   P3,x,1 = RMx S diag(~π )                (7b)
+multaneously; we will call these Mx , analogous to
+the Wx observable parameters of the RR-HMM. In                    The parallels to the RR-HMM case are evident (see
+addition, a PSR needs a normalization vector m            ~∞      eqn. 1(a–b)). If we now fix a matrix U ∈ Rn×k such
+and an initial prediction vector m       ~ 1 . Here we only       that U T R is invertible, we can define a k-dimensional
+prove consistency for the observable operators Mx                 parameterization h~b1 , ~b∞ , {Bx }i of the TPSR in terms
+in discrete-observation uncontrolled PSRs where one-              of observable quantities; in particular, the observable
+step tests and histories are sufficient. We show con-             operators are Bx = U T P3,x,1 (U T P2,1 )+ for observa-
+sistency for other parameters, and for general discrete           tions x. Bx is related to Mx by a similarity transform,
+and continuous-observation controlled PSRs with ar-               which we prove in a manner similar to eqn. (4) under
+bitrary tests and histories, in Boots et al. (2009).              similar conditions:
+                                                                  Bx = U T P3,x,1 (U T P2,1 )+
+Denote tests by q and histories by h. PSR dimen-
+sionality is determined by the size of the minimal set             = U T RMx S diag(~π )(U T P2,1 )+          (by eq. 7(b))
+                                                                          T           T     −1
+of core tests that can represent it. Assume the PSR                = U RMx (U R)                 T
+                                                                                               (U R)S diag(~π )(U T P2,1 )+
+can be represented by a minimal set of k core tests
+                                                                   = (U T R)Mx (U T R)−1 (U T P2,1 )(U T P2,1 )+ (by eq. 7(a))
+q1 , . . . , qk . Assume all histories and tests are indicator
+functions of single-step observations, so that the ex-             = (U T R)Mx (U T R)−1
+pected value of a test or history is the probability of
+                                                                  Just as above, we can estimate Bx by plugging in em-
+seeing an observation. The prediction vector ~sh ∈ Rk
+                                                                  pirical estimates Pb2,1 , Pb3,x,1 . Since Pb2,1 → P2,1 and
+is defined as the vector of core test probabilities given
+                                     k
+the history h: ~sh = [Pr[qi | h]]i=1 . For PSRs, the pre-         Pb3,x,1 → P3,x,1 , and since multiplication and pseudoin-
+diction vector ~sh is a sufficient statistic for the state        verse are continuous in a neighborhood of the limit due
+of the system (Singh et al., 2004), and the probability           to our rank assumptions, we see that Bx is a statis-
+of any other test τ can be computed linearly from ~sh             tically consistent estimator of Mx up to a similarity
+using some vector ~rτ : Pr[τ | h] = ~rτT~sh .                     transform. Note that this argument depends on as-
+                                                                  suming a fixed U matrix, since SVD is not continuous
+Minimal core test set discovery is a hard problem                 in its inputs; in practice, however, we can use SVD to
+which many researchers have worked on (Jaeger et al.,             pick U for PSRs as well.
+                                                               745
+
+                                                         Reduced-Rank Hidden Markov Models
+3.4 Learning with Sequences and Features                                                 that goes to zero at the appropriate rate in the limit.
+                                                                                         First compute n × 1 feature vectors hφ              ~ j iN , hψ  ~ j iN ,
+The probability matrix P2,1 acts as a correlation ma-                                                                                             j=1          j=1
+trix relating one past timestep to one future timestep.                                  hξ~j iN             ~ N
+                                                                                               j=1 and hζj ij=1 , and normalize each to sum to 1:
+It is useful under the assumption that the vector of ob-
+servation probabilities at a single step is sufficient to                                      [φ~ j ]i ∝ K(~xj,1 − ~ci )     [ψ~j ]i ∝ K(~xj,2 − ~ci )
+disambiguate state (n ≥ m and rank(O) = m). In sys-
+                                                                                                [ξ~j ]i ∝ K(~xj,3 − ~ci )     [ζ~j ]i ∝ K ((~xj,2 − ~ci )/λ)
+tem identification theory, this corresponds to assum-
+ing 1-step observability (Van Overschee & De Moor,                                       Note that, in ζ~j only, we scale the kernel by the band-
+1996). This assumption is unduly restrictive for many
+                                                                                         width λ. Then, estimate the vector P~1 and matrices
+real-world dynamical systems of interest. More com-
+                                                                                         P2,1 and P3,x,1 (for ~x = ~c1 , . . . , ~cn ) from data:
+plex sufficient statistics of past and future may need
+                                                                                                                  N                        N
+to be modeled, such as the block Hankel matrix for-                                                           1 X~                      1 X ~ ~T
+                                                                                                       Pb1 =          φj      Pb2,1 =            ψj φj
+mulations for subspace methods (Van Overschee & De                                                           N j=1                      N j=1
+Moor, 1996), to identify linear systems that are not 1-
+                                                                                                                                            N
+step observable. It is possible to consider sequences of                                                                                1 X ~ ~ ~T
+                                                                                                  For x = c1 , . . . , cn : Pb3,x,1 =           [ζj ]x ξj φj
+observations in the past and future and estimate larger                                                                                 N j=1
+versions of P2,1 and P3,x,1 accordingly (for single obser-
+vations x). These matrices will have one row for each                                    We compute n “base” observable operators
+distinct sequence of past observations, and one column                                   Bc1 , . . . , Bcn from the estimated probability ma-
+for each distinct sequence of future observations. As                                    trices, as well as vectors ~b1 and ~b∞ , using algorithm
+long as past and future sequences never overlap, these                                   Learn-RR-HMM (Section 3.1).                         Filtering for a
+matrices still have rank equal to that of the dynam-                                     sequence h~x1 , . . . , ~xτ i now proceeds as follows:
+ics model, and we can learn a k-dimensional RR-HMM                                       For t = 1, . . . , τ :
+representation with as many parameter matrices Bx as
+the number of distinct single observations, unlike the                                            1. Compute & normalize[~σt ]i ∝ K ((~xt − ~ci )/λ) .
+                                                                                                                n
+sequence-modeling method suggested in HKZ which                                                               X                                 Bσt~bt
+was more complex and did not necessarily preserve                                                 2. Bσt =         [~σt ]j Bcj 3. ~bt+1 =
+                                                                                                                                             ~b∞ Bσ ~bt
+                                                                                                               j=1                                    t
+rank. The consistency and error bounds of the algo-
+rithm hold as well.                                                                      Many of our theoretical results carry over to the KDE
+Another interpretation of P2,1 , P3,x,1 is as matrices                                   case (Siddiqi et al., 2009). Essentially, the bound holds
+containing expected values of products of indicator                                      for predicting functions of ~σ1 , ~σ2 , . . . , ~σt , though we
+functions of observations, which correspond to sim-                                      cannot yet connect this bound to the error in estimat-
+ple indicative and characteristic events (Jaeger, 2000),                                 ing probabilities of raw observations.
+or histories and tests (Singh et al., 2004). More gen-
+erally, these matrices can contain expected values of                                    4       Experimental Results
+statistics computed from the observations, which we                                      We designed several experiments to evaluate the prop-
+call indicative and characteristic features. The consis-                                 erties of RR-HMMs and the learning algorithm on syn-
+tency results still hold in this case; however extending                                 thetic and real-world data. The first set of experiments
+the bounds to this case is an area of current research.                                  (Sec. 4.1) tests the ability of the spectral learning al-
+                                                                                         gorithm to recover the correct RR-HMM. The second
+3.5 Learning with Real-Valued Observations                                               (Sec. 4.2) evaluates the representational capacity of
+It is straightforward to model multivariate real-                                        the RR-HMM by learning a model of a video that re-
+valued data sequences with RR-HMMs using                                                 quires both competitive inhibition and smooth state
+KDE. Assume for ease of notation that the                                                evolution. The third (Sec. 4.3) tests the model’s abil-
+training data consists of N tuples of three con-                                         ity to learn, filter and predict video captured from a
+secutive continuous observation vectors each, i.e.,                                      robot moving in an indoor office environment.
+h~x1,1 , ~x1,2 , ~x1,3 i, h~x2,1 , ~x2,2 , ~x2,3 i, . . . , h~xN,1 , ~xN,2 , ~xN,3 i.
+Also assume for now that each observation vector con-                                    4.1 Learning Synthetic RR-HMMs
+tains a single raw observation, though this technique                                    First we evaluate the consistency of the spectral learn-
+can easily be combined with the more sophisticated                                       ing algorithm for RR-HMMs on 3 synthetic examples.
+sequence-based learning and feature-based learning                                       In each case, we build an RR-HMM, sample observa-
+methods described above. Pick a kernel function                                          tions from the model, and estimate the model with the
+K(·) and n kernel centers ~c1 . . . ~cn . (In general we                                 spectral learning algorithm described in Section              P 3. In
+can use different kernels and centers for different                                      Figure 2 we compare the eigenvalues of B = x Bx in
+feature vectors.) Let λ be a bandwidth parameter                                         the learned model to the eigenvalues of the transition
+                                                                                      746
+
+                                                 Sajid M. Siddiqi, Byron Boots, Geoffrey J. Gordon
+     A.              RR-HMM       B. 2-step-Obs. HMM C.        2-step-Obs. RR-HMM     A. Example Images        B.                           x 10 6
+                                                                                                                                      8.5
+                                                                                                               Avg. Prediction Err.
+                1                  1                      1
+ eigenvalues
+               0.8                0.8                                                                                                 7.5
+                                                         0.8
+               0.6                0.6                    0.6                                                                          6.5
+                                                                     True                                                                                        Mean
+               0.4                0.4                    0.4                                                                          5.5                        Last
+                                                                     10000
+               0.2                0.2                    0.2                                                                                                     RR-HMM
+                                                                     100000                                                           4.5                        LDS
+                0
+                     1   2    3    0                      0                                          Path                             3.5                        HMM
+                                        1        2   3           1    2       3   4
+                                                                                                                                          0 10 20 30 40 50 60 70 80 90 100
+Figure 2: Learning discrete RR-HMMs. The three fig-                                         Environment                                              Prediction Horizon
+ures depict the actual eigenvalues of three different RR-
+HMM transition matrices, and the estimated eigenvalues                                Figure 4: (A) Sample images from the robot’s camera.
+with 95% error bars, for two different training set sizes.                            The figure below depicts the hallway environment with
+A. HMM                        B. Stable LDS              C. RR-HMM                    a central obstacle (black) and the path that the robot
+                                                                                      took through the environment while collecting data (the
+                                                                                      red counter-clockwise ellipse) (B) Squared error for pre-
+                                                                                      diction (1, . . . , 100 steps out in future) with different esti-
+                                                                                      mated models and baselines, averaged over different initial
+                                            −1                                        filtering durations (1, . . . , 250).
+                                                                                      the LDS directly from the video using subspace ID
+Figure 3: State space manifold and video frames simulated                             with stability constraints (Siddiqi et al., 2007) using a
+by a HMM, a stable LDS, and a RR-HMM learned using                                    Hankel matrix of 10 observations. We trained the RR-
+clock pendulum video (manifold scales are arbitrary). (A)                             HMM by considering sequences of 4 continuous mul-
+10-state HMM. (B) 10-dim LDS. (C) Rank 10 RR-HMM.                                     tivariate observations, choosing an approximate rank
+                                                                                      of 10 dimensions, and learning 25 observable operators
+matrix T of the true model. B is a similarity transform
+                                                                                      corresponding to 25 Gaussian kernel centers. We sim-
+of SR, which has the same non-zero eigenvalues as
+                                                                                      ulate a series of 500 observations from the model and
+T = RS, so the estimated eigenvalues should converge
+                                                                                      compare the manifolds in the 10-dimensional space
+to the true eigenvalues with enough data. See Siddiqi
+                                                                                      and the observations and frames from the simulated
+et al. (2009) for the HMM parameters.
+                                                                                      videos (Figure 3). The small number of states in the
+Example 1: An RR-HMM [m = 3 hidden states, n =                                        HMM is not sufficient to capture the smooth evolu-
+3 observations, k = 2 rank]. In this example the RR-                                  tion of the clock: the simulated video is characterized
+HMM is low-rank. See Figure 2(A).                                                     by realistic looking frames, but exhibits jerky irregu-
+Example 2: A 2-step-Observable HMM [m = 3 hid-                                        lar motion. For the LDS, although the 10-dimensional
+den states, n = 2 observations]. In this example, the                                 subspace captures smooth evolution of the simulated
+HMM violates the m ≤ n condition of HKZ. The pa-                                      video, the system quickly degenerates and individual
+rameters of this HMM cannot be estimated with the                                     frames of video are modeled poorly (resulting in su-
+original learning algorithm, since a single observation                               perpositions of pendulums in generated frames). For
+does not provide enough information to disambiguate                                   the RR-HMM, the simulated video benefits from both
+state. However, by considering 2 consecutive observa-                                 smooth state evolution and competitive inhibition.
+tions (see Section 3.4), the spectral learning algorithm                              The low-dimensional manifold is smooth and struc-
+can be applied successfully. See Figure 2(B).                                         tured and the video is realistic. The results demon-
+Example 3: A 2-step-Observable RR-HMM [m = 4                                          strate that the RR-HMM has the benefits of smooth
+hidden states, n = 2 observations, k = 3 rank]. In                                    state evolution and compact state space of a LDS and
+this example, the HMM is low rank, and it violates                                    the benefit of competitive inhibition of a HMM.
+the m ≤ n condition of HKZ. See Figure 2(C).
+                                                                                      4.3    Filtering, Prediction, and Simulation
+4.2 Competitive Inhibition+Smooth Dynamics                                            We compare HMMs, LDSs, and RR-HMMs on the
+We model a clock pendulum video consisting of 55                                      problem of modeling video data from a mobile robot
+frames (with a period of ∼ 22 frames) as a 10-state                                   in an indoor environment. A video of 2000 frames
+HMM, a 10-dimensional LDS, and a rank 10 RR-                                          was collected at 6 Hz from a Point Grey Bumblebee2
+HMM. Note that we could easily learn models with                                      stereo camera mounted on a Botrics Obot d100 mo-
+more than 10 latent states/dimensions; we limited the                                 bile robot platform circling a stationary obstacle (Fig-
+dimensionality in order to demonstrate the relative ex-                               ure 4(A)) and 1500 frames were used as training data
+pressive power of the different models. For the HMM,                                  for each model. Each frame from the training data
+we convert the continuous data to discrete observa-                                   was reduced to 100 dimensions via SVD on single ob-
+tions by 1-nearest neighbor on 25 kernel centers sam-                                 servations. Using this training data, we trained an
+pled sequentially from the training data. We trained                                  RR-HMM (k = 50, n = 1500) using spectral learn-
+the resulting discrete HMM using EM. We learned                                       ing with sequences of 20 continuous observations and
+                                                                                    747
+
+                                       Reduced-Rank Hidden Markov Models
+KDE with Gaussian kernels with 1500 centers; a 50-           0540865. GJG was supported by DARPA under
+dimensional LDS using Subspace ID with Hankel ma-            grant number HR0011-07-10026, the Computer Sci-
+trices of 20 timesteps; and a 50-state HMM with 1500         ence Study Panel program, and DARPA/ARO under
+discrete observations using EM run until convergence.        MURI grant number W911NF-08-1-0301. BEB and
+For each model, we performed filtering for different         GJG were supported by ONR MURI grant number
+extents t1 = 100, 101, . . . , 250, then predicted an im-    N00014-09-1-1052. SMS is now at Google.
+age which was a further t2 steps in the future, for
+t2 = 1, 2 . . . , 100. The squared error of this predic-     References
+tion in pixel space was recorded, and averaged over all      Boots, B., Siddiqi, S., & Gordon, G. J. (2009). Closing
+the different filtering extents t1 to obtain means which     the learning-planning loop with predictive state repre-
+are plotted in Figure 4(B). As baselines, we plot the        sentations. http://arxiv.org/abs/0912.2385.
+error obtained by using the mean of filtered data as         Ghahramani, Z., & Hinton, G. E. (2000). Varia-
+a predictor (‘Mean’), and the error obtained by using        tional learning for switching state-space models. Neu-
+the last filtered observation (‘Last’).                      ral Comp., 12.
+                                                             Golub, G. H., & Van Loan, C. F. (1996). Matrix com-
+Both baselines perform worse than any of the more            putations. The Johns Hopkins University Press.
+complex algorithms (though as expected, the ‘Last’           Hsu, D., Kakade, S., & Zhang, T. (2009). A spectral
+predictor is a good one-step predictor), indicating that     algorithm for learning hidden markov models. COLT.
+this is a nontrivial prediction problem. The LDS does
+well initially (due to smoothness), and the HMM does         Jaeger, H. (2000). Observable operator models for dis-
+well in the longer run (due to competitive inhibition),      crete stochastic time series. Neural Computation, 12,
+while the RR-HMM performs as well or better at both          1371–1398.
+time scales since it models both the smooth state evo-       Jaeger, H., Zhao, M., Kretzschmar, K., Oberstein, T.,
+lution and competitive inhibition in its predictive dis-     Popovici, D., & Kolling, A. (2006). Learning observ-
+tribution. In particular, the RR-HMM yields lower            able operator models via the es algorithm. In New di-
+prediction error consistently for the duration of the        rections in statistical signal processing: from systems
+prediction horizon (100 steps, or 16 23 seconds).            to brain. MIT Press.
+                                                             Kalman, R. (1960). A new approach to linear filtering
+5    Conclusion                                              and prediction problems. Transactions of the ASME–
+We have generalized the spectral learning algorithm          Journal of Basic Engineering.
+and bounds of Hsu et al. (2009) to accurately learn          Rabiner, L. R. (1989). A tutorial on Hidden Markov
+a larger class of sequential data models (RR-HMMs)           Models and Selected Applications in Speech Recogni-
+under a larger class of observation models (non-1-step-      tion. Proc. IEEE.
+observable domains and multivariate continuous ob-           Rosencrantz, M., Gordon, G., & Thrun, S. (2004).
+servations). RR-HMMs combine desirable properties            Learning low dimensional predictive representations.
+of HMMs and LDSs, allowing them to model a larger            Proc. ICML.
+class of dynamical systems. We have also shown that          Siddiqi, S., Boots, B., & Gordon, G. (2007). A con-
+the algorithm is consistent for learning a simple class      straint generation approach to learning stable linear
+of PSRs. The generalization of this algorithm to con-        dynamical systems. Proc. NIPS.
+sistent learning of general controlled PSRs yields ac-       Siddiqi,     S.,    Boots,    B.,    & Gordon,       G.
+curate, compact models that facilitate successful plan-      (2009).      Reduced-rank hidden markov models.
+ning and control (Boots et al., 2009). The most impor-       http://arxiv.org/abs/0910.0902.
+tant task for future work is to extend the performance       Silverman, B. W. (1986). Density estimation for statis-
+bounds from RR-HMMs to general PSRs, as well as to           tics and data analysis. Chapman & Hall.
+explore practical applications in sequential data mod-       Singh, S., James, M., & Rudary, M. (2004). Predic-
+eling and planning.                                          tive state representations: A new theory for modeling
+                                                             dynamical systems. Proc. UAI.
+Acknowledgements
+                                                             Van Overschee, P., & De Moor, B. (1996). Subspace
+We acknowledge helpful conversations with Sham               identification for linear systems: Theory, implementa-
+Kakade and comments from anonymous reviewers. Ju-            tion, applications. Kluwer.
+lian Ramos assisted with gathering robot vision data.        Wiewiora, E. (2007). Modeling Probability Distribu-
+SMS was supported by the NSF under grant number              tions with Predictive State Representations. Doctoral
+0000164, the USAF under grant number FA8650-05-              dissertation.
+C-7264, the USDA under grant number 4400161514,              Wingate, D. (2008). Exponential family predictive rep-
+and a project with MobileFusion/TTC. BEB was                 resentations of state. Doctoral dissertation.
+supported by the NSF under grant number EEEC-
+                                                          748
+

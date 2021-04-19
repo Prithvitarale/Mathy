@@ -1,0 +1,1480 @@
+                                                   Fairness in Learning: Classic and Contextual Bandits∗
+                                               Matthew Joseph            Michael Kearns           Jamie Morgenstern            Aaron Roth†
+                                                                                   November 8, 2016
+arXiv:1605.07139v2 [cs.LG] 7 Nov 2016
+                                                                                         Abstract
+                                                  We introduce the study of fairness in multi-armed bandit problems. Our fairness definition
+                                              can be interpreted as demanding that given a pool of applicants (say, for college admission or
+                                              mortgages), a worse applicant is never favored over a better one, despite a learning algorithm’s
+                                              uncertainty over the true payoffs. We prove results of two types:
+                                                  First, in the important special case of the classic stochastic bandits problem (i.e. in which
+                                              there are no contexts), we provide a provably fair algorithm based on chained confidence inter-
+                                              vals, and prove a cumulative regret bound with a cubic dependence on the number of arms. We
+                                              further show that any fair algorithm must have such a dependence. When combined with regret
+                                              bounds for standard non-fair algorithms such as UCB, this proves a strong separation between
+                                              fair and unfair learning, which extends to the general contextual case.
+                                                  In the general contextual case, we prove a tight connection between fairness and the KWIK
+                                              (Knows What It Knows) learning model: a KWIK algorithm for a class of functions can be
+                                              transformed into a provably fair contextual bandit algorithm, and conversely any fair contextual
+                                              bandit algorithm can be transformed into a KWIK learning algorithm. This tight connection
+                                              allows us to provide a provably fair algorithm for the linear contextual bandit problem with
+                                              a polynomial dependence on the dimension, and to show (for a different class of functions) a
+                                              worst-case exponential gap in regret between fair and non-fair learning algorithms.
+                                           ∗
+                                             A condensed version of this work appears in the 30th Annual Conference on Neural Information Processing
+                                        Systems (NIPS), 2016.
+                                           †
+                                             Department     of    Computer      and     Information   Sciences,     University   of    Pennsylvania.
+                                        {majos,mkearns,jamiemor,aaroth}@cis.upenn.edu. AR is supported in part by an NSF CAREER award, a
+                                        Sloan Foundation Fellowship, and a Google Faculty Research Award.
+                                                                                             1
+
+Contents
+1 Introduction                                                                                       3
+  1.1 Fairness and Learning . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .    3
+  1.2 Our Results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  4
+  1.3 Other Related Work . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     6
+2 Preliminaries                                                                                      6
+  2.1 Specializing to Classic Stochastic Bandits . . . . . . . . . . . . . . . . . . . . . . . .     7
+3 Fair Classic Stochastic Bandits: An Algorithm                                                      8
+4 Fair Classic Stochastic Bandits: A Lower Bound                                                    11
+5 KWIK Learnability Implies Fair Bandit Learnability                                                15
+6 Fair Bandit Learnability Implies KWIK Learnability                                                18
+  6.1 An Exponential Separation Between Fair and Unfair Learning . . . . . . . . . . . . . 20
+A Missing Proofs for the Classic Stochastic Bandits Upper Bound                                     23
+  A.1 Missing Derivation of R(T ) for Theorem 2 . . . . . . . . . . . . . . . . . . . . . . . . 24
+B Missing Proofs for the Classic Stochastic Bandits Lower Bound                                     24
+C Missing Proofs for the Contextual Bandit Setting                                                  26
+                                                2
+
+1         Introduction
+Automated techniques from statistics and machine learning are increasingly being used to make
+decisions that have important consequences on people’s lives, including hiring [Miller, 2015], lending
+[Byrnes, 2016], policing [Rudin, 2013], and even criminal sentencing [Barry-Jester et al., 2015].
+These high stakes uses of machine learning have led to increasing concern in law and policy circles
+about the potential for (often opaque) machine learning techniques to be discriminatory or unfair
+[Coglianese and Lehr, 2016, Barocas and Selbst, 2016]. Moreover, these concerns are not merely
+hypothetical: Sweeney [2013] observed that contextual ads for public record services shown in
+response to Google searches for stereotypically African American names were more likely to contain
+text referring to arrest records, compared to comparable ads shown in response to searches for
+stereotypically Caucasian names, which showed more neutral text. She confirmed that this was
+not because of stated preferences of the advertisers, but rather the automated outcome of Google’s
+targeting algorithms. Despite the recognized importance of this problem, very little is known about
+technical solutions to the problem of “unfairness”, or the extent to which “fairness” is in conflict
+with the goals of learning.1
+        In this paper, we consider the extent to which a natural fairness notion is compatible with
+learning in a general setting (the contextual bandit setting), which can be used to model many of
+the applications mentioned above in which machine learning is currently employed. In this model,
+the learner is a sequential decision maker, which must choose at each time step t which decision
+to make, out of a finite set of k choices (for example, which of k loan applicants – potentially from
+different populations or racial groups – to give a loan to). Before the learner makes its decision
+at round t, it observes some context xtj for each choice of arm j (xtj could, for example, represent
+the contents of the loan application of an individual from population j at round t). When the
+learner chooses arm j at time t, it obtains a stochastic reward rjt whose expectation is determined
+                                                          h i
+by some unknown function of the context: E rjt = fj (xtj ). The goal of the learning algorithm is
+to maximize its expected reward        h i– i.e. to approximate the optimal policy, which at each round,
+chooses arm j to maximize E rjt . The difficulty in this task stems from the unknown functions
+fj which map contexts to rewards; these functions must be learned. Despite this, there are many
+known algorithms for learning the optimal policy (in the absence of any fairness constraint).
+1.1        Fairness and Learning
+Our notion of individual fairness is very simple: it states that it is unfair                to preferentially choose
+one individual (e.g. for a loan, a job, admission to college, etc.) over                     another if he or she is
+not as qualified as the other individual. This definition of fairness is apt                for our setting, since in
+contextual learning, the quality of an arm is clear: its expected reward.                    We view different arms
+      1
+         For example, a 2014 White House report [Podesta et al., 2014] notes that “[t]he increasing use of algorithms
+to make eligibility decisions must be carefully monitored for potential discriminatory outcomes for disadvantaged
+groups, even absent discriminatory intent. . . additional research in measuring adverse outcomes due to the use of
+scores or algorithms is needed to understand the impacts these tools are having and will have in both the private and
+public sector as their use grows.” Along the same lines, a 2016 White House report [Munoz et al., 2016] observes that
+“[a]s improvements in the uses of big data and machine learning continue, it will remain important not to place too
+much reliance on these new systems without questioning and continuously testing the inputs and mechanics behind
+them and the results they produce.” Similarly, in a recent speech FTC Commissioner Julie Brill [Julie Brill, 2015]
+observed, “. . . a lot remains unknown about how big data-driven decisions may or may not use factors that are proxies
+for race, sex, or other traits that U.S. laws generally prohibit from being used in a wide range of commercial decisions
+. . . What can be done to make sure these products and services–and the companies that use them treat consumers
+fairly and ethically?”
+                                                             3
+
+j as representing different populations (e.g. different ethnic groups, cultures, or other divisions
+within society), and view the context xtj at round t as representing information about a particular
+individual from that population. Each population has its own underlying function fj which maps
+contexts to expected payoff2 . At each time step t, the algorithm is asked to choose between specific
+members of each population, represented by the contexts xtj . The quality of an individual is thus
+               h i
+exactly E rjt = fj (xtj ). Our fairness condition translates thus: for any pair of arms j, j 0 at time
+t, if fj (xtj ) ≥ fj 0 (xtj 0 ), then an algorithm is said to be discriminatory if it preferentially chooses the
+lower quality arm j 0 . Said another way, an algorithm is fair if it guarantees the following: with
+high probability, over all rounds t, and for all pairs of arms j, j 0 , whenever fj (xtj ) ≥ fj 0 (xtj 0 ), the
+algorithm chooses arm j with probability at least that with which it chooses arm j 03 .
+      It is worth noting that this definition of fairness (formalized in the preliminaries) is entirely
+consistent with the optimal policy,         hwhichi can simply choose at each round to play uniformly at
+                                                 t
+random from the arms arg maxj E rj which maximize the expected reward. This is because –
+it seems – the goal of fairness as enunciated above is entirely consistent with the goal of maximizing
+expected reward. Indeed, the fairness constraint exactly states that the algorithm cannot favor low
+reward arms!
+      Our main conceptual result is that this intuition is incorrect in the face of unknown reward
+functions. Even though the constraint of fairness is consistent with implementing the optimal
+policy, it is not necessarily consistent with learning the optimal policy. We show that fairness
+always has a cost, in terms of the achievable learning rate of the algorithm. For some problems,
+the cost is mild, but for others, the cost is large.
+1.2       Our Results
+We divide our results into two parts. First, we study the classic stochastic multi-armed bandit
+problem [Lai and Robbins, 1985, Katehakis and Robbins, 1995]. In this case, there are no contexts,
+and each arm i has a fixed but unknown average reward µi . Note that this is a special case of
+the contextual bandit problem in which the contexts are the same every day. In this setting, our
+fairness constraint specializes to require that with probability 1 − δ, for any pair of arms i, j for
+which µi ≥ µj , at no round t does the algorithm play arm j with probability higher than that with
+which it plays arm i. Note that even this special case models interesting scenarios from the point
+of view of fairness in learning. It models, for example, the case in which choices are made by a loan
+officer after applicants have been categorized into k internally indistinguishable equivalence classes
+based on their applications.
+      Without a fairness constraint, it is known that it is possible to guarantee non-trivial regret
+to the optimal policy after only T = O(k) many rounds [Auer et al., 2002]. In Section 3, we
+give an algorithm that satisfies our fairness constraint and is able to guarantee non-trivial regret
+after T = O(k 3 ) rounds. We then show in Section 4 that it is not possible to do better – any
+    2
+      It is natural that different populations should have different underlying functions – for example, in a college
+admissions setting, the function mapping applications to college success probability might weight SAT scores less in
+a wealthy population that employs SAT tutors, and more in a working-class population that does not – see Dwork
+et al. [2012] for more discussion of this issue and Munoz et al. [2016] for examples.
+    3
+      Note that the definition does not require equality of outcomes on a population wide basis, also known as statistical
+parity. If some population j is less credit-worthy on average than another population j 0 , we do not necessarily say
+that an algorithm is discriminatory if it ends up giving fewer loans to individuals from population j. Our notion
+of discrimination is on an individual basis – it requires that even if population j is less credit worthy on average
+than population j 0 , if it happens that on some day, an individual appears from population j who is at least as credit
+worthy as the individual from population j 0 , then the algorithm cannot favor the individual from population j 0 .
+                                                              4
+
+fair learning algorithm can be forced to endure constant per-round regret for T = Ω(k 3 ) rounds.
+Thus, we tightly characterize the optimal regret attainable by fair algorithms in this setting, and
+formally separate it from the regret attainable by algorithms absent a fairness constraint. Note
+that this already shows a separation between the best possible learning rates for contextual bandit
+learning with and without the fairness constraint – the stochastic multi-armed bandit problem is a
+special case of every contextual bandit problem, and for general contextual bandit problems, it is
+also known how to get non-trivial regret after only T = O(k) many rounds [Agarwal et al., 2014,
+Beygelzimer et al., 2011, Chu et al., 2011].
+      We then move on to the general contextual bandit setting and prove a broad characterization
+result, relating fair contextual bandit learning to KWIK learning [Li et al., 2011]. The KWIK
+model, which stands for Knows What it Knows and has a close relationship with reinforcement
+learning, is a model of sequential supervised classification in which the learning algorithm must be
+confident in its predictions. Informally, a KWIK learning algorithm receives a sequence of unlabeled
+examples, whose true labels are defined by some unknown function in a class C. For each example,
+the algorithm may either predict a label, or announce “I Don’t Know”. The KWIK requirement is
+that with high probability, for each example, if the algorithm predicts a label, then its prediction
+must be very close to the true label. The quality of a KWIK learning algorithm is characterized
+by its “KWIK bound”, which provides an upper bound on the maximum number of times the
+algorithm can be forced to announce “I Don’t Know”. For any contextual bandit problem (defined
+by the set of functions C from which the payoff functions fj may be selected), we show that the
+optimal learning rate of any fair algorithm is determined by the best KWIK bound for the class
+C. We prove this constructively – we give a reduction showing how to convert a KWIK learning
+algorithm into a fair contextual bandit algorithm in Section 5, and vice versa in Section 6. Both
+reductions show that the KWIK bound of the KWIK algorithm is polynomially related to the regret
+of the fair algorithm.
+      This general connection has immediate implications, because it allows us to import known
+results for KWIK learning [Li et al., 2011]. For example, it implies that some fair contextual bandit
+problems are easy, in that there are fair algorithms which can obtain non-trivial regret guarantees
+after polynomially many rounds. This is the case, for example, for the important linear special
+case in which the contexts xtj ∈ Rd are real valued vectors and the unknown functions fj are linear:
+fj (xtj ) = hθj , xtj i4 . In this case, the KWIK-learnability of noisy linear regression problems [Strehl
+and Littman, 2008, Li et al., 2011] implies that we can construct a fair contextual bandit algorithm
+whose per-round regret is polynomial in d. Conversely, it also implies that some contextual bandit
+problems which are easy without the fairness constraint become hard once we impose the fairness
+constraint, in that any fair algorithm must suffer constant per-round regret for exponentially many
+rounds. This is the case, for example, when the context consists of boolean vectors xtj ∈ {0, 1}d ,
+and the unknown functions fj : {0, 1}d → {0, 1} are conjunctions – the “and”s of some unknown
+set of features5 . The impossibility of non-trivial KWIK-learning of conjunctions [Li, 2009, Li et al.,
+2011] implies that no fair learner in the contextual bandit setting can achieve non-trivial regret
+before exponentially many (in d) rounds.
+    4
+      This corresponds to the case in which the probability that an individual pays back his or her loan is determined
+by a standard linear regression model.
+    5
+      For example, a conjunction might predict that an individual is likely to pay back his loan if all of the following
+conditions are satisfied: he or she has graduated from college, has a clean driving history, and has not previously
+defaulted on any loans.
+                                                           5
+
+1.3       Other Related Work
+Several papers study the problem of fairness in machine learning. One line of work aims to give
+algorithms for batch classification which achieve group fairness otherwise known as equality of
+outcomes, statistical parity – or algorithms that avoid disparate impact (see e.g. Calders and Verwer
+[2010], Luong et al. [2011], Kamishima et al. [2011], Feldman et al. [2015], Fish et al. [2016] and Adler
+et al. [2016] for a study of auditing existing algorithms for disparate impact). While statistical parity
+is sometimes a desirable goal – indeed, it is sometimes required by law – as observed by Dwork et al.
+[2012] and others, it suffers from two problems. First, if different populations indeed have different
+statistical properties, then it can be at odds with accurate classification. Second, even in cases
+when statistical parity is attainable with an optimal classifier, it does not prevent discrimination at
+an individual level – see Dwork et al. [2012] for a catalog of ways in which statistical parity can be
+insufficient from the perspective of fairness. In contrast, we study a notion aimed at guaranteeing
+fairness at the individual level.
+      Our definition of fairness is most closely related to that of Dwork et al. [2012], who proposed
+and explored the basic properties of a technical definition of individual fairness formalizing the
+idea that “similar individuals should be treated similarly”. Specifically, their work presupposes the
+existence of a task-specific metric on individuals, and proposes that fair algorithms should satisfy
+a Lipschitz condition with respect to this metric. Our definition of fairness is similar, in that
+the expected reward of each arm is a natural metric through which we define fairness. The main
+conceptual distinction between our work and Dwork et al. [2012] is that their work operates under
+the assumption that the metric is known to the algorithm designer, and hence in their setting, the
+fairness constraint binds only insofar as it is in conflict with the desired outcome of the algorithm
+designer. The most challenging aspect of this approach (as they acknowledge) is that it requires
+that some third party design a “fair” metric on individuals, which in a sense encodes much of the
+relevant challenge. The question of how to design such a metric was considered by Zemel et al.
+[2013], who study methods to learn representations that encode the data, while obscuring protected
+attributes. Our fairness constraint, conversely, is entirely aligned with the goal of the algorithm
+designer in that it is satisfied by the optimal policy; nevertheless, it affects the space of feasible
+learning algorithms, because it interferes with learning an optimal policy, which depends on the
+unknown reward functions.
+      At a technical level, our work is related to Amin et al. [2012] and Amin et al. [2013], which also
+relate KWIK learning to bandit learning in a different context, unrelated to fairness (when the arm
+space is very large).
+2      Preliminaries
+We study the contextual bandit setting, which is defined by a domain X , a set of “arms” [k] :=
+{1, . . . , k} and a class C of functions of the form f : X → [0, 1]. For each arm j there is some function
+fj ∈ C, unknown to the learner. In rounds t = 1, . . . , T , an adversary reveals to the algorithm a
+context xtj for each arm6 . An algorithm A then chooses an arm it , and observes stochastic reward
+                                                         h i
+ritt for the arm it chose. We assume rjt ∼ Djt , E rjt = fj (xtj ), for some distribution Djt over [0, 1].
+      Let Π be the set of policies mapping contexts to distributions over arms X k → ∆k , and π ∗ the
+optimal policy which selects a distribution over arms as a function of contexts to maximize the
+expected reward of those arms. The pseudo-regret of an algorithm A on contexts x1 , . . . , xT is
+    6
+      Often, the contextual bandit problem is defined such that there is a single context xt every day. Our model is
+equivalent – we could take xtj := xt for each j.
+                                                          6
+
+defined as follows, where π t represents A’s distribution on arms at round t:
+                                                                    "                 #
+                      X                  h              i             X
+                           Eit∗ ∼π∗ (xt ) fit∗ (xtit∗ ) − Eit ∼πt         fit (xtit ) = Regret(x1 , . . . , xT ).
+                        t                                               t
+We hereafter refer to this as the regret of A. The optimal policy π ∗ pulls arms with highest
+expectation at each round, so:
+                                                                                               "               #
+                                                            X                                    X
+                          Regret(x1 , . . . , xT ) =           max fj (xtj ) − Eit ∼πt              fit (xtit ) .
+                                                                               
+                                                                 j
+                                                             t                                    t
+We say that A satisfies regret bound R(T ) if maxx1 ,...,xT Regret(x1 , . . . , xt ) ≤ R(T ).
+                                                             t−1
+     Let the history ht ∈ X k × [k] × [0, 1]                       be a record of t − 1 rounds experienced by A, t − 1
+3-tuples which encode for each t the realization of the contexts, arm chosen, and reward observed.
+                t                                                                                                     t
+We write πj|h       t to denote the probability that A chooses arm j after observing contexts x , given
+ht . For notational simplicity, we will often drop the superscript t on the history when referring to
+the distribution over arms: πj|h          t := π t .
+                                                      j|ht
+     We now define what it means for a contextual bandit algorithm to be δ-fair with respect to
+its arms. Informally, this will mean that A will play arm i with higher probability than arm j in
+round t only if i has higher mean than j in round t, for all i, j ∈ [k], and in all rounds t.
+Definition 1 (δ-fair). A is δ-fair if, for all sequences of contexts x1 , . . . , xt and all payoff distribu-
+tions D1t , . . . , Dkt , with probability at least 1 − δ over the realization of the history h, for all rounds
+t ∈ [T ] and all pairs of arms j, j 0 ∈ [k],
+                                               t
+                                            πj|h    > πjt 0 |h only if fj (xtj ) > fj 0 (xtj 0 ).
+Remark 1. Definition 1 prohibits favoring lower payoff arms over higher payoff arms. One relaxed
+definition only requires that πj|h        t = πt                      t              t
+                                                     j 0 |h when fj (xj ) = fj (xj 0 ) – requiring only identical individuals
+                                                                                 0
+(concerning expected payoff) be treated identically. This relaxation is a special case of Dwork et al.
+[2012]’s proposed family of definitions, which require that “similar individuals be treated similarly”.
+We use Definition 1 as it is better motivated in its implications for fair treatment of individuals,
+but all of our results – including our lower bounds – apply also to this relaxation.
+KWIK learning Let B be an algorithm which takes as input a sequence of examples x1 , . . . , xT ,
+and when given some xt ∈ X , outputs either a prediction ŷ t ∈ [0, 1] or else outputs                             ŷ t = ⊥,
+representing “I don’t know”. When ŷ t = ⊥, B receives feedback y t such that E y t = f (xt ). B is
+                                                                                                                  
+an (, δ)-KWIK learning algorithm for C : X → [0, 1], with KWIK bound m(, δ) if for any sequence
+of examples x1 , x2 , . . . and any target f ∈ C, with probability at least 1 − δ, both:
+    1. Its numerical predictions are accurate: for all t, ŷ t ∈ {⊥} ∪ [f (xt ) − , f (xt ) + ], and
+                                                             P∞  t            
+    2. B rarely outputs “I Don’t Know”:                        t=1 I ŷ = ⊥ ≤ m(, δ).
+2.1     Specializing to Classic Stochastic Bandits
+In Sections 3 and 4, we study the classic stochastic bandit problem, an important special case of
+the contextual bandit setting described above. Here we specialize our notation to this setting, in
+which there are no contexts. For each arm j ∈ [k], there is an unknown distribution Dj over [0, 1]
+                                                                     7
+
+with unknown mean µj . A learning algorithm A chooses an arm it in round t, and observes the
+reward ritt ∼ Dit for the arm that it chose. Let i∗ ∈ [k] be the arm with highest expected reward:
+i∗ ∈ arg maxi∈[k] µi . The pseudo-regret of an algorithm A on D1 , . . . , Dk is now just:
+                                                         
+                                             X
+                         T · µi∗ − Eit ∼πt           µit  = Regret(T, D1 , . . . , Dk )
+                                            0≤t≤T
+Let ht ∈ ([k] × [0, 1])t−1 denote a record of the t − 1 rounds experienced by the algorithm so far,
+represented by t − 1 2-tuples encoding the previous arms chosen and rewards observed. We write
+  t                                                                                 t
+πj|ht to denote the probability that A chooses arm j given history h . Again, we will often drop
+the superscript t on the history when referring to the distribution over arms: πj|h            t := π t .
+                                                                                                     j|ht
+    δ-fairness in the classic bandit setting specializes as follows:
+Definition 2 (δ-fairness in the classic bandits setting). A is δ-fair if, for all distributions D1 , . . . , Dk ,
+with probability at least 1 − δ over the history h, for all t ∈ [T ] and all j, j 0 ∈ [k]:
+                                        t
+                                       πj|h > πjt 0 |h only if µj > µj 0 .
+3     Fair Classic Stochastic Bandits: An Algorithm
+In this section, we describe a simple and intuitive modification of the standard UCB algorithm [Auer
+et al., 2002], called FairBandits, prove that it is fair, and analyze its regret bound. The algorithm
+and its analysis highlight a key idea that is important to the design of fair algorithms in this setting:
+that of chaining confidence intervals. Intuitively, as a δ-fair algorithm explores different arms it
+must play two arms j1 and j2 with equal probability until it has sufficient data to deduce, with
+confidence 1 − δ, either that µj1 > µj2 or vice versa. FairBandits does this by maintaining
+empirical estimates of the means of both arms, together with confidence intervals around those
+means. To be safe, the algorithm must play the arms with equal probability while their confidence
+intervals overlap. The same reasoning applies simultaneously to every pair of arms. Thus, if the
+confidence intervals of each pair of arms ji and ji+1 overlap for each i ∈ [k], the algorithm is
+forced to play all arms j with equal probability. This is the case even if the confidence intervals
+around arm jk and arm j1 are far from overlapping – i.e. when the algorithm can be confident that
+µj1 > µjk .
+    This approach initially seems naive: in an attempt to achieve fairness, it seems overly conser-
+vative when ruling out arms, and can be forced to play arms uniformly at random for long periods
+of time. This is reflected in its regret bound, which is only non-trivial after T  k 3 , whereas the
+UCB algorithm [Auer et al., 2002] achieves non-trivial regret after T = O(k) rounds. However, our
+lower bound in Section 4 shows that any fair algorithm must suffer constant per-round regret for
+T  k 3 rounds on some instances.
+    We now give an overview of the behavior of FairBandits. At every round t, FairBandits
+identifies the arm it∗ = arg maxi uti that has the largest upper confidence interval amongst the active
+arms. At each round t, we say i is linked to j if [`ti , uti ] ∩ [`tj , utj ] 6= ∅, and i is chained to j if i and
+j are in the same component of the transitive closure of the linked relation. FairBandits plays
+uniformly at random among all active arms chained to arm it∗ .
+    Initially, the active set contains all arms. The active set of arms at each subsequent round is
+defined to be the set of arms that are chained to the arm with highest upper confidence bound at
+the previous round. The algorithm can be confident that arms that have become unchained to the
+                                                         8
+
+arm with the highest upper confidence bound at any round have means that are lower than the
+means of any chained arms, and hence such arms can be safely removed from the active set, never
+to be played again. This has the useful property that the active set of arms can only shrink: at
+any round t, St ⊆ St−1 ; see Figure 1 for an example of active set evolution over time.
+ 1: procedure FairBandits(δ)
+ 2:      S 0 ← {1, . . . , k}                                                                     . Initialize the active set
+ 3:      for i = 1, . . . k do
+ 4:          µ̂0i ← 21 , u0i ← 1, `0i ← 0, n0i ← 0                                                    . Initialize each arm
+ 5:      for t = 1 to T do
+ 6:          it∗ ← arg maxi∈S t−1 uti                                                       . Find arm with highest ucb
+ 7:          S t ← {j | j chains to it∗ , j ∈ S t−1 }                                                   . Update active set
+ 8:          j ∗ ← (x ∈R S t )                                                            . Select active arm at random
+ 9:          nt+1         t
+                j ∗ ← nj ∗ + 1
+10:          µ̂t+1
+                j ∗ ← nt+1
+                          1
+                             (µ̂tj ∗ · ntj ∗ + rjt ∗ )                          . Pull arm j ∗ , update its mean estimate
+                          j∗
+                      r
+                                       2 /3δ)
+11:          B ← ln((π·(t+1)) 2nt+1
+                                  ∗
+             h              i jh                               i
+12:
+                 t+1 t+1
+               `j ∗ , uj ∗ ← µ̂t+1     j∗   − B,    µ̂ t+1
+                                                       j∗  + B                          . Update interval for pulled arm
+13:          for j ∈ S t , j 6= j ∗ do
+14:                µ̂t+1
+                     j   ← µ̂tj , nt+1
+                                     j     ← ntj , ut+1 j  ← utj , `t+1
+                                                                    j     ← `tj
+    We first observe that with probability 1 − δ, all of the confidence intervals maintained by
+FairBandits (δ) contain the true means of their respective arms over all rounds. We prove this
+claim, along with all other claims in this section without proofs, in Appendix A.
+Lemma 1. With probability at least 1 − δ, for every arm i and round t `ti ≤ µi ≤ uti .
+    The fairness of FairBandits follows almost immediately from this guarantee.
+Theorem 1. FairBandits (δ) is δ-fair.
+Proof. By Lemma 1, with probability at least 1 − δ all confidence intervals contain their true means
+across all rounds. Thus, with probability 1 − δ, at every round t, for every i ∈ S t , j ∈                   / S t , it must be
+that µj < µi – the arms not in the active set have strictly smaller means than those in the active
+set; if not, utj ≥ µj ≥ µi ≥ `ti implies j would be chained to it∗ if i is. Finally, all arms in S t are
+played uniformly at random – but since all such arms are played with the same probability, this
+does not cause the fairness constraint to bind for any pair i, i0 ∈ S t , for any realization of µi , µ0i
+which lie within their confidence intervals.
+    Next, we upper bound the regret of FairBandits.
+                             √
+Theorem 2. If δ < 1/ T , then FairBandits has regret
+                                                                 r                 !
+                                                                              T  k
+                                                R(T ) = O            k 3 T ln        .
+                                                                               δ
+                                                                   9
+
+                                                                      Figure 1: Confidence intervals over
+                                                                      time for the lower bound instance
+                                                                      outlined in Section 4 for k =
+                                                                      10. Lines correspond to upper and
+                                                                      lower confidence bounds for each
+                                                                      arm and cut off at the round in
+                                                                      which the arm leaves the active set.
+Remark 2. Before proving Theorem 2, we highlight two points. First, this bound becomes non-
+trivial (i.e. the average per-round regret is  1) for T = Ω(k 3 ). As we show in the next section, it is
+not possible to improve on this. Second, the bound may appear to have suboptimal dependence on
+T when compared to unconstrained regret bounds     √ (where
+                                                                the dependence on T is often described
+as logarithmic). However, it is known that Ω           kT regret is necessary even in the unrestricted
+setting (without fairness) if one does not make data-specific assumptions on an instance [Bubeck
+and Cesa-Bianchi, 2012] (e.g. that there is a lower bound on the gap between the best and second
+best arm). It would be possible to state a logarithmic dependence on T in our setting as well
+while making assumptions on the gaps between arms, but since our fairness constraint manifests
+itself as a cost that depends on k, we choose for clarity to avoid such assumptions. Without such
+assumptions, our dependence on T is also optimal.
+    We now prove Theorem 2. Lemma 2 upper bounds the probability any arm i active in round
+t has been pulled substantially fewer times than its expectation, i.e. nti  kt . Lemma 3 upper
+bounds the width of any confidence interval used by FairBandits in round t by η(t), conditioned
+on i being pulled the number of times guaranteed by Lemma 2. Finally, we stitch this together to
+prove Theorem 2 by upper bounding the total regret incurred for T rounds by noticing that the
+regret of any arm active in round t is at most kη(t).
+    We begin by lower bounding the probability that any arm active in round t has been pulled
+substantially fewer times than its expectation.
+                                              δ
+Lemma 2. With probability at least 1 −       2t2
+                                                 ,
+                                                   s
+                                                            2k · t2
+                                                                   
+                                             t       t
+                                       nti ≥ −         ln
+                                             k       2        δ
+for all i ∈ S t (for all active arms in round t).
+    We now use this lower bound on the number of pulls of active arm i in round t to upper-bound
+η(t), an upper bound on the confidence interval width FairBandits uses for any active arm i in
+round t.
+                                                    10
+
+                                                                                                           r
+                                                                                                                        2
+                                                                                                      t       t ln( 2kt   )
+Lemma 3. Consider any round t and any arm i ∈                          St.    Condition on      nti ≥ k  −          2
+                                                                                                                      δ
+                                                                                                                            . Then,
+                                                        v                         
+                                                        u ln (π · t)2 /3δ
+                                                        u
+                                       uti − `ti ≤ 2u                                   = η(t).
+                                                        u
+                                                                      r
+                                                                                   2
+                                                                         t ln( 2kt
+                                                        t
+                                                                t                    )
+                                                             2· k −            2
+                                                                                 δ
+    Finally, we prove the bound on the total regret of the algorithm, using the bound on the width
+of any active arm’s confidence interval in round t provided by Lemma 3.
+Proof of Theorem 2. We condition on µi ∈ [`ti , uti ] for all i, t. This occurs with probability at least
+1 − δ, by Lemma 1. We claim that this implies that arm i∗ with highest expected reward is always
+in the active set. This follows from the fact that µi∗ ∈ [`ti∗ , uti∗ ] and µj ∈ [`tj , utj ] for all j, t; thus, if
+µi∗ > µj , it must be that uti∗ ≥ `tj . Thus, this holds for it∗ , the arm with highest upper confidence
+bound in round t, so i∗ must be chained to it∗ in round t for all t.
+    We further condition on the event that for all j, t,
+                                                                s
+                                                                             2kt2
+                                                                                    
+                                                 t         t        t
+                                                nj ≥ −                ln               ,
+                                                          k        2           δ
+which holds with probability at least 1 − πδ              2 by Lemma 2 and a union bound over all times t. This
+implies that, for all rounds t, for every active arm j ∈ S t , Lemma 3 applies, and therefore
+                                                          utj − `tj ≤ η(t).
+Finally, we upper-bound the per-round regret of pulling any active arm i ∈ S t at round t. Since i∗
+is active, any i ∈ S t is chained to arm i∗ . Since all active arms have confidence interval width at
+most η(t) and i must be chained using at most k arms’ confidence intervals, we have that
+                                                       `ti ≥ uti∗ − k · η(t).
+Since µi ≥ `ti and uti∗ ≥ µi∗ , it follows that |µi − µi∗ | ≤ k · η(t) for any i ∈ S t . Finally, summing up
+over all rounds t ∈ T , we know that
+                T
+               X                                     π
+      R(T ) ≤      min(1, k · η(t)) + 1 +                    δT
+                                                      2
+               t:0
+                                                                       
+                                       s
+                            T                                 T                                          r
+                           X              ln δt             X                          π            3          kT
+                                                                                                                        + k3 )
+                 
+             ≤ k                           t   +                     1 + 1 + 2 δT = Õ(k
+                                                                                                       2   T ln
+                          q               2k                q                                                     δ
+                   t: kt >2   t ln 2tk
+                                    δ
+                                                   t: kt ≤2 t ln  2tk
+                                                                   δ
+where this bound is derived in Appendix A.1.
+4     Fair Classic Stochastic Bandits: A Lower Bound
+We now show that the regret bound for FairBandits has an optimal dependence on k: no fair
+algorithm has diminishing regret before T = Ω(k 3 ) rounds. All missing proofs are in Appendix B.
+The main result of this section is the following.
+                                                                  11
+
+Theorem 3. There is a distribution P over k-arm instances of the stochastic multi-armed bandit
+problem such that any fair algorithm run on P experiences constant per-round regret for at least
+                                                                    
+                                                               3   1
+                                                     T = Ω k ln
+                                                                   δ
+rounds.
+    Despite the fact that regret is defined in a prior-free way, the proof of Theorem 3 proceeds via
+Bayesian reasoning. We construct a family of lower bound instances such that arms have payoffs
+drawn from Bernoulli distributions, denoted B(µ) for mean µ. So, to specify a problem instance, it
+suffices to specify a mean for each of k arms: µ1 , . . . , µk . The proof formalizes the following outline.
+   1. We define an instance distribution P = P1 ×. . .×Pk over means µi (Definition 3). P will have
+       two important properties. First, we will draw means from P such that for any i ∈ [k − 1],
+       µi = µi+1 with probability at least 1/4. Second, for any realization of means drawn from P ,
+       if an algorithm plays uniformly at random over [k], it will suffer constant per-round regret.
+   2. We treat Pi as a prior distribution over mean µi , and analyze the posterior distribution
+       Pi (ri1 , , . . . , rit ) over means that results after applying Bayes’ rule to the payoff observations
+       ri1 , . . . , rit made by the algorithm. Bayes’ rule implies (Lemma 4) the joint distribution over
+       rewards and means drawn from P is identical to the distribution which first draws means
+       according to P , then draws rewards conditioned on those means, and finally resamples the
+       means from the posterior distribution on means. Thus, we can reason about fairness (a
+       frequentist quantity) by analyzing the Bayesian posterior distribution on means conditioned
+       on the observed rewards.
+   3. A δ-fair algorithm, for any set of means realized from the instance (prior) distribution, must
+       not play arm i + 1 with lower probability than arm i if µi = µi+1 , except with probability
+       δ. By the above change of perspective, therefore, any δ-fair algorithm must play arms i and
+       i + 1 with equal probability until the posterior distribution on means given observed rewards,
+       satisfies P [µi = µi+1 |h] < δ (Lemmas 5 and 6).
+   4. We finally lower bound the number of reward observations necessary before the posterior
+       distribution on means given payoffs is such that P [µi = µi+1 |h] < δ for any pair of adjacent
+       arms i, i + 1. We show that this is Ω(k 2 ) (Lemma 7). Since fair algorithms must play
+       from among the k arms uniformly at random until this point, with high probability, no arm
+       accumulates sufficiently many reward observations until T = Ω(k 3 ) rounds of play.
+    We begin by describing our distribution over instances. Each arm i’s payoff distribution will be
+Bernoulli with mean µi ∼ Pi independently of each other arm.
+Definition 3 (Prior Distribution over µi ). For each arm i, µi is distributed according to the
+distribution with the following probability mass function:
+                                                       (
+                                                         1                i
+                                                             if x = 13 + 3k
+                                              Pi (x) = 12
+                                                         2   if x = 13 + i+1
+                                                                          3k .
+                    Q
+    Let P = i Pi denote the joint distribution on arms’ expected payoffs.
+    We treat P as a prior distribution over instances, and analyze the posterior distribution on
+instances given the realized rewards. Lemma 4 justifies this reasoning.
+                                                            12
+
+Lemma 4. Consider the following two experiments: In the first, let µi ∼ Pi and ri1 , . . . , rit ∼
+B(µi ), and W denote the joint distribution on (µi , ri1 , . . . , rit ). In the second, let µi ∼ Pi , and
+ri1 , . . . , rit ∼ B(µi ), and then re-draw the mean µ0i ∼ Pi (ri1 , . . . , rit ) from its posterior distribution
+given the rewards. Let (µ0i , ri1 , . . . , rit ) ∼ W 0 . Then, W and W 0 are identical distributions.
+    Next, we lower-bound               the number of reward observations necessary such that for some i ∈ [k]:
+P µi = µi+1 |ht < δ with respect to the posterior. It will be useful to refer to an algorithm’s
+                        
+histories as distinguishing the mean of an arm given that history with high probability.
+Definition 4 (δ-distinguishing). We will say ht δ-distinguishes arm i for A if, for some α ∈ [0, 1],
+                                                  Pµ0i ∼Pi (ht ) µ0i = α ≥ 1 − δ.
+                                                                       
+                                                              √
+       The next lemma shows that if no arm is δ-distinguished by a history, all pairs of arms i, i + 1
+have posterior probability strictly greater than δ of having equal means.
+                                                                               √
+Lemma 5. Suppose A has history ht , and that ht does not δ-distinguish any arm i. Then, for
+all arms i, i + 1,
+                                                       P µi = µi+1 |ht > δ.
+                                                                        
+       Now, we prove that for any fair algorithm, with probability ≥ 21 over the draw of histories ht , ht
+           √
+must 2δ-distinguish some arm, or the algorithm must play uniformly across all k arms conditioned
+on ht .
+Lemma 6. Suppose an algorithm A is δ-fair. Then:
+                                             √
+                                                                                                            
+                                t                                            0                 t0         1     1
+                   Pht ∼A h does not 2δ-distinguish any i ∧ ∃t ≤ t, i ∈ [k] : πi0 |ht0 6=                      ≤ .
+                                                                                                          k     2
+       We now lower-bound the number of observations from arm i which are required to δ-distinguish
+it.
+                                                                                                     √
+Lemma 7. Fix any δ < 81 . Let µi ∼ Pi as in Definition 3. Then, arm i is 2δ-distinguishable by
+                                                                0
+ht only if Ti = Ω(k 2 ln 1δ ), where Ti = |{t0 : ht2 = i, t0 ≤ t}| is the number of times arm i is played.
+                                  1
+Proof. Write p, p + 3k               to represent the two possible realizations that µi might take, when drawn
+from the distribution over instances given in√Definition 3. Let A represent the event that µi = p
+and B the event that µi = p + 3k              1
+                                                . Let δ 0 = 2δ throughout.
+                              t
+       Fix a history h , and let m = Ti represent the number of observations of arm i’s reward. We
+will abuse notation and use hti to refer to the payoff sequence of arm i observed in history ht . hti is
+therefore a binary sequence of length m; let ||hti ||0 = s denote the number of 1s in the sequence. We
+                                                                                             0      P[B|hti ]   P[B|hti ] δ0
+will calculate conditions under which hti , m, s will imply that either 1−δ               δ 0 ≤ P[A|ht ] or P[A|ht ] ≤ 1−δ 0
+                                                                                                          i          i
+holds, implying that one of A or B has posterior probability at least 1 − δ 0 , conditioned on the
+observed rewards. If neither of these is the case, i is not δ 0 -distinguished by ht .
+                                                                                 P[B|ht ]       P[ht |B ]
+       We begin by rearranging our definition of this ratio X = P A|hti = P hit |A ,which follows from
+                                                                                  [ i]            [ i ]
+Bayes’ rule and the fact that P [A] = P [B]. We wish to upper and lower bound X in terms of hti ’s
+value. By definition of the Bernoulli distribution, we have that
+                                              1 s               1 m−s
+                                                                                1 s
+                                                                                                               m−s
+                      P hti |B
+                                                                
+                                                   1 − p − 3k
+                                                                                   
+                                         p + 3k                                                        1
+                X=                   =                                  = 1+               1−                        .
+                       P [hti |A]            (p)s (1 − p)m−s                   3kp                3k(1 − p)
+                                                                     13
+
+                                                                     δ 0                  1−δ  0
+We now calculate under what conditions either (a) X ≤ 1−δ                0 , or (b) X ≥     δ 0 . One of these must
+              0
+hold if i is δ -distinguished. Before we do so, we mention that a Chernoff bound implies that with
+probability 1 − δ 0 , for events r  A and B, Equations 1 and 2, respectively:                      r
+                                            2                                             m                2
+                    |s − mp| ≤ 2m ln 0                   (1)                  |s − mp − | ≤ 2m ln 0                  (2)
+                                           δ                                              3k               δ
+                                                                       1                         m
+since the mean of m Bernoulli trials with mean p ( or p + 3k ) is mp (or mp + 3k ).
+                                                      √
+    We begin by analyzing case (a), where δ 0 = 2δ < 1/2 implies
+                                                           s                       m−s
+                                     δ0
+                                                 
+                            0                           1                      1
+                         2δ >             ≥X=      1+              1−                       .
+                                   1 − δ0             3kp                 3k(1 − p)
+Taking logarithms on both sides, we have that
+                                                                 
+          0                 1                              1                     1                       1
+    ln(2δ ) > s ln 1 +              + (m − s) ln 1 −                   ≥s             − (m − s)
+                          3kp                         3k(1 − p)              3kp + 1               3k(1 − p) − 1
+                                                      x
+where the inequality follows from ln(1 + x) ≥        x+1  for x ∈ [−1, ∞]. Then, this implies that
+   (3kp + 1)(3k(1 − p) − 1) ln(2δ 0 ) > s(3k(1 − p) − 1) − (m − s)(3kp + 1)                 = 3ks − 3kpm − m.
+Multiplying both sides by −1, this implies that
+                                                            1
+                           (3kp + 1)(3k(1 − p) − 1) ln           < m + 3kpm − 3ks.
+                                                           2δ 0
+                                                       q
+Equation 1 implies |3ks − 3kmp − m| ≤ m + 3k             2m ln δ20 , which with the previous line implies
+                                                                               r
+                                                           1                            2
+                           (3kp + 1)(3k(1 − p) − 1) ln 0 < m + 3k 2m ln 0 .
+                                                          2δ                            δ
+                                          √
+Since p, 1 − p ∈ [1/3, 2/3] and δ 0 = 2δ, solving for m implies that m = Ω(k 2 ln δ10 ).
+    In case (b), we have
+                                                 1 s
+                                                                              m−s
+                         1 − δ0
+                                                    
+                  1                                                  1                    s    −(m−s)
+                      <            ≤X=      1+           1−                         ≤ e 3kp e 3k(1−p)
+                 2δ 0      δ0                   3kp             3k(1 − p)
+where we used the fact that 1 + x ≤ ex for all x. Taking logarithms, this will imply that
+     s       m−s               1                                                                 1    6k     1
+        −              > ln 0 ⇒ s − mp = s(1 − p) − (m − s)p > 3kp(1 − p) ln 0 ≥                         ln 0    (3)
+   3kp 3k(1 − p)              2δ                                                                2δ     9    2δ
+whose last inequality comes the range of p. Combining this inequality with Equation 2, this implies
+                                          r
+                                                   1    m        6k        1
+                                           2m ln 0 +        >        ln 0
+                                                  2δ     k        9       2δ
+and solving for m and substituting for δ 0 gives that m = Ω(k 2 ln 1δ ).
+                                 0           δ0
+    Thus, if either X ≥ 1−δ   δ 0 or X ≤ 1−δ 0 , it must be that m = Ω(k ln δ ).
+                                                                                  2   1
+    We now have the tools in hand to prove Theorem 3.
+                                                       14
+
+Proof of Theorem 3. Assume A is some δ-fair algorithm where δ < 1/8. Fix T ; we claim that with
+probability at least 21 , for any t = o(k 3 ln 1δ ), t ≤ T , πj|h              t          1
+                                                                                    t = k for all j. Since the payoff for uniformly
+random play is ≤ 21 + k1 , while the best arm has payoff ≥ 23 , in any round t where πi|h                                     t      t
+                                                                                                                                t = πi0 |ht for
+         0
+all i, i ∈ [k], the algorithm suffers Ω(1) regret in that round.
+     Lemma 6 implies that, with probability at least 12 over the distribution over histories ht , either
+       t0          t0                     0          0                  t
+                                                                                   √
+(a) πi|h    t0 = πi0 |ht0 for all i, i ∈ [k], t ≤ t or (b) h must                     2δ-distinguish some arm i. Case (a) implies
+                                                                                      √
+our claim. In case (b), Lemma 7 states than an arm i is 2δ-distinguishable only if Ti = Ω(k 2 ln 1δ ).
+We now argue that unless t = Ω(k 3 ln 1δ ), Ti = o(k 2 ln 1δ ), which will imply our claim for case (b).
+                                                                                                                        0
+     Fix some i, t. We lower-bound t for which, with probability at least 1 − δk over histories ht , it
+                                                                     0           0                      0           0
+will be the case that nti ≥ c · k 2 ln 1δ when πi|h                 t          t
+                                                                       t0 = πi0 |ht0 for all i, i ∈ [k], t ≤ t. Let X1 , . . . , Xt be
+indicator variables of arm i being played in round t0 ≤ t. Note that for all t0 ≤ t, E[Xt0 ] = k1 , since
+in all rounds prior to t, we have all arms are played with equal probability. For any  ∈ [0, 1], as
+   0
+nti are nondecreasing in t0 , an additive Chernoff bound implies
+                                                                                                         
+                                                                   
+                                                     0    t                   X                  t                     2
+                               P ∃t0 ≤ t : nti ≥ + t ≤ P                           Xt0 > + t ≤ e−2t
+                                                          k                    0
+                                                                                                 k
+                                                                              t ≤t
+                        q
+                            t ln 2k
+                                                         hP                           i
+                                  δ0                                        t                 δ0
+which, for t =                 2     , becomes P           t0 ≤t Xt0 >     k + t ≤          k.   So, using a union bound over all k
+                                                                                                           q 2k
+                                              0                                             t       t         t ln δ0
+arms, with probability 1 − δ , for some fixed t and all i, ni ≤ k +                                               2 . We condition on the
+event that ni satisfies this inequality for a fixed t and all i. If ni ≥ c · k ln 1δ , this implies
+                  t                                                                                 t           2
+                                    s                                                     s
+                                               2k
+                            t           t  ln   δ0               1                              t ln 2kδ0                1
+                                +                  ≥ c · k 2 ln         ⇒ t ≥ −k                           + c · k 3 ln .
+                            k               2                    δ                                  2                     δ
+                                                                                                  c2 4
+     q 2k
+          t ln δ0                                                                                         2 1
+If k              ≤   c
+                         · k 3 ln 1 , then t ≥ c · k 3 ln 1 ; if not, then t ≥ 2 k ln δ . Thus, nt < c · k 2 ln 1 with
+              2       2             δ                  2          δ                                  ln 2k                  i         δ
+                                                                                                  δ0
+                                                                                   c2 4 2 1
+                                                               
+                                                                                      k ln
+probability 1 − δ 0 for all i unless t ≥ min 2c · k 3 ln 1δ , 2 ln 2k δ = Ω(k 3 ln 1δ ) for δ 0 ∈ [ 12 , 1].
+                                                                                         δ0
+5      KWIK Learnability Implies Fair Bandit Learnability
+In this section, we show if a class of functions is KWIK learnable, then there is a fair algorithm
+for learning the same class of functions in the contextual bandit setting, with a regret bound
+polynomially related to the function class’ KWIK bound. Intuitively, KWIK-learnability of a class
+of functions guarantees we can learn the function’s behavior to a high degree of accuracy with a high
+degree of confidence. As fairness constrains an algorithm most before the algorithm has determined
+the payoff functions’ behavior accurately, this guarantee enables us to learn fairly without incurring
+much additional regret. Formally, we prove the following polynomial relationship.
+Theorem 4. For an instance of the contextual multi-armed bandit problem where fj ∈ C for
+all j ∈ [k], if C is (, δ)-KWIK learnable with bound m(, δ), KWIKToFair (δ, T ) is δ-fair and
+achieves regret bound:
+                                                                                                               
+                                                               2           ∗ min (δ, 1/T )                 3     k
+                                  R(T ) = O max k · m  ,                                              , k ln
+                                                                                      T 2k                       δ
+for δ ≤       √1
+                T
+                  where ∗ = arg min (max( · T, k · m(, min(δ,1/T               kT 2
+                                                                                          )
+                                                                                             ))).
+                                                                          15
+
+     First, we construct an algorithm KWIKToFair(δ, T ) that uses the KWIK learning algorithm
+as a subroutine, and prove that it is δ-fair. A call to KWIKToFair(δ, T ) will initialize a KWIK
+learner for each arm, and in each of the T rounds will implicitly construct a confidence interval
+around the prediction of each learner. If a learner makes a numeric valued prediction, we will
+interpret this as a confidence interval centered at the prediction with width ∗ . If a learner outputs
+⊥, we interpret this as a trivial confidence interval (covering all of [0, 1]). We use the same chaining
+technique that we use in the classic stochastic setting. In every round t, KWIKToFair (δ, T )
+identifies the arm it∗ = arg maxi uti that has the largest upper confidence bound. At each round
+t, we will say i is linked to j if [`ti , uti ] ∩ [`tj , utj ] 6= ∅, and i is chained to j if they are in the same
+component of the transitive closure of the linked relation. Then, it plays uniformly at random
+amongst all arms chained to arm it∗ . Whenever all learners output predictions, they need no
+feedback. When a learner for j outputs ⊥, if j is selected then we have feedback rjt to give it; on
+the other hand, if j isn’t selected, we “roll back” the learning algorithm for j to before this round
+by not updating the algorithm’s state.
+  1:  procedure KWIKToFair(δ, T )
+                   min(δ, 1 )
+  2:      δ ∗ ← kT 2 T , ∗ ← arg min (max( · T, k · m(, δ ∗ )))
+  3:      Initialize KWIK(∗ , δ ∗ )-learner Li , hi ← [ ] ∀i ∈ [k]
+  4:      for 1 ≤ t ≤ T do
+  5:            S←∅                                                                    . Initialize set of predictions S
+  6:            for i = 1, . . . , k do
+  7:                 sti ← Li (xti , hi )
+  8:                 S ← S ∪ sti                                                                   . Store prediction sti
+  9:            if ⊥∈ S then
+10:                  Pull j ∗ ← (x ∈R [k]), receive reward rjt ∗                 . Pick arm at random from all arms
+11:             else
+12:                  it∗ ← arg maxi sti
+13:                  S t ← {j | (stj − ∗ , stj + ∗ ) chains to (stit − ∗ , stit + ∗ )}
+                                                                     ∗           ∗
+14:                  Pull j ∗ ← (x ∈R S t ), receive reward rjt ∗       . Pick arm at random from active set sti∗
+15:             hj ∗ ← hj ∗ :: (xtj ∗ , rjt ∗ )                                           . Update the history for Lj ∗
+     We begin by bounding the probability of certain failures of KWIKToFair in Lemma 8, proven
+in Appendix C. This in turn lets us prove the fairness of KWIKToFair in Theorem 5.
+Lemma 8. With probability atPleast                1 − min(δ, T1 ), for all rounds t and all arms i, (a) if sti ∈ R
+then |sti − fi (xti )| ≤ ∗ and (b) t I sti = ⊥ and i is pulled ≤ m(∗ , δ ∗ ).
+                                                
+Theorem 5. KWIKToFair(δ, T ) is δ-fair.
+Proof of Theorem 5. We condition on both (a) and (b) holding for all arms i and rounds t from
+Lemma 8, which occur with probability 1 − δ for all arms and all times t. Therefore, we proceed
+by conditioning on the event that for all arms i and all rounds t, if Li = sti for sti 6= ⊥ then
+|sti − fi (xti )| ≤ ∗ . Having done so, there are two possibilities for each round t.
+     In case 1, for each i we have that Li (xti ) = sti 6= ⊥. By the condition above, for any arms i and
+j, fi (xti ) ≥ fj (xtj ) implies that sti + ∗ ≥ stj − ∗ . Since in this case no learner outputs ⊥, arm j
+chains to the top arm only if arm i does. Therefore πi|h             t ≥ π t . In case 2, there exists some i such
+                                                                              j|h
+that Li (xti ) = ⊥. Then we choose uniformly at random across all arms, so πi|h                  t = π t for all i and
+                                                                                                         j|h
+j.
+     Thus, with probability at least 1−δ, for each round t, fi (xti ) ≥ fj (xtj ) implies that πi|h        t ≥ πt .
+                                                                                                                 j|h
+                                                               16
+
+     We now use the KWIK bounds of the KWIK learners to upper-bound the regret of KWIKTo-
+Fair(δ, T ).
+Lemma 9. KWIKToFair(δ, T ) achieves regret O(max(k 2 · m(∗ , δ ∗ ), k 3 ln Tδk )).
+Proof. We first condition on the event that both (a) and (b) from Lemma 8 hold for all t, i, which
+holds with probability 1 − min(δ, T1 ), and bound the regret when they both hold. Choose an
+arbitrary round t in the execution of KWIKToFair(δ, T ). As above, there are two cases. In the
+first case, Li (xti ) = sti 6= ⊥ for all i and we choose uniformly at random from the arms chained by
+∗ -intervals to the arm with the highest prediction. Since we have conditioned on the event that all
+KWIK learners are correct, i∗ ∈ S t . Furthermore, for any i, j ∈ S t , we have that |sti − stj | ≤ 2k∗ ,
+and in particular that |sti − sti∗ | ≤ 2k∗ . Thus, the regret is at most 2k∗ in such a round. In the
+second case some arm outputs ⊥, so we choose randomly from all k arms, and the worst-case regret
+is 1. Thus, the total regret will be at most 2k∗ T + n + δT where n is the number of rounds in
+which some Li outputs ⊥.
+     We now upper bound ni , the number of rounds in which arm i outputs ⊥. Fix some arm i which
+outputs ⊥ in ni rounds. Arm i is played and therefore receives feedback every time it outputs ⊥
+with probability at least 1/k. Thus, using a Chernoff     q         bound, with probability 1 − δ 0 , arm i receives
+feedback for ni outputs of ⊥ in at least nki − 2ni ln δ20 rounds. Li has the guarantee that there
+can be at most m(∗ , δ ∗ ) many such rounds (in which it outputs ⊥ and receives feedback). Thus,
+                                                                   r
+                                                 ∗ ∗      ni                 2
+                                           m( , δ ) ≥         − 2ni ln 0 .
+                                                           k                δ
+If ni ≥ ck · m(∗ , δ ∗ ), this implies
+                                                                 r
+                                    ∗  ∗              ∗   ∗                               2
+                               m( , δ ) ≥ c · m( , δ ) −          2ck · m(∗ , δ ∗ ) ln    .
+                                                                                          δ0
+We now analyze cases in which (1) k ln δ20 ≤ m(∗ , δ ∗ ) and (2) k ln δ20 > m(∗ , δ ∗ ).
+     Case (1) this implies
+                                                                     √
+                                   m(∗ , δ ∗ ) ≥ c · m(∗ , δ ∗ ) − 2c · m(∗ , δ ∗ ).
+For c > 4, this leads to contradiction. Thus, in this case, if we set δ 0 =P                   δ
+                                                                                               k , we know that with
+probability 1 − δ, ni ≤ 4k · m(∗ , δ ∗ ) which summing up over all i implies i ni ≤ 4k 2 · m(∗ , δ ∗ ),
+as desired.
+     In case (2), we have that                                  r
+                                                  2     ni                2
+                                               ln 0 ≥       − 2ni ln 0
+                                                  δ     k                 δ
+which solving for ni implies that ni = O(k 2 ln δ0 ), so i ni = O(k 3 ln kδ ) by setting δ 0 = kδ and taking
+                                                        1         P
+a union bound. Thus, there are at most n = O(max(k 2 · m(, δ ∗ ), k 3 ln kδ )) rounds in expectation
+during the execution of KWIKToFair(δ, T ) in which some arm outputs ⊥.
+     Combining both cases, the total regret incurred by KWIKToFair(δ, T ) across all T rounds is
+                                       
+                       ∗ ∗               k                                  1                                  k
+               2
+  R(T ) = 4k · m( , δ ) + k ln   3
+                                               + T · 2k∗ + T · min(δ, ) = O(max(k 2 · m(∗ , δ ∗ ), k 3 ln )).
+                                         δ                                  T                                  δ
+                                                            17
+
+    Our presentation of KWIKToFair(δ, T ) has a known time horizon T . Its guarantees extend
+to the case in which T is unknown via the standard “doubling trick” to prove Theorem 4 in
+Appendix C.
+    An important instance of the contextual bandit problem is the linear case, where C consists
+of the set of all linear functions of bounded norm in d dimensions. This captures the natural
+setting in which the rewards of each arm are governed by an underlying linear regression model
+on a d-dimensional real valued feature space. The linear case is well studied, and there are known
+KWIK algorithms [Strehl and Littman, 2008] for the set of linear functions C, which allows us via
+our reduction to give a fair contextual bandit algorithm for this setting with a polynomial regret
+bound.
+Lemma 10 ([Strehl and Littman, 2008]). Let C = {fθ |fθ (x) = hθ, xi, θ ∈ Rd , ||θ|| ≤ 1} and
+X = {x ∈ Rd : ||x|| ≤ 1}. C is KWIK learnable with KWIK bound m(, δ) = Õ(d3 /4 ).
+    Then, an application of Theorem 4 implies that KWIKToFair has a polynomial regret guar-
+antee for the class of linear functions. This proof can be found in Appendix C.
+Corollary 1. Let C and X be as in Lemma 10, and fj ∈ C for each j ∈ [k]. Then, KWIKTo-
+Fair(T, δ) using the learner from [Strehl and Littman, 2008] has regret:
+                                                                              
+                                                                              k
+                                     R(T ) = Õ max T 4/5 k 6/5 d3/5 , k 3 ln      .
+                                                                              δ
+6     Fair Bandit Learnability Implies KWIK Learnability
+In this section, we show how to use a fair, no-regret contextual bandit algorithm to construct
+a KWIK learning algorithm whose KWIK bound has logarithmic dependence on the number of
+rounds T . Intuitively, any fair algorithm which achieves low regret must both be able to find and
+exploit an optimal arm (since the algorithm is no-regret) and can only exploit that arm once it
+has a tight understanding of the qualities of all arms (since the algorithm is fair). Thus, any fair
+no-regret algorithm will ultimately have tight (1 − δ)-confidence about each arm’s reward function.
+Theorem 6. Suppose A is a δ-fair algorithm for the contextual bandit problem over the class of
+functions C, with regret bound R(T, δ). Suppose also there exists f ∈ C, x(`) ∈ X such that for
+every ` ∈ [d 1 e], f (x(`)) = ` · . Then, FairToKWIK is an (, δ)-KWIK algorithm for C with
+KWIK bound m(, δ), with m(, δ) the solution to m(,δ)         4   = R(m(, δ), 2T δ
+                                                                                        ).
+Remark 3. The condition that C should contain a function that can take on values that are multiples
+of  is for technical convenience; C can always be augmented by adding a single such function.
+    Our aim is to construct a KWIK algorithm B to predict labels for a sequence of examples
+labeled with some unknown function f ∗ ∈ C. To do this, we will run our fair contextual bandit
+algorithm A on an instance that we construct online as examples xt arrive for B. The idea is to
+simulate a two arm instance, in which one arm’s rewards are governed by f ∗ (the function to be
+KWIK learned), and the other arm’s rewards are governed by a function f that we can set to take
+any value in {0, , 2, . . . , 1}. For each input xt , we perform a thought experiment and consider A’s
+probability distribution over arms when facing a context which forces arm 2’s payoff to take each
+of the values 0, ∗ , 2∗ , . . . , 1. Since A is fair, A will play arm 1 with weakly higher probability than
+arm 2 for those ` : `∗ ≤ f (xt ); analogously, A will play arm 1 with weakly lower probability than
+arm 2 for those ` : `∗ ≥ f (xt ). If there are at least 2 values of ` for which arm 1 and arm 2 are
+                                                           18
+
+played with equal probability, one of those contexts will force A to suffer ∗ regret, so we continue
+the simulation of A on one of those instances selected at random, forcing at least ∗ /2 regret in
+expectation, and at the same time have B return ⊥. B receives f ∗ (xt ) on such a round, which is
+used to construct feedback for A. Otherwise, A must transition from playing arm 1 with strictly
+higher probability to playing 2 with strictly higher probability as ` increases: the point at which
+that occurs will “sandwich” the value of f (xt ), since A’s fairness implies this transition must occur
+when the expected payoff of arm 2 exceeds that of arm 1. B uses this value to output a numeric
+prediction.
+     An
+      1 important         fact we exploit is that we can query A’s behavior on (xt , x(`)), for any xt and
+` ∈ d ∗ e without providing it feedback (and instead “roll back” its history to ht not including the
+            
+query (xt , x(`))). We update A’s history by providing it feedback only in rounds where B outputs
+⊥.
+  1: procedure FairToKWIK(, δ, T )
+                                 ∗
+  2:      ∗ ← 2 , δ ∗ ← δ·                                        ∗
+                                T , h ← [ ], initialize fair A(δ , T ) for class C
+  3:      for 1 ≤ t ≤ T do
+  4:           ht ← h 
+               for ` ∈ d 1∗ e do
+                                 
+  5:
+                                   t,`
+  6:               Let (pt,`                                        t    t
+                             1 , p2 ) = (π1|ht , π2|ht )) be A(h , (x , x(`)))’s dist. over arms given h
+                                                                  t,`0      t,`0
+               if ∃` 6= `0 : `, `0 ∈ d 1∗ e : pt,`        t,`
+                                              
+  7:                                               1 = p2 = p1 = p2 then
+  8:
+  9:               Choose x(`)     ˆ ∈R {x(`), x(`0 )}                         . One of x(`), x(`0 ) must cause ∗ regret
+10:                            t
+                   Select a ∼ A(ht , (xt , x(`)))   ˆ                                     . Run A to get a predicted arm
+11:                Predict ŷ ← ⊥t
+12:                if at = 1 then
+13:                      r1t ← y t and h ← ht :: ((xt , x(`)), ˆ 1, rt )                             . Use KWIK feedback
+                                                                       1
+14:                else
+15:                      r2t ← `ˆ∗
+16:                      h ← ht :: ((xt , x(`)),ˆ 2, rt )                                  . Construct feedback for arm 2
+                                                        2
+17:            else                                                                            . A’s history is not updated
+                   if pt,`        t,`               1 
+18:                       1 ≤ p2 for all ` ∈ d ∗ e then
+19:                      `ˆ ← 0
+                                                                                 ˆ      ˆ
+20:                else Let `ˆ be the largest index for which pt,1 ` > pt,2 `
+21:                Predict ŷ t ← `ˆ · ∗
+Proof. For a fixed run of A, we calculate the probability that for all times t and ` ∈ d 1∗ e , it
+                                                                                                                       
+is the case that pt,`               t,`           ∗ t            ∗                  t,`      t,`
+                          1 > p2 only if f (x ) > ` ·  and also p1 < p2 only if f (x ) < ` ·  . In
+                                                                                                          ∗ t         ∗
+                                        T                                                                   t
+this run, A is queried          on ∗ histories and contexts: prefixes of h along with (x , x(`)) for each
+                   1
+t ∈ [T ], ` ∈ d ∗ e . The fairness of A implies for any fixed ht and fixed (xt , x(`)), with probability
+                       
+1 − δ ∗ , pt,`      t,`               ∗ t        ∗         t,`    t,`              ∗ t
+           1 > p2 only if f (x ) > ` and p1 < p2 only if f (x ) < ` . Then, by a union bound
+                                                                                                 ∗
+                            1
+over t ∈ [T ], ` ∈ d ∗ e , with                                         ∗  T
+                                                         at least 1 − δ ∗ = 1 − δ, A(ht , xt , x(`)) will satisfy this
+                                         probability
+                                           1
+                                             
+property for all t ∈ [T ], ` ∈ d ∗ e . We condition on this holding in the remainder of the proof.
+     We now argue that the numeric predictions of B are correct within an additive . Let:
+                                                     E t = {` : pt,`
+                                                                  1 = p2 }.
+                                                                           t,`
+When B(xt ) = y t ∈ [0, 1], note that |E t | ≤ 1, else B would have output ⊥.
+                                                                19
+
+     If pt,`     t,`                         t                      t,0       t,0       t,1     t,1
+          1 ≤ p2 for all `, since |E | ≤ 1, either p1 < p2 or p1 < p2 , which we have conditioned
+on implying that either f ∗ (xt ) < f (x(0)) = 0 or f ∗ (xt ) < f (x(1)) = ∗ . Since f ∗ (xt ) ≥ 0, this
+implies f ∗ (xt ) ∈ [0, ∗ ) = [`ˆ ∗ , ∗ ) = [ŷ t , ŷ t + ∗ ).
+                                         ˆ       ˆ
+     Otherwise, we have that pt,1 ` > pt,2 ` , and pt,`                 t,`                 ˆ           ˆ       1
+                                                              1 ≤ p2 for all ` > `. If (a) ` = d ∗ e, then f (x ) > 1,
+                                                                                                                           ∗ t
+a contradiction, so `ˆ < d 1∗ e. If (b) `ˆ = d 1∗ e − 1, then f ∗ (xt ) > f (x(`))                   ˆ = (d 1∗ e − 1)∗ and so
+                                                                                                                    
+f ∗ (xt ) ∈ ((d 1∗ e − 1)∗ , 1] = (yˆt , ŷ t + ∗ ], so yˆt is ∗ -accurate. If neither (a) nor (b), then (c) it
+must be `ˆ < d 1∗ e − 1. Since |E t | ≤ 1, for some ` ∈ {`ˆ + 1, `ˆ + 2}, we know that pt,`                                 t,`
+                                                                                                                       1 < p2 ; thus,
+f ∗ (xt ) < f (x(`)) ≤ (`ˆ + 2)∗ and therefore f ∗ (xt ) ∈ (`             ˆ ∗ , (`ˆ + 2)∗ ) = (ŷ t , ŷ t + 2∗ ).
+     Finally, we upper-bound m(, δ), the number of rounds t : B(xt ) = ⊥. For each such t, A runs on
+a random draw of one of two contexts, one of whose arms’ payoffs differ by at least ∗ . Thus, for one
+of those contexts, either f ∗ (xt ) ≥ f (x)−∗ or f ∗ (xt ) ≤ f (x)−∗ . In either case, since pt,`                              t,`
+                                                                                                                         1 = p2 = 2
+                                                                                                                                      1
+                                                                  ∗                                              ∗
+for x(`) = x, A suffers expected regret at least 2 for that context, and at least 4 when faced with
+                                                           ∗
+one chosen at random. Thus, m(, δ) · 4 = m(, δ) · 8 < R(m(, δ), δ ∗ ) = R(m(, δ), 2T                                 δ
+                                                                                                                               ), since
+A’s regret is upper bounded by this quantity over m(, δ) rounds (which is an upper bound on the
+number of rounds for which A is actually run and updated).
+6.1      An Exponential Separation Between Fair and Unfair Learning
+In this section, we exploit the other direction of the equivalence we have proven between fair
+contextual bandit algorithms and KWIK learning algorithms to give a simple contextual bandit
+problem for which fairness imposes an exponential cost in its regret bound. This is in contrast to
+the case in which the underlying class of functions is linear, for which we gave fair contextual bandit
+algorithms with regret bounds within a polynomial factor of their unconstrained counterparts. In
+this problem, the context domain is the d-dimensional boolean hypercube: X = {0, 1}d – i.e. the
+context each round for each individual consists of d boolean attributes. Our class of functions C is
+the class of boolean conjunctions:
+               C = {f | f (x) = xi1 ∧ xi2 ∧ . . . ∧ xik where 0 ≤ k ≤ d and i1 , . . . , ik ∈ [d]}.
+     We first give a simple but unfair algorithm, ConjunctionBandit, for this problem which
+obtains a regret bound which is linear in d. It maintains a set of candidate variables Cj∗ for each
+conjunction fj ; this set shrinks across rounds, while always containing the true set of variables over
+which fj is defined. We denote the boolean value of variable m in the context for arm j in round t
+by xtj,m .
+     The formal claim and proof that ConjunctionBandit achieves regret R(T ) = O(k 2 d), as well
+as ConjunctionBandit’s formal description, can be found in Appendix C. ConjunctionBandit
+violates the fairness in every round t in which it predicts 0 for arm i but 1 for arm j even though
+fi (xt ) = fj (xt ) = 1, as πit = 0 < k1 < πjt .
+     We now show that fair algorithms cannot guarantee subexponential regret in d. This relies
+upon a known lower bound for KWIK learning conjunctions [Li, 2009]:
+                                                                                         d
+Lemma 11. There exists a sequence of examples (x1 , . . . , x2 −1 ) such that for , δ ≤ 1/2, every
+(, δ)-KWIK learning algorithm B for the class C of conjunctions on d variables must output ⊥ for
+xt for each t ∈ [2d − 1]. Thus, B has a KWIK bound of at least m(, δ) = Ω(2d ).
+     We then use the equivalence between fair algorithms and KWIK learning to translate this lower
+bound on m(, δ) into a minimum worst case regret bound for fair algorithms on conjunctions. We
+modify Theorem 6 to yield the following lemma, proven in Appendix C.
+                                                                    20
+
+Lemma 12. Suppose A is a δ-fair algorithm for the contextual bandit problem over the class C of
+conjunctions on d variables. If A has regret bound R(T, δ) then for δ 0 = 2T δ, FairToKWIK is an
+(0, δ 0 )-KWIK algorithm for C with KWIK bound m(0, δ 0 ) = 4R(m(0, δ 0 ), δ).
+     Lemma 11 then lets us lower-bound the worst case regret of fair learning algorithms on con-
+junctions.
+                                1
+Corollary 2. For δ < 2T           , any δ-fair algorithm for the contextual bandit problem over the class C
+of conjunctions on d boolean variables has a worst case regret bound of R(T ) = Ω(2d ).
+Proof. Let T ≤ 2d−1 . We know then that if δ 0 < 1, Lemma 11 guarantees the existence of a sequence
+of contexts x1 , . . . , xT for which any (0, δ 0 )-KWIK algorithm has KWIK bound m(T, 0, δ 0 ) = T .
+     Lemma 12 implies 4R(m(T, 0, δ 0 ), δ) gives a KWIK bound of m(T, 0, δ 0 ) when δ 0 = 2T δ. Thus,
+                                                                  0)
+if δ < 2T 1
+            , then δ 0 < 1 and so R(m(T, 0, δ 0 ), δ) = m(T,0,δ4     = T4 .
+     Together with the analysis of ConjunctionBandit, this demonstrates a strong separation
+between fair and unfair contextual bandit algorithms: when the underlying functions mapping
+contexts to payoffs are conjunctions on d variables, there exist a sequence of contexts on which fair
+algorithms must incur regret exponential in d while unfair algorithms can achieve regret linear in
+d.
+References
+Philip Adler, Casey Falk, Sorelle A. Friedler, Gabriel Rybeck, Carlos Scheidegger, Brandon Smith, and Suresh
+   Venkatasubramanian. Auditing black-box models by obscuring features. CoRR, abs/1602.07043, 2016. URL
+   http://arxiv.org/abs/1602.07043.
+Alekh Agarwal, Daniel J. Hsu, Satyen Kale, John Langford, Lihong Li, and Robert E. Schapire. Taming the monster:
+   A fast and simple algorithm for contextual bandits. In Proceedings of the 31th International Conference on Machine
+   Learning, ICML 2014, Beijing, China, 21-26 June 2014, pages 1638–1646, 2014.
+Kareem Amin, Michael Kearns, and Umar Syed.               Graphical models for bandit problems.        arXiv preprint
+   arXiv:1202.3782, 2012.
+Kareem Amin, Michael Kearns, Moez Draief, and Jacob D Abernethy. Large-scale bandit problems and kwik learning.
+   In Proceedings of the 30th International Conference on Machine Learning (ICML-13), pages 588–596, 2013.
+Peter Auer, Nicolo Cesa-Bianchi, and Paul Fischer. Finite-time analysis of the multiarmed bandit problem. Machine
+   learning, 47(2-3):235–256, 2002.
+Solon Barocas and Andrew D. Selbst. Big data’s disparate impact. California Law Review, 104, 2016. Available at
+   SSRN: http://ssrn.com/abstract=2477899.
+Anna Maria Barry-Jester, Ben Casselman, and Dana Goldstein. The new science of sentencing. The Marshall Project,
+   August 8 2015. URL https://www.themarshallproject.org/2015/08/04/the-new-science-of-sentencing. Re-
+   trieved 4/28/2016.
+Alina Beygelzimer, John Langford, Lihong Li, Lev Reyzin, and Robert E. Schapire. Contextual bandit algorithms with
+   supervised learning guarantees. In Proceedings of the Fourteenth International Conference on Artificial Intelligence
+   and Statistics, AISTATS 2011, Fort Lauderdale, USA, April 11-13, 2011, pages 19–26, 2011.
+Sébastien Bubeck and Nicolo Cesa-Bianchi. Regret analysis of stochastic and nonstochastic multi-armed bandit
+   problems. Machine Learning, 5(1):1–122, 2012.
+Nanette Byrnes.        Artificial intolerance.  MIT Technology Review, March 28 2016.             URL https://www.
+   technologyreview.com/s/600996/artificial-intolerance/. Retrieved 4/28/2016.
+                                                          21
+
+Toon Calders and Sicco Verwer. Three naive bayes approaches for discrimination-free classification. Data Mining and
+   Knowledge Discovery, 21(2):277–292, 2010.
+Wei Chu, Lihong Li, Lev Reyzin, and Robert E. Schapire. Contextual bandits with linear payoff functions. In
+   Proceedings of the Fourteenth International Conference on Artificial Intelligence and Statistics, AISTATS 2011,
+   Fort Lauderdale, USA, April 11-13, 2011, pages 208–214, 2011.
+Cary Coglianese and David Lehr. Regulating by robot: Administrative decision-making in the machine-learning era.
+   Georgetown Law Journal, 2016. Forthcoming.
+Cynthia Dwork, Moritz Hardt, Toniann Pitassi, Omer Reingold, and Richard Zemel. Fairness through awareness. In
+   Proceedings of the 3rd Innovations in Theoretical Computer Science Conference, pages 214–226. ACM, 2012.
+Michael Feldman, Sorelle A. Friedler, John Moeller, Carlos Scheidegger, and Suresh Venkatasubramanian. Certifying
+   and removing disparate impact. In Proceedings of the 21th ACM SIGKDD International Conference on Knowledge
+   Discovery and Data Mining, Sydney, NSW, Australia, August 10-13, 2015, pages 259–268, 2015.
+Benjamin Fish, Jeremy Kun, and Ádám D Lelkes. A confidence-based approach for balancing fairness and accuracy.
+   SIAM International Symposium on Data Mining, 2016.
+FTC Commisioner Julie Brill. Navigating the “trackless ocean”: Fairness in big data research and decision making.
+   Keynote Address at the Columbia University Data Science Institute, April 2015.
+Toshihiro Kamishima, Shotaro Akaho, and Jun Sakuma. Fairness-aware learning through regularization approach.
+   In Data Mining Workshops (ICDMW), 2011 IEEE 11th International Conference on, pages 643–650. IEEE, 2011.
+Michael N Katehakis and Herbert Robbins. Sequential choice from several populations. PROCEEDINGS-NATIONAL
+   ACADEMY OF SCIENCES USA, 92:8584–8584, 1995.
+Tze Leung Lai and Herbert Robbins. Asymptotically efficient adaptive allocation rules. Advances in applied mathe-
+   matics, 6(1):4–22, 1985.
+Lihong Li. A unifying framework for computational reinforcement learning theory. PhD thesis, Rutgers, The State
+   University of New Jersey, 2009.
+Lihong Li, Michael L Littman, Thomas J Walsh, and Alexander L Strehl. Knows what it knows: a framework for
+   self-aware learning. Machine learning, 82(3):399–443, 2011.
+Binh Thanh Luong, Salvatore Ruggieri, and Franco Turini. k-nn as an implementation of situation testing for
+   discrimination discovery and prevention. In Proceedings of the 17th ACM SIGKDD international conference on
+   Knowledge discovery and data mining, pages 502–510. ACM, 2011.
+Clair C Miller. Can an algorithm hire better than a human? The New York Times, June 25 2015. URL http://www.
+   nytimes.com/2015/06/26/upshot/can-an-algorithm-hire-better-than-a-human.html. Retrieved 4/28/2016.
+Cecilia Munoz, Megan Smith, and DJ Patil. Big data: A report on algorithmic systems, opportunity, and civil rights.
+   Technical report, Executive Office of the President, The White House, 2016.
+John Podesta, Penny Pritzker, Ernest J. Moniz, John Holdern, and Jeffrey Zients. Big data: Seizing opportunities,
+   protecting values. Technical report, Executive Office of the President, The White House, 2014.
+Cynthia     Rudin.           Predictive    policing    using    machine     learning   to    detect    patterns  of
+   crime.         Wired Magazine,        August 2013.            URL http://www.wired.com/insights/2013/08/
+   predictive-policing-using-machine-learning-to-detect-\patterns-of-crime/. Retrieved 4/28/2016.
+Alexander L Strehl and Michael L Littman. Online linear regression and its application to model-based reinforcement
+   learning. In Advances in Neural Information Processing Systems, pages 1417–1424, 2008.
+Latanya Sweeney. Discrimination in online ad delivery. Commununications of the ACM, 56(5):44–54, 2013.
+Rich Zemel, Yu Wu, Kevin Swersky, Toni Pitassi, and Cynthia Dwork. Learning fair representations. In Proceedings
+   of the 30th International Conference on Machine Learning (ICML-13), pages 325–333, 2013.
+                                                          22
+
+A     Missing Proofs for the Classic Stochastic Bandits Upper Bound
+We begin by proving Lemma 1, used in Section 3 to prove the fairness of the FairBandits algo-
+rithm.
+Proof of Lemma 1. Choose an arbitrary arm i and round t and define indicator variables X1 , . . . , Xni (t)
+where Xn takes on the reward of pull n of arm i. By a Chernoff bound, for any a ≥ 0,
+                                                                
+                                                               a
+                                                 t
+                                           P |µ̂i − µi | ≤ t ≤ 2 exp(−2a2 /nti ).
+                                                              ni
+                             p
+In particular for a = nti ln((πt)2 /3δ)/2, it is the case that
+                            "                 s                            s                 !#
+                                                  ln((πt)  2 /3δ)              ln((πt)2 /3δ)
+                                         t                            t
+                         P µi 6∈ µ̂i −                            , µ̂i +
+                                                       2nti                         2nti
+                      ≤2 exp(−2nti ln((πt)2 /3δ)/2nti ) = 2 exp(ln(3δ/(πt)2 )) = 6δ/(πt)2 .
+By a union bound over all roundsP                t, the probability of any true mean ever falling outside of its
+confidence interval is at most δ( π2 ∞       6          1
+                                                    t=1 t2 ) = δ.
+    Next, we prove Lemma 2, which we used in Section 3 to bound the regret of FairBandits in
+Theorem 2.
+Proof of Lemma
+           P          2. Let X1 , ..., Xt be indicator variables of whether i was pulled at each time t0 ∈ [t].
+Let Mt = t0 ≤t Xt0 , with E [Mt ] = pt . For any  ∈ [0, 1], a standard additive Chernoff bound states
+that
+                                                                                  2
+                                                   P [Mt ≤ pt − t] ≤ e−2t .
+                                               0
+Since i ∈ S t , it must be that i ∈ S t for all t0 ≤ t and all i ∈ S t , by the definition of FairBandits.
+Thus, P [Xi = 1] ≥ k1 for any i ∈ S t , and therefore pt ≥ kt . so this also implies that
+                                                                       
+                                                               t                   2
+                                                  P Mt ≤ − t ≤ e−2t .
+                                                              k
+               r
+                           2
+                   t ln( 2tδ k )
+Setting t =             2       , this bound becomes
+                                                              s                
+                                                                          2
+                                                         t        t ln( 2tδ k )       δ
+                                            P Mt ≤         −                    ≤
+                                                         k              2            2kt2
+as desired. Then, taking a union bound over all active arms of which there are at most k, the claim
+follows.
+Proof of Lemma 3. This follows from the definition of `ti , uti and the lower bound on nti provided
+by the assumption of the lemma.
+                                                                 23
+
+A.1          Missing Derivation of R(T ) for Theorem 2
+                                           T
+                                         X                                               π
+                          R(T ) ≤               min(1, k · η(t)) + 1 +                         δT
+                                                                                          2
+                                          t:0
+                                           T
+                                         X                                               π
+                                    ≤           k · min(1, η(t)) + 1 +                         δT
+                                                                                          2
+                                          t:0
+                                                                                                                     
+                                                                    v
+                                                         T                                                 T
+                                                      X            u            ln δt                     X          
+                                    ≤ k                                                        +                   1 + O(δ)T
+                                                                    u
+                                                                    t            q
+                                                                         t                  tk
+                                            
+                                                t: kt >2
+                                                         q
+                                                           t ln  tk      k  − t ln δ                       q
+                                                                                                   t: kt ≤2 t ln tk
+                                                                  δ                                               δ
+                                                                                                          
+                                                                    s
+                                                         T                                    T
+                                                      X                ln δt               X              
+                                    ≤ k                                  t     +                        1
+                                                                                                            + O(δT )
+                                                         q
+                                                                 tk       2k                  q
+                                                t: kt >2   t ln   δ
+                                                                                     t: kt ≤2 t ln  tk
+                                                                                                     δ
+                                                        s
+                                                                            Õ(k2 ln kδ )
+                                                                                              !
+                                                     T      ln δt
+                                                Z                      Z
+                                    ≤k                         t    +                       1     + O(δT )
+                                                   t=0        2k          t=1
+                                                       s
+                                                    T      ln δt
+                                               Z
+                                            3                                         k
+                                    ≤ k2                            + Õ(k 3 ln ) + O(δT )
+                                                 t=1          t                       δ
+                                            3√
+                                                       r
+                                                               kT                        k
+                                    = k 2 2T ln                      + Õ(k 3 ln ) + O(δT )
+                                                                 δ                       δ
+                                                    r
+                                                 3             kT
+                                    = Õ(k 2 T ln                    + k 3 ) + O(δT )
+                                                                 δ
+                                                    r
+                                                 3             kT
+                                    = Õ(k 2 T ln                    + k3 )
+                                                                 δ
+     where the final step follows from δ ≤                            √1 .
+                                                                         T
+B         Missing Proofs for the Classic Stochastic Bandits Lower Bound
+All lemmas in this section are used in Section 4 to prove the fair lower bound in Theorem 3. The
+first, Lemma 4, lets us analyze distributions over payoffs.
+Proof of Lemma 4. Let Ri represent the joint distribution on rewards for either experiment: in
+both cases, the joint distribution on rewards is identical, since the process which generates them is
+the same.
+     We will use the notation m, d1 , . . . , dt to represent some fixed realization of the random variables
+µi , ri1 , . . . , rit and µ0i , ri1 , . . . , rit . In particular, it suffices to show that
+P(µi ,r1 ,...,rt )∼W (µi , ri1 , . . . , rit ) = (m, d1 , . . . , dt ) = P(µ0 ,r1 ,...,rt )∼W 0 (µ0i , ri1 , . . . , rit ) = (m, d1 , . . . , dt ) .
+                                                                                                                                               
+        i        i                                                                           i  i       i
+The first experiment which generates                              (µi , ri1 , . . . , rit ) according to W has probability mass on this
+particular value of its random variables:
+P(µi ,r1 ,...,rt )∼W (µi , ri1 , . . . , rit ) = (m, d1 , . . . , dt ) = Pµi ∼Pi [µi = m] · Pr1 ,...,rt ∼B(µi ) (ri1 , . . . , rit ) = (d1 , . . . , dt )
+                                                                                                                                                      
+        i        i                                                                                                  i   i
+                                                                                   24
+
+    The second experiment has joint probability:
+                     P(µ0 ,r1 ,...,rt )∼W 0 (µ0i , ri1 , . . . , rit ) = (m, d1 , . . . , dt )
+                                                                                             
+                         i i        i
+                      = Pµ0 ∼Pi (r1 ,...,rt ) µ0i = m · P(r1 ,...,rt1 )∼Ri (ri1 , . . . , rt1 ) = (d1 , . . . , dt )
+                                                                                                                     
+                            i          i     i                         i
+                      = P(µ0 ,r1 ,...,rt )∼W (µ0i , ri1 , . . . , rit ) = (m, d1 , . . . , dt )
+                                                                                                  
+                              i   i      i
+where equality follows from Bayes’ Rule.
+    Next, we prove Lemma 5, used to reason about distinguishing between arms.
+                                                                           √                                                         i 1
+Proof of Lemma 5. Since neither i nor i + 1 is δ-distinguished by ht , for any αi ∈ { 13 + 3k                                         ,3+
+i+1                1      i+1 1          i+2
+                                                                                                                                 √
+ 3k }, αi+1 ∈ { 3 + 3k , 3 + 3k }, the posterior probability of µi = αi is less than 1 − δ, and in
+particular for α = 31 + i+1       3k , it must be the case that
+                                                     √                                                              √
+                     Pµi ∼Pi (ht ) [µi = α] >           δ        and also          Pµi+1 ∼Pi (ht ) [µi+1 = α] >        δ.
+              Q
+Since P =        i Pi , we know that
+            Pµi ,µi+1 ∼P (ht ) [µi = α = µi+1 ] = Pµi ∼Pi (ht ) [µi = α] · Pµi+1 ∼Pi+1 (ht ) [µi+1 = α] > δ
+which completes the proof.
+    Finally, we prove Lemma 6, which lets us reason about how fair algorithm choices depend on
+histories.
+Proof of Lemma 6. We will define a set of histories which cause A to play some pair of arms
+i and i + 1 with different probabilities when µi = µi+1 . Define the set unfair(A, µ) such that
+ht ∈ unfair(A, µ) if there exist i ∈ [k − 1], t0 ∈ [t] such that µi = µi+1 but πi|h                           t0          t0
+                                                                                                                 t0 6= πi+1|ht0 .
+                                                    √
+    Consider some ht which has not 2δ-distinguished any arm, such that there exists some i, t0 for
+         t0         1                                                                                                t0           t0
+which πi|h   t0 6= k . Then, in particular, there exists some i ∈ [k − 1] such that πi|ht0 6= πi+1|ht0 . By
+Lemma 5, for all i and in particular this i, it is the case that 2δ < Pµ0 ∼P |ht µ0i = µ0i+1 = X and so
+                                                                                                                             
+                                           h                                          i
+                                                                  t0            t0
+             2δ < X = Pµ0 ∼P |ht µ0i = µ0i+1 ∩ πi|h                                                                            0
+                                                                                                        t                       
+                                                                      t  6 =  π i+1|ht ≤ Pµ0 ∼P |ht h ∈ unfair(A, µ )                   (4)
+                                                                                                                  0           0
+where the first equality comes from the fact that ht is a history for which πi|h                                 t           t
+                                                                                                                    t 6= πi+1|ht and the
+second equality from the definition of the set unfair.
+    We will show that Equation 4 cannot hold with probability more than 12 over the draw of µ, ht
+from the underlying distribution, or else A would not satisfy δ-fairness. Since A is δ-fair, for any
+fixed µ
+                                                  δ ≥ Pht ∼A|µ ht ∈ unfair(A, µ)
+                                                                                               
+and therefore for any distribution P over µ that
+                                               δ ≥ Pµ∼P,ht ∼A|µ ht ∈ unfair(A, µ) .
+                                                                                                  
+Lemma 4 implies also δ ≥ Pµ∼P,ht ∼A|µ,µ0 ∼P |ht ht ∈ unfair(A, µ0 ) , so by Markov’s inequality
+                                                                                                
+                                 1
+                                    ≥ Pµ∼P,ht ∼A|µ Pµ0 ∼P |ht ht ∈ unfair(A, µ0 ) ≥ 2δ .
+                                                                                                        
+                                 2
+                                                                            25
+
+                                        1
+Thus, with probability at least         2 over the distribution over histories and means,
+                                         Pµ0 ∼P |ht ht ∈ unfair(A, µ0 ) ≤ 2δ.
+                                                                        
+                                                                                          √
+However, Equation 4 shows this does not hold for any ht which does not 2δ-distinguish any arm
+                    t0        1                      0                              1
+but for which πi|h      t0 6= k for some i ∈ [k], t ≤ t. Thus, for at least 2 of all probability mass over
+                       t0       1            0           t
+                                                                  √
+histories, either πi|h    t0 = k for all i, t ≤ t, or h must        2δ-distinguish some arm.
+C      Missing Proofs for the Contextual Bandit Setting
+We begin by proving two results related to KWIKToFair. The first, Lemma 8, was used in Section
+5 to prove that KWIKToFair is δ-fair in Theorem 5.
+Proof of Lemma 8. We will refer to a violation of either (a) or (b) as a failure of learner Li .
+For each Li , the set of queries asked of it are pairs (hi , xti ), histories along with new contexts.
+There are at most T contexts queried, and at most T histories on which Li is queried for a
+fixed run of our algorithm (namely, prefixes of Li ’s final history). Thus, there are at most T 2
+queries for Li . Thus, by a union bound over these T 2 queries for learner Li , by the KWIK
+guarantee, P [Li fails in some round] ≤ T 2 δ ∗ = min(δ, T1 )/k, and by a union bound over k arms,
+P [A learner fails in a round] ≤ min(δ, T1 ).
+     We proceed to Theorem 4, used in Section 5 to construct a δ-fair algorithm with quantified
+regret from KWIK learners.
+Proof of Theorem 4. We use repeated calls to KWIKToFair (δ, T ) to run for an indefinite number
+of rounds. Specifically, we will make calls E = 1, 2, . . . to KWIKToFair (6δ/π(log(T )2 , 2E ). We
+will refer to each such call to KWIKToFair by its epoch E. By Lemma 8, each epoch E is
+6δ/πE 2 k-fair, i.e. has a 6δ/πE 2 k probability of violating fairness. Therefore by a union bound
+across epochs, the probability
+                             P∞        of ever violating     fairness through repeated calls to KWIKToFair
+                                     6δ        6δ P∞       1
+is bounded above by E=1 (πE)2 = π2 E=1 E 2 = δ, so the overall algorithm is δ-fair.
+     Next, by Lemma 9 each epoch E contributes at most regret 3 · 2E k∗E where ∗E denotes the
+value of ∗ used in epoch E, i.e. ∗E satisfying ∗E = k · m(∗E , 6δ/πE 2 , 2E ). Then since each epoch E
+covers 2E rounds, through round T the algorithm has used fewer than log(T ) epochs, and by the
+                                                 Plog(T )
+doubling trick achieves regret R(T ) < E=1 3 · 2E k∗E = O(T k∗ ) = O(k 2 · m(∗ , δ ∗ )).
+     Next, we address the special subcase of KWIKToFair for linear functions outlined in Corollary
+1.
+Proof of Corollary 1. By Lemma 10, for each arm j the associated learner Lj has mistake bound
+                                                                                        3 1/5
+m(, δ) = Õ(d3 /4 ). Since ∗ satisfies ∗ = k · m(∗ , δ)/T we get ∗ = kd             T      Substituting this
+into Theorem 4, the overall regret guarantee satisfies regret R(T ) = O(k 2 · m(∗ , δ ∗ )) = O(T k∗ ) =
+O(T 4/5 k 6/5 d3/5 ).
+     This brings us to the formal algorithm description of ConjunctionBandit and its correspond-
+ing regret bound, used in Section 6.1 as an example of an unfair learning algorithm for conjunctions.
+  1: procedure ConjunctionBandit
+  2:    Let Cj∗ ← {1, 2, . . . , d} for all j ∈ [k]                  . Initialize set of candidate variables for fj
+                                                             26
+
+  3:     for t = 1, 2, . . . do
+  4:        St ← ∅                                                                         . Initialize active set of arms
+  5:        for j = 1, 2, . . . , k do
+  6:             if ∧m∈Cj∗ xtj,m = 1 then
+  7:                   S t ← S t ∪ {j}                                                          . Add arm j to active set
+  8:        if S t = ∅ then
+  9:             Pull arm j ∗ ← (x ∈R [k])                                                            . Pull arm at random
+10:              if rjt ∗ = 1 then
+11:                    Cj∗∗ ← Cj∗∗ \ {m | xtj,m = 0}
+12:         else
+13:              Pull arm j ∗ ← (x ∈R S t )                                    . Pull arm from active set at random
+     We can now upper bound the regret achieved by ConjunctionBandit.
+Lemma 13. ConjunctionBandit achieves regret R(T ) = O(k 2 d).
+Proof of Lemma 13. First, we claim that for every j, for the duration of the algorithm, that Cj ⊆
+Cj∗ , where Cj is the true set of variables corresponding to fj . This holds at initialization: Cj ⊆ [d] =
+Cj∗ . Suppose the claim holds prior to round t: if Cj∗ is updated in this round, then fj (xtj ) = 1 ⇒
+∀m ∈ [d] : xtj,m = 0, m ∈    / Cj . Thus, Cj∗ = Cj∗ \ {m : xtj,m = 0} = Cj∗ \ {m : xtj,m = 0 ∩ m ∈               / Cj } ⊃ Cj .
+     Therefore, the algorithm never makes false positive mistakes: in any round t, j ∈ S t ⇒ fj (xtj ) =
+1. Therefore ConjunctionBandit only accumulates regret in rounds where it makes false negative
+mistakes by predicting that all arms have reward                 0 when some arm has reward 1.
+     Then, we have Regret(x , . . . , x ) = t maxj fj (xtj ) − E
+                                   1          T                                                 t
+                                                     P                            P                
+                                                                                        t fit (xit ) . We then rewrite the
+                                      P
+first term as t maxj fj (xtj ) = t I{fj (xtj ) = 1 for some j ∈ [k]} and the second term as
+               P
+          "                #            "                                                                            #
+            X                             X
+        E       fit (xtit ) = T − E             I{S t = ∅ ∧ fj ∗ (xtj ∗ ) = 0 ∧ fj (xtj ) = 1 for some j ∈ [k]}
+             t                              t
+                                        "                                                                           #
+                                          X
+                             ≥T −E              I{fj ∗ (xtj ∗ ) = 0 | S t = ∅ ∧ fj (xtj ) = 1 for some j ∈ [k]}
+                                            t
+                                               "                                                        #
+                                       X         X
+                             ≥T−            E        I{fj ∗ (xtj ∗ )        t
+                                                                     =0|S =∅∧         fj (xtj ) = 1}
+                                      j∈[k]       t
+                                       X
+                             ≥T−            kd = T − k 2 d
+                                      j∈[k]
+                                                          h                                     i
+     where the last inequality follows from P j ∗ = j | S t = ∅ ∧ fj (xtj ) = 1 =                      1
+                                                                                                       k  and the fact that if
+St   = ∅ and fj ∗ (xtj ∗ ) = 1 then Cj ∗ loses at least one of d variables, and this loss can therefore occur
+at most d times for each arm j. Substituting this into the original regret expression then yields
+                                                X
+                   Regret(x1 , . . . , xT ) ≤        I{fj (xtj ) = 1 for some j ∈ [k]} − (T − k 2 d)
+                                                  t
+                                            ≤ T − (T − k 2 d) ≤ k 2 d.
+                                                                27
+
+     Finally, we prove Lemma 12, which we used in Section 6.1 to translate between fair and KWIK
+learning on conjunctions.
+Proof of Lemma 12. We mimic the structure of the proof of Theorem 6, once again using Fair-
+ToKWIK to construct a KWIK learner B by running the given fair algorithm A on a constructed
+bandit instance for each context xt .
+     There are two primary modifications for the specific case of conjunctions: as conjunctions output
+either 0 or 1 we set  = 0, ∗ = 1, and δ ∗ = 2T      δ
+                                                         . A therefore runs on 2T histories and contexts,
+either of form (x , x(0) = 0) or (x , x(1) = 1). Since we initialize A to be δ ∗ -fair, if we fix history ht
+                     t                  t
+along with context and arm assignment (xt , x(`)) then, with probability at least 1 − δ ∗ , pt,`   1 > p2
+                                                                                                             t,`
+                                            t,`  t,`
+implies f ∗ (xt ) > `/2 and similarly p2 > p1 implies f ∗ (xt ) < `/2. Union bounding over all such
+t and ` yields that A satisfies this fairness over all t and ` with probability at least 1 − δ, and we
+condition on this event for the rest of the proof.
+     We proceed to prove that the resulting KWIK learner B is -accurate. Here, as  = 0, this
+requires showing that all of B’s numerical predictions are correct. Assume instead that B outputs
+an incorrect prediction on (xt , x(`)). By the construction of FairToKWIK, a prediction from B
+                                        t,1 t,0      t,1
+implies that at least one of pt,0  1 , p1 , p2 and p2 is distinct from the others. We condition on this
+distinctness to get two cases.
+     In the first case, pt,`   t,`                                                                 t,0
+                          1 ≤ p2 for both ` = 0 and 1. By distinctness, this means that either p1 < p2
+                                                                                                            t,0
+or pt,1       t,1                                                                   ∗ t
+      1 < p2 . By the fairness assumption, this respectively implies that f (x ) < f (x(0)) = 0 or
+                                                                                             t,`
+f ∗ (xt ) < f (x(1)) = 1. In either event, f ∗ x(t ) = 0 = ŷ t . In the second case, pt,`
+                                                                                       1 > p2 for at least
+                         t,1   t,1
+one of ` = 0 or 1. p1 > p2 violates the fairness assumption on A as f (x(1)) = 1, so it must be
+                 t,0
+that pt,0                                          ∗ t             t
+         1 > p2 . Fairness then implies that f (x ) = 1 = ŷ . Therefore B is -accurate.
+     It remains to upper bound m(, δ). Any round where B outputs ⊥ means a choice between
+two contexts, one of which has a difference of 1 between arms. It follows that choosing randomly
+between both arms and contexts incurs expected regret 1/4. Therefore m(,δ)       4    < R(m(, δ), δ ∗ , d) =
+               δ
+R(m(, δ), 2T , d).
+                                                        28
+

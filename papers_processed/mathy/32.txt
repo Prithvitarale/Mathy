@@ -1,0 +1,557 @@
+             Hilbert Space Embeddings of Hidden Markov Models
+Le Song                                                                                    lesong@cs.cmu.edu
+Byron Boots                                                                                    beb@cs.cmu.edu
+School of Computer Science, Carnegie Mellon University, Pittsburgh, PA 15213, USA
+Sajid M. Siddiqi                                                                           siddiqi@google.com
+Google, Pittsburgh, PA 15213, USA
+Geoffrey Gordon                                                                           ggordon@cs.cmu.edu
+School of Computer Science, Carnegie Mellon University, Pittsburgh, PA 15213, USA
+Alex Smola                                                                                     alex@smola.org
+Yahoo! Research, Santa Clara, CA 95051, USA
+                      Abstract                              Despite their simplicity and wide applicability, HMMs
+                                                            are limited in two major respects: first, they are usu-
+     Hidden Markov Models (HMMs) are impor-                 ally restricted to discrete or Gaussian observations,
+     tant tools for modeling sequence data. How-            and second, the latent state variable is usually re-
+     ever, they are restricted to discrete latent           stricted to have only moderate cardinality. For non-
+     states, and are largely restricted to Gaussian         Gaussian continuous observations, and for structured
+     and discrete observations. And, learning al-           observations with large cardinalities, standard infer-
+     gorithms for HMMs have predominantly re-               ence algorithms for HMMs run into trouble: we need
+     lied on local search heuristics, with the ex-          huge numbers of latent states to capture such obser-
+     ception of spectral methods such as those de-          vation distributions accurately, and marginalizing out
+     scribed below. We propose a nonparamet-                these states during inference can be very computation-
+     ric HMM that extends traditional HMMs to               ally intensive. Furthermore, standard HMM learning
+     structured and non-Gaussian continuous dis-            algorithms are not able to fit the required transition
+     tributions. Furthermore, we derive a local-            and observation distributions accurately: local search
+     minimum-free kernel spectral algorithm for             heuristics, such as the EM algorithm, lead to bad lo-
+     learning these HMMs. We apply our method               cal optima, and standard approaches to regularization
+     to robot vision data, slot car inertial sensor         result in under- or overfitting.
+     data and audio event classification data, and
+     show that in these applications, embedded              Recently, Hsu et al. (2009) proposed a spectral algo-
+     HMMs exceed the previous state-of-the-art              rithm for learning HMMs with discrete observations
+     performance.                                           and hidden states. At its core, the algorithm performs
+                                                            a singular value decomposition of a matrix of joint
+1. Introduction                                             probabilities of past and future observations, and then
+Hidden Markov Models (HMMs) have successfully               uses the result, along with additional matrices of joint
+modeled sequence data in a wide range of applications       probabilities, to recover parameters which allow track-
+including speech recognition, analysis of genomic se-       ing or filtering. The algorithm employs an observable
+quences, and analysis of time series. HMMs are latent       representation of a HMM, and avoids explicitly recov-
+variable models of dynamical systems: they assume a         ering the HMM transition and observation matrices.
+latent state which evolves according to Markovian dy-       This implicit representation enables the algorithm to
+namics, as well as observations which depend only on        find a consistent estimate of the distribution of obser-
+the hidden state at a particular time.                      vation sequences, without resorting to local search.
+                                                            Unfortunately, this spectral algorithm is only formu-
+Appearing in Proceedings of the 26 th International Confer-
+                                                            lated for HMMs with discrete observations. In con-
+ence on Machine Learning, Haifa, Israel, 2010. Copyright
+2010 by the author(s)/owner(s).                             trast, many sources of sequential data are continous
+
+                               Hilbert Space Embeddings of Hidden Markov Models
+or structured; the spectral algorithm does not apply          (e.g. Axt:1 = Axt . . . Ax1 ). We use 1m to denote an
+to such data without discretization and flattening. So,       m × 1 column of ones.
+the goal of the current paper is to provide a new kernel-
+                                                              A discrete HMM defines a probability distribution over
+based representation and kernelized spectral learning
+                                                              sequences of hidden states, Ht ∈ {1, . . . , N }, and ob-
+algorithm for HMMs; this new representation and al-
+                                                              servations, Xt ∈ {1, . . . , M }. We assume N  M ,
+gorithm will allow us to learn HMMs in any domain
+                                                              and let T ∈ RN ×N be the state transition probability
+where we can define a kernel. Furthermore, our algo-
+                                                              matrix with Tij = P(Ht+1 = i|Ht = j), O ∈ RM ×N be
+rithm is free of local minima and admits finite-sample
+                                                              the observation probability matrix with Oij = P(Xt =
+generalization guarantees.
+                                                              i|Ht = j), and π ∈ RN be the stationary state dis-
+In particular, we will represent HMMs using a re-             tribution with πi = P(Ht = i). The conditional inde-
+cent concept called Hilbert space embedding (Smola            pendence properties of the HMM imply that T , O and
+et al., 2007; Sriperumbudur et al., 2008). The essence        π fully characterize the probability distribution of any
+of Hilbert space embedding is to represent probabil-          sequence of states and observations.
+ity measures (in our case, corresponding to distribu-
+tions over observations and latent states in a HMM)           2.1. Observable representation for HMMs
+as points in Hilbert spaces. We can then perform in-          Jaeger (2000) demonstrated that discrete HMMs can
+ference in the HMM by updating these points, en-              be formulated in terms of ‘observation operators’ Axt .
+tirely in their Hilbert spaces, using covariance oper-        Each Axt is a matrix of size N × N with its ij-th entry
+ators (Baker, 1973) and conditional embedding opera-          defined as P(Ht+1 = i|Ht = j)P(Xt = xt |Ht = j),
+tors (Song et al., 2009). By making use of the Hilbert        or in matrix notation, Axt = T diag(Oxt ,1 , . . . , Oxt ,m ).
+space’s metric structure, our method works naturally          Then the probability of a sequence of observations,
+with continous and structured random variables, with-         x1:t , can be written as matrix operations,
+out the need for discretization.                                        P(x1:t ) = 1>                    >
+                                                                                    N Axt . . . Ax1 π = 1N Axt:1 π.     (1)
+In addition to generalizing HMMs to arbitary do-
+                                                              Essentially, each Axt incorporates information about
+mains where kernels are defined, our learning algo-
+                                                              one-step observation likelihoods and one-step hidden
+rithm contributes to the theory of Hilbert space em-
+                                                              state transitions. The sequence of matrix multi-
+beddings with hidden variables. Previously, Song et al.
+                                                              plications in equation (1) effectively implements the
+(2009) derived a kernel algorithm for HMMs; however,
+                                                              marginalization steps for the sequence of hidden vari-
+they only provided results for fully observable models,
+                                                              ables, Ht+1:1 . Likewise, the predictive distribution for
+where the training data includes labels for the true la-
+                                                              one-step future Xt+1 given a history of observations
+tent states. By contrast, our algorithm only requires
+                                                              can be written as a sequence of matrix multiplications,
+access to an (unlabeled) sequence of observations.
+                                                                                                 M
+                                                                           (P(Xt+1 = i|x1:t ))i=1 ∝ OAxt:1 π            (2)
+We provide experimental results comparing embedded
+HMMs learned by our spectral algorithm to several             The drawback of the representations in (1) and (2) is
+other well-known approaches to learning models of             that they requires the exact knowledge of the transi-
+time series data. The results demonstrate that our            tion matrix T and observation matrix O, and neither
+novel algorithm exceeds the previous state-of-the-art         quantity is available during training (since the latent
+performance, often beating the next best algorithm by         states are usually not observable).
+a substantial margin.
+                                                              A key observation concerning Equations (1) and (2)
+2. Preliminaries                                              is that if we are only interested in the final quantity
+In this paper, we follow the convention that upper-           1>N Axt:1 π and OAxt:1 π, we may not need to recover the
+case letters denote random variables (e.g. Xt , Ht ) and      Axt s exactly. Instead, it will suffice to recover them up
+lowercase letters their instantiations (e.g. xt , ht ). We    to some invertible transformation. More specifically,
+will use P to denote probability distribution in the dis-     suppose that matrix S is invertible, we can define a
+crete cases and density in the continuous cases. For          set of new quantities,
+matrices and vectors, we will use notation u = (ui )i             b1 := Sπ,      b∞ := OS −1 ,       Bx := SAx S −1     (3)
+and C = (Cij )ij to list their entries. Following (Hsu
+et al., 2009), we abbreviate a sequence (x1 , . . . , xt ) by and equivalently compute OAxt:1 π by cancelling out
+x1:t , and its reverse (xt , . . . , x1 ) by xt:1 . When we   all S during matrix multiplications, resulting in
+use a sequence as a subscript, we mean the prod-                OAxt:1 π = OS −1 SAxt S −1 . . . SAx1 S −1 (Sπ)
+                                                                                                                  
+uct of quantities indexed by the sequence elements
+                                                                          = b∞ Bxt:1 b1                                 (4)
+
+                                  Hilbert Space Embeddings of Hidden Markov Models
+The natural question is how to choose S such that b1 ,         part of the algorithm is a SVD which is local mini-
+b∞ and Bx can be computed based purely on observa-             mum free. Furthermore, (Hsu et al., 2009) also prove
+tion sequences, x1:t .                                         that under suitable conditions this spectral algorithm
+                                                               for HMMs efficiently estimates both the marginal and
+Hsu et al. (2009) show that S = U > O works, where U
+                                                               predictive distributions.
+is the top N left singular vectors of the joint probabil-
+ity matrix (assuming stationarity of the distribution):        3. Hilbert Space Embeddings of HMMs
+                                               M
+            C2,1 := (P(Xt+1 = i, Xt =       j))i,j=1 .     (5) The spectral algorithm for HMMs derived by Hsu et al.
+                                                               (2009) is only formulated for discrete random vari-
+Furthermore, b1 , b∞ and Bx can also be computed               ables. Based on their formulation, it is not clear how
+from observable quantities (assuming stationarity),            one can apply this algorithm to general cases with
+                            M
+      u1 := (P(Xt = i))i=1 ,                               (6) continuous and structured variables. For instance, a
+                                                    M          difficulty lies in estimating Ĉ3,x,1 . As we mentioned
+  C3,x,1 := (P(Xt+2 = i, Xt+1 = x, Xt =          j))i,j=1  (7)
+                                                               earlier, to estimate each Ĉ3,x,1 , we need to partition
+which are the marginal probability vector of sequence          the observation triples according to x, and each Ĉ3,x,1
+singletons, and one slice of the joint probability matrix      only gets a fraction of the data for the estimation. For
+of sequence triples (i.e. a slice indexed by x from a 3-       continous observations, x can take infinite number of
+dimensional matrix). Hsu et al. (2009) showed                  possibile values, which makes the partition estimator
+                                                               impractical. Alternatively, one can perform a Parzen
+               b1 = U > u, b∞ = C2,1 (U > C2,1 )†          (8) window density estimation for continuous variables.
+                        >            >      †
+             Bx = (U C3,x,1 )(U C2,1 ) .                   (9) However, further approximations are needed in order
+                                                               to make Parzen window compatible with this spectral
+2.2. A spectral algorithm for learning HMMs                    algorithm (Siddiqi et al., 2009).
+The spectral algorithm for learning HMMs proceeds by
+first estimating u1, C2,1 and C3,x,1 . Given a dataset        In the following, we will derive a new presentation and
+                                       m
+of m i.i.d. triples (xl1 , xl2 , xl3 ) l=1 from a HMM (su-     a kernel spectral algorithm for HMMs using a recent
+perscripts index training examples), we estimate               concept called Hilbert space embeddings of distribu-
+                X                                              tions (Smola et al., 2007; Sriperumbudur et al., 2008).
+     û1 = m 1
+                          ϕ(xl1 )                         (10) The essence of our method is to represent distributions
+                    l=1:m
+                  X                                            as points in Hilbert spaces, and update these points en-
+     Ĉ2,1 = m  1
+                            ϕ(x2 )ϕ(x1 )>                 (11)
+                    X
+                      l=1:m                                    tirely in the Hilbert spaces using operators (Song et al.,
+     Ĉ3,x,1 = m  1
+                              I[xl2 = x]ϕ(xl3 )ϕ(xl1 )>   (12) 2009). This new approach avoids the need for parti-
+                        l=1:m
+                                                               tioning the data making it applicable to any domain
+where the delta function (or delta kernel) is defined as       where kernels can be defined.
+I[xl2 = x] = 1 if xl2 = x and 0 otherwise; and we have         3.1. Hilbert space embeddings
+used 1-of-M representation for discrete variables. In          Let F be a reproducing kernel Hilbert space (RKHS)
+this representation, ϕ(x = i) is a vector of length M          associated with kernel k(x, x0 ) := hϕ(x), ϕ(x0 )iF .
+with all entries equal to zero except 1 at i-th position.      Then for all functions f ∈ F and x ∈ X we have
+For instance, if x = 2, then ϕ(x) = (0, 1, 0, . . . , 0)> .    the reproducing property: hf, ϕ(x)iF = f (x), i.e. the
+Furthermore, we note that Ĉ3,x,1 is not a single but          evaluation of function f at x can be written as an in-
+a collection of matrices each indexed by an x. Effec-          ner product. Examples of kernels include the Gaussian
+                                                                                                        2
+tively, the delta function I[xl2 = x] partition the obser-     RBF kernel k(x, x0 ) = exp(−s kx − x0 k ), however ker-
+vation triples according to x, and each Ĉ3,x,1 only gets      nel functions have also been defined on strings, graphs,
+a fraction of the data for the estimation.                     and other structured objects.
+Next, a ‘thin’ SVD is computed for Ĉ2,1 . Let its top         Let P be the set of probability distributions on X ,
+N left singular vectors be Û , then the observable rep-       and X the random variable with distribution P ∈ P.
+resentation for the HMM (b̂1 , b̂∞ and B̂x ) can be es-        Following Smola et al. (2007), we define the mapping of
+timated by replacing the population quantities with            P ∈ P to RKHS F, µX := EX∼P [ϕ(X)], as the Hilbert
+their corresponding finite sample counterparts.                space embedding of P or simply mean map. For all
+                                                               f ∈ F, EX∼P [f (X)] = hf, µX iF by the reproducing
+A key feature of the algorithm is that it does not ex-         property. A characteristic RKHS is one for which the
+plicitly estimate the transition and observation mod-          mean map is injective: that is, each distribution has a
+els; instead it estimates a set of observable quantities       unique embedding (Sriperumbudur et al., 2008). This
+that differ by an invertible transformation. The core
+
+                                 Hilbert Space Embeddings of Hidden Markov Models
+property holds for many commonly used kernels (eg.                conditional probability tables (CPT), i.e. (P(Y =
+the Gaussian and Laplace kernels when X = Rd ).                   i|X = j))M  i,j=1 = CY |X , and each individual condi-
+                                                                  tional embedding corresponds to one column of the
+As a special case of the mean map, the marginal proba-
+                                                                  CPT, i.e. (P(Y = i|X = x))M      i=1 = µY |x .
+bility vector of a discrete variable X is a Hilbert space
+                                                                                           l l m
+embedding, i.e. (P(X = i))M       i=1 = µX . Here the ker-        Given m i.i.d. pairs (x , y ) l=1 from P(X, Y ), the
+nel is the delta function k(x, x0 ) = I[x = x0 ], and the         conditional embedding operator can be estimated as
+feature map is the 1-of-M representation for discrete             ˆ           >       >
+                                                                  CY |X = ΦΥ ( ΥΥ + λI)−1 = Φ(K + λmI)−1 Υ> (15)
+variables (see section 2.2).                                                 m     m
+                                  m
+Given m i.i.d. observations xl l=1 , an estimate of the           where we have defined the kernel matrix K := Υ> Υ
+                                                   Pm
+                                                1            l    with (i, j)th entry k(xi , xj ). The regularization pa-
+mean map is straightforward: µ̂X := m                l=1 ϕ(x ) =
+ 1                             1            m                     rameter λ is to avoid overfitting. Song et al. (2009)
+m Υ1m , where Υ := (ϕ(x ), . . . , ϕ(x )) is a conceptual
+arrangement of feature maps into columns. Further-                also showed µ̂Y |x − µY |x G = Op (λ1/2 + (λm)−1/2 ).
+more, this estimate computes an approximation within
+                                                                  3.4. Hilbert space observable representation
+an error of Op (m−1/2 ) (Smola et al., 2007).
+                                                                  We will focus on the embedding µXt+1 |x1:t for the pre-
+3.2. Covariance operators                                         dictive density P(Xt+1 |x1:t ) of a HMM. Analogue to
+The covariance operator is a generalization of the co-            the discrete case, we first express µXt+1 |x1:t as a set of
+variance matrix. Given a joint distribution P(X, Y )              Hilbert space ‘observable operators’ Ax . Specifically,
+over two variables X on X and Y on Y 1 , the uncen-               let the kernels on the observations and hidden states be
+tered covariance operator CXY is (Baker, 1973)                    k(x, x0 ) = hϕ(x), ϕ(x0 )iF and l(h, h0 ) = hφ(h), φ(h0 )iG
+                                                                  respectively. For rich RKHSs, we define a linear oper-
+                   CXY := EXY [ϕ(X) ⊗ φ(Y )],                (13)
+                                                                  ator Ax : G 7→ G such that
+where ⊗ denotes tensor product. Alternatively, CXY                      Ax φ(ht ) = P(Xt = x|ht ) EHt+1 |ht [φ(Ht+1 )]. (16)
+can simply be viewed as an embedding of joint dis-
+tribution P(X, Y ) using joint feature map ψ(x, y) :=             Then, by applying variable elimination, we have
+ϕ(x) ⊗ φ(y) (in tensor product RKHS G ⊗ F). For dis-                       µXt+1 |x1:t = EHt+1 |x1:t EXt+1 |Ht+1 [ϕ(Xt+1 )]
+crete variables X and Y with delta kernels on both do-
+                                                                       = CXt+1 |Ht+1 EHt+1 |x1:t [φ(Ht+1 )]
+mains, the covariance operator will coincide with the
+joint probability table, i.e. (P(X = i, Y = j)M          i,j=1 =
+                                                                       = CXt+1 |Ht+1 Axt EHt |x1:t−1 [φ(Ht )]
+CXY (also see section 2.2).                                                             Yt           
+                                                              m
+                                                                       = CXt+1 |Ht+1            Axτ µH1 .                   (17)
+                                                                                          τ =1
+Given m pairs of i.i.d. observations (xl , y l ) l=1 ,
+                                                   
+we denote by Υ = ϕ(x1 ), . . . , ϕ(xm ) and Φ =                  where we used the following recursive relation
+ φ(y 1 ), . . . , φ(y m ) . Conceptually, the covariance op-             EHt+1 |x1:t [φ(Ht+1 )]
+erator CXY can then be estimated as CˆXY = m             1
+                                                            ΥΦ> .                    
+                                                                      = EHt |x1:t−1 P(Xt = xt |Ht ) EHt+1 |Ht [φ(Ht+1 )]
+                                                                                                                            
+This estimate also computes an approximation within
+an error of Op (m−1/2 ) (Smola et al., 2007).                         = Axt EHt |x1:t−1 [φ(Ht )] .                          (18)
+3.3. Conditional embedding operators                              If we let T := CXt |Ht , O := CXt+1 |Ht+1 and π := µH1 ,
+By analogy with the embedding of marginal distribu-               we obtain a form µXt+1 |x1:t = OAxt:1 π analogous to
+tions, the conditional density P(Y |x) can also be rep-           the discrete case (Equation (2)). The key difference
+resented as an RKHS element, µY |x := EY |x [φ(Y )].              is that Hilbert space representations are applicable to
+We emphasize that µY |x now traces out a family of                general domains with kernels defined.
+embeddings in G, with each element corresponding to               Similar to the discrete case, the operators Ax cannot
+a particular value of x. These conditional embeddings             be directly estimated from the data since the hidden
+can be defined via a conditional embedding operator               states are not provided. Therefore we derive a repre-
+CY |X : F 7→ G (Song et al., 2009),                               sentation for µXt+1 |x1:t based only on observable quan-
+                                             −1                   tities (assuming stationarity of the distribution):
+              µY |x = CY |X ϕ(x) := CY X CXX      ϕ(x).      (14)
+                                                                        µ1 := EXt [ϕ(Xt )] = µXt                            (19)
+For discrete variables with delta kernels, condi-
+                                                                      C2,1 := EXt+1 Xt [ϕ(Xt+1 ) ⊗ ϕ(Xt )] = CXt+1 Xt (20)
+tional embedding operators correspond exactly to
+                                                                    C3,x,1 := EXt+2 (Xt+1 =x)Xt [ϕ(Xt+2 ) ⊗ ϕ(Xt )]
+   1
+     a kernel l(y, y 0 ) = hφ(y), φ(y 0 )iG is define on Y with
+associated RKHS G.                                                         = P(Xt+1 = x)C3,1|2 ϕ(x).                        (21)
+
+                                 Hilbert Space Embeddings of Hidden Markov Models
+where we have defined C3,1|2 := CXt+2 Xt |Xt+1 . First, we       Algorithm 1 Kernel Spectral Algorithm for HMMs
+examine the relation between these observable quanti-                                                     m
+                                                                 In: m i.i.d. triples (xl1 , xl2 , xl3 ) l=1 , a sequence x1:t .
+ties and the unobserved O, T and π:                              Out: µ̂Xt+1 |xt:1
+    µ1 = EHt EXt |Ht [ϕ(Xt )] = CXt |Ht EHt [φ(Ht )]               1: Denote feature matrices Υ = (ϕ(x11 ), . . . , ϕ(xm             1 )),
+       = Oπ                                               (22)          Φ = (ϕ(x12 ) . . . ϕ(xm2 )) and  Ψ  =  (ϕ(x   1
+                                                                                                                      3 ) . . . ϕ(x  m
+                                                                                                                                     3 )).
+  C2,1
+                
+       = EHt EXt+1 Ht+1 |Ht [ϕ(Xt+1 )] ⊗ EXt |Ht [ϕ(Xt )]
+                                                                  2: Compute kernel matrices K = Υ> Υ, L = Φ> Φ,
+                                          >
+                                                                        G = Φ> Υ and F = Φ> Ψ.
+       =CXt+1 |Ht+1 CHt+1 |Ht CHt Ht CX    t |Ht                   3: Compute top N generalized eigenvectors αi using
+       = OT CHt Ht O>                                     (23)          LKLαi = ωi Lαi (ωi ∈ R and αi ∈ Rm ).
+                                                                 4: Denote A = (α1 , . . . , αN ), Ω = diag(ω1 , . . . , ωN          )
+C3,x,1 = EHt OAx T φ(Ht ) ⊗ EXt |Ht [ϕ(Xt )]
+                                                                        and D = diag (α1> Lα1 )−1/2 , . . . , (αN    >
+                                                                                                                        LαN )−1/2 .
+       = OAx T CHt Ht O>                                  (24)     5: β̂1 = m    1
+                                                                                    D> A> G1m
+In (24), we plugged in the following expansion                     6: β̂∞ = ΦQ where Q = KLADΩ−1
+                                                                                   P(x )
+                                                                   7: B̂xτ = mτ D > A> F diag (L + λI)−1 Φ> ϕ(xτ ) Q,
+                                                                                                                                      
+  EXt+2 Ht+2 Ht+1 (Xt+1 =x)|Ht [ϕ(Xt+2 )]
+                                                                      for τ = 1, . . . , t.
+= EHt+1 |Ht P(x|Ht+1 )EHt+2 |Ht+1 EXt+2 |Ht+2 [ϕ(Xt+2 )]           8: µ̂Xt+1 |xt:1 = β̂∞ B̂xt:1 β̂1
+= OAx T φ(Ht )                                            (25)
+Second, analogous to the discrete case, we perform a                                                              ˆ              1      >
+                                                                 (ϕ(x12 ), . . . , ϕ(xm 2 )), and estimate C2,1 = m ΦΥ .
+‘thin’ SVD of the covariance operator C2,1 , and take                                                                       m
+                                                                 Then the left singular vector v = Φα (α ∈ R ) can be
+its top N left singular vectors U, such that the oper-
+                                                                 estimated as follows
+ator U > O is invertible. Some simple algebraic manip-
+ulations establish the relation between observable and                      ΦΥ> ΥΦ> v = ωv ⇔ ΦKLα = ωΦα ⇔
+unobservable quantities                                                            LKLα = ωLα, (α ∈ Rm , ω ∈ R)                      (30)
+            >          >
+   β1 := U µ1 = (U O)π                                    (26)
+                                                                 where K = Υ> Υ and L = Φ> Φ are the kernel matri-
+  β∞ := C2,1 (U > C2,1 )† = O(U > O)−1                    (27)   ces, and α is the generalized eigenvector. After nor-
+   Bx := (U > C3,x,1 )(U > C2,1 )† = (UO)Ax (UO)−1 . (28)        malization, we have v = √ >1 Φα. Then the U oper-
+                                                                                                    α Lα
+                                                                 ator in equation (26), (27) and (28) is the column con-
+With β1 , β∞ and Bxt:1 , µXt+1 |x1:t can be expressed as
+                                                                 catenation of the N top left singular vectors, i.e. Û =
+the multiplication of observable quantities
+                                                                 (v1 , . . . , vN ). If we let A := (α1 , . . . , αN ) ∈ Rm×N be
+                  µXt+1 |x1:t = β∞ Bxt:1 β1               (29)   the column concatenation of the N top               αi , and D :=
+In practice, C3,x,1 (in equation (24)) is difficult to es-       diag (α1> Lα1 )−1/2 , . . . , (αN  >
+                                                                                                       LαN )−1/2 ∈ RN ×N , we
+timate, since it requires partitioning the training sam-         can concisely express Û = ΦAD.
+ples according to Xt+1 = x. Intead, we use C3,1|2 ϕ(x)           Next we estimate µ̂1 = m        1
+                                                                                                    Υ1m , and according to (26)
+which does not require such partitioning, and is only a                     1    > > >
+                                                                 β̂1 = m D A Φ Υ1m . Similarly, according to (27)
+fixed multiplicative scalar P(x) away from C3,x,1 . We                                                      †
+define B̄x := (U > (C3,1|2 ϕ(x)))(U > C2,1 )† , and we have      β̂∞ = m       1
+                                                                                 ΦΥ> D> A> Φ> m      1
+                                                                                                       ΦΥ>        = ΦKLADΩ−1 ,
+µXt+1 |x1:t ∝ β∞ B̄xt:1 β1 .                                     where we have defined Ω := diag (ω1 , . . . , ωN ), and
+                                                                                                                      >               −2
+                                                                 used the relation LKLA = LAΩ and                A LA = D .
+We may want to predict i steps into future, i.e. obtain          Last denote Ψ = ϕ(x13 ),. . . , ϕ(xm        )   , then    Cˆ3,1|2 (·) =
+                                                                                                            3
+embeddings µXt+i |xt:1 instead of µXt+1 |xt:1 . This can         Ψ diag (L + λI)−1 Φ> (·) KLADΩ−1 in (21).
+be achieved by defining an i-step covariance operator
+Ci+1,1 := EXt+i Xt [ϕ(Xt+i ) ⊗ ϕ(Xt )] and replacing C2,1        The kernel spectral algorithm for HMMs can be sum-
+in β∞ (equation (27)) by Ci+1,1 . We then obtain the             marized in Algorithm 1. Note that in the algorithm,
+embedding µXt+i |xt:1 ∝ β∞     i
+                                  B̄xt:1 β1 where we use β∞ i    we assume that the marginal probability P(xτ ) (τ =
+                      >
+to denote Ci+1,1 (U C2,1 ) . †                                   1 . . . t) is provided to the algorithm. In practice, this
+                                                                 quantity is never explicitly estimated. Therefore, the
+3.5. Kernel spectral algorithm for              HMMs m          algorithm returns β̂∞ B̄xt:1 β̂1 which is just a constant
+Given a sample of m i.i.d. triplets (xl1 , xl2 , xl3 ) l=1       scaling away from µXt+1 |xt:1 (note B̄x := Bx /P(x)).
+from a HMM, the kernel spectral algorithm for HMMs
+proceeds by first performing a ‘thin’ SVD of the                 3.6. Sample complexity
+sample covariance Cˆ2,1 . Specifically, we denote fea-           In this section, we analyze the sample complexity of
+ture matrices Υ = (ϕ(x11 ), . . . , ϕ(xm        1 )) and Φ =     our kernel spectral algorithm for HMMs. In particu-
+
+                               Hilbert Space Embeddings of Hidden Markov Models
+                                                                               C2,1                                      C3,x,1
+lar, we want to investigate how the difference between
+the estimated embedding µ̂Xt+1 |x1:t and its population                   ... xi   x i −1                   . . . x i +1   xi  xi −1
+counterpart scales with respect to the number m of                          Cfuture,past                          Cfuture,x,past
+training samples and the length t of the sequence x1:t          x i + j −1 ... x i x i −1 ... x i −k x i + j ... x i +1 x i x i −1 ... x i −k
+in the conditioning. We use Hilbert space distances as
+our error measure and obtain the following result (the        Figure 1. Operators Cf uture,past and Cf uture,x,past capture
+proof follows the template of Hsu et al. (2009), and it       the dependence of sequences of k past and j future obser-
+can be found in the appendix):                                vations instead of single past and future observations.
+Theorem 1 Assume kϕ(x)kF ≤ 1, kφ(h)kG ≤ 1,                    ϕ(x) in such a way that an efficient algorithm for solv-
+maxx kAx k2 ≤ 1. Then µXt+1 |x1:t − µ̂Xt+1 |x1:t F =          ing the optimization can be obtained, e.g. Cortes et al.
+Op (t(λ1/2 + (λm)−1/2 )).                                     (2005). In practice, we can also decode x̂t+1 by choos-
+We expect that Theorem 1 can be further improved.             ing the best one from existing training examples.
+Currently it suggests that given a sequence of length t,
+                                                              3.8. Learning with sequences of observations
+in order to obtain an unbiased estimator of µXt+1 |x1:t ,
+                                                              In the learning algorithm formulated above, each vari-
+we need to decrease λ with a schedule of Op (m−1/2 )          able Xt corresponds to a single observation xt from a
+and obtain an overall convergence rate of Op (tm−1/4 ).       data sequence. In this case, the operator C2,1 only cap-
+Second, the assumption, maxx kAx k2 ≤ 1, im-                  tures the dependence between a single past observation
+poses smoothness constrants on the likelihood function        and a single future observation (similarly for C3,x,1 ).
+P(x|Ht ) for the theorem to hold. Finally, the current        In system identification theory, this corresponds to
+bound depends on the length t of the conditioning se-         assuming 1-step observability (Van Overschee & De
+quence. Hsu et al. (2009) provide a result that is in-        Moor, 1996) which is unduly restrictive for many par-
+dependent of t using the KL-divergence as the error           tially observable real-world dynamical systems of in-
+measure. For Hilbert space embeddings, it remains an          terest. More complex sufficient statistics of past and
+open question as to how to estimate the KL-divergence         future may need to be modeled, such as the block Han-
+and obtain a bound independent of t.                          kel matrix formulations for subspace methods (Van
+3.7. Predicting future observations                           Overschee & De Moor, 1996), to identify linear systems
+We have shown how to maintain the Hilbert space               that are not 1-step observable. To overcome this lim-
+embeddings µXt+1 |x1:t for the predictive distribution        itation one can consider sequences of observations in
+P(Xt+1 |x1:t ). The goal here is to determine the most        the past and future and estimate operators Cf uture,past
+probable future observations based on µXt+1 |x1:t . We        and Cf uture,x,past accordingly (Figure 1). As long as
+note that in general we cannot directly obtain the            past and future sequences never overlap, these ma-
+probability of the future observation based on the em-        trices have rank equal to that of the dynamics model
+bedding presentation of the distribution.                     and the theoretical properties of the learning algorithm
+                                                              continue to hold (see (Siddiqi et al., 2009) for details).
+However, for a Gaussian RBF kernel defined over a
+compact subset of a real vector space, the embedding          4. Experimental Results
+µXt+1 |x1:t can be viewed as a nonparametric density          We designed 3 sets of experiments to evaluate the effec-
+estimator after proper normalization. In particular,          tiveness of learning embedded HMMs for difficult real-
+let f be a constant function in the RKHS such that            world filtering and prediction tasks. In each case we
+hf, ϕ(Xt+1 )iF = 1, then the normalization constant           compare the learned embedded HMM to several alter-
+Z can be estimated as Ẑ = f, µ̂Xt+1 |x1:t F . Since          native time series models including (I) linear dynami-
+µ̂
+                               Pm
+              is represented as l=1 γi ϕ(xl3 ), Ẑ is simply  cal systems (LDS) learned by Subspace Identification
+PXm t+1 |x1:t
+                                                              (Subspace ID) (Van Overschee & De Moor, 1996) with
+   l=1 γi . We can then find the maximum a posteri
+(MAP) future observation by                                   stability constraints (Siddiqi et al., 2008), (II) discrete
+                                                              HMMs learned by EM, and (III) the Reduced-rank
+    x̂t+1 = argmaxxt+1 µ̂Xt+1 |x1:t , ϕ(xt+1 )  F
+                                                  /Ẑ    (31) HMM (RR-HMM) learned by spectral methods (Sid-
+Since kϕ(x)kF = 1 for a Gaussian RBF kernel, a geo-           diqi et al., 2009). In these experiments we demonstrate
+metric interpretation of the above MAP estimate is            that the kernel spectral learning algorithm for embed-
+to find a delta distribution δxt+1 such that its em-          ded HMMs achieves the state-of-the-art performance.
+bedding ϕ(xt+1 ) is closest to µ̂Xt+1 |x1:t , i.e. x̂t+1 =    Robot Vision. In this experiment, a video of 2000
+argminxt+1 kϕ(xt+1 ) − µ̂Xt+1 |x1:t kF . The optimization     frames was collected at 6 Hz from a Point Grey Bum-
+in (31) may be a hard problem in general. In some             blebee2 stereo camera mounted on a Botrics Obot d100
+cases, however, it is possible to define the feature map      mobile robot platform circling a stationary obstacle
+
+                                                      Hilbert Space Embeddings of Hidden Markov Models
+A. Example Images       B.                      9
+                                                    x 10 6
+                                                                                       A.                B.                     8
+                                                                                                                                      x 10 6
+                         Avg. Prediction Err.                                                            Avg. Prediction Err.
+                                                8                                                                               7                             Mean           HMM
+                                                                                       Slot Car
+                                                7                                                                               6                             Last           RR-HMM
+                                                6                                                                                                             LDS            Embedded
+                                                                                                                                5
+                                                5                                                  IMU                          4
+                                                4                                                                               3
+                                                3              Mean       HMM                                                   2
+                                                2              Last       RR-HMM                                                1
+               Path                                            LDS        Embedded
+                                                1                                                                               0
+                                                    0 10 20 30 40 50 60 70 80 90 100                                              0       10   20   30   40   50   60   70   80   90 100
+       Environment                Prediction Horizon                                        Racetrack                   Prediction Horizon
+Figure 2. Robot vision data. (A) Sample images from the                                Figure 3. Slot car inertial measurement data. (A) The slot
+robot’s camera. The figure below depicts the hallway envi-                             car platform and the IMU (top) and the racetrack (bot-
+ronment with a central obstacle (black) and the path that                              tom). (B) Squared error for prediction with different esti-
+the robot took through the environment (the red counter-                               mated models and baselines.
+clockwise ellipse). (B) Squared error for prediction with
+different estimated models and baselines.
+                                                                                       HMM) consistently for the duration of the prediction
+                                                                                       horizon (100 timesteps, i.e. 16 seconds).
+(under imperfect human control) (Figure 2(A)) and                                      Slot Car Inertial Measurement. In a second ex-
+1500 frames were used as training data for each model.                                 periment, the setup consisted of a track and a minia-
+Each frame from the training data was reduced to 100                                   ture car (1:32 scale model) guided by a slot cut into
+dimensions via SVD on single observations. The goal                                    the track. Figure 3(A) shows the car and the attached
+of this experiment was to learn a model of the noisy                                   IMU (an Intel Inertiadot) in the upper panel, and
+video, and, after filtering, to predict future image ob-                               the 14m track which contains elevation changes and
+servations.                                                                            banked curves. At each time step we extracted the es-
+We trained a 50-dimensional2 embedded HMM us-                                          timated 3-D acceleration of the car and the estimated
+ing Algorithm 1 with sequences of 20 consecutive ob-                                   difference between the 3-D orientation of the car from
+servations (Section 3.8). Gaussian RBF kernels are                                     the previous time step at a rate of 10Hz. We collected
+used and the bandwidth parameter is set with the                                       3000 successive measurements of this data while the
+median of squared distance between training points                                     slot car circled the track controlled by a constant pol-
+(median trick). The regularization parameter λ is set                                  icy. The goal was to learn a model of the noisy IMU
+of 10−4 . For comparison, a 50-dimensional RR-HMM                                      data, and, after filtering, to predict future readings.
+with Parzen windows is also learned with sequences of                                  We trained a 20-dimensional embedded HMM using
+20 observations (Siddiqi et al., 2009); a 50-dimensional                               Algorithm 1 with sequences of 150 consecutive obser-
+LDS is learned using Subspace ID with Hankel matri-                                    vations (Section 3.8). The bandwidth parameter of
+ces of 20 time steps; and finally a 50-state discrete                                  the Gaussian RBF kernels is set with ‘median trick’.
+HMM and axis-aligned Gaussian observation models                                       The regularization parameter λ is 10−4 . For compari-
+is learned using EM algorithm run until convergence.                                   son, a 20-dimensional RR-HMM with Parzen windows
+For each model, we performed filtering3 for different                                  is learned also with sequences of 150 observations; a
+extents t1 = 100, 101, . . . , 250, then predicted an im-                              20-dimensional LDS is learned using Subspace ID with
+age which was a further t2 steps in the future, for                                    Hankel matrices of 150 time steps; and finally, a 20-
+t2 = 1, 2..., 100. The squared error of this prediction                                state discrete HMM (with 400 level of discretization
+in pixel space was recorded, and averaged over all the                                 for observations) is learned using EM algorithm.
+different filtering extents t1 to obtain means which are                               For each model, we performed filtering for different
+plotted in Figure 2(B). As baselines, we also plot the                                 extents t1 = 100, 101, . . . , 250, then predicted an im-
+error obtained by using the mean of filtered data as a                                 age which was a further t2 steps in the future, for
+predictor (Mean), and the error obtained by using the                                  t2 = 1, 2..., 100. The squared error of this prediction
+last filtered observation (Last).                                                      in the IMU’s measurement space was recorded, and
+Any of the more complex algorithms perform better                                      averaged over all the different filtering extents t1 to
+than the baselines (though as expected, the ‘Last’ pre-                                obtain means which are plotted in Figure 3(B). Again
+dictor is a good one-step predictor), indicating that                                  the embedded HMM yields lower prediction error com-
+this is a nontrivial prediction problem. The embedded                                  pared to each of the alternatives consistently for the
+HMM learned by the kernel spectral algorithm yields                                    duration of the prediction horizon.
+significantly lower prediction error compared to each of
+                                                                                       Audio Event Classification. Our final experiment
+the alternatives (including the recently published RR-
+                                                                                       concerns an audio classification task. The data, re-
+   2
+       Set N = 50 in Algorithm 1.                                                      cently presented in Ramos et al. (2010), consisted of
+   3
+       Update models online with incoming observations.                                sequences of 13-dimensional Mel-Frequency Cepstral
+
+                            Hilbert Space Embeddings of Hidden Markov Models
+                                                                           90
+Coefficients (MFCC) obtained from short clips of raw
+                                                                           85
+                                                            Accuracy (%)
+audio data recorded using a portable sensor device.                                                                     HMM
+                                                                           80
+                                                                                                                        LDS
+Six classes of labeled audio clips were present in the                     75                                           RR−HMM
+data, one being Human speech. For this experiment                          70                                           Embedded
+we grouped the latter five classes into a single class                     65
+                                                                           60
+of Non-human sounds to formulate a binary Human                                 10       20      30      40        50
+                                                                                     Latent Space Dimensionality
+vs. Non-human classification task. Since the original
+data had a disproportionately large amount of Human
+                                                            Figure 4. Accuracies and 95% confidence intervals for Hu-
+Speech samples, this grouping resulted in a more bal-       man vs. Non-human audio event classification, comparing
+anced dataset with 40 minutes 11 seconds of Human           embedded HMMs to other common sequential models at
+and 28 minutes 43 seconds of Non-human audio data.          different latent state space sizes.
+To reduce noise and training time we averaged the data
+every 100 timesteps (equivalent to 1 second).               kernel spectral algorithm for learning the embedded
+                                                            HMMs, which exceeds previous state-of-the-art in real
+For each of the two classes, we trained embedded            world challenging problems. We believe that this new
+HMMs with 10, 20, . . . , 50 latent dimensions using        way of combining kernel methods and graphical mod-
+spectral learning and Gaussian RBF kernels with             els can potentially solve many other difficult problems
+bandwidth set with the ‘median trick’. The regular-         in graphical models and advance kernel methods to
+ization parameter λ is 10−1 . For comparison, regular       more structured territory.
+HMMs with axis-aligned Gaussian observation models,
+LDSs and RR-HMMs were trained using multi-restart           Acknowledgement
+EM (to avoid local minima), stable Subspace ID and
+                                                            LS is supported by a Ray and Stephenie Lane fellow-
+the spectral algorithm of (Siddiqi et al., 2009) respec-    ship. SMS was supported by the NSF under grant number
+tively, also with 10, . . . , 50 latent dimensions.         0000164, by the USAF under grant number FA8650-05-
+                                                            C-7264, by the USDA under grant number 4400161514,
+For RR-HMMs, regular HMMs and LDSs, the class-              and by a project with MobileFusion/TTC. BB was sup-
+conditional data sequence likelihood is the scoring         ported by the NSF under grant number EEEC-0540865.
+function for classification. For embedded HMMs, the         BB and GJG were supported by ONR MURI grant num-
+scoring function for a test sequence x1:t is the log of     ber N00014-09-1-1052.
+the productP of the compatibility scores for each obser-
+               t
+vation, i.e. τ =1 log ϕ(xτ ), µ̂Xτ |x1:τ −1 F .             References
+For each model size, we performed 50 random 2:1             Baker, C. (1973). Joint measures and cross-covariance op-
+partitions of data from each class and used the re-           erators. Trans. A.M.S., 186, 273–289.
+                                                            Cortes, C., Mohri, M., & Weston, J. (2005). A general re-
+sulting datasets for training and testing respectively.       gression techinque for learning transductions. In ICML.
+The mean accuracy and 95% confidence intervals over         Hsu, D., Kakade, S., & Zhang, T. (2009). A spectral algo-
+these 50 randomizations are reported in Figure 4. The         rithm for learning hidden markov models. In COLT.
+                                                            Jaeger, H. (2000). Observable operator models for discrete
+graph indicates that embedded HMMs have higher ac-            stochastic time series. Neural Computation, 12 (6), 1371–
+curacy and lower variance than other standard alter-          1398.
+natives at every model size. Though other learning          Ramos, J., Siddiqi, S., Dubrawski, A., Gordon, G., &
+algorithms for HMMs and LDSs exist, our experiment            Sharma, A. (2010). Automatic state discovery for un-
+                                                              structured audio scene classification. In ICASSP.
+shows this to be a non-trivial sequence classification      Siddiqi, S., Boots, B., & Gordon, G. (2008). A constraint
+problem where embedded HMMs significantly outper-             generation approach to learning stable linear dynamical
+form commonly used sequential models trained using            systems. In NIPS.
+                                                            Siddiqi, S., Boots, B., & Gordon, G. (2009). Reduced-rank
+typical learning and model selection methods.                 hidden markov models. http://arxiv.org/abs/0910.0902.
+                                                            Smola, A., Gretton, A., Song, L., & Schölkopf, B. (2007).
+                                                              A Hilbert space embedding for distributions. In ALT.
+5. Conclusion                                               Song, L., Huang, J., Smola, A., & Fukumizu, K. (2009).
+                                                              Hilbert space embeddings of conditional distributions.
+We proposed a Hilbert space embedding of HMMs                 In ICML.
+that extends traditional HMMs to structured and non-        Sriperumbudur, B., Gretton, A., Fukumizu, K., Lanckriet,
+Gaussian continuous observation distributions. The            G., & Schölkopf, B. (2008). Injective Hilbert space em-
+                                                              beddings of probability measures. In COLT.
+essence of this new approach is to represent distribu-      Van Overschee, P., & De Moor, B. (1996). Subspace iden-
+tions as elements in Hilbert spaces, and update these         tification for linear systems: Theory, implementation,
+elements entirely in the Hilbert spaces using opera-          applications. Kluwer.
+tors. This allows us to derive a local-minimum-free
+

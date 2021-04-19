@@ -6,11 +6,16 @@ import pdftotext
 import glob
 import os
 import sys
+import argparse
 def process_pdf(input_dir, output_dir):
+    print(glob.glob(input_dir))
     for i, pdf_file in enumerate(glob.glob(input_dir)):
         pdf = open(pdf_file, "rb")
         # print(i)
+        # print(pdf)
+        # print(pdf)
         text = pdftotext.PDF(pdf)
+        pdf.close()
         pdfintext = ""
         for page in text:
             pdfintext += page + "\n"
@@ -20,4 +25,10 @@ def process_pdf(input_dir, output_dir):
         f.close()
 os.mkdir(".\\papers_processed")
 os.mkdir(".\\papers_processed\\mathy")
-process_pdf(sys.argv[2], sys.argv[4])
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--input_dir")
+parser.add_argument("--output_dir")
+args = parser.parse_args()
+# print(args.url_file)
+process_pdf(args.input_dir, args.output_dir)

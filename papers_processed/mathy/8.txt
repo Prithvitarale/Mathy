@@ -1,0 +1,643 @@
+                                On Profit-Maximizing Envy-free Pricing
+          Venkatesan Guruswami∗                      Jason D. Hartline†             Anna R. Karlin∗           David Kempe‡
+                                             Claire Kenyon§                   Frank McSherry†
+Abstract                                                                 pricing problems studied in this paper.
+We study the problem of pricing items for sale to consumers                    More formally, we assume that the seller has m differ-
+so as to maximize the seller’s revenue. We assume that for               ent items, and a set of n consumers may be interested in pur-
+each consumer, we know the maximum amount he would                       chasing some of these items. We assume that through market
+be willing to pay for each bundle of items, and want to                  research or interaction with the consumers, the seller knows
+find pricings of the items with corresponding allocations that           each customer’s valuation for each subset (also called bun-
+maximize seller profit and at the same time are envy-free,               dle) of items, the largest amount that the customer is willing
+which is a natural fairness criterion requiring that consumers           to pay for that subset. If a customer buys a subset, his util-
+are maximally happy with the outcome they receive given                  ity is the difference between the valuation and the purchase
+the pricing. We study this problem for two important classes             price, i.e., the amount of money he “saved” compared to his
+of inputs: unit demand consumers, who want to buy at most                valuation.
+one item from among a selection they are interested in, and                    The seller gets to assign individual prices to the items,
+single-minded consumers, who want to buy one particular                  and his goal is to maximize his own revenue, i.e., the sum of
+subset, but only if they can afford it.                                  prices of all sold items. Which items are sold is determined
+      We show that computing envy-free prices to maximize                by an allocation of bundles of items to customers (at most
+the seller’s revenue is APX-hard in both of these cases, and             one bundle is allocated to each customer, and such a bundle,
+give a logarithmic approximation algorithm for them. For                 if any, must have nonnegative utility for that customer, since
+several interesting special cases, we derive polynomial-time             otherwise the customer will of course not buy the bundle).
+algorithms. Furthermore, we investigate some connections                 We require that this allocation be envy-free, i.e., given the
+with the corresponding mechanism design problem, in which                pricing, no user would prefer to be assigned a different
+the consumer’s preferences are private values: for this case,            bundle. The notions of envy-free pricing and allocations
+we give a log-competitive truthful mechanism.                            model fair equilibrium pricing in a variety of economic
+                                                                         settings [24]. Envy-freeness is particularly relevant in the
+1    Introduction                                                        case when there is only a limited supply of some items;
+                                                                         for then, a user interested in buying a bundle at the posted
+Imagine that we are a company or store in the business
+                                                                         price may be unable to do so, creating discontent among the
+of selling products to consumers. An important aspect
+                                                                         customers.
+of maximizing the revenue obtained is the pricing of our
+products: a low price will attract more customers, while a               1.1 Our Results. The pricing problem as defined above is
+high price generates more revenue per sold item. How, then,              very general. Even when given envy-free prices, computing
+should we choose prices optimally? For example, supposing                the corresponding allocation problem can be easily seen to
+that customers want to buy bandwidth along subpaths of a                 be NP-hard. For this reason, we focus here on two important
+network and are willing to pay up to some amount for the                 classes of consumer valuation profiles.
+bandwidth, how should one price the bandwidth along the
+                                                                            • Unit-demand bidders: Each consumer would like to
+links so as to maximize the revenue? This is the flavor of the
+                                                                               buy at most one item, and is considering a number of
+                                                                               different options with different valuations for each. For
+   ∗ Department     of     Computer      Science    and    Engineering,        instance, the items may be houses, and the customer
+University of Washington,         Seattle,   WA 98195.           Email:
+                                                                               may be willing to pay a higher price for some than for
+{venkat,karlin}@cs.washington.edu.
+   † Microsoft Research Silicon Valley, Mountain View, CA 94043. Email:        others based on location, size, or other qualities.
+{hartline,mcsherry}@microsoft.com.                                          • Single-minded (or single parameter) bidders: Each
+   ‡ Computer Science Department, University of Southern California, Los
+Angeles, CA 90089. Email: dkempe@usc.edu.
+                                                                               consumer is interested only in one particular bundle.
+   § Department of Computer Science, Brown University, Providence, RI          He will buy the bundle if it is sufficiently cheap, and
+02912. Email: claire@cs.brown.edu.                                             otherwise not buy anything.
+
+     An interesting special case of these pricing problems      algorithmic complexity of computing “equilibria”: in an
+can be obtained by assuming that the items are available in     optimal envy-free pricing, the seller does not have any
+unlimited supply. In this special case, there is no limitation  incentive to change prices and the consumers do not have
+on how many copies of each item are sold, and thus any          any incentive to dispute the allocation. Examples of other,
+pricing is envy-free when the allocation is to give each        somewhat different work in this category, can be found
+consumer their most preferred bundle. When we wish to           in [9, 10].
+distinguish the unlimited supply case from the general case          As previously discussed, this work is related to truthful
+we will refer to the general case as the limited supply case.   auction design, and especially the design of truthful auctions
+     As we will show, both of these versions are not only       with worst-case performance guarantees, e.g., [12, 13, 11, 5,
+NP-complete, but APX-hard, even under strong additional         4, 18].
+restrictions. We therefore focus on two kinds of results: (1)        Our interest here is in seller profit maximization. An-
+approximation algorithms with logarithmic guarantees in the     other common goal for economically motivated algorithms
+general case, and (2) polynomial or pseudo-polynomial time      and mechanisms is that of economic efficiency: obtaining an
+algorithms for interesting special cases.                       outcome which maximizes the sum of the utilities of all par-
+     We give an O(log n) approximation algorithm for the        ticipants. For the single-minded bidder case, when the goal
+limited supply unit demand problem, and an O(log n +            is efficiency, both the pricing problem and the mechanism
+log m) approximation for the unlimited supply single-           design problem have approximate solutions [19, 3]. For the
+minded bidder problem.                                          unit-demand case, the Vickrey-Clarke-Groves (VCG) mech-
+     Furthermore, we define and give a polynomial time          anism [23, 8, 14] solves the problem in polynomial time (see
+algorithm for the unlimited supply pricing over time variant    details in Section 4), and is both truthful and envy-free. We
+of the unit demand problem. This problem models the case        note that computing the VCG mechanism is NP-hard for gen-
+where there is a single item for sale at various points in time eral combinatorial auction problems including the special
+and each consumer wants to acquire the item within some         case of single-minded bidders. The goal of economic effi-
+time interval (e.g., for bandwidth or airline tickets).         ciency is quite different from maximizing the seller profit,
+     For the single-minded case, we define and investigate, in  and there are simple examples where the VCG mechanism is
+Section 5.2, the Tollbooth problem on trees, and its special    very far from maximizing the seller profit. For example, if
+case, the Highway problem on a path. In these problems,         no two consumers want the same item then the VCG mech-
+consumers are interested in using a given path in the tree      anism gives all items away for free!
+(or on the path), and the seller can place toll booths on            For unit-demand envy-free pricing, a final, somewhat
+the edges and charge prices for their usage. The additional     informal connection is to the notion of stable matchings. By
+combinatorial structure provided by this restriction allows us  introducing prices, we construct matchings of consumers to
+to give polynomial time algorithms for several cases of these   items with the property that no consumer prefers the item
+problems.                                                       someone else gets to the item they get.
+     The envy-free pricing problem also has a role as a lower
+bound in the setting of profit maximizing combinatorial auc-    2    Preliminaries
+tions. There, customers’ valuations are often not known, and    We assume that there are n consumers, and a set J of m
+what is more, customers will choose to misrepresent their       distinct items. Each item j ∈ J exists in cj copies (we
+valuations if they feel that they can get a better deal. Mech-  explicitly allow cj = ∞), and we denote the supply vector
+anism design studies the design of truthful (or incentive-      by c = (c1 , . . . , cm ). Each consumer has a valuation vi (S)
+compatible) auctions which make it in the customers’ best       for each bundle S ⊆ J of items, which measures how
+interest to disclose their true valuations. The performance of  much receiving bundle S would be “worth” to consumer
+such auctions is often measured in comparison to the profit     i; we denote by V the n × 2J matrix of valuations. For
+of the seller optimal envy-free pricings [13, 12],. In Section  convenience, we assume that vi (∅) = 0 for all consumers i.
+4, we will investigate this connection further, and present a        Given a price vector p = (p1 , . . . , pm ), the utility that
+log h-competitive truthful limited-supply unit-demand com-      consumer i derives      from bundle S is Ui (S) = vi (S) − pS ,
+binatorial auction for the case where all consumer valuations                    P
+                                                                where pS = j∈S pj ; it measures the consumer’s “joy” at
+are in the range [1, h]. We note that for any unlimited supply  having bought the bundle S at the given price. If consumer
+combinatorial pricing problem (including the single-minded      i’s utility for the bundle S is non-negative, we call S feasible
+case), a log h-competitive truthful mechanism is trivial.       for i.
+Related Work. Pricing is a well-studied area in economics;           User i’s demand set Di contains all bundles that would
+however, computational issues are not a major focus. Envy-      make him maximally happy, i.e., all bundles that he would
+free pricing is part of a trend towards understanding the       most like to buy. Formally, Di = {S | Ui (S) =
+                                                                maxS 0 Ui (S 0 )}. Since not buying any bundle is always an
+
+option with utility Ui (∅) = 0, we have Ui (S) ≥ 0 for all                    (vi , Si ) meaning that consumer i is interested in bundle
+S ∈ Di .                                                                      Si , and values it at vi . (This corresponds to making the
+     Using this terminology, we can now define envy-free                      OR fan-in equal to 1.)
+pricing and allocations, the central notion of this paper.
+                                                                        3 Pricing for Unit-Demand Consumers
+D EFINITION 2.1.
+                                                                        In this section, we consider envy-free pricing in the unit-
+                                                                        demand setting.
+  1. An allocation (S1 , . . . , Sn ) of bundles to consumers is
+      feasible if each item j is in at most cj sets Si . Notice         3.1 APX-hardness. Even in a very restricted special case
+      that this may leave some items unallocated.                       of the unit-demand setting, finding optimal prices is APX-
+                                                                        hard, as stated by the following theorem. A similar result
+  2. Given a pricing p = (p1 , . . . , pm ), an allocation              was proven independently in [1].
+      (S1 , . . . , Sn ) is envy-free if Si ∈ Di for all i, i.e., each
+      consumer receives a bundle from his demand set.                   T HEOREM 3.1. The unit demand envy-free pricing problem
+                                                                        is APX-hard, even if each item exists in unlimited supply, and
+  3. A pricing p is envy-free if it admits a feasible, envy-free        each consumer has equal valuations (of either 1 or 2) for all
+      allocation.                                                       the items he has any interest in.
+     Notice that if the supply is unlimited for all items, then         Proof. We give a reduction from the vertex cover problem
+every price vector is envy-free, as we can select an arbitrary          on graphs of maximum degree at most B for an absolute
+bundle Si from each demand set Di , and obtain a feasible               constant B, which is known to be APX-hard (even for
+allocation.                                                             B = 3). Given a graph G = (V, E) with n nodes (labeled
+                                                                        1, 2, . . . , n) and m edges (where m ≤ Bn/2 = O(n)), our
+D EFINITION 2.2. The envy-free pricing problem: Given the               pricing instance has n items, one for each node of G, and
+input (n, m, V, c), compute an envy-free pricing p and a                m + n consumers. (We assume G is connected w.l.o.g, so
+corresponding envy-free
+                     P         allocation (S1 , . . . , Sn ) maximizing m ≥ n − 1.) For each edge e = (i, j), there is a consumer
+the seller profit i pSi .                                               ce whose valuation for items i, j equals 1 and valuation for
+                                                                        all other items is 0. In addition, for each i = 1, 2, . . . , n,
+     When we talk about pricing algorithms for comput-
+                                                                        there is a customer di whose valuation for item i equals 2,
+ing prices and allocations, we will often use the notation
+                                                                        and valuation for all other items equals 0.
+Algo(V ) to denote both the output    P (p, (S1 , . . . , Sn )) of the       We claim that the optimal pricing and corresponding
+algorithm and its revenue R = i pSi .
+                                                                        allocation of this instance achieves a total profit of m+2n−k
+     The most general case of the combinatorial envy-free
+                                                                        where k is the size of the smallest vertex cover of G. First,
+pricing problem is difficult for two reasons, (1) the mere
+                                                                        if S is a vertex cover of G with |S| = k, consider the pricing
+specification of V could be of size Ω(2m ) rendering the
+                                                                        where items in S have cost 1, and those in V \ S have cost
+problem intractable, and (2) even if V was a reasonable size,
+                                                                        2. Since each edge has at least one endpoint incident on a
+the question of whether a given pricing is envy-free is NP-
+                                                                        node in S, we get profit 1 from each customer ce . Also,
+hard to decide. Thus we are motivated to focus on more
+                                                                        for i ∈   / S, we get profit 2 from di , and for i ∈ S we
+tractable, yet important and rich subclasses of the problem.
+                                                                        get profit 1 from di . Clearly, this yields a total profit of
+The general version can be considered as an OR of ANDs:
+                                                                        m + 2(n − k) + k = m + 2n − k.
+the each user wants to buy one of several bundles, and buying
+                                                                             For the converse, first notice that each node/item is
+a bundle means buying all of its items. Two natural special
+                                                                        without loss of generality priced at 1 or 2. If there exists
+cases can be obtained by conceptually making the “fan-in”
+                                                                        an edge e = (i, j) where both i, j are priced 2, then we are
+of the AND/OR operators 1. Specifically, we then obtain:
+                                                                        making zero profit from ce . By reducing the price of say i to
+   • Unit-demand consumers: Each consumer is interested                 1, we lose a profit of 1 from the customer di , but we make
+      in buying exactly one item, so vi (S) > 0 only when               up for it by making a profit of 1 from ce . Therefore, we may
+      |S| = 1. Thus, the size of the valuation matrix reduces           assume that set of nodes priced at 1 forms a vertex cover of
+      from n × 2m to n × m, and the entry vi (j) denotes                G. This in turn implies that the profit is at most m + 2n − k
+      consumer i’s valuation for item j. (This corresponds to           if k is the size of the smallest vertex cover.
+      making the AND fan-in equal to 1.)                                     Since m = Θ(n) and the minimum vertex cover has size
+                                                                        at least m/B = Ω(n), a constant factor gap in the size vertex
+   • Single-minded consumers: Each consumer i is inter-                 cover translates into a constant factor gap in the optimal
+      ested in only one specific bundle of items Si . Thus,             profit for the pricing instance, which yields the desired APX-
+      the valuations V can be summarized by a set of pairs              hardness result.                                              
+
+3.2 A logarithmic approximation algorithm. In our fur-          satisfied in unit demand utility functions. [20] was the first
+ther discussion of the unit demand case, it will be help-       to define the prices given in Theorem 3.3 but did not argue
+ful to think of allocations as matchings in bipartite graphs.   that they were maximum.
+Specifically, given a price vector p, the demand graph is            Unfortunately, even the Walrasian Equilibrium with the
+a bipartite graph between consumers i and items j, dupli-       highest prices can have revenue far from optimum. The
+cated min(cj ,n) times, containing an edge (i, j) if and only   problem is that selling as many items as possible, a key
+if j ∈ Di . An envy-free matching is a matching M such that     requirement of a Walrasian Equilibrium, may lead to very
+each consumer i with ∅ ∈    / Di is matched. Then, the prices   low revenue.
+p are envy-free if and only if the demand graph has an envy-         Our algorithm will be following a common approach
+free matching, and the output of a pricing algorithm is the     to profit maximization in economics. We will augment
+pair (p, M ).                                                   the computation of the Walrasian equilibrium with reserve
+      To simplify the presentation, we assume that there is     prices. A reserve price constrains the set of feasible pricings,
+exactly one copy of each item, i.e., cj = 1 for all items j.    by requiring that item j be priced at least at rj . A classic
+For the unit-demand case, this assumption is without loss of    example of the use of reserve prices in economics is in the
+generality: if there are cj copies of an item, we can replace   Bayesian optimal auction [21, 7], where the reserve prices
+them in the input by min(cj ,n) distinct items, and give each   are based on the known prior distribution from which the
+user the same valuation of all of those distinct items. The     consumers’ valuations are drawn.
+envy-free condition then guarantees that all of these distinct
+copies of an item will have the same price.                     D EFINITION 3.1. Given a valuation matrix V and a reserve
+                                                                price vector r = (r1 , . . . , rm ), a Walrasian Equilibrium with
+3.2.1 Walrasian Equilibria. Our approximation algo-             reserve prices r is an envy-free pricing p and allocation M
+rithm builds on work in the economics literature concern-       such that (1) pj ≥ rj for all j, (2) if item j is not sold, then
+ing Walrasian Equilibria [17]. Given a valuation matrix V , a   pj = rj , and (3) if item j is in the demand set of bidder i and
+Walrasian Equilibrium (p, M ) consists of an envy-free pric-    j is not sold, then bidder i is allocated an item.
+ing p and a matching M such that all unmatched items have            Given an algorithm, Algo, to compute Walrasian Equi-
+price zero. The following theorem, due to Gul and Stacchetti    libria, we can use it to derive an algorithm, Algor , for com-
+[15], characterizes Walrasian Equilibria in the unit-demand     puting Walrasian Equilibria with reserve prices.
+pricing problem.                                                     We augment the valuation matrix V to a new matrix V 0
+                                                                by creating, for each item j, two dummy consumers, who
+T HEOREM 3.2. [15] Let (p, M ) be a Walrasian Equilib-
+                                                                value item j at rj , and all other items at 0. Running Algo(V 0 )
+rium. Then M is a maximum weight matching on the val-
+                                                                then gives us a Walrasian Equilibrium (p, M 0 ). From M 0 ,
+uation matrix V ; furthermore, for any maximum matching
+                                                                we deduce a matching by removing all dummy consumers
+M 0 , (p, M 0 ) is also a Walrasian equilibrium.
+                                                                and their edges; finally, while there is an unsold item j in the
+      For a valuation matrix V , we let ω(V ) denote the weight demand set of a real consumer i that is not allocated an item,
+of a maximum weight matching MM(V ). For an item j,             we allocate item j to consumer i. The resulting matching,
+let V−j denote the valuation matrix with item j removed,        M , together with the prices, p, is the output of our algorithm
+i.e., the matrix obtained by deleting column j from V . The     Algor (V ).
+following algorithm finds the Walrasian Equilibrium with the
+                                                                T HEOREM 3.4. If Algo is an algorithm computing Wal-
+highest prices.
+                                                                rasian Equilibria, then Algor outputs a Walrasian Equilib-
+                                                                rium with reserve prices r.
+ Algorithm MaxWEQ: Maximum Walrasian Prices.
+                                                                Proof. Consider (p, M 0 ). For each item j, at least one of
+ Input: Valuation matrix V .
+                                                                the two dummy customers is not allocated item j. Since that
+ For each item j, let p̂j = ω(V ) − ω(V−j ).
+                                                                customer is not envious, we must have pj ≥ rj .
+ Output: p̂ and MM(V ).
+                                                                     Since (p, M 0 ) is envy-free, the output (p, M ) must also
+T HEOREM 3.3. [15] The algorithm MaxWEQ outputs, in             be envy-free for V : the prices have not changed.
+polynomial time, a Walrasian Equilibrium which maximizes             Since (p, M 0 ) is a Walrasian Equilibrium, the only
+the item prices: if p is any Walrasian equilibrium, then        unsold items in (p, M ) are those that were allocated to
+pj ≤ p̂j for every item j.                                      dummy consumers. This can only happen if pj ≤ rj , hence
+                                                                pj = r j .
+      Note that the result [15] is based on the properties           The last step of the algorithm only comes up for cus-
+of monotonicity and “single-improvement” of the utility         tomers whose bundles in their demand set all have utility 0,
+functions, properties which, as they mention, are obviously     and ensures that condition (3) is satisfied.                   
+
+      Our algorithm will compute Walrasian Equilibria for        by Lemma 3.1, and so rj ≤ 2P/j.
+several appropriately chosen reserve prices, and output the            On the other hand, the optimal envy-free seller profit is
+one yielding maximum revenue among them. The analysis            at most the weight of the maximum weighted matching π,
+will be based on the following lemma.                            i.e.,
+                                                                                     X         X 2P
+L EMMA 3.1. Let π be a maximum weighted matching on the                     OPT ≤        rj ≤            ≤ 2P ln n. 
+                                                                                      j         j
+                                                                                                     j
+valuation matrix V . Given a value r, let kr be the number
+of edges of π with valuation at least r. If (p, M ) is any             Notice that we only used the fact that the (p(j) , M (j) )
+Walrasian Equilibrium with reserve prices r = (r, r, . . . , r), are Walrasian Equilibria with reserve prices, but did not re-
+then the seller profit of (p, M ) is at least r · kr /2.         quire the maximality of the Walrasian Equilibria found by
+Proof. Consider an edge (i, j) of π with valuation at least r.   MaxWEQ. Hence, we could have used any algorithm Algor
+From the definition of a Walrasian equilibrium with reserve      for computing Walrasian Equilibria with reserve prices in-
+prices, we obtain that if item j is not matched by M , then      stead.
+pj = r; if in addition j ∈ Di then customer i must be                  The analysis of the algorithm is tight: Consider an
+matched by M , whereas if j ∈     / Di then the bundles in the   instance with n consumers and two copies of each of n items,
+demand set of i all have positive valuation and so customer i    where consumer i values all items j ≥ i at 1/i, and all other
+must also be matched by M . Thus, for every edge (i, j) of π     items at 0. Then, pricing item j at 1/j, and allocating it
+with valuation at least r, we have that either i or j is matched to consumer j, is envy-free and has profit Θ(ln n), while
+in M .                                                           our algorithm obtains profit 1. The algorithm’s profit is 1
+      Summing over edges of π with valuation at least r, we      because no duplicate copies are sold; hence, all items must
+get that kr ≤ 2|M |, and so M sells items, all at price at least be priced at the reserve price.
+r, to at least kr /2 consumers, yielding seller profit at least
+r · kr /2.                                                      3.3 Pricing Over Time. We now consider a special case
+                                                                 of unit-demand envy-free pricing, the pricing over time
+3.2.2 The Envy-free Approximation Algorithm. Using               problem, where the different items represent one object that
+the algorithm MaxWEQr , obtained by modifying the al-            is available at different points in time (for instance, an airline
+gorithm for maximum Walrasian prices to include reserve          ticket or network bandwidth). Here, each consumer i values
+prices, we can now give our approximation algorithm.             the item at a constant value of vi over a time interval [si , ti ]
+                                                                 and at 0 at all other times. The envy-free condition means
+                                                                 that customer i will buy the item at the lowest price below
+ Envy-Free Pricing Approximation Algorithm                       vi that is available during the [si , ti ] interval. The unlimited
+ Input: Valuation matrix V .                                     supply case of pricing over time may be a good model for
+                                                                 selling digital content. Blum et al. [6] previously considered
+    1. Let π be a maximum weight matching of V , and
+                                                                 a similar pricing over time model; however, the problem they
+       r1 ≥ r2 ≥ . . . ≥ r` the valuations on the edges of
+                                                                 considered was online and did not require the pricing to be
+       π.
+                                                                 envy-free.
+    2. For each j, run the algorithm MaxWEQr on input
+       V , with reserve prices r = (rj , rj , . . . , rj ). Let  T HEOREM 3.6. The Unlimited-Supply Pricing Over Time
+       (p(j) , M (j) ) be the output.                            problem can be solved in polynomial time.
+                            ∗      ∗
+ Output: The pair (p(j ) , M (j ) ) with the maximum seller      Proof. Although the definition of the problem is in a contin-
+ profit.                                                         uous time setting, one only needs to check envy-freeness at
+                                                                 times which are in the set ∪i {si , ti }, so that there are at most
+T HEOREM 3.5. The Envy-free Pricing Approximation Al-            2n distinct times to consider, and this reduces the problem
+gorithm outputs, in polynomial time, an envy-free pricing        to a discrete time setting. We now give a dynamic program-
+and matching which has seller profit at least OPT /(2 ln n),     ming algorithm. For points in time s < t, and a price p,
+where OPT is the optimal envy-free seller profit.                we define ap (s, t) to be the maximum profit that can be ob-
+                                                                 tained from consumers i with s < si and ti < t, when the
+Proof. The output is envy-free by Theorem 3.4, and the           minimum price over the time interval (s, t) is at least p. We
+running time is clearly polynomial.                              are then interested in computing a0 (0, ∞).
+      Let P denote the profit of our approximation algorithm.          The trivial base case occurs when no consumer would
+For all j we have                                                pay at least p in the interval (s, t), and the profit is 0.
+                                             j · rj              Otherwise, given s and t, and using nt0 ,q to denote the
+                P ≥ Profit(p(j) , M (j) ) ≥                      number of consumers i (among those with s < si and
+                                                2
+
+ti < t) who would be willing to buy the item at price q at                  of strategizing is to design truthful mechanisms, in which it
+time t0 (i.e., si ≤ t0 ≤ ti and vi ≥ q), we can express                     is in the consumers’ own best interest to disclose their true
+ap (s, t) = maxq≥p,t0 ∈(s,t) (aq (s, t0 ) + aq (t0 , t) + q · nt0 ,q ).     valuations.
+     Any particular choice of q and t0 corresponds to selling                     In analyzing the performance of a mechanism, it is
+the item at price q at time t0 , to all consumers willing to buy            natural to compare it with an optimal omniscient seller via
+it then. To ensure envy-freeness, this imposes a constraint                 a competitive analysis [13, 11, 5]. If the seller is allowed to
+of pricing at least at q during the sub-intervals that these                sell identical items to different consumers at different prices,
+consumers would also be willing to buy at.                                  then no truthful mechanism can be competitive [13]. Thus,
+     The optimality of the dynamic program follows simply                   [13, 11, 5] consider the optimal omniscient seller that uses
+by looking at the selling times and prices of the optimum                   a single price for identical items. The natural generalization
+solution in non-decreasing order of price. The crucial obser-               of the single-price condition to the case where distinct items
+vation is that we only need to consider a polynomial num-                   are for sale is that of envy-freeness.
+ber of prices q and times t0 . For the latter, we notice that                     Building on the ideas used in the approximation al-
+items only need to be sold at times si or ti , i.e., endpoints of           gorithm in Section 3.2, we present a new truthful log h-
+consumers’ intervals. Any other selling time can be shifted                 competitive mechanism mechanism for unit-demand combi-
+slightly to the left or right without altering profit. Similarly,           natorial auctions when all valuations are in the interval [1, h].
+all selling prices are valuations vi : if the item were ever sold           That is, the mechanism is guaranteed to achieve at least a
+at a price p not equal to a valuation, then all prices of p could           1/ log h fraction of the optimal envy-free pricing profit.
+be raised slightly without losing customers or creating envy.                     Our mechanism builds on the Vickrey-Clarke-Groves
+Hence, the dynamic programming table contains only O(n3 )                   (VCG) mechanism with reserve prices. The VCG mech-
+entries ap (s, t), each of which is computed in time O(n2 ).                anism, much like Walrasian Equilibria, outputs the effi-
+This completes the proof.                                                  cient allocation given by the maximum weighted match-
+                                                                            ing, M . However, the VCG mechanism aims at achieving
+     We can extend this approach to a pseudo-polynomial                     truthfulness, and therefore computes prices different from
+time algorithm for limited supply ct at time t. Given s and t,              MaxWEQ. If V−i denotes the matrix of valuations with the
+let n+t0 ,q denote the number of customers with si ≤ t ≤ ti
+                                                                   0
+                                                                            ith row (corresponding to the consumer i) deleted, the pay-
+                              0
+and with valuation at t strictly greater than q. Then the                   ment of consumer i, and thus the price of the item j allocated
+dynamic program relies on the following recurrence relation:                to consumer i by M , is computed as:
+                    ap (s, t) =       max        of
+                                  q≥p,t0 ∈(s,t)
+              0        0                                                                   pj   =    vi (j) − ω(V ) + ω(V−i ),
+ (aq (s, t ) + aq (t , t) + q · nt0 ,q ).          nt0 ,q ≤ ct0
+
+                                                if
+    (aq (s, t ) + aq (t0 , t) + q · ct0 ).
+              0
+                                                if  n+ t0 ,q ≤ ct0 ≤ nt0 ,q
+    −∞                                          if  c t0 < n +
+
+                                                              t0 ,q
+                                                                            where ω(V ) again denotes the weight of a maximum match-
+     Whether the problem can also be solved in polynomial                   ing of the valuation matrix V .
+time in the presence of limited supply is an open question.                       VCG is known to be truthful; interestingly, its prices
+The best-known approximation algorithm is the general log-                  are exactly the minimum Walrasian prices [20], and thus the
+arithmic approximation from the previous section; however,                  VCG prices are in fact envy-free. Since VCG computes a
+we do not know the limited supply problem to be NP-hard.                    Walrasian Equilibrium, we can use the generic technique
+                                                                            presented in Section 3.2.1 to obtain the VCG mechanism
+4 Towards Truthful Competitive Mechanisms                                   with reserve prices, VCGr ; the correctness of the mecha-
+As discussed in the introduction, an additional motivation                  nism follows from Theorem 3.4. The construction of adding
+for the study of envy-free pricing is the fact that the profit              reserve prices to VCG is well known, and the resulting mech-
+obtainable from such a pricing is a natural lower bound to                  anism VCGr is truthful [23, 8, 14].
+analyze truthful mechanisms for profit maximizing combina-                        We can use this fact to obtain a truthful log h-
+torial auctions. In a combinatorial auction, the setting is the             competitive auction, in a manner similar to the envy-free
+same as before, except that the valuations vi (S) are known                 pricing approximation algorithm. However, to preserve
+only to consumer i, but not the seller. The seller solicits,                truthfulness, we cannot run VCGr for different choices of
+implicitly or explicitly, the valuations from the consumers                 reserve prices; instead, we will choose the reserve price ran-
+in the process of running an auction. The consumers, who                    domly. The complete mechanism is then:
+know the auction mechanism, will choose to misrepresent
+their valuations if they derive more utility from the result-
+ing outcome. A popular approach to dealing with this kind
+
+ Unit Demand Combinatorial Auction Input: Valuation                2. vi ∈ {1, 2}, and |Si | = 2, for all i.
+ matrix V , where 1 ≤ vi (j) ≤ h for all i, j.
+                                                                 Proof. We first show that the problem is APX-hard when
+   1. Pick an integer k uniformly at random from                 vi = 1 for all requests i and |Si | ≤ 2 for all i by a reduction
+       {1, . . . , blog hc}, and let r = 2k .                    from the M AX C UT problem for 3-regular graphs (which was
+                                                                 shown to be APX-hard in [2]). Let G = (V, E) be the
+   2. Compute prices p and an allocation M by running instance of M AX C UT (a 3-regular graph), with n = |V |
+       the algorithm VCGr on input V with reserve prices nodes and m = |E| edges.
+       r = (r, r, . . . , r).                                         The items consist of an element v for each node v ∈ V ,
+                                                                 as well as a positive dummy dp and a negative dummy dn .
+ Output: the pair (p, M ).
+                                                                      All consumer valuations are equal to 1, and requests fall
+T HEOREM 4.1. The unit-demand combinatorial auction is           into three classes: edge requests, node requests, and dummy
+truthful and 4 log h competitive for any input in which all      requests.   The edge requests are simply one request for each
+consumer valuations are in the interval [1, h].                  edge  e   =  {u, v} ∈ E. The node requests are 4 requests
+                                                                 each for the sets {dp , v} and {dn , v}, for each node v. The
+Proof. That the auction is truthful follows directly from the dummy requests are 5m requests for the set {dp }, and 5m
+truthfulness of VCGr .                                           requests for the set {dp , dn }.
+     Let r1 ≥ r2 ≥ . . . ≥ rm be the prices of the items              We show that there is a price vector with profit at least
+sold in the maximum weighted matching P       M . Clearly, the 10m + 4n + k if and only if there is a cut that cuts at least k
+optimum profit is bounded from above by j rj . Let nr be edges.
+the number of items sold in M at price r or more (i.e., nr is         For the easy direction, assume that there is a cut cutting
+the index j such that rj ≥ r > rj+1 ). If r = (r, r, . . . , r), at least k edges. Assign price 1 to dp and to all nodes on one
+then Lemma 3.1 implies that the revenue of VCGr is at least side of the cut, and price 0 to dn and to all other nodes. We
+r · nr /2, so the expected revenue R of the auction is at least can then verify that the profit is at least 10m + 4n + k.
+                   2k n 2k                                            For the converse direction, let p be a price vector with
+   k=0 blog hc 2 log h .
+P
+     On the other hand, we can bound each price rj as            maximum      profit, and assume that the profit is at least 10m +
+          Pblog hc k                                             4n  +  k.  By  simple exchange arguments, we can first show
+rj ≤ 2 k=0 2 · [rj ≥ 2k ], where [rj ≥ 2k ] is 1 if
+                                                                 that the optimality   implies that pdp = 1, and pdn = 0. Using
+rj ≥ 2k and 0 otherwise. Summing over all j, we obtain that
+                                                                 this, we can next use exchange arguments to show that each
+                                                                 pv is either 0 or 1, by first ruling out that any pv is between
+     P                   Pblog hc k
+                 ≤ 2 k=0 2 · n2k ≤ (4 log h) · R,                0 and 21 , and then rounding all non-zero prices to 1.
+        j rj
+                                                                      The price vector then defines a natural cut between
+completing the proof.                                          nodes of price 0 and nodes of price 1. Because the total
+                                                                 revenue from dummy requests is exactly 10m, and from
+     Note that if h is polynomial in n, this auction has the node requests 4n, the total profit from edge requests must
+same approximation ratio as the non-truthful approximate be k; and it can be seen easily that an edge contributes profit
+envy-free pricing algorithm given earlier. However, there 1 if and only if it is cut.
+are instances where the latter algorithm outperforms this             Because the maximum cut cuts at least half of the edges,
+mechanism by a factor of log n, e.g., when using a single we are only interested in the case where k ≥ m/2, and
+price is close to optimal.                                       because the graph is 3-regular, we also have n ≤ m.
+                                                                 Then, a few straightforward calculations show that a 28+α     29
+5 Single-Minded Consumers                                        approximation for the envy-free pricing problem would yield
+We now turn to the problem of envy-free pricing for single- an α-approximation to cubic M AX C UT, proving that the
+minded consumers. Recall that the input in this case is envy-free pricing problem is NP-hard to approximate within
+given by the pairs (vi , Si ): consumer i values the bundle 28+α   29 , where α is the approximation hardness constant in [2]
+Si at vi , and all other bundles at 0. We will also refer to (not given explicitly there).
+Si as consumer i’s request, and vi as his bid. Even under             The above reduction can be adapted very slightly to
+strong additional restrictions, the pricing problem for single- yield the same result when all set sizes are exactly 2, and
+minded consumers is APX-hard, as shown below.                    all valuations are either 1 or 2. To avoid the single element
+                                                                 requests {dp }, we add one more dummy element d, and
+T HEOREM 5.1. Envy-free pricing for single-minded con-
+                                                                 replace the requests {dp } with 5m requests for the set
+sumers is APX-hard, even when all items are available in
+                                                                 {d, dp } with valuation 2 each, and 5m requests for the set
+unlimited supply, and
+                                                                 {d, dn } with valuation 1 each.
+  1. vi = 1 and |Si | ≤ 2 for all i, or                               Now, a very similar argument can be used to show that
+
+in an optimal solution, the prices are pd = pdp = 1, and         in money and inconvenience of using an alternate method of
+pdn = 0; the remainder of the proof stays unchanged.            transportation. The seller is the owner of the highway sys-
+                                                                 tem, and would like to choose tolls for the segments so as to
+5.1 A Logarithmic Approximation Algorithm for Items              maximize profits. Notice that the APX-hardness reduction
+in Unlimited Supply. The previous hardness result shows          in Theorem 5.1 can be thought of as generating length-1 or
+that we are unlikely to find a PTAS for the single-minded        length-2 paths in a star graph, so the tollbooth problem on
+bidder case. However, it is fairly straightforward to get a      trees is still APX-hard.
+logarithmic approximation for single-minded bidders in the            A special case that is polynomial-time solvable is the
+case of unlimited supply. Our algorithm only considers pric-     case when all path requests share one common endpoint
+ings in which all items are priced the same. The candidate       r, which we consider as the root of the tree. This case
+prices are qi = vi /|Si |, for each customer i. Among the        is motivated by commuter traffic in the vicinity of a large
+pricings assigning all items price qi , our algorithm simply     city: most cars are either originating from or destined for the
+selects the one giving largest profit and outputs it.            large city, and the paths used by most of the cars forms a
+                                                                 tree. We first assume that edges have infinite capacity, which
+T HEOREM 5.2. This algorithm is a log n + log m approxi-         corresponds to unlimited supply.
+mation for envy-free pricing when bidders are single-minded
+and items are available in unlimited supply.                     T HEOREM 5.3. The unlimited supply tollbooth problem on
+                                                                 rooted trees can be solved in polynomial time.
+Proof. We assume that the consumers are ordered such that
+q1 ≥ q2 ≥ . . . ≥ qn . PIf all items are priced at qi , then     Proof Sketch. We give a dynamic programming algorithm.
+the seller profit is Ri = P 1≤j≤i |Sj | · vi /|Si |. Rearranging For a node w, let Rw denote the set of all requests originating
+yields that vi = |Si |Ri / 1≤j≤i |Sj |. Because the algorithm    in the subtree Tw rooted at w. We define a(w, b) to be the
+chooses the price R maximizing profit, we have that Ri ≤ R       optimum revenue obtainable from requests in Rw if the path
+for all i, and thus                                              from w to the root costs exactly b. We are then interested in
+                                                                 computing a(r, 0).
+           n            n                                             For node w, let w1 , . . . , wk denote its children, and
+         X            X        |Si |Ri
+             vi   =                                              nw (b) the number of requests originating at w with valuation
+                              1≤j≤i |Sj |
+                            P
+         i=1           i=1                                       b or higher. Then:
+                            n X |Si |
+                           X                    1                       a(w, b)   =   b · nw (b) +
+                                                                                                    P
+                                                                                                         maxb0 ≥b a(wi , b0 ).
+                  ≤   R·                                                                               i
+                                              1≤j≤i−1 |Sj |
+                                            P
+                           i=1 k=1
+                                      k+
+                              X                                       The crucial observation is that we only need to consider
+                  ≤   R · ln(       |Si |).
+                                                                 a polynomial number of costs b. Indeed, all selling path
+                                i
+                                                                 prices are valuations: if there is a feasible request (w, b) ∈
+                                                                 Rw in the optimum pricing, then w.l.o.g., the total price of
+P
+   i vi is a trivial upperP  bound on the optimum, so the
+theorem follows because i |Si | ≤ nm.                           the path from w to the root is b0 , for some (w 0 , b0 ) ∈ Rw .
+                                                                 This claim is easily proved by induction, starting at the leaves
+      The analysis of this algorithm is tight, as can be seen    of the tree.
+by the example in which customer i wants to buy only                  Hence in the maximum over b0 ≥ b, we only have to
+item i, with valuation 1/i. In this case, the trivial upper      consider values b0 ∈ Rwi , so the dynamic programming table
+bound is easily achievable, while our algorithm only has         has size O(n2 ), and a(w, b) can be computed in polynomial
+revenue 1. On the other hand, any analysis using only this       time.
+trivial upper bound on the optimal revenue cannot prove an
+approximation guarantee better than O(log n), as can be seen          We can extend the previous approach to obtain a pseudo-
+by the simple example of all users requesting item 1, with       polynomial time dynamic programming algorithm for the
+user i’s valuation being 1/i.                                    case of edge capacities ce . We let a(w, c, b) denote the
+                                                                 maximum revenue that can be obtained if at most c requests
+5.2 The Tollbooth Problem. While the envy-free pricing           from Rw are feasible, and the path from w to the root has
+problem, even for single-minded bidders, is hard to approx-      total price exactly b. Here, we write n+  w (b) for the number
+imate, there are interesting and more tractable special cases.   of requests originating with node w with valuation strictly
+Here, we study the tollbooth problem. The items are now          greater than b. When, writing ei for the edge from w to its
+the edges of a graph G, which we may think of as high-           child wi , the envy-freeness condition implies that we can
+way segments, and customers’ requests are for paths in the       compute a(w, c, b) as the maximum, over (c0 , c1 , . . . , ck )
+graph. A customer’s valuation may be derived from the price      such that 0 ≤ ci ≤ cei , n+       w (b) ≤ c0 ≤ nw (b), and
+
+          ≤ c, of
+P
+   i ci                                                              a 1 at the first row and 0’s everywhere else, and every row
+                             X                                       is of the form 0∗ 1∗ 0∗ . Expanding by the first column, we
+                  (b · c0 +       max   a(wi , ci , b0 )).           conclude unimodularity by induction. Because the matrix
+                                   b ≥b
+                                    0
+                             i≥1                                     is totally unimodular, we can apply a theorem of Hoffman
+                                                                     and Kruskal [16, 22], which states that for an integral right-
+       Here, c0 is the capacity allotted to requests originating
+                                                                     hand side vector V = (vi ), all vertex solutions of the LP are
+with w, and the envy-freeness condition requires all requests
+                                                                     integral. In particular, as there is an optimal solution that is
+with valuation strictly exceeding b Q        to be served. While the
+                                                                     a vertex, we obtain that there is an integer optimum, which
+maximum is seemingly taken over i cei k-tuples, it can in
+                                                                     completes the proof.                                              
+turn bePcomputed by dynamic programming over values of
+cj vs. j 0 >j cj 0 .                                                      We can use the integrality lemma to obtain a pseudo-
+                                                                     polynomial time dynamic programming algorithm for the
+5.3 The Highway Problem. Another “simple” case of the                following special cases.
+tollbooth problem is when the underlying graph is in fact a
+                                                                     T HEOREM 5.4. 1. If there is a constant upper bound B
+path, and all requests are subpaths (not necessarily sharing
+                                                                           on all valuations vi , and all valuations are integral,
+a common endpoint). This case is clearly motivated by
+                                                                           then there is a polynomial-time (O(B B+2 nB+3 )) dy-
+tolls to be charged on a single freeway. Even though a
+                                                                           namic programming algorithm to find an optimal price
+path is about as simple a graph as we can hope for, the
+                                                                           vector.
+problem is surprisingly complex: at this point, we do not
+know if optimal prices can be computed in polynomial time,             2. If all requests have path lengths bounded by some con-
+or whether the problem is NP-hard on a path. However,                      stant k, and all valuations are integral, then there is
+we can derive pseudo-polynomial dynamic programming                        a pseudo-polynomial dynamic programming algorithm
+algorithms when some of the parameters are bounded. Here                   with running time O(B k+1 · n) for computing an opti-
+again we assume infinite edge capacity. The algorithms rely                mal price vector.
+on the following integrality lemma:
+                                                                     Proof Sketch. We sketch dynamic programs with an analy-
+L EMMA 5.1. If all valuations vi are integral, then there is         sis for both restrictions. Details of the analysis will be given
+an optimal solution in which all prices pe are integral.             in the full version.
+                                                                     1. Our dynamic programming algorithm maintains a table
+Proof. Let p be any price vector, and R the set of all               with entries aj,(k1 ,γ1 ),...,(kB+1 ,γB+1 ) , which denotes the max-
+requests feasible under p. We show that there is an integral         imum profit that can be obtained from requests i with right
+assignment p0 such that each request in R is still feasible          endpoint ri ≤ j, given that the rightmost B + 1 edges with
+under p0 , and the total profit obtained from R is at least as       non-zero price to the left of j are k1 < k2 < . . . < kB+1 ≤ j
+large as under p. Applying this to the optimal assignment p          with associated prices γ1 , . . . , γB+1 > 0. A crucial obser-
+then clearly proves the lemma.                                       vation here is that the above integrality lemma (Lemma 5.1)
+       Each request is a subpath, so if the edges are numbered       guarantees that we need only consider γb ∈ {1, . . . , B}, and
+1, . . . , m, with prices p1 , . . . , pm , then each request i uses           PB+1
+                                                                     thus also b=1 γb > B. This in turn implies that no request
+some edges li , . . . , ri . Given the set R of requests that
+                                                                     i with li < k1 and ri ≥ kB+1 can be feasible, so we can
+must be feasible, the optimal assignment that makes all of
+                                                                     safely ignore these requests.
+R feasible is the solution to the following linear program:
+                                                                          The initialization for the table is fairly clear. For
+                               P ri
+                                                                     the update step, consider the pricing of the edge j + 1,
+                       P
+         Maximize
+                       Pri∈R       j=li pj
+         subject to        i
+                               p j    ≤ vi for each i ∈ R            starting from a table entry a = aj,(k1 ,γ1 ),...,(kB+1 ,γB+1 ) .
+                          j=li
+                       pj             ≥ 0        for each j          If edge j + 1 is priced at 0, then we add to a the profit
+                                                                     obtained from paths ending at j + 1 to obtain a candidate
+       Notice that each row in the matrix for the LP is of the       for aj+1,(k1 ,γ1 ),...,(kB+1 ,γB+1 ) . Otherwise, when edge j + 1
+form 0∗ 1∗ 0∗ . This is enough to prove that the matrix is           is given a positive price γ, we obtain a candidate for table
+totally unimodular, i.e., that the determinant of each non-          entry aj+1,(k2 ,γ2 ),...,(kB+1 ,γB+1 ),(j+1,γ) , again by adding to
+singular square submatrix is ±1. Indeed, consider any                a the profit obtained from paths ending at j + 1.
+submatrix. It still satisfies the property that each row is of the        It is not difficult to see that we can conversely
+form 0∗ 1∗ 0∗ . To compute the determinant, reorder the rows         reconstruct all O(nB) candidate table entries that
+by non-decreasing li , then by non-decreasing ri , subtract the      could result in candidates for a particular desired entry
+first row from every row which starts with a 1. These steps          aj+1,(k1 ,γ1 ),...,(kB+1 ,γB+1 ) , and then choose the maximum
+do not change the determinant except for perhaps its sign,           among all those candidates. Hence, the total running time
+and we are now left with a matrix whose first column has             (with O(B B+1 nB+2 ) table entries) is O(B B+2 nB+3 ).
+
+2. The algorithm maintains a table aj,γ1 ,...,γk , where an entry          [9] X. Deng, C. Papadimitriou, and M. Safra. On the complexity
+is the maximum amount of profit that can be obtained from                      of equilibria. In Proc. 34th ACM Symp. on Theory of
+requests ending at position j or below, given that the edges                   Computing. ACM Press, 2002.
+j, j − 1, . . . , j − k + 1 are priced at γ1 , . . . , γk , respectively. [10] N. Devanur, C. Papadimitriou, A. Saberi, and V. Vazirani.
+       To calculate an entry aj+1,γ1 ,...,γk , consider all possible           Market equilibria via primal-dual-type algorithm. In Proc.
+                                                                               43rd IEEE Symp. on Foundations of Computer Science, 2002.
+values of γ 0 ∈ {0, . . . , B}, and add to aj+1,γ2 ,...,γk ,γ 0 the
+                                                                          [11] A. Fiat, A. Goldberg, J. Hartline, and A. Karlin. Competitive
+maximum profit for all feasible requests ending exactly at                     generalized auctions. In Proc. 34th ACM Symp. on Theory of
+j + 1 with cost assignments γ2 , . . . , γk , γ 0 to edges j, j −              Computing. ACM Press, 2002.
+1, . . . , j + 2 − k, j + 1 − k. Because no path has length               [12] A. Goldberg and J. Hartline. Competitive auctions for multi-
+exceeding k, the values of (γi )i and γ 0 are sufficient to                    ple digital goods. In Proc. 9th European Symposium on Algo-
+determine whether a request is feasible, and we can restrict                   rithms, pages 416–427. Springer, 2001.
+the choices of γ 0 to {0, . . . , B} because of the Integrality           [13] A. V. Goldberg, J. D. Hartline, and A. Wright. Competitive
+Lemma 5.1.                                                                     auctions and digital goods. In Proc. 12th ACM Symp. on
+       The computation of a new table entry takes time O(B),                   Discrete Algorithms, pages 735–744. ACM/SIAM, 2001.
+and because the table size is O(B k n), the running time is               [14] T. Groves. Incentives in teams. Econometrica, 41:617–631,
+O(B k+1 n).                                                                    1973.
+                                                                          [15] F. Gul and E. Stacchetti. Walrasian equilibrium with gross
+                                                                               substitutes. Journal of Economic Theory, 87:95–124, 1999.
+6    Some open questions
+                                                                          [16] A. Hoffman and J. Kruskal. Integral boundary points of
+There are a number of open problems left in this paper.                        convex polyhedra. In H. Kuhn and A. Tucker, editors, Linear
+For the single parameter limited supply case, is there a                       Inequalities and Related Systems, pages 223–246. Princeton
+sublinear factor polynomial time approximation algorithm?                      University Press, 1956.
+For the unit demand case, is there a sublogarithmic factor                [17] T. Koopmans and M. Beckmann. Assignment problems and
+approximation algorithm? As of yet we do not have a good                       the location of economic activities. Econometrica, 25:53–76,
+understanding of how different prices interact. Note that our                  1957.
+                                                                          [18] R. Lavi, A. Mu’alem, and N. Nisan. Towards a characteriza-
+hardness result for the unit demand case only requires two
+                                                                               tion of truthful combinatorial auctions. In Proc. 44th IEEE
+different price levels. Note that if there are only two price
+                                                                               Symp. on Foundations of Computer Science, 2003.
+levels then there is a trivial 2-approximation to the optimal             [19] D. Lehmann, L. I. O’Callaghan, and Y. Shoham. Truth
+unlimited supply envy-free pricing.                                            revelation in approximately efficient combinatorial auctions.
+                                                                               In Proc. 1st ACM Conf. on Electronic Commerce, pages 96–
+References                                                                     102. ACM Press, 1999.
+                                                                          [20] H. Leonard. Elicitation of honest preferences for the assign-
+                                                                               ment of individuals to positions. Journal of Political Econ-
+  [1] G. Aggarwal, T. Feder, R. Motwani, and A. Zhu. Algorithms                omy, 91:1–36, 1983.
+        for multi-product pricing. In Proc. of ICALP, 2004.               [21] R. Myerson. Optimal auction design. Mathematics of
+  [2] P. Alimonti and V. Kann. Hardness of approximating prob-                 Operations Research, 6:58–73, 1981.
+        lems on cubic graphs. In Proc. 3rd Ital. Conf. on Algorithms      [22] C. Papadimitriou and K. Steiglitz. Combinatorial Optimiza-
+        and Complexity, pages 288–298. Springer, 1997.                         tion. Dover, 1982.
+  [3] A. Archer, C. Papadimitriou, K. Talwar, and E. Tardos. An           [23] W. Vickrey. Counterspeculation, auctions, and competitive
+        approximate truthful mechanism for combinatorial auctions              sealed tenders. J. of Finance, 16:8–37, 1961.
+        with single parameter agents. In Proc. 14th ACM Symp. on          [24] L. Walras. Elements of Pure Economics. Allen and Unwin,
+        Discrete Algorithms. ACM/SIAM, 2003.                                   1954.
+  [4] A. Archer and E. Tardos. Frugal path mechanisms. In Proc.
+        13th ACM Symp. on Discrete Algorithms, pages 991–999.
+        ACM/SIAM, 2002.
+  [5] A. Blum, V. Kumar, A. Rudra, and F. Wu. Online learning
+        in online auctions. In Proc. 14th ACM Symp. on Discrete
+        Algorithms. ACM/SIAM, 2003.
+  [6] A. Blum, T. Sandholm, and M. Zinkevich. Online algorithms
+        for market clearing. In Proc. 13th ACM Symp. on Discrete
+        Algorithms, pages 971–980. ACM/SIAM, 2002.
+  [7] J. Bulow and J. Roberts. The simple economics of optimal
+        auctions. The Journal of Political Economy, 97:1060–90,
+        1989.
+  [8] E. H. Clarke. Multipart pricing of public goods. Public
+        Choice, 11:17–33, 1971.
+

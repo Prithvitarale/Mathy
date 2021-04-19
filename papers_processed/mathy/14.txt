@@ -1,0 +1,1079 @@
+                                                                                              University of Pennsylvania
+                                                                                             ScholarlyCommons
+Statistics Papers                                                                                     Wharton Faculty Research
+2008
+Stochastic Linear Optimization Under Bandit
+Feedback
+Varsha Dani
+University of Chicago
+Thomas P. Hayes
+Toyota Technological Institute
+Sham M. Kakade
+University of Pennsylvania
+Follow this and additional works at: http://repository.upenn.edu/statistics_papers
+     Part of the Computer Sciences Commons, and the Statistics and Probability Commons
+Recommended Citation
+Dani, V., Hayes, T. P., & Kakade, S. M. (2008). Stochastic Linear Optimization Under Bandit Feedback. 21st Annual Conference on
+Learning Theory, 355-366. Retrieved from http://repository.upenn.edu/statistics_papers/101
+This paper is posted at ScholarlyCommons. http://repository.upenn.edu/statistics_papers/101
+For more information, please contact repository@pobox.upenn.edu.
+
+Stochastic Linear Optimization Under Bandit Feedback
+Abstract
+In the classical stochastic k-armed bandit problem, in each of a sequence of T rounds, a decision maker
+chooses one of k arms and incurs a cost chosen from an unknown distribution associated with that arm. The
+goal is to minimize regret, defined as the difference between the cost incurred by the algorithm and the
+optimal cost. In the linear optimization version of this problem (first considered by Auer [2002]), we view the
+arms as vectors in Rn, and require that the costs be linear functions of the chosen vector. As before, it is
+assumed that the cost functions are sampled independently from an unknown distribution. In this setting, the
+goal is to find algorithms whose running time and regret behave well as functions of the number of rounds T
+and the dimensionality n (rather than the number of arms, k, which may be exponential in n or even infinite).
+We give a nearly complete characterization of this problem in terms of both upper and lower bounds for the
+regret. In certain special cases (such as when the decision region is a polytope), the regret is polylog(T). In
+general though, the optimal regret is Θ∗ ( √ T) — our lower bounds rule out the possibility of obtaining
+polylog(T) rates in general.
+We present two variants of an algorithm based on the idea of “upper confidence bounds.” The first, due to
+Auer [2002], but not fully analyzed, obtains regret whose dependence on n and T are both essentially
+optimal, but which may be computationally intractable when the decision set is a polytope. The second
+version can be efficiently implemented when the decision set is a polytope (given as an intersection of half-
+spaces), but gives up a factor of √ n in the regret bound. Our results also extend to the setting where the set of
+allowed decisions may change over time.
+Disciplines
+Computer Sciences | Statistics and Probability
+                       This conference paper is available at ScholarlyCommons: http://repository.upenn.edu/statistics_papers/101
+
+                      Stochastic Linear Optimization under Bandit Feedback
+                                  Varsha Dani∗ and Thomas P. Hayes† and Sham M. Kakade†
+                          Abstract                              1    Introduction
+     In the classical stochastic k-armed bandit problem,        The seminal work of Robbins [1952] introduced a formal-
+     in each of a sequence of T rounds, a decision maker        ism for studying the sequential design of experiments, which
+     chooses one of k arms and incurs a cost chosen             is now referred to as the multi-armed bandit problem. In this
+     from an unknown distribution associated with that          foundational paradigm, at each time step a decision maker
+     arm. The goal is to minimize regret, defined as the        chooses one of K decisions or “arms” (e.g. treatments, job
+     difference between the cost incurred by the algo-          schedules, manufacturing processes, etc) and receives some
+     rithm and the optimal cost.                                feedback loss only for the chosen decision. In the most un-
+     In the linear optimization version of this problem         adorned model, it is assumed that the cost for each decision
+     (first considered by Auer [2002]), we view the arms        is independently sampled from some fixed underlying (and
+     as vectors in Rn , and require that the costs be lin-      unknown) distribution (that is different for each decision).
+     ear functions of the chosen vector. As before, it          The goal of the decision maker is to minimize the average
+     is assumed that the cost functions are sampled in-         loss over some time horizon. This basic model of decision
+     dependently from an unknown distribution. In this          making under uncertainty already typifies the conflict be-
+     setting, the goal is to find algorithms whose run-         tween minimizing the immediate loss and gathering infor-
+     ning time and regret behave well as functions of           mation that will be useful in the long-run. This sequential
+     the number of rounds T and the dimensionality n            design problem — often referred to as the stochastic multi-
+     (rather than the number of arms, k, which may be           armed bandit problem — and a long line of successor ban-
+     exponential in n or even infinite).                        dit problems have been extensively studied in the statistics
+                                                                community (see, e.g., [Berry and Fristedt, 1985]), with close
+     We give a nearly complete characterization of this
+                                                                attention paid to obtaining sharp convergence rates.
+     problem in terms of both upper and lower bounds
+     for the regret. In certain special cases (such as              While this paradigm offers a formalism to a host of natu-
+     when the decision region is a polytope), the regret        ral decision problems (e.g. clinical treatment, manufacturing
+     is polylog(T                                               processes, job scheduling), a vital issue to address for appli-
+                  √). In general though, the optimal re-        cability to modern problems is how to tackle a set of feasible
+     gret is Θ∗ ( T ) — our lower bounds rule out the           decisions that is often large (or infinite). For example, the
+     possibility of obtaining polylog(T ) rates in gen-         classical bandit problem of clinical treatments (often con-
+     eral.                                                      sidered in statistics) — where each decision is a choice of
+     We present two variants of an algorithm based on           one of K treatments — is often better modelled by choosing
+     the idea of “upper confidence bounds.” The first,          from some (potentially infinite) set of mixed treatments sub-
+     due to Auer [2002], but not fully analyzed, obtains        ject to some budget constraint (where there is a cost per unit
+     regret whose dependence on n and T are both es-            amount of each of drug). In manufacturing problems, often
+     sentially optimal, but which may be computation-           the goal is to maximize revenue subject to choosing among
+     ally intractable when the decision set is a polytope.      some large set of decisions that satisfy certain manufactur-
+     The second version can be efficiently implemented          ing constraints (where the revenue from each decision may
+     when the decision set is a polytope (given as an in-       be unknown). A modern variant of this problem that is re-
+     tersection
+     √           of half-spaces), but gives up a factor of      ceiving increasing attention is the routing problem where the
+        n in the regret bound.                                  goal is to send packets from A to B and the cost of each route
+     Our results also extend to the setting where the set       is unknown (see, e.g., [Awerbuch and Kleinberg, 2004]).
+     of allowed decisions may change over time.                     We study a natural extension of the stochastic multi-armed
+                                                                bandit problem to linear optimization — a problem first con-
+  ∗
+    Department of Computer Science, University of Chicago,      sidered in Auer [2002]. Here, we assume the decision space
+varsha@cs.uchicago.edu                                          is an arbitrary subset D ⊂ Rn and that there is fixed distribu-
+  †                                                             tion π over cost functions. At each round, the learner chooses
+    Toyota       Technological     Institute    at     Chicago,
+{hayest,sham}@tti-c.org                                         a decision x ∈ D, then a cost function f (·) : D → [0, 1] is
+
+sampled from π. Only the loss f (x) is revealed to the learner     Auer [2002] may be possible.
+(and not the function f (·)). We assume that the expected loss          For the case of finite decision sets, such as the K-arm
+is a fixed linear function, i.e. that E[f (x)] = µ · x, where the  bandit case, a regret that is only logarithmic in the time hori-
+expectation is with respect to f sampled from π (technically,      zon is achievable. In particular, in a different line of work,
+we make a slightly weaker assumption, precisely stated in          Auer et al. [2002] showed that the optimal regret for the K-
+the next section). The goal is to minimize the total loss over     arm bandit case was characterized as K       ∆ log T , where ∆ is
+T steps. As is standard, success is measured by the regret         the “gap” between the performance of the best arm and the
+— the difference between the performance of the learner            second best arm. This result is stated in terms of the problem
+and that of the optimal algorithm which has knowledge of           dependent constant ∆, so one can view it as the asymptotic
+π. Note that the optimal algorithm here simply chooses the         regret for a given problem. In fact, historically, there is long
+best decision with respect to the linear mean vector µ.            line of work in the K-arm bandit literature (e.g. [Lai and
+     Perhaps the most important and natural example in this        Robbins., 1985, Agrawal, 1995]) concerned with obtaining
+paradigm is the (stochastic) online linear programming prob-       optimal rates for a fixed problem, which are often logarith-
+lem. Here, D is specified by linear inequality constraints. If     mic in T when stated in terms of some problem dependent
+the mean µ were known, then this is simply a linear pro-           constant.
+gramming problem. Instead, at each round, the learner only              Hence, in our setting, in the case where |D| is finite, we
+observes noisy feedback of the chosen decision, with respect       know that a log rate in the time is achievable by a direct
+to the underlying linear cost function.                            reduction to the K-arm bandit case (though this naive reduc-
+                                                                   tion results in an exponentially worse dependence in terms
+1.1    Summary of Our Results and Related Work                                                                          2
+                                                                   of |D|). Our work shows that a regret of n∆ polylog(T )
+Auer [2002] provides the first analysis of this problem. This      can be achieved, where ∆ is a generalized definition of the
+paper builds and improves upon the work of Auer [2002] in          gap that is appropriate for a potentially infinite D. Hence, a
+a number of ways. A related model was considered by Abe            polylogarithmic rate in T is achievable with a constant that
+and Long [1999], where the decision sets are allowed to vary       is only polynomial in n and has no dependence on the size
+as a function of the time. Our results can be extended to this     of the (potentially infinite) decision region. Here, ∆ can be
+more general model, which we discuss in Section 7.                 thought of as the gap between the values of the best and sec-
+     While Auer [2002] provides an elegant deterministic al-       ond best extremal points of the decision set (which we de-
+gorithm, based on upper confidence bounds of µ, an analysis        fine precisely later). For example, if D is a polytope, then
+of the performance of this algorithm was not provided, due to      ∆ is the gap in value between the first and second best cor-
+rather subtle independence issues (though it was conjectured       ner decisions. For the case where D is finite, ∆ is exactly
+that this simple algorithm was sufficient). Instead, a more        the same as in the K arm case. However, for some natural
+complicated master algorithm was analyzed — this master            decision regions, such as a sphere, ∆ is 0 so this (problem
+algorithm called the simpler upper confidence algorithm as a       dependent) bound is not applicable. Note that ∆ is never 0
+subroutine. In this work, we directly analyze the simpler up-      for the K-arm case (unless there is effectively one arm), so a
+per confidence algorithm. Unfortunately, implementing this         logarithmic rate in T is always possible in the K-arm case.
+algorithm in certain cases (when D is large or infinite) may            Note that this set of results still raises the question of
+be inefficient. However, we also provide a modification to         whether there is an algorithm achieving polylogarithmic re-
+this algorithm (that uses a different confidence region based      gret (as a function of T ) for the case when ∆ = 0, which
+on the L1-norm), which may be implemented efficiently for          could be characterized in terms of some different, more ap-
+the case when D is an (infinite) convex set, given certain or-     propriate problem dependent constant. Our final contribution
+acle optimization access to D.                                     answers this question in the negative. We provide a lower
+     The analysis of Auer√[2002] achieves a regret bound of        bound showing that the regret of any algorithm on a √       particu-
+O∗ ((log |D|)3/2 poly(n) T ) where n is dimension of the           lar problem (which we construct with ∆ = 0) is Ω(n T ). In
+decision space, T is the time horizon, and |D| is the number       addition to showing that a polylogarithmic rate is not achiev-
+of feasible decisions. For the simpler upper confidence     algo-  able in general, it also shows our upper bound is tight in
+                                                     √
+rithm, we show that it enjoys a bound of O∗ (n T ), which          terms of n and T . Note this result is in stark contrast to
+does not depend on the cardinality of the decision region,         the K-arm case where the optimal asymptotic regret for any
+|D|. While this algorithm may be inefficient in some cases,        given problem is always logarithmic in T .
+we also provide an efficient algorithm (that uses a slightly            We should also note that the lower bound in this paper is
+different confidence                                               significantly stronger than √  the bound provided in Dani et al.
+                     √ region), which achieves a slightly worse
+bound of O∗ (n3/2 T ). Using the result in Auer√      [2002], one  [2008], which is also Ω(n T ). In this latter lower bound,
+can also derive a bound of the form O(poly(n) T ) for in-          the decision problem the algorithm faces is chosen as a func-
+finite decision sets by appealing to a naive (inefficient) cov-    tion of the time T . In particular, the construction in Dani
+ering argument (where the algorithm is run on an appropri-         et al. [2008] used a decision region which was a hypercube
+ately fine cover of D). However, this argument results in a        D to be exponential in n. Second, Auer [2002] assumes     that D is a
+less sharp bound in terms of n 1 , though a better reduction to                                                      √
+                                                                   subset of the sphere, which leads to an additional n factor. To see
+                                                                   this, note the comments in the beginning of Section 5 essentially
+    1
+         √ Auer [2002], one can derive the less sharp bound of
+      Using                                                        show that a general decision region can be thought of as living in
+  ∗
+O (n5/2 T ) for arbitrary compact decision sets with two obser-    a hypercube
+                                                                          √      (due to the barycentric spanner property), so the addi-
+vations. First, through a covering argument, we need only consider tional n factor comes from rescaling the cube into a sphere.
+
+(so ∆√> 0 as this a polytope) — in fact, ∆ actually scaled         our assumptions are also met under the addition of any time-
+as 1/ T . In order to negate the possibility of a polyloga-        dependent unbiased random noise function.
+rithmic rate for a particular problem, we must hold ∆ = 0              In this paper we address the bandit version of the ge-
+as we scale the time, which we accomplish in this paper            ometric optimization problem, where the decision maker’s
+with a more delicate construction using an n-dimensional           feedback on each round is only the actual cost `t = ct (xt )
+decision space constructed out of a Cartesian product of 2-        received on that round, not the entire cost function ct (·).
+dimensional spheres.                                                   If x1 , . . . , xT are the decisions made in the game, then
+                                                                   define the cumulative regret by
+1.2 The Price of Bandit Information
+                                                                                                XT
+It is natural to ask how much worse the regret is in the ban-                            RT =       (µ† xt − µ† x∗ )
+dit setting as compared to a setting where we received full                                     t=1
+information about the complete loss function f (·) at the end               ∗
+of each round. In other words, what is the price of bandit         where x ∈ D is an optimal decision for µ, i.e.,
+information?                                                                                 x∗ ∈ argmin µ† x
+     For the full information
+                     √           case, Dani et al. [2008] showed                                     x∈D
+the regret is O∗ ( nT ) (which is tight up to log factors). In     which exists since D is compact. Observe that if the mean
+fact, in the stochastic case considered here, it is not too diffi- µ were known, then the optimal strategy would be to play
+cult to show that, in the full information case, the algorithm     x∗ every round. Since the expected loss for each decision x
+of “do the best√in the past” achieves this rate. Hence,
+                                                     √      as the equals µ† x, the cumulative regret is just the difference be-
+regret is O∗ (n T ) in the bandit case and O∗ ( nT ) (both         tween the expected loss of the optimal algorithm and the ex-
+of which are tight up to log factors), √ we have characterized     pected loss for the actual decisions xt . Since the sequence of
+the price of bandit information as n, which is a rather mild       decisions x1 , . . . , xT may depend on the particular sequence
+dependence on n for having such limited feedback.                  of random noise encountered, RT is a random variable. Our
+     We should also note that the work in Dani et al. [2008]       goal in designing an algorithm is to keep RT as small as pos-
+considers the adversarial case, where the cost functions are       sible.
+chosen in an arbitrary manner rather than stochastically. Here,
+                                                              √        It is also important for us to make use of a barycentric
+it was shown that the regret in the bandit setting is O(n3/2 T )   spanner for D as defined in Awerbuch and Kleinberg [2004].
+(ignoring polylogarithmic factors), though it was conjectured      A barycentric spanner for D is a set of vectors b1 , . . . , bn , all
+that this bound was loose and the optimal rate should be iden-     contained in D, such that every vector in D can be expressed
+tical to rate for the stochastic case, considered here.            as a linear combination of the spanner with coefficients in
+                           √ convergence rate for the bandit set-
+     It is striking that the                                       [−1, 1]. Awerbuch and Kleinberg [2004] showed that such
+ting is only a factor of n worse than in the full information      a set exists for compact sets D. We assume we have access
+case — in stark contrast to the K-arm bandit setting,  √ where     to such a spanner of the decision region, though an approxi-
+the gap in the dependence on K is exponential ( T K vs.
+√                                                                  mate spanner would suffice for our purposes (Awerbuch and
+   T log K). See Dani et al. [2008] for further discussion.        Kleinberg [2004] provide an efficient algorithm for comput-
+                                                                   ing an approximate spanner).
+2     Preliminaries                                                    Let A be a positive definite n × n matrix, and let ν ∈ Rn .
+                                                                   We will use the following notation for the 1- and 2-norms
+Let D ⊂ Rn be a compact (but otherwise arbitrary) set of           based on A.
+decisions. Without loss of generality, assume this set is of                                                   √
+full rank. On each round, we must choose a decision xt ∈ D.                           kνk2,A := kA1/2 νk2 = ν † Aν.
+Each such choice results in a cost `t = ct (xt ) ∈ [−1, 1].                                                 Xn
+     We assume that, regardless of the history Ht , the condi-                   kνk1,A := kA1/2 νk1 =          |A1/2 ν|i .
+tional expectation of ct is a fixed linear function, i.e., for all                                          i=1
+x ∈ D,
+                                                                   Here A1/2 is the unique positive definite n × n matrix whose
+             E (ct (x) | Ht ) = µ · x = µ† x ∈ [−1, 1].            square is A.
+where x ∈ D is arbitrary, and we denote the transpose of any       3    Main Results
+column vector v by v † . (Naturally, the vector µ is unknown,
+though fixed.) Under these assumptions, the noise sequence,        3.1 Algorithms
+                        ηt = ct (xt ) − µ · xt                     We now present our main algorithms, ConfidenceBall2 and
+                                                                   ConfidenceBall1 . The subscripts on the names refer to the
+is a martingale difference sequence.                               type of norm used in the algorithm; apart from scaling the
+     [We remark here that that our earlier assumption that D       radius differently, which we do only for convenience, this is
+was compact was actually unnecessary, in light of our further      the sole difference between the algorithm statements. As we
+assumptions that the cost functions are bounded and linear in      shall discuss later, we are able to prove better regret guaran-
+expectation.]                                                      tees for ConfidenceBall2 , matching the lower bound, up to
+     A special case of particular interest is when the cost func-  log factors.
+tions ct are themselves linear functions sampled indepen-              Both algorithms can be efficiently implemented in the
+dently from some fixed distribution. Note, however, that           simplistic case when the decision set is a small finite set.
+
+ Algorithm 3.1: C ONFIDENCE BALL2 (D, δ)                                  Algorithm 3.2: C ONFIDENCE BALL1 (D, δ)
+   Initialization:                                                          Initialization:
+       Find a barycentric spanner b1 , . . . , bn for D                         Find a barycentric spanner b1 , . . . , bn for D
+       A1 = i=1 bi b†i                                                          A1 = i=1 bi b†i
+               Pn                                                                     Pn
+       b1 = 0
+       µ                                                                        b1 = 0
+                                                                                µ
+   for t ← 1 to ∞                                                           for t ← 1 to ∞
+                                                    2 2                                                                 2 2 
+      βt = max 128n ln t ln(t2 /δ), 38 ln tδ                                   βt = max 128n ln t ln(t2 /δ), 83 ln tδ
+                                         √                                                                       √
+      Bt2 = ν : kν − µ      bt k2,At ≤ βt                                      Bt1 = ν : kν − µ     bt k1,At ≤ nβt
+      xt = argmin min2 (ν † x)                                                 xt = argmin min1 (ν † x)
+                x∈D     ν∈Bt                                                           x∈D      ν∈Bt
+      Incur and observe loss `t := ct (xt )                                    Incur and observe loss `t := ct (xt )
+      At+1 = At + xt x†t                                                       At+1 = At + xt x†t
+                        Pt                                                                      Pt
+      bt+1 = A−1
+      µ             t+1     τ =1 `τ xτ                                         bt+1 = A−1
+                                                                               µ            t+1    τ =1 `τ xτ
+However, in the important special case when the decision                 through A. This set is commonly referred to as the set of
+set is a polytope presented as the intersection as halfspaces,2          vectors ν with bounded Mahalanobis distance with respect
+ConfidenceBall1 can be implemented in polynomial time,                   to mean µ b and covariance matrix A−1 .
+while ConfidenceBall2 is NP-hard to implement, at least for                   A difficulty with the above reasoning is that we have im-
+some decision sets. More generally, ConfidenceBall1 can be               plicitly assumed that A is invertible, which is clearly false
+implemented efficiently given oracle access to an algorithm              for t < n. Under a slight alteration, define the estimator µ           bt
+which can find a decision in argminx∈D ν · x (where ν is the             at time t by                           X
+input). We discuss these issues further in Subsection 3.4.                                        bt = A−1
+                                                                                                  µ       t          `τ xτ .
+                                                                                                                τ <t
+ConfidenceBall2
+Algorithm 3.1 is due to Auer [2002], who called it the LinRel            where At is now defined as
+                                                                                                       n
+algorithm. We have generalized the statement slightly so that
+                                                                                                          bi b†i +
+                                                                                                     X               X
+it can be applied in settings where D is not necessarily stored                               At =                        xτ x†τ
+in enumerated form, and indeed, may not even be finite. We                                            i=1            τ <t
+have renamed the algorithm ConfidenceBall2 to emphasize                  where b1 , . . . , bn is the barycentric spanner (see Preliminar-
+its key feature of maintaining an `2 ball, Bt2 , which contains          ies for the definition). It is easily seen that At is positive
+µ with high probability.                                                 definite (and hence invertible), since the spanner is linearly
+     The algorithm is motivated as follows. Suppose deci-                independent. Intuitively, the first term in At (the sum of
+sions x1 , . . . xt−1 have been made, incurring corresponding            outerproducts of the spanner vectors) is a natural initializa-
+losses `1 , . . . , `t−1 . Then a reasonable estimate µ    b to the true tion of the confidence region, as it imposes uncertainty along
+mean cost vector µ can be constructed by minimizing the                  the directions in which D varies most (namely the span-
+square loss:                                                             ner directions). Our proofs effectively show that an approx-
+                                                 X                2     imate spanner would suffice instead. Note that µ                bt is the
+    b := argmin L(ν), where L(ν) :=
+    µ                                                 ν † xτ − `τ .      least squares estimator for the sampled data if we pretend
+              ν
+                                                 τ <t                    that decisions b1 , . . . , bn were selected on fictitious rounds
+                        xτ x†τ ,                                         t = −n + 1, . . . , t = 0 and all incurred loss 0.
+                     P
+Defining A =                     we have that the least squares esti-
+mator is                              X                                       Now define the confidence region at time t to be the el-
+                           b = A−1
+                           µ                `τ xτ .                      lipsoid                                             p
+                                       τ <t                                              Bt2 := {ν : kν − µ     bt k2,At ≤ βt }
+A natural confidence region for µ is the set of ν for which              In the proofs, we show that, with our choice of βt , µ always
+L(ν) exceeds L(b      µ) by at most some amount β, i.e. the set          remains inside this ellipsoid for all times t, with high proba-
+                       {ν : L(ν) − L(b    µt ) ≤ β}                      bility.
+                                                                              The decision at the next round is then the greedy opti-
+It is straightforward to see that:                                       mistic decision:
+                 L(ν) − L(b    µ) = (ν − µ   b)† A(ν − µb)                                     xt = argmin min2 (ν † x).
+                                                                                                        x∈D      ν∈Bt
+Thus the confidence region proposed above has the shape
+of an ellipsoid centered on µ        b, where the axes are defined       Again, this exists since D is compact.
+                                                                              It should be remarked that although the linear function
+    2
+      Note that the number of vertices of a polytope may be expo-        x 7→ µ · x is a feasible cost function, and µ           bt is an approxi-
+nential in the number of defining half-spaces.                           mation to µ, the function x 7→ µ       bt · x may be far from being a
+
+                                                                                                2
+feasible (i.e. [−1, 1]-valued) cost function on D — however,           probability at most O( n∆ log3 T ). More precisely,
+it is bounded in [−n, n].                                                                                       
+                                                                                                  8nβT ln(T )
+ConfidenceBall1                                                              Prob ∀T, RT ≤                          ≥ 1 − δ,
+                                                                                                        ∆
+ConfidenceBall1 , Algorithm 3.2, uses a (skewed) octahedron,
+Bt1 , as its confidence region, rather than the ellipsoid, Bt2 .    • ConfidenceBall1 : If ConfidenceBall1 is implemented
+The radius of Bt1 has been set just large enough that it con-          so that it only chooses extremal points xt ∈ D (which
+tains the ellipsoid Bt2 as an inscribed subset.                        is always possible) then, for all sufficiently large T , the
+     The cost of this enlarged confidence region is a slightly         cumulative regret RT of ConfidenceBall1 (D,δ) is with
+                                                                                                     3
+worse regret (in terms of n). The benefit we get in exchange           high probability at most O( n∆ log3 T ). More precisely,
+is that balls in the 1-norm have only 2n extremal points,
+                                                                                                  8n2 βT ln(T )
+                                                                                                                 
+rather than the infinitely many that balls in the 2-norm have.
+                                                                             Prob ∀T, RT ≤                          ≥ 1 − δ,
+This leads to a more computationally efficient algorithm, as                                            ∆
+we discuss in Section 3.4.
+                                                                      Analogous to the K-arm case, when ∆ > 0, a polylog-
+3.2 Upper Bounds                                                 arithmic rate in T is achievable with a constant that is only
+In the traditional K-arm bandit literature, the regret is often  polynomial in n and has no dependence on the size of the
+characterized for a particular problem in terms of T , K, and    decision region.
+problem dependent constants. In the K-arm bandit results              The following upper bound is stated without regard to
+of Auer et al. [2002], this problem dependent constant is the    the specific parameter ∆ for a given problem. Furthermore,
+“gap” between the loss of the best arm and the second best       it also holds for the case when ∆ = 0.
+arm.
+     We cannot naively use the same definition since if the      Theorem 2(Problem Independent Upper Bound)Recall that
+decision space is, say a convex set, then there is no well de-                                               2 2
+fined notion of second best arm. Instead, we define the gap      βT = max 128n ln T ln(T 2 /δ), 83 ln Tδ                 . Let 0 <
+as follows. Let E denote the set of extremal points of the       δ < 1. We have:
+decision set D, where an extremal point of D is defined as
+a point which is not a proper convex combination of points          • ConfidenceBall2 : For all sufficiently large T , the cu-
+in D. It is easy to see that any linear loss function on D             mulative regret RT of ConfidenceBall
+                                                                                                  √            2 (D,δ) is with high
+always attains its minimum value at a point in E. It is not            probability at most O∗ (n T ), where the O∗ notation
+too difficult to show that ConfidenceBall2 always plays ex-            hides a polylogarithmic dependence on T . More pre-
+tremal points, due to the strict convexity of the confidence           cisely,
+region. Similarly, although ConfidenceBall1 can potentially                                    p                 
+play non-extremal points xt , it can easily be implemented so               Prob ∀T, RT ≤ 8nT βT ln T ≥ 1 − δ .
+that it only plays extremal points (see Section 3.4 for further
+discussion of implementation issues.)                               • ConfidenceBall1 : For all sufficiently large T , the cu-
+     Now define the set of suboptimal extremal points as:              mulative regret RT of ConfidenceBall
+                                                                                                     √         1 (D,δ) is with high
+                                                                       probability at most O∗ (n3/2 T ), where the O∗ nota-
+                E− = {x ∈ E : µ · x > µ · x∗ },
+                                                                       tion hides a polylogarithmic dependence on T . More
+and note that E− is non-empty (unless µ = 0, in which case             precisely,
+there is nothing to prove). Define the gap, ∆, as                                             p                  
+                                                                            Prob ∀T, RT ≤ 8n2 T βT ln T ≥ 1 − δ .
+                    ∆ = inf µ · x − µ · x∗
+                         x∈E−
+                                                                                                                              √
+                                                                      The following subsection shows our bound of O∗ (n T )
+so the ∆ is just the difference in costs between the opti-
+                                                                 is tight, in terms of both n and T . Also, as mentioned in
+mal and next to optimal decision among the extremal points.
+                                                                 the Introduction, tightly characterizing the dimensionality
+Note that if D is a fixed polytope then ∆ > 0. However, if
+                                                                 dependence allows  √ us to show that the price of bandit in-
+D is a ball then ∆ = 0, as all points on the surface (a sphere)
+                                                                 formation is Θ∗ ( n).
+are extremal — so inf x∈E− µ · x = µ · x∗ (and no point in
+E− achieves this value).                                         3.3 Lower Bounds
+     We now state the first upper bound, which is a problem
+dependent bound stated in terms of ∆.                            Note that our upper bounds still leave open the possibility
+                                                                 that there is a polylogarithmic regret (as a function of T ) for
+Theorem 1(Problem Dependent Upper Bound)          Recall that  the case when ∆ = 0, which could be characterized in terms
+                                           2 2               of some different, more appropriate problem dependent√       con-
+                               2       8     T
+βT = max 128n ln T ln(T /δ), 3 ln δ                   . Let 0 <  stant. Our next result is a lower bound of Ω(n T ) on the
+δ < 1. Suppose the decision set D and the true mean µ have       expected regret, showing that no such improvement is possi-
+a gap ∆ > 0. We have:                                            ble.
+                                                                      For the lower bound, we must consider a decision region
+    • ConfidenceBall2 : For all sufficiently large T , the cu-   with ∆ = 0, which rules out polytopes and finite sets (so the
+       mulative regret RT of ConfidenceBall2 (D,δ) is with high  decision region of a hypercube, used by Dani et al. [2008],
+
+is not appropriate here. See Introduction for further discus-             On the other hand, for ConfidenceBall2 , the minimiza-
+sion). The decision region is constructed as follows. Assume         tion problem can easily be seen as polynomial-time equiv-
+n is even. Let Dn = (S 1 )n/2 be the Cartesian product of n/2        alent to the negative definite linearly constrained quadratic
+circles. That is, Dn = {(x1 , . . . , xn ) : x21 + x22 = x23 + x24 = programming problem
+· · · = x2n−1 + x2n = 1}. Observe that Dn is a subset of the
+intersection   of the cube [−1, 1]n with the sphere of radius                               minimize − kν − µ     bt k22,At
+                                                                                    subject to M x ≤ b and ν † x ≥ C,
+p
+    n/2 centered at the origin.
+      Our cost functions take values in {−1, +1}, and for ev-
+ery x ∈ Dn , the expected cost is µ · x, where nµ ∈ Dn .             where M x ≤ b is the system defining the decision set D,
+Since each cost function is only evaluated at one point, any         and C is a real parameter. Since Sahni [1974] proved that
+two distributions over {−1, +1}-valued cost functions with           solving such programs is NP-hard, ConfidenceBall2 may not
+the same value of µ are equivalent for the purposes of our           be computationally practical for large n.
+model.
+                                                                     4     Concentration of Martingales
+Theorem 3 (Lower Bound) If µ is chosen uniformly at ran-             In our analysis, we use the following Bernstein-type concen-
+dom from the set Dn /n, and the cost for each x ∈ Dn is              tration inequality for martingale differences, due to Freed-
+in {−1, +1} with mean µ · x, then, for every (randomized)            man [1975] (see also [McDiarmid, 1998, Theorem 3.15]).
+algorithm, for every T ≥ max{256, n2 /16},
+                                             1 √                     Theorem 4 (Freedman) Suppose X1 , . . . , XT is a martin-
+              E RT = E E (RT | µ) ≥               n T.               gale difference sequence, and b is an uniform upper bound
+                        µ                  2304
+                                                                     on the steps Xi . Let V denote the sum of conditional vari-
+where the inner expectation is with respect to observed costs.       ances,
+                                                                                         Xn
+      In addition to showing that a polylogarithmic rate is not                    V =       Var ( Xi | X1 , . . . , Xi−1 ).
+achievable in general, this bound shows our upper bound is                               i=1
+tight in terms of n and T . Again, contrast this with the K-         Then, for every a, v > 0,
+arm case where the optimal asymptotic regret for any given
+                                                                                                                            −a2
+                                                                              X                                                 
+problem is always logarithmic in T .                                   Prob         Xi ≥ a and V ≤ v ≤ exp                           .
+                                                                                                                        2v + 2ab/3
+3.4     Computational Efficiency
+We now turn our attention to the computational complexity            5     Upper Bound Analysis
+of implementing the ConfidenceBall algorithms.                       Throughout the proof, without loss of generality, assume that
+      As discussed in Section 2, it is easy to find an approx-       the barycentric spanner is the standard basis ~e1 . . . ~en (this
+imate barycentric spanner in O(n2 ) time. Of all the other           just amounts to a choice of a coordinate system, where we
+steps in the algorithm, the only one which poses serious dif-        identify the spanner with the standard basis). Hence, the de-
+ficulties is the selection of the decision xt :                      cision set D is a subset                           n
+                                                                                            √ of the cube [−1, 1] . In particular,
+                     xt := argmin min (ν † x)                        this implies kxk ≤ n for all x ∈ D. This is really only
+                             x∈D    ν∈Bt                             a notational convenience; the problem is stated in terms of
+                                                                     decisions in an abstract vector space, and expected costs in
+where Bt is the confidence ball.                                     its dual, with no implicit standard basis.
+      Now, if |D| is small, we can enumerate all choices for              In establishing the upper bounds there are two main the-
+x, and the inner minimization is easy for both norms. This           orems from which the upper bounds follow. The first is in
+shows that an implementation in time poly(n)|D| is possi-            showing that the confidence region is appropriate. Let E be
+ble. There are also some special cases, such as when D is            the event that for every time t ≤ T , the true mean µ lies in
+the unit ball, when the algorithm can be implemented in time         the confidence region, Bt2 or Bt1 . The following shows that
+poly(n) using a little calculus, despite |D| being infinite. We      event E occurs with high probability. More precisely,
+leave the details as an exercise to the interested reader.
+      The most practically relevant setting is when D is (the        Theorem 5 (Confidence) Let δ > 0.
+vertex set of) a polytope defined by a system of linear in-
+equalities (or equivalently, the intersection of a given set of         • For ConfidenceBall2 ,
+halfspaces). In this case, the number of vertices of D may be
+                                                                                         Prob ∀t, µ ∈ Bt2 ≥ 1 − δ.
+                                                                                                              
+exponential in the number of inequalities.
+      In this setting (and others), we can assume oracle ac-            • For ConfidenceBall1 ,
+cess to an algorithm which can efficiently find a decision in
+                                                                                         Prob ∀t, µ ∈ Bt1 ≥ 1 − δ.
+                                                                                                              
+argminx∈D ν · x (where ν is the input). Here, in the case of
+ConfidenceBall1 , we can enumerate over the 2n vertices of
+Bt to find the optimum. For each such ν ∈ Bt , we can call                Section 5.2 is devoted to establishing this confidence bound.
+this oracle to find the optimal x ∈ D, and then we can choose        In essence, the proof seeks to understand the growth of the
+the appropriate decision out of these 2n decisions. Thus, the        quantity (bµt −µ)† At (bµt −µ), which involves a rather techni-
+decision can be found in O(n) calls to this oracle.                  cal construction of a martingale (using the matrix inversion
+
+                                                                                  PT
+lemma) along with a careful application of Freedman’s in-        at least 1 − δ, t=1 rt2 ≤ 8nβT ln T . Applying the Cauchy-
+equality (Theorem 4).                                            Schwarz inequality, we have, with probability at least 1 − δ
+     The second main step in analyzing ConfidenceBall2 is                                      XT
+to show that as long as the aforementioned high-probability                            RT =         rt
+event holds, we have some control on the growth of the re-                                     t=1
+gret. The following bounds the sum of the squares of instan-                                                   !1/2
+                                                                                                     T
+taneous regret.                                                                                     X
+                                                                                            ≤    T         rt2
+Theorem 6 (Sum of Squares Regret Bound) Let                                                         t=1
+                                                                                               p
+                      rt = µ · xt − µ · x   ∗                                               ≤ 8nT βT ln T
+                                                                 which completes the proof.
+denote the instantaneous regret acquired by the algorithm on
+round t.                                                              We now provide the proofs of these two theorems.
+   • For ConfidenceBall2 , if µ ∈     Bt2 for all t ≤ T , then   5.1 Proof of Theorem 6
+                         XT                                      In this section, we prove Theorem 6, which says that the sum
+                             rt2 ≤ 8nβT ln T                     of the squares of the instantaneous regrets of the algorithm
+                         t=1                                     is small, assuming the evolving confidence balls always con-
+                                                                 tain the true mean µ. A key insight is that on any round t
+   • For ConfidenceBall1 , if µ ∈ Bt1 for all t ≤ T , then       in which µ ∈ Bt2 , the instantaneous regret is at most the
+                        XT                                       “width” of the ellipsoid in the direction of the chosen deci-
+                             rt2 ≤ 8n2 βT ln T                   sion. Moreover, the algorithm’s choice of decisions forces
+                        t=1                                      the ellipsoids to shrink at a rate that ensures that the sum of
+                                                                 the squares of the widths is small. We now formalize this.
+     This is proven in Section 5.1. The idea of the proof in-
+volves a potential function argument on the log volume (i.e.     Lemma 7 Let x ∈ D. Then
+the log determinant) of the “precision matrix” At (which            • For ConfidenceBall2 , if ν ∈ Bt2 and x ∈ D. Then
+tracks how accurate our estimates of µ are in each direction).                                             q
+The proof involves relating the growth of this volume to the                          |(ν − µbt )† x| ≤ βt x† A−1    t x
+regret.
+                                                                    • For ConfidenceBall1 , if ν ∈ Bt1 and x ∈ D. Then
+     At this point the proofs of Theorems 1 and 2 diverge. To                                             q
+show the former, we use the gap to bound the regret in terms                         |(ν − µbt )† x| ≤ nβt x† A−1
+   PT                                                                                                                 t x
+of t=1 rt2 . For the latter, we simply appeal to the Cauchy-
+Schwarz inequality.                                              Proof: Unless explicitly stated, all norms refer to the `2
+     Using these two results we are able to prove our upper      norm. For ConfidenceBall2 ,
+bounds as follows.                                                                                       1/2    −1/2
+                                                                             bt )† x| = |(ν − µ
+                                                                       |(ν − µ                  bt )† At At          x|
+Proof:[Proof of Theorem 1] We only prove the result for                                      1/2                  −1/2
+ConfidenceBall2 , as the proof for ConfidenceBall1 is analo-                          =  |(At (ν − µ     bt ))† At     x|
+gous. Let us analyze rt = µ · xt − µ · x∗ , the regret on round                             1/2                   −1/2
+                                                                                      ≤  kAt (ν − µ     bt )kkAt       xk
+t. Since ConfidenceBall2 always chooses a decision from E,
+either µ · xt = µ · x∗ or xt ∈ E− , so that µ · xt − µ · x∗ ≥ ∆.                                        .... by Cauchy-Schwarz
+Since ∆ > 0 it follows that either rt = 0 or rt /∆ ≥ 1 and                                  1/2
+                                                                                                               q
+in either case,                                                                       = kAt (ν − µ      bt )k x† A−1  t x
+                                    r2                                                   q
+                            rt ≤ t                                                    ≤ βt x† A−1   t x
+                                    ∆
+By Theorem 6, we see that if µ ∈ Bt2 , then                      where the last inequality holds since ν ∈ Bt2 .
+                                 T
+                                                                      For ConfidenceBall1 ,
+                                                                                           1/2                    −1/2
+                                                                            bt )† x| ≤ kAt (ν − µ
+                                X
+                       RT =         rt                               |(ν − µ                          bt )k1 kAt       xk∞
+                                t=1                                                                   .... by Holder’s Inequality
+                                 T
+                                X    r2
+                                      t
+                                                                                           1/2
+                                                                                     ≤ kAt (ν − µ     bt )k1 kAt
+                                                                                                                  −1/2
+                                                                                                                       xk2
+                            ≤
+                                t=1
+                                     ∆                                                  q
+                                                                                     ≤ nβt x† A−1   t x
+                                8nβT ln T
+                            ≤                                    where the last inequality holds since ν ∈ Bt1 .
+                                     ∆
+Applying Theorem 5, we see that this occurs with probability          Define                     q
+at least 1 − δ, which completes the proof.                                               wt := x†t A−1     t xt
+Proof:[Proof of Theorem 2] We only prove the result for          which we interpret as the “normalized width” at time√       t in the
+ConfidenceBall2 , as the proof for ConfidenceBall1 is anal-      direction of the chosen decision. The true width, 2 βt wt ,
+ogous. By Theorems 5 and 6, we know that with probability        turns out to be an upper bound for the instantaneous regret.
+
+Lemma 8 Fix t.                                                         Lemma 11 For all t, det At ≤ tn .
+   • For ConfidenceBall2 , if µ ∈ Bt2 , then                           Proof: The rank one matrix xt x†t has x†t xt = kxt k2 as its
+                                          p                            unique non-zero eigenvalue. Also, since we have identified
+                          rt ≤ 2 min ( βt wt , 1)
+                                                                       the spanner with the standard basis, we have i=1 bi b†i = I.
+                                                                                                                             Pn
+   • For ConfidenceBall1 , if µ ∈ Bt1 , then                           Since the trace is a linear operator, it follows that
+                                         p                                                                                     !
+                         rt ≤ 2 min ( nβt wt , 1)                                                                   X        †
+                                                                                         trace At = trace I +            xt xt
+Proof: Let µ̃ ∈ Bt2 denote the vector which minimizes the                                                           τ <t
+dot product µ̃† xt . By choice of xt , we have
+                                                                                                                trace(xt x†t )
+                                                                                                           X
+                                                                                                    =n+
+                  †                        †        † ∗
+                µ̃ xt = min2 min ν x ≤ µ x ,                                                               τ <t
+                            ν∈Bt x∈D                                                                       X
+                                                                                                    =n+         kxτ k2
+where the inequality used the hypothesis µ ∈ Bt2 . Hence,                                                  τ <t
+                         †
+               rt = µ xt − µ x      † ∗                                                             ≤ nt.
+                  ≤ (µ − µ̃)† xt                                       Now, recall that trace At equals the sum of the eigenvalues
+                                                                       of At . On the other hand, det(At ) equals the product of the
+                  = (µ − µ     bt )† xt + (b µt − µ̃)† xt              eigenvalues. Since At is positive definite, its eigenvalues are
+                         p
+                  ≤ 2 βt wt                                            all positive. Subject to these constraints, det(At ) is maxi-
+                                                                       mized when all the eigenvalues are equal; the desired bound
+where the last step follows from Lemma 7 since µ̃ and µ are            follows.
+in Bt2 . Since `t ∈ [−1, 1], rt is always at most 2 and the
+                                                                       Proof:[Proof of Lemma 9]
+result follows. The proof for ConfidenceBall1 is analogous.
+                                                                            Using the fact that for 0 ≤ y ≤ 1, ln(1 + y) ≥ y/2, we
+                                                                       have
+    Next we show that the sum of the squares of the widths                              X t                  X t
+does not grow too fast.                                                                       min(wτ2 , 1) ≤      2 ln(1 + wτ2 )
+                                                                                        τ =1                 τ =1
+Lemma 9 We have for all t
+                                                                                                           = 2 ln(det At+1 )
+                      t
+                   X                                                                                       ≤ 2n ln t
+                          min (wτ2 , 1) ≤ 2n ln t.
+                   τ =1                                                by Lemmas 10 and 11
+    The following two facts prove useful to this end.                       Finally, we are ready to prove that if µ always stays within
+                                                                       the evolving confidence region, then our regret is under con-
+Lemma 10 For every t ≤ T ,                                             trol.
+                                       t
+                                                                       Proof:[Proof of Theorem 6] Assume that µ ∈ Bt2 for all t.
+                                      Y                                Then
+                    det At+1 =            (1 + wt2 ).
+                                                                          T             T
+                                     τ =1                                X            X
+                                                                               rt2 ≤        4βt min(wt2 , 1)                   by Lemma 8
+Proof: By the definition of At+1 , we have                               t=1           t=1
+                                                                                              T
+     det At+1 = det(At + xt x†t )                                                   ≤ 4βT
+                                                                                             X
+                                                                                                 min(wt2 , 1) since 1 < β1 < · · · < βT
+                                         −1/2           −1/2
+                                                xt x†t At
+                             1/2                                1/2
+               =   det(At (I        +  At                    )At )                           t=1
+                                             −1/2         −1/2                      ≤ 8βT n ln T                             by Lemma 9 .
+               = det(At ) det(I         + At       xt (At      xt )† )
+                                                                       The proof for Confidenceball1 is analogous.
+               = det(At ) det(I + vt vt† ),
+                −1/2                                                   5.2 Proof of Theorem 5
+where vt := At          xt . Now observe that vt† vt = wt2 and
+                                                                       In this section, we prove Theorem 5, which states that with
+         (I + vt vt† )vt = vt + vt (vt† vt ) = (1 + wt2 )vt            high probability, for all t, the true mean µ lies in the confi-
+                                                                       dence ball Bt .
+Hence (1 + wt2 ) is an eigenvalue of I + vt vt† . Since vt vt† is a
+                                                                            Recall that
+rank one matrix, all the other eigenvalues of I + vt vt† equal
+1. It follows that det(I + vt vt† ) is (1 + wt2 ), and so                             ηt := ct (xt ) − µ† xt = `t − E (`t | Ht )
+                                                                       where Ht denotes the complete history of the game on rounds
+                 det At+1 = (1 + wt2 ) det At .
+                                                                       1, . . . , t − 1, that is, the σ-algebra generated by `1 , . . . , `t−1 .
+Recalling that A1 is the identity matrix, the result follows by             For either algorithm, we will analyze the quantity:
+induction.
+                                                                                             Zt := (b µt − µ)† At (b
+                                                                                                                   µt − µ)
+
+which measures the error of µ        bt as an approximation to the        For the third term,
+true mean, µ, under the norm induced by At .
+                                                                                                                                   wt4
+     We will show that, with probability greater than 1 − δ,                                 ηt2 x†t A−1            2 2
+                                                                                                       t+1 xt = ηt wt − ηt
+                                                                                                                               2
+Zt ≤ βt for all t for either algorithm. For ConfidenceBall2 ,                                                                    1 + wt2
+this directly implies that µ ∈ Bt2 . For ConfidenceBall1 , note                                                           wt2
+that                                                                                                           = ηt2
+                               √                                                                                       1 + wt2
+        1/2                            1/2
+                                                             p
+     ||At (b µt − µ)||1 ≤ n||At (b          µt − µ)||2 = nZt
+                                                                          Putting these together, we have shown
+so if Zt ≤ βt then µ ∈ Bt1 .
+     The next lemma bounds the growth of Zt .                                                                  x†t (b
+                                                                                                                    µt − µ)         2 wt
+                                                                                                                                          2
+                                                                                       Zt+1 ≤ Zt + 2ηt                         +  η t         .
+                                                                                                                  1 + wt2             1 + wt2
+Lemma 12 For all t,
+                     t−1                        t−1                       By induction, it follows that
+                     X       x†τ (bµτ − µ) X 2 wτ2
+       Zt ≤ n + 2         ητ                 +        ητ           .                                 t−1                          t−1
+                                 1 + wτ2                  1 + wτ2                                    X        x†τ (b
+                                                                                                                   µτ − µ) X 2 wτ2
+                     τ =1                       τ =1                            Zt ≤ Z1 + 2               ητ                  +        ητ            .
+                                                                                                     τ =1
+                                                                                                                 1 + wτ2         τ =1
+                                                                                                                                          1 + wτ2
+Proof: For notational convenience, define:
+                          Yt = At (b  µt − µ)                             Finally, we check that Z1 ≤ n. To see this, recall from the
+                                                                          algorithm that A1 = I and µ            b1 = 0. Also, since e~1 , . . . , e~n ∈
+We have the following relations:                                          D, by assumption, µ · e~j ∈ [−1, 1].
+                          Zt = Yt† A−1  t Yt
+                                  X                                                              Z1 = (b   µ1 − µ)† A1 (b    µ1 − µ)
+                          Yt =         ητ xτ − µ                                                       = kµk2
+                                  τ <t
+                                                                                                            n
+                       Yt+1 = Yt + ηt xt
+                                                                                                          X
+                                                                                                       =      (µ† e~j )2
+which are immediate from the definitions of At , µ          bt , and ηt .                                 j=1
+     Now examining the growth of Zt , we have:                                                         ≤ n.
+                †
+   Zt+1 = Yt+1      A−1
+                      t+1 Yt+1                                            This completes the proof.
+           = (Yt + ηt xt )† A−1 t+1 (Yt + ηt xt )                              We now define a useful martingale difference sequence.
+           = Yt† A−1                 † −1            2 † −1
+                    t+1 Yt + 2ηt xt At+1 Yt + ηt xt At+1 xt           (1) First, it is convenient to define an “escape event” Et as:
+Applying the matrix inversion lemma to A−1                                 Et = I{Zτ ≤ βτ for all τ ≤ t} = I{µ ∈ Bτ for all τ ≤ t}
+                                                    t+1 , we note that:
+                  A−1                     † −1                            where I{·} is the indicator function.
+                    t+1 = (At + xt xt )
+                                                † −1
+                                       A−1
+                                         t xt xt At                       Lemma 13 Define a random variable Mt by
+                         = A−1 t −
+                                       1 + x†t A−1
+                                                 t xt                                                                x†t (b
+                                                                                                                          µt − µ)
+                                         −1     † −1                                                Mt = 2ηt Et                     .
+                                       At xt xt At                                                                      1 + wt2
+                         = A−1 t −
+                                           1 + wt2
+                                                                          Then Mt is a martingale difference sequence with respect to
+We can use this to bound the three terms of (1) as follows.               the sequence of game histories Ht .
+For the first term,
+                                                                          Proof: To see that Mt is a martingale difference sequence,
+                                             (Yt† A−1t xt )
+                                                            2
+            Yt† A−1             † −1
+                  t+1 Yt = Yt At Yt −                    2
+                                                                          note that:
+                                                1 + wt
+                          ≤ Zt .                                                                                   x†t (b
+                                                                                                                        µt − µ)
+                                                                                       E (Mt | Ht ) = 2Et                        E (ηt | Ht )
+                                                                                                                      1 + wt2
+For the second term,
+                                                                                                         =0
+                                               x† A−1 xt x†t A−1 t Yt
+   2ηt x†t A−1
+            t+1 Yt  =  2ηt x†t A−1
+                                 t Yt   − 2ηt t t                         since the history Ht fully determines x1 , . . . , xt , µ         b1 , . . . , µ
+                                                                                                                                                         bt ,
+                                                       1 + wt2
+                                                                          Z1 , . . . , Zt , and E1 , . . . , Et , and since the noise functions ηt
+                                               wt2 x†t A−1
+                                                         t Yt             are a martingale difference sequence with respect to Ht .
+                    = 2ηt x†t A−1t Yt − 2ηt
+                                                  1 + wt2                      We showPt that with high probability, the associated mar-
+                           x† A−1 Yt                                      tingale, τ =1 Mτ , never grows too large.
+                    = 2ηt t t 2
+                             1 + wt
+                                                                          Lemma 14 Given δ < 1,
+                           x†t (bµt − µ)
+                    = 2ηt                                                                                  t−1
+                                                                                                                               !
+                               1 + wt2                                                  Prob ∀t,
+                                                                                                           X
+                                                                                                                Mτ ≤ βt /2         ≥ 1 − δ,
+                                                                                                           τ =1
+
+    We defer the proof to Section 5.2.1. Equipped with this             where the first inequality follows trivially when Et = 0, and
+lemma, we can prove Theorem 5.                                          by Lemma 7 when Et = 1. Additionally this gives a family
+Proof:[Proof of Theorem 5] It suffices to show that the high-           of uniform upper bounds:
+probability event described in Lemma 14 is contained in the
+                                                                                                          p
+                                                                                              |Mτ | ≤ βt for all τ ≤ t
+support of Et for every t. We prove the latter by induction
+on t.                                                                   since |ηt | ≤ 1 and (by choice) βτ is a non-decreasing se-
+                                                                        quence.
+    By Lemma 12 and the definition of β1 , we know that
+                                                                            Next we bound the sum of the conditional variances of
+Z1 ≤ n < β1 . Hence E1 is always 1 (equivalently, µ is
+                                                                        our martingale. Note that (min (wt , 1/2))2 = min (wt2 , 1/4)
+always in B1 ).
+                                                                                   t
+    Now suppose the high-probability event of Lemma 14                           X
+holds, so in particular,                                                  Vt :=         Var ( Mτ | M1 . . . Mτ −1 )
+                                                                                 τ =1
+                         t−1
+                         X                                                        t
+                                                                                X
+                               Mτ ≤ βt /2.                                   ≤         4|ητ |2 Eτ βτ min (wτ2 , 1/4)                   by (2)
+                         τ =1                                                   τ =1
+                                                                                                   t
+By inductive hypothesis, Eτ = 1 for τ ≤ t − 1. Hence by                                          X
+Lemma 12 we have                                                             ≤ 4(max βτ )              Eτ min(wτ2 , 1)        since |ητ | ≤ 1
+                                                                                     τ ≤t
+                                                                                                 τ =1
+              t−1                          t−1
+                       x† (b
+                           µτ − µ) X 2 wτ2
+                                                                                       X
+ Zt ≤ n + 2
+              X
+                   ητ τ                 +       ητ                           ≤ 4βt          Eτ min(wτ2 , 1)
+              τ =1
+                         1 + wτ2           τ =1
+                                                   1 + wτ2                             τ ≤t
+            t−1          t−1                                                 ≤ 8βt n ln (max{τ ≤ t : Eτ = 1})                   by Lemma 9
+            X            X            wτ2
+    =n+          Mτ +          ητ2                                           ≤ 8βt n ln t
+            τ =1         τ =1
+                                   1 + wτ2
+                                                                            Since we have established that the sum of conditional
+                      t−1                                               variances, Vt , is always bounded by 8βt n ln t,√        we can apply
+                     X            wτ2
+    ≤ n + βt /2 +          ητ2                                          Theorem 4 with parameters a = βt /2, b = βt and v =
+                               1 + wτ2
+                     τ =1                                               8nβt ln t, to get
+                     Xt−1                                                         t−1
+                                                                                                         !
+                           min(wτ2 , 1)
+                                                                                  X
+    ≤ n + βt /2 +                                      since |ητ | ≤ 1   Prob            Mτ ≥ βt /2
+                     τ =1                                                         τ =1
+    ≤ n + βt /2 + 2n ln t                                by Lemma 9                           t−1
+                                                                                                                                      !
+                                                                                              X
+    ≤ βt .                                                                     = Prob                Mτ ≥ βt /2 and Vt ≤ 8nβt ln t
+                                                                                              τ =1
+Thus we have shown Et = 1, completing the induction.                                      
+                                                                                                          −(βt /2)2
+                                                                                                                                
+                                                                               ≤ exp                                      √
+                                                                                            2(8nβt ln t) + 23 (βt /2)( βt )
+5.2.1 Concentration                                                                                              
+                                                                                                      −βt
+All that remainsP  to complete the proof now is to show that                   = exp                         √
+                     t                                                                      64n ln t + 43 βt
+our martingale 1 Mτ has good concentration properties.                                                                  √ 
+As we show, the step sizes |Mt | are uniformly bounded so                                                 −βt              −3 βt
+                                                                               ≤ max exp                            , exp
+that an application of the Hoeffding-Azuma           inequality would                                  128n ln t               8
+                               Pt
+bound the probability that 1 Mτ grows too large. Unfortu-                           δ
+nately, the bound thus obtained translates into a regret bound                 ≤ 2
+                                                                                    t
+of T 3/4 , which is not good enough for our purpose.                    where the last inequality follows from the definition of βt .
+    Instead we use Theorem 4, which allows us to to bound               Finally, we apply a union bound to get
+the step sizes in terms of random variables, as long as the                                    t−1
+                                                                                                                            !
+conditional variances remain under control.
+                                                                                              X              βt
+                                                                                    Prob             Mτ ≥        for some t
+Proof:[Proof of Lemma 14] Let us first obtain upper bounds                                    τ =1
+                                                                                                              2
+on the step sizes of our martingale.                                                             ∞             t−1
+                                                                                                                              !
+                                                                                                X              X           βt
+                                                                                            ≤         Prob          Mτ ≥
+                                   |x†t (b
+                                         µt − µ)|                                                                          2
+              |Mt | = 2|ηt |Et                                                                  t=1            τ =1
+                                       1 + wt2                                                   ∞
+                                                                                                X      δ
+                                                                                            ≤
+                                   q
+                                      βt x†t A−1
+                                              t xt                                                    t2
+                                                                                                t=2
+                    ≤ 2|ηt |Et
+                                        1 + wt2                                                    π2
+                                       √                                                    ≤ δ(         − 1)
+                                   wt βt                                                             6
+                    = 2|ηt |Et
+                                   1 + wt2                                                  ≤δ
+                                                                        completing the proof of Lemma 14.
+                                   p
+                    ≤ 2|ηt |Et βt min(wt , 1/2)                     (2)
+
+                                                                                   (i)        √
+6     Lower Bound Analysis                                            with E(RT = Ω( T ): in the former case, with certainty,
+                                                                      and in the latter case, with high probability.
+Recall n is even and that Dn = (S 1 )n/2 is the Cartesian                  Let
+product of n/2 circles, i.e. Dn = {(x1 , . . . , xn ) : x21 + x22 =
+x23 + x24 = · · · = x2n−1 + x2n = 1}. Under the cost vector                     bt := Pr (µ = µ1 | Ht ) − Pr (µ = µ2 | Ht )
+µ ∈ Dn /n, one can see that the probability of observing a
+particular loss ` in the next round equals                            be the bias towards µ1 at time t. Note that b0 = 0, and
+                                                                      that the sequence (bt ) is a martingale with respect to (Ht ).
+                                        1 + `µ · xt                   Our Lemma gives a lower bound on regret in terms of the
+               Pr (`t = ` | µ, xt ) =                 .          (3)
+                                             2                        martingale differences bt+1 − bt . We have not attempted to
+                                                                      optimize the constants.
+since `t has support {−1, 1} and mean µ · xt . Note the prob-
+ability that `t = 1 is bounded between 1/4 and 3/4. Also,
+the optimal decision is x∗ = −nµ ∈ Dn , which achieves an             Lemma 15 For ε as defined above, for all t ≥ 1, for any se-
+expected loss of µ · x∗ = −1/2.                                       quence of decisions x1 , . . . , xt and outcomes `1 , . . . , `t−1 , `t ,
+                                                     (i)              the regret from round t satisfies
+     Fix an index 1 ≤ i ≤ n/2, and consider RT , the contri-
+                                                 (i)
+                                                                                                         7nε2      |bt+1 − bt |2
+                                                                                                                                
+bution to the total regret from the choice of x = (x2i−1 , x2i ),          (i)
+i.e., the component from the i’th circle. More precisely,             E(rt | Ht , {µ1 , µ2 }) ≥                 +                  1{|bt | ≤ 1/2}.
+                                                                      µ                                   256         18nε2
+                       T                        T
+              (i)
+                     X            (i)     1    X (i)
+                                                                      Proof: Let pt = Pr (µ = µ1 | Ht ). Then bt = 2pt − 1. By
+            RT =         (µ(i) · xt +       )=      rT
+                     t=1
+                                          n    t=1                    Bayes’ rule and equation 3, we have that:
+                                      (i)
+where µ(i) = (µ2i−1 , µ2i ) and rT is the instantaneous re-                         Pr (`t | µ = µ1 )pt
+                                                                         pt+1 =
+                                 Pn/2 (i)
+gret. Clearly, we have RT = i=1 RT .                                                    Pr (`t | Ht )
+     Thus, the proof of Theorem 3 reduces to proving a lower                                         pt (1 + `t (µ1 · xt ))
+             (i)          √                                                     =
+bound E(RT ) = Ω( T ). Let us condition on the event                                pt (1 + `t (µ1 · xt )) + (1 − pt )(1 + `t (µ2 · xt ))
+that the i’th component of µ, namely (µ2i−1 , µ2i ), is one                                     pt (1 + `t (µ1 · xt ))
+of two vectors, ν1 , ν2 ∈ S 1 /n, such that kν1 − ν2 k = ε                      =
+                                                                                    1 + pt `t (µ1 · xt ) + (1 − pt )`t (µ2 · xt )
+(where ε ≤ 2/n). We further condition on the exact values
+of the other n/2 − 1 components of µ, thus leaving only               Hence
+two possibilities for µ, which we call µ1 and µ2 . We denote
+ε = kν1 − ν2 k = kµ1 − µ2 k. Note that µ is uniform over             bt+1 − bt
+{µ1 , µ2 } in this event. Ultimately, we will choose ε as a            = 2(pt+1 − pt )
+function T and n.
+                                                                            pt (1 + `t (µ1 · xt )) − pt − p2t `t (µ1 · xt ) − pt (1 − pt )`t (µ2 · xt )
+     To make this conditioning precise, consider the follow-           =2
+ing two-stage sampling procedure for µ, where we first sam-                                 1 + pt `t (µ1 · xt ) + (1 − pt )`t (µ2 · xt )
+ple µ1 and µ2 and then sample µ uniformly at random over                        2pt (1 − pt )`t (µ1 − µ2 ) · xt
+{µ1 , µ2 } — we do this sampling such that the marginal dis-           =                                              .
+                                                                          1 + pt `t µ1 · xt + (1 − pt )`t µ2 · xt
+tribution over µ is still uniform over Dn /n. More precisely,
+first sample ν1 and ν2 such that ||ν1 − ν2 || = ε and such
+                                                                                                                q p
+                                                                                                                    1     n
+                                                                      Since |µi · xt | ≤ kµi kkxt k =             2n      2 = 1/2, the de-
+that the marginal distributions Prob (ν1 ) and Prob (ν2 ) are
+both uniform over S 1 /n. Independently, sample the remain-           nominator of the above expression is at least 1/2. Since
+                                                                      pt (1 − pt ) ≤ 1/4, it follows that
+ing components µ(j) , where j 6= i, uniformly at random over
+S 1 /n. This provides us with µ1 and µ2 (which only differ                       |bt+1 − bt | ≤ |`t ||(µ1 − µ2 ) · xt |
+in the i-th component). Finally, we sample µ uniformly at                                                               (i)
+random over {µ1 , µ2 }. By the tower property of conditional                                    = |`t ||(ν1 − ν2 ) · xt | = ε|α|,         (4)
+expectations (Fubini’s theorem),
+                                                                      where α may be defined as follows.
+                   (i)            (i)                                      Let v1 be the unit vector in the direction of ν1 − ν2 ,
+               E(rt )    =E  E(rt |Ht , {µ1 , µ2 })
+                              µ                                       and let v2 be the unit vector in the direction of ν1 + ν2 .
+where the inner expectation is over µ which lies in {µ1 , µ2 }.       Note that v1 , v2 is an orthonormal basis for the plane, since
+                                                                                                           (i)
+     Our next Lemma, roughly speaking, proves that deci-              kν1 k = kν2 k. Decompose xt = αv1 + βv2 , and E(µ(i) |
+sions xt that provide more information about the value of             Ht , {µ1 , µ2 }) = γv1 + δv2 . By definition of bt ,
+µ, necessarily produce more instantaneous regret. More-                                                        ν1 + ν2        ν1 − ν2
+over, the result holds even if the algorithm were allowed to                   E(µ(i) | Ht , {µ1 , µ2 }) =               + bt
+magically know the values of µ1 , µ2 . This places the algo-                                                      2              2
+rithm designer on the horns of a dilemma: give up on dis-                                                     q
+                                                                                                                         2
+tinguishing the cases µ = µ1 and µ = µ2 , or play high-               so we have γ = εbt /2 and δ = n12 − ε4 .
+regret decisions to try to acquire the information. As we                  Assume the game history is such that |bt | ≤ 1/2. Oth-
+shall see in the proof of Theorem 3, either way, we end up            erwise, since the regret is non-negative, the claim trivially
+
+follows. Now we calculate                                                Thus, if Prob (for all t ≤ T |bt | ≤ 1/2) ≥ 1/2 − 1/e, then
+                    (i)                                                  we are done by the first term on the right-hand side. Other-
+              E(rt | Ht , {µ1 , µ2 })                                    wise, with probability at least 1/2 + 1/e, there exists t ≤ T
+              µ
+              1                                                          such that |bt | ≥ 1/2. Define
+                        (i)
+           =     + xt · E(µ(i) | Ht , {µ1 , µ2 })                                    T
+              n               µ                                                    X
+                                                                                        1{∀τ ≤ t, |bτ | ≤ 1/2}E |bt+1 − bt |2 | Ht .
+                                                                                                                                         
+              1                                                             V :=
+           = + αγ + βδ                                                             t=1
+              n                      r
+              1                          1     ε2                        By Freedman’s Bernstein-type inequality for martingales (The-
+           = + αεbt /2 + β                   −                           orem 4) applied to the martingale bt∧σ , where σ = min{τ : |bτ | ≥
+              n                         n2      4
+                                    2        r                         1/2}, which by (4) satisfies |bt+1 − bt | ≤ ε, we have,
+              1                       α             1       ε2
+           ≥ + αεbt /2 +                  −1         2
+                                                         −           (5)             
+                                                                                                          1             1
+                                                                                                                           
+              n                       2            n        4                Prob (∃t ≤ T ) |bt | ≥ and V ≤
+                                    2                                                                    2             32
+                                                          nε2
+                                                             
+              1                       α            1
+           ≥ + αεbt /2 +                  −1          −              (6)
+                                                                                                                               
+              n                       2            n       8                                                            −1/4           1
+                                                                                                         ≤ 2 exp                  ≤ ,
+                                                                                                                    1/16 + ε/3         e
+              αεbt         α2      nε2     α2 nε2
+           =          +         +       −                                since by choice of ε and hypothesis on T we have
+                2          2n       8         16
+              −|α|ε α2              nε2                                                                   1      3 3 − ln(2)
+           ≥             +       +                                   (7)                 ε ≤ T −1/4 ≤       <                 .
+                 4          2n       16                                                                   4     16 1 + ln(2)
+                 2             2
+                                                 √ 2
+               α          7nε          2|α|     3 nε
+           =         +            +     √ −                              It follows that
+              18n          256         3 n        16                                                           
+                 2             2                                                                             1
+               α          7nε                                                                Prob V >              ≥ 1/2.
+           ≥         +                                                                                      32
+              18n          256
+              |bt+1 − bt |2         7nε2                                 In particular,
+           ≥                     +                                   (8)
+                  18nε2              256                                         T
+                                                                                X                                                  1
+                                                                                     E |bt+1 − bt |2 1{|bt | ≤ 1/2} ≥ E V ≥
+                                                                                                                      
+                                    2      2
+Here (5) follows because α + β = 1 implies that 1 + β =                                                                              .
+                                                                                                                                  64
+α2 /(1−β) ≥ α2 /2, with equality iff β = −1. Inequality (6)                     t=1
+                    2                  √
+follows since α2 − 1 ≤ 0 and 1 − x ≤ 1 − x/2. Inequality                      Combining the above two cases, we have established that
+(7) follows because |bt | ≤ 1/2 and |α| ≤ 1. Inequality (8)                                                                        √
+                                                                                        √
+                                                                                                                           
+follows from (4), completing the proof.                                          (i)                  7     1 1          1 1         T
+                                                                             E RT ≥ T min                      −      ,         =         ,
+                                                                                                    256 2 e             18 64     1152
+     We are now ready to prove Theorem 3.                                                Pn/2 (i)
+Proof:[Proof of Theorem 3] Choose ε = T −1/4 n−1/2 . Note                Since RT = i=1 RT , it follows by linearity of expecta-
+this is possible since the only constraint on ε is ε ≤ n2 , which        tion that
+                                                                                                                         √
+                                                                                                     n/2
+is satisfied as long as T ≥ n2 /16, which is true by hypothe-                                       X         (i)    n T
+sis. Now, observe that, by the tower property of conditional                               E RT =         E RT ≥
+                                                                                                     i=1
+                                                                                                                     2 1152
+expectations (Fubini’s theorem) and linearity of expectation,
+                                                                         which completes the proof.
+        (i)
+   E RT
+     T
+   X            (i)                                                      7    Extension: time-varying decision sets
+=       E E(rt | Ht , {µ1 , µ2 })
+            µ
+    t=1                                                                  Our techniques also apply to the setting when only a subset
+     T                                                                   of the full decision set D is available in each round. Suppose,
+                7nε2         |bt+1 − bt |2
+                                                             
+                                                                         at time t, only a subset of decisions Dt ⊂ D are available.
+   X
+≥       E                 +                   1{|bt | ≤ 1/2}
+    t=1
+                 256             18nε2                                   In this case, the correct notion of regret is to compare each
+                                                                         chosen decision xt , not with the global optimum x∗ , but with
+                                                      .... by Lemma 15
+                                                                         the best choice from the available subset Dt . Thus
+     T                                         √   !                 !
+   X                  7          |bt+1 − bt |2 T                                                       T
+=       E             √ +                             1{|bt | ≤ 1/2}                                 X
+    t=1
+                 256 T                  18                                                   RT =         (µ† xt − µ† x∗t )
+     √                                                                                                t=1
+   7 T
+≥         Prob (for all t, |bt | ≤ 1/2)                                  where   x∗t  ∈ Dt is an optimal decision for µ, i.e.,
+     256
+                     √ T
+                        T X                                                                      x∗t ∈ argmin µ† x
+                                 E |bt+1 − bt |2 1{|bt | ≤ 1/2}
+                                                                  
+                +                                                                                         x∈Dt
+                      18 t=1
+                                                                              The only change that needs to be made to our algorithm
+                                                                         is that now xt is chosen from Dt instead of D.
+
+     With these changes in definitions, all of our numbered
+Theorems and Lemmas still hold, with D replaced by Dt
+and x∗ replaced by x∗t where they appear. (This is trivial in
+the case of the lower bounds.) The changes to the proofs are
+minimal.
+     We note that a very similar model was considered by Abe
+and Long [1999], who proved a lower bound of Ω(T 3/4 ) in
+their setting. However, this does not contradict our results,
+because their lower bound requires the dimension n to be a
+function of T .
+References
+Naoki Abe and Philip M. Long. Associative reinforcement
+   learning using linear probabilistic concepts. In Proc. 16th
+   International Conf. on Machine Learning, pages 3–11.
+   Morgan Kaufmann, San Francisco, CA, 1999.
+R. Agrawal. Sample mean based index policies with
+   O(log n) regret for the multi-armed bandit problem. Ad-
+   vances in Applied Probability, 27:1054–1078, 1995.
+P. Auer, N. Cesa-Bianchi, and P. Fischer. Finite-time analysis
+   of the multiarmed bandit problem. Mach. Learn., 47(2-3):
+   235–256, 2002. ISSN 0885-6125.
+Peter Auer. Using confidence bounds for exploitation-
+   exploration trade-offs. J. Mach. Learn. Res., 3:397–422,
+   2002. ISSN 1533-7928.
+B. Awerbuch and R. Kleinberg. Adaptive routing with end-
+   to-end feedback: Distributed learning and geometric ap-
+   proaches. In Proceedings of the 36th ACM Symposium on
+   Theory of Computing (STOC), 2004.
+Donald A. Berry and Bert Fristedt. Bandit Problems: Se-
+   quential Allocation of Experiments. Springer, October
+   1985.
+V. Dani, T. P. Hayes, and S. M. Kakade. The price of ban-
+   dit information for online optimization. In Advances in
+   Neural Information Processing Systems 20 (NIPS 2007).
+   2008. To appear. Available online at http://books.nips.cc/.
+David A. Freedman. On tail probabilities for martingales.
+   The Annals of Probability, 3(1):100–118, Feb. 1975.
+T. L. Lai and H. Robbins. Asymptotically efficient adaptive
+   allocation rules. Advances in Applied Mathematics, 6:4,
+   1985.
+Colin McDiarmid. Concentration. In Probabilistiic Methods
+   for Algorithmic Discrete Mathematics. Springer, 1998.
+H. Robbins. Some aspects of the sequential design of exper-
+   iments. In Bulletin of the American Mathematical Society,
+   volume 55, 1952.
+Sartaj Sahni. Computationally related problems. SIAM J.
+   Comput., 3(4):262–279, 1974.
+

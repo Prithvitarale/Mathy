@@ -1,0 +1,839 @@
+JMLR: Workshop and Conference Proceedings vol 35:1–17, 2014
+       lil’ UCB : An Optimal Exploration Algorithm for Multi-Armed
+                                                       Bandits ∗
+Kevin Jamieson                                                                            KGJAMIESON @ WISC . EDU
+Matthew Malloy                                                                               MMALLOY @ WISC . EDU
+Robert Nowak                                                                               NOWAK @ ECE . WISC . EDU
+University of Wisconsin
+Sébastien Bubeck                                                                      SBUBECK @ PRINCETON . EDU
+Princeton University
+                                                        Abstract
+      The paper proposes a novel upper confidence bound (UCB) procedure for identifying the arm with
+      the largest mean in a multi-armed bandit game in the fixed confidence setting using a small number
+      of total samples. The procedure cannot be improved in the sense that the number of samples
+      required to identify the best arm is within a constant factor of a lower bound based on the law of
+      the iterated logarithm (LIL). Inspired by the LIL, we construct our confidence bounds to explicitly
+      account for the infinite time horizon of the algorithm. In addition, by using a novel stopping time
+      for the algorithm we avoid a union bound over the arms that has been observed in other UCB-
+      type algorithms. We prove that the algorithm is optimal up to constants and also show through
+      simulations that it provides superior performance with respect to the state-of-the-art.
+      Keywords: Multi-armed bandit, upper confidence bound (UCB), iterated logarithm
+1. Introduction
+This paper introduces a new algorithm for the best arm problem in the stochastic multi-armed bandit
+(MAB) setting. Consider a MAB with n arms, each with unknown mean payoff µ1 , . . . , µn in
+[0, 1]. A sample of the ith arm is an independent realization of a sub-Gaussian random variable
+with mean µi . In the fixed confidence setting, the goal of the best arm problem is to devise a
+sampling procedure with a single input δ that, regardless of the values of µ1 , . . . , µn , finds the arm
+with the largest mean with probability at least 1 − δ. More precisely, best arm procedures must
+satisfy supµ1 ,...,µn P(bi 6= i∗ ) ≤ δ, where i∗ is the best arm, bi an estimate of the best arm, and the
+supremum is taken over all set of means such that there exists a unique best arm. In this sense,
+best arm procedures must automatically adjust sampling to ensure success when the mean of the
+best and second best arms are arbitrarily close. Contrast this with the fixed budget setting where the
+total number of samples remains a constant and the confidence in which the best arm is identified
+within the given budget varies with the setting of the means. While the fixed budget and fixed
+confidence settings are related (see Gabillon et al. (2012) for a discussion) this paper focuses on the
+fixed confidence setting only.
+     The best arm problem has a long history dating back to the ’50s with the work of Paulson
+(1964); Bechhofer (1958). In the fixed confidence setting, the last decade has seen a flurry of
+   ∗
+     Part of the research described here was carried out at the Simons Institute for the Theory of Computing. We are
+     grateful to the Simons Institute for providing a wonderful research environment.
+ c 2014 K. Jamieson, M. Malloy, R. Nowak & S. Bubeck.
+
+                                    JAMIESON M ALLOY N OWAK B UBECK
+activity providing new upper and lower bounds. In 2002, the successive                  elimination procedure of
+Even-Dar et al. (2002) was shown to find the best arm with order i6=i∗ ∆−2                          −2
+                                                                            P
+                                                                                          i log(n∆i ) samples,
+where ∆i = µi∗ − µi , coming within a logarithmic factor of the lower bound of i6=i∗ ∆−2
+                                                                                              P
+                                                                                                       i , shown
+in 2004 in Mannor and Tsitsiklis (2004). A similar bound was also obtained using a procedure
+known as LUCB1 that was originally designed for finding the m-best arms (Kalyanakrishnan et al.,
+2012). Recently,Jamiesonet al. (2013) proposed a procedure called PRISM which succeeds with
+P −2               P −2
+                               or i ∆−2              −2
+                                     P                   
+   i ∆i log log       j ∆j                  i log ∆i        samples depending on the parameterization of
+the algorithm, improving the result of Even-Dar et al. (2002) by at least a factor of log(n). The best
+sample complexity result for the fixed confidence setting comes from a procedure similar to PRISM,
+called exponential-gap elimination    P (Karnin   et al., 2013), which guarantees best arm identification
+                                              −2
+with high probability using order i ∆i log log ∆−2         i samples, coming within a doubly logarithmic
+factor of the lower bound of Mannor and Tsitsiklis (2004). While the authors of Karnin et al. (2013)
+conjecture that the log log term cannot be avoided, it remained unclear as to whether the upper
+bound of Karnin et al. (2013) or the lower bound of Mannor and Tsitsiklis (2004) was loose.
+     The classic work of Farrell (1964) answers    P this     question. It shows that the doubly logarith-
+                                                           −2
+mic factor is necessary, implying that order i ∆i log log ∆−2           i     samples are necessary and suf-
+ficient in the sense that no procedure can satisfy sup∆1 ,...,∆n P(bi 6= i∗ ) ≤ δ and use fewer than
+P −2                −2
+   i ∆i log log ∆i samples in expectation for all ∆1 , . . . , ∆n . The doubly logarithmic factor is a
+consequence of the law of the iterated logarithm (LIL) (Darling and Robbins, 1985). The LIL states
+that ifPX` are i.i.d. sub-Gaussian random variables with E[X` ] = 0, E[X`2 ] = σ 2 and we define
+St = t`=1 X` then
+                                  St                                            St
+                 lim sup √                    = 1 and lim inf t→∞ √                         = −1
+                   t→∞      2σ 2 t log log(t)                             2σ 2 t log log(t)
+almost surely. Here is the basic intuition behind the lower bound. Consider the two-arm problem
+and let ∆ be the difference between the means. In this case, it is reasonable to sample both arms
+equally and consider the sum of differences of the samples, which is√a random walk with drift
+∆. The deterministic drift crosses the LIL bound above when t ∆ = 2t log log t. Solving this
+equation for t yields t ≈ 2∆−2 log log ∆−2 . This intuition will be formalized in the next section.
+     The LIL also motivates a novel approach to the best arm problem. Specifically, the LIL sug-
+gests a natural scaling for confidence bounds on empirical means, and we follow this intuition to
+develop a new algorithm for the best-arm problem. The algorithm is an Upper Confidence Bound
+(UCB) procedure (Auer et al., 2002) based on a finite sample version of the LIL. The new algo-
+rithm, called lil’UCB, is described in Figure 1. By explicitly accounting for the log log factor in
+the confidence bound and using a novel stopping criterion, our analysis of lil’UCB avoids taking
+naive union bounds over time, as encountered in some UCB algorithms (Kalyanakrishnan et al.,
+2012; Audibert et al., 2010), as well as the wasteful “doubling trick” often employed in algorithms
+that proceed in epochs, such as the PRISM and exponential-gap elimination procedures (Even-Dar
+et al., 2002; Karnin et al., 2013; Jamieson et al., 2013). Also, in some analyses of best arm algo-
+rithms the upper confidence bounds of each arm are designed to hold with high probability for all
+arms uniformly, incurring a log(n) term in the confidence bound as a result of the necessary union
+bound over the n arms (Even-Dar et al., 2002; Kalyanakrishnan et al., 2012; Audibert et al., 2010).
+However, our stopping time allows for a tighter analysis so that arms with larger gaps are allowed
+larger confidence bounds than those arms with smaller gaps where higher confidence is required.
+Like exponential-gap elimination, lil’UCB is order optimal in terms of sample complexity.
+                                                       2
+
+          LIL’ UCB : A N O PTIMAL E XPLORATION A LGORITHM FOR M ULTI -A RMED BANDITS
+     It is easy to show that without the stopping condition (and with the right δ) our algorithm
+achieves a cumulative regret of the same order as standard UCB. Thus for the expert it may be
+surprising that such an algorithm can achieve optimal sample complexity for the best arm identifi-
+cation problem given the lower bound of Bubeck et al. (2009). As it was empirically observed in the
+latter paper there seems to be a transient regime, before this lower bound applies, where the perfor-
+mance in terms of best arm identification is excellent. In some sense the results in the present paper
+can be viewed as a formal proof of this transient regime: if stopped at the right time performance of
+UCB for best arm identification is near-optimal (or even optimal for lil’UCB).
+     One of the main motivations for this work was to develop an algorithm that exhibits great
+practical performance in addition to optimal sample complexity. While the sample complexity
+of exponential-gap elimination is optimal up to constants, and PRISM up to small log log factors,
+the empirical performance of these methods is rather disappointing, even when compared to non-
+sequential sampling. Both PRISM and exponential-gap elimination employ median elimination
+(Even-Dar et al., 2002) as a subroutine. Median elimination is used to find an arm that is within
+ε > 0 of the largest, and has sample complexity within a constant factor of optimal for this sub-
+problem. However, the constant factors tend to be quite large, and repeated applications of median
+elimination within PRISM and exponential-gap elimination are extremely wasteful. On the con-
+trary, lil’UCB does not invoke wasteful subroutines. As we will show, in addition to having the best
+theoretical sample complexities bounds known to date, lil’UCB also exhibits superior performance
+in practice with respect to state-of-the-art algorithms.
+2. Lower Bound
+Before introducing the lil’UCB algorithm, we show that the log log factor in the sample complexity
+is necessary for best-arm identification. It suffices to consider a two armed bandit problem with a
+gap ∆. If a lower bound on the gap is unknown, then the log log factor is necessary, as shown by
+the following result.
+Theorem 1 Consider the best arm problem in the fixed confidence setting with n = 2, differ-
+ence between the two means ∆, and expected number of samples E∆ [T ]. Any procedure with
+sup∆6=0 P(bi 6= i∗ ) ≤ δ, δ ∈ (0, 1/2), then has
+                                               E∆ [T ]
+                                  lim sup ∆−2 log log ∆−2
+                                                             ≥ 2 − 4δ.
+                                    ∆→0
+Proof The proof follows readily from Theorem 1 of Farrell (1964) by considering a reduction of the
+best arm problem with n = 2 in which the value of one arm is known. In this case, the only strategy
+available is to sample the other arm some number of times to determine if it is less than or greater
+than the known value. We have reduced the problem to the setting of (Farrell, 1964, Theorem 1),
+and stated it in Appendix A.
+     Theorem 1 implies that in the fixed Pconfidence    setting, no best arm procedure can have sup P(bi 6=
+i∗ )                                          −2
+     ≤ δ and use fewer than (2 − 4δ) i ∆i log log ∆−2         i samples in expectation for all ∆i .
+     In brief, the result of Farrell follows by showing a generalized sequential probability ratio test,
+which compares the running empirical mean of X after t samples against a series of thresholds,
+                                                       3
+
+                                     JAMIESON M ALLOY N OWAK B UBECK
+                                                                                                 p
+is an optimal test. In the limit as t increases, if the thresholds are not at least (2/t) log log(t)
+then the LIL implies the procedure will fail withpprobability approaching 1/2 for small values of
+∆. Setting the thresholds to be just greater than (2/t) log log(t), in the limit, one can show the
+expected number of samples must scale as ∆−2 log log ∆−2 . As the proof in Farrell (1964) is quite
+involved, we provide a short argument for a slightly simpler result than above in Appendix A.
+3. Procedure
+This section introduces lil’UCB. The procedure operates by sampling the arm with the largest upper
+confidence bound; the confidence bounds are defined to account for the implications of the LIL.
+The procedure terminates when one of the arms has been sampled more than a constant times
+the number of samples collected from all other arms combined. Fig. 1 details the algorithm and
+Theorem 2 quantifies performance. In what follows, let Xi,s , s = 1, 2, . . . denote independent
+samples from arm i and let Ti (t) denote the number of times arm i has been sampled up to time
+                                  PTi (t)
+t. Define µ  bi,Ti (t) := Ti1(t) s=1       Xi,s to be the empirical mean of the Ti (t) samples from arm i
+up to time t. The algorithm of Fig. 1 assumes that the centered realizations of the ith arm are
+sub-Gaussian1 with known scale parameter σ.
+       lil’ UCB
+       input: confidence δ > 0, algorithm parameters ε, λ, β > 0
+       initialize: sample eachPof the n arms once, set Ti (t) = 1 for all i and set t = n
+       while Ti (t) < 1 + λ j6=i Tj (t) for all i
+           sample arm                                              v                                   
+                                                                    u 2σ 2 (1 + ε) log log((1+ε)Ti (t)) 
+                                                                    u
+                                                              √ t
+                                    
+                                                                                                         
+                                                                                                δ
+               It   = argmax µ        bi,Ti (t) + (1 + β)(1 + ε)                                             .
+                        i∈{1,...,n} 
+                                                                                     Ti (t)              
+                                                                                                          
+           set Ti (t + 1) = Ti (t) + 1 if It = i, otherwise set Ti (t + 1) = Ti (t).
+       else stop and output arg maxi∈{1,...,n} Ti (t)
+                                       Figure 1: The lil’ UCB algorithm.
+Define
+                                     X 1                        X log log+ (1/∆2 )
+                                                                                        i
+                             H1 =                  and   H3 =
+                                          ∗
+                                            ∆2i                      ∗
+                                                                              ∆ 2
+                                                                                i
+                                     i6=i                       i6=i
+where log log+ (x) = log log(x) if x ≥ e, and 0 otherwise. Our main result is the following.
+Theorem 2 For ε ∈ (0, 1), let cε = 2+ε          ε (1/ log(1 + ε))
+                                                                   1+ε and fix δ ∈ (0, log(1 + ε)/(ec )). Then
+                                                                                                         √ ε
+for any β ∈ (0, 3], there exists a constant λ > 0 such that with probability at least 1 − 4 cε δ − 4cε δ
+lil’ UCB stops after at most c1 H1 log(1/δ) + c3 H3 samples and outputs the optimal arm, where
+c1 , c3 > 0 are known constants that depend only on ε, β, σ 2 .
+  1. A zero-mean random variable X is said to be sub-Gaussian with scale parameter σ if for all t ∈ R we have
+     E[exp{tX}] ≤ exp{σ 2 t2 /2}. If a ≤ X ≤ b almost surely than it suffices to take σ 2 = (b − a)2 /4.
+                                                          4
+
+            LIL’ UCB : A N O PTIMAL E XPLORATION A LGORITHM FOR M ULTI -A RMED BANDITS
+      Note that the algorithm obtains the optimal query complexity of H1 log(1/δ) + H3 up to con-
+stant factors. We remark that the theorem holds with any value of λ satisfying (7). Inspection of (7)
+                                                              2
+shows that as δ → 0 we can let λ tend to 2+β              β       . We point out that the sample complexity bound
+in the theorem can be optimized by choosing ε and β. For a setting of these parameters in a way that
+                                                                                                                     2
+is more or less faithful to the theory, we recommend taking ε = 0.01, β = 1, and λ = 2+β                          β       . For
+improved performance in practice, we recommend applying footnote 2 and setting ε = 0, β = 0.5,
+λ = 1 + 10/n and δ ∈ (0, 1), which do not meet the requirements of the theorem, but work very
+well in our experiments presented later. We prove the theorem via two lemmas, one for the total
+number of samples taken from the suboptimal arms and one for the correctness of the algorithm. In
+the lemmas we give precise constants.
+4. Proof of Theorem 2
+Before stating the two main lemmas that imply the result, we first present a finite form of the law
+of iterated logarithm. This finite LIL bound is necessary for our analysis and may also prove useful
+for other applications.
+Lemma 3 Let X1 , X2 , . . . be i.i.d. centered sub-Gaussian random variables with scale param-
+eter σ. For any ε ∈ (0, 1) and δ ∈ (0, log(1 + ε)/e)2 one has with probability at least 1 −
+                  1+ε
+2+ε           δ
+  ε      log(1+ε)         for all t ≥ 1,
+                                                      s
+                              t
+                                               √
+                                                                                                 
+                            X                                                    log((1 + ε)t)
+                                 Xs ≤ (1 +         ε)    2σ 2 (1  + ε)t log                         .
+                                                                                         δ
+                             s=1
+                                                                 r                      
+                                 Pt                                    2          log(x)
+Proof We denote St =                 s=1 Xs , and ψ(x) =            2σ x log         δ     . We also define by induction
+the sequence of integers (uk ) as follows: u0 = 1, uk+1 = d(1 + ε)uk e.
+Step 1: Control of Suk , k ≥ 1. The following inequalities hold true thanks to an union bound
+together with Chernoff’s bound, the fact that uk ≥ (1 + ε)k , and a simple sum-integral comparison:
+                                                                ∞
+                                 √                                                                  
+                                                                   exp −(1 + ε) log log(u         k)
+                                                             X
+        P ∃k ≥ 1 : Suk ≥            1 + ε ψ(uk )        ≤                                       δ
+                                                              k=1
+                                                                ∞               1+ε                            1+ε
+                                                              X
+                                                                           δ                      1
+                                                                                                         δ
+                                                        ≤            k log(1+ε)          ≤ 1+     ε    log(1+ε)         .
+                                                              k=1
+Step 2: Control of St , t ∈ (uk , uk+1 ). Adopting the notation [n] = {1, . . . , n}, recall that Hoeffd-
+ing’s maximal inequality3 states that for any m ≥ 1 and x > 0 one has
+                                                                                      2
+                                                                                          
+                                      P(∃ t ∈ [m] s.t. St ≥ x) ≤ exp − 2σx2 m .
+  2. Note δ is restricted to guarantee that log( log((1+ε)t)
+                                                      δ
+                                                             ) is well defined. This makes the analysis cleaner but in practice
+     one can allow the full range of δ by using log( log((1+ε)t+2)
+                                                              δ
+                                                                     ) instead and obtain the same theoretical guarantees.
+  3. It is an easy exercise to verify that Azuma-Hoeffding holds for martingale differences with sub-Gaussian increments,
+     which implies Hoeffding’s maximal inequality for sub-Gaussian distributions.
+                                                                 5
+
+                                      JAMIESON M ALLOY N OWAK B UBECK
+Thus the following inequalities hold true (by using trivial manipulations on the sequence (uk )):
+                                                             √              
+    P ∃ t ∈ {uk + 1, . . . , uk+1 − 1} : St − Suk ≥ ε ψ(uk+1 )
+                                                  √                       
+                                                                                     u
+                                                                                                  
+                                                                                                    log(uk+1 )
+                                                                                                               
+      = P ∃ t ∈ [uk+1 − uk − 1] : St ≥ ε ψ(uk+1 ) ≤ exp −ε uk+1k+1                     −uk −1 log       δ
+                                                                 1+ε
+                                    log(uk+1 )                δ
+      ≤ exp −(1 + ε) log                δ         ≤ (k+1) log(1+ε)           .
+Step 3: By putting together the results of Step 1 and Step 2 we obtain that with probability at least
+                      1+ε
+1 − 2+ε
+      ε
+                 δ
+            log(1+ε)        , one has for any k ≥ 0 and any t ∈ {uk + 1, . . . , uk+1 },
+                                    St = St − Suk + Suk
+                                               √                 √
+                                          ≤      ε ψ(uk+1 ) + 1 + ε ψ(uk )
+                                               √                    √
+                                          ≤      ε ψ((1 + ε)t) + 1 + ε ψ(t)
+                                                    √
+                                          ≤ (1 + ε) ψ((1 + ε)t),
+which concludes the proof.
+Without loss of generality we assume that µ1 > µ2 ≥ . . . ≥ µn . To shorten notation we denote
+                                                      r
+                                                  √         2
+                                                                                      
+                               U (t, ω) = (1 + ε) 2σ (1+ε)    t     log   log((1+ε)t)
+                                                                               ω         .
+    The following events will be useful in the analysis:
+                                    Ei (ω) = {∀t ≥ 1, |b µi,t − µi | ≤ U (t, ω)}
+        bi,t = 1t tj=1 xi,j . Note that Lemma 3 shows P(Ei (ω)c ) = O(ω). The following trivial
+                     P
+where µ
+inequalities will also be useful (the second one is derived from the first inequality and the fact that
+x+a      a
+ x+b ≤ b for a ≥ b, x ≥ 0). For t ≥ 1, ε ∈ (0, 1), c > 0, 0 < ω ≤ 1,
+                                                                                             
+                     1       log((1 + ε)t)                     1       2 log((1 + ε)/(cω))
+                       log                       ≥ c ⇒ t ≤ log                                    ,               (1)
+                     t               ω                         c                  ω
+and for t ≥ 1, s ≥ 3, ε ∈ (0, 1), c ∈ (0, 1], 0 < ω ≤ δ ≤ e−e ,
+                                                                                                      1
+                                                                                                     
+  1        log((1 + ε)t)           c        log((1 + ε)s)                              s log 2 log cω      /ω
+    log                         ≥ log                            and ω ≤ δ ⇒ t ≤                                . (2)
+  t                 ω              s               δ                                   c       log(1/δ)
+                                                                                              √
+Lemma 4 Let β, ε, δ be set as in Theorem 2 and let γ = 2(2 + β)2 (1 + ε)2 σ 2 (1 + ε) and
+                       1+ε
+                   1
+cε = 2+εε     log(1+ε)        . Then we have with probability at least 1 − 2cε δ and any t ≥ 1,
+             n                                         n
+           X                                          X      log(2 max{1, log(γ(1 + ε)/∆2i /δ)})
+                 Ti (t) ≤ n + 5γH1 log(e/δ) +             γ                                              .
+            i=2                                       i=2
+                                                                                 ∆2i
+                                                          6
+
+        LIL’   UCB : A N O PTIMAL E XPLORATION A LGORITHM FOR M ULTI -A RMED BANDITS
+The proof relies crucially on the fact that the realizations from each arm are independent of each
+other. This means that if we condition on the event that the realizations from the optimal arm are
+well-behaved, it is shown that the number of times the ith suboptimal arm is pulled is an independent
+sub-exponential random variable with mean on the order of ∆−2                          −2
+                                                                        i log(log(∆i )/δ). We then apply a
+standard tail bound to the sum of independent sub-exponential random variables to obtain the result.
+Proof We decompose the proof in two steps.
+Step 1. Let i > 1. Assuming that E1 (δ) and Ei (ω) hold true and that It = i one has
+µi +U (Ti (t), ω)+(1+β)U (Ti (t), δ) ≥ µ                                        b1,T1 (t) +(1+β)U (T1 (t), δ) ≥ µ1 ,
+                                                bi,Ti (t) +(1+β)U (Ti (t), δ) ≥ µ
+                                                                                    √
+which implies (2 + β)U (Ti (t), min(ω, δ)) ≥ ∆i . If γ = 2(2 + β)2 (1 + ε)2 σ 2 (1 + ε) then using
+                ∆ 2
+(1) with c = γi one obtains that if E1 (δ) and Ei (ω) hold true and It = i then
+                                                 2 log(γ(1 + ε)/∆2i / min(ω, δ))
+                                                                                   
+                                        γ
+                       Ti (t) ≤            log
+                                       ∆2i                    min(ω, δ)
+                                                                                   
+                                             γ          log(e/ω)             2γ        1
+                                 ≤ τi + 2 log                      ≤ τi + 2 log             ,
+                                            ∆i              ω               ∆i         ω
+                         2 max{1,log(γ(1+ε)/∆2i /δ)}
+                                                       
+where τi = ∆γ2 log                      δ                 .
+                i
+    Since Ti (t) only increases when i is played the above argument shows that the following in-
+equality is true for any time t ≥ 1:
+                                                                                
+                                                                       2γ        1
+                              Ti (t)1{E1 (δ) ∩ Ei (ω)} ≤ 1 + τi + 2 log              .                      (3)
+                                                                      ∆i         ω
+Step 2. We define the following random variable:
+                                      Ωi = max{ω ≥ 0 : Ei (ω) holds true}.
+Note that Ωi is well-defined and by Lemma 3 it holds that P(Ωi < ω) ≤ cε ω where cε =
+               1+ε
+2+ε       1
+  ε   log(1+ε)        . Furthermore one can rewrite (3) as
+                                                                              
+                                                                 2γ          1
+                                   Ti (t)1{E1 (δ)} ≤ 1 + τi + 2 log              .                          (4)
+                                                                 ∆i         Ωi
+We use this equation as follows:
+           n                     n                                 n                 n
+                                             !                                                          !
+         X                      X                                 X                 X
+     P         Ti (t) > x +         (τi + 1)      ≤ cε δ + P          Ti (t) > x +       (τi + 1) E1 (δ)
+         i=2                    i=2                               i=2               i=2
+                                                                   n                      !
+                                                                  X    2γ         1
+                                                  ≤ cε δ + P               log         >x .                 (5)
+                                                                  i=2
+                                                                      ∆2i        Ωi
+                      c−1
+                          
+           2γ
+Let Zi =   ∆2i
+               log     ε
+                       Ωi    , i ∈ [n] \ 1. Observe that these are independent random variables and since
+P(Ωi < ω) ≤ cε ω it holds that P(Zi > x) ≤ exp(−x/ai ) with ai = 2γ/∆2i . Using standard
+                                                            7
+
+                                    JAMIESON M ALLOY N OWAK B UBECK
+techniques to bound the sum of sub-exponential random variables one directly obtains that
+      n
+                         !                      2                                             2                  
+     X                                               z             z                                    z         z
+P        (Zi − ai ) ≥ z ≤ exp − min                          ,
+                                                           2 4kak              ≤  exp    −  min               ,
+                                                                                                            2 4kak          .
+     i=2
+                                                   4kak    2          ∞                               4kak  1        1
+                                                                                                                         (6)
+Putting together (5) and (6) with z = 4kak1 log(1/(cε δ)), x = z + ||a||1 log(ecε ) one obtains
+                               n              n                                   !
+                              X             X        4γ log(e/δ)
+                        P         Ti (t) >                              + τi + 1        ≤ 2cε δ,
+                              i=2           i=2
+                                                            ∆2i
+which concludes the proof.
+                                                                                          1+ε
+                                                                         2+ε         1
+Lemma 5 Let β, ε, δ be set as in Theorem 2 and let cε =                    ε     log(1+ε)        . If
+                                                            2+β 2
+                                                                    
+                                              log 2 log   (   β  ) /δ
+                                                                                     2
+                                          1+
+                                                                              
+                                                 √    log(1/δ)                  2+β
+                                 λ≥                                               β     ,                                (7)
+                                       1−(cε δ)−    (cε δ)1/4 log(1/(cε δ))
+                                                                                      P
+then for all i = 2, . . . , n and t = 1, 2, . . . , we have Ti (t) < 1 + λ               j6=i Tj (t)  with probability at
+                     √
+least 1 − 2cε δ + 4 cε δ.
+Note that the right hand side of (7) can be bound by a universal constant for all allowable δ which
+leads to the simplified statement of Theorem 2. Moreover, for any ν > 0 there exists a sufficiently
+                                                                                                               2
+small δ ∈ (0, 1) such that the right hand side of (7) is less than or equal to (1 + ν) 2+β                   β     .
+     Essentially, the proof relies on the fact that given any two arms j < i (i.e. µj ≥ µi ), Ti (t)
+cannot be larger than a constant times Tj (t) with probability at least 1 − δ. Considering                 Pi−1 this fact, it
+is reasonable to suppose that the probability that Ti (t) is larger than a constant times j=1 Tj (T ) is
+decreasing exponentially fast in i. Consequently, our stopping condition is not based on a uniform
+confidence bound for all arms. Rather, it is based on confidence bounds that grow in size as the arm
+index i increases.
+Proof We decompose the proof in two steps.
+Step 1. Let i > j. Assuming that Ei (ω) and Ej (δ) hold true and that It = i one has
+ µi + U (Ti (t), ω) + (1 + β)U (Ti (t), δ) ≥ µ           bi,Ti (t) + (1 + β)U (Ti (t), δ)
+                                                  ≥ µ    bj,Tj (t) + (1 + β)U (Tj (t), δ) ≥ µj + βU (Tj (t), δ),
+                                                                                                                    2
+                                                                                                                 β
+which implies (2 + β)U (Ti (t), min(ω, δ)) ≥ βU (Tj (t), δ). Thus using (2) with c = 2+β                                one
+obtains that if Ei (ω) and Ej (δ) hold true and It = i then
+                                                               2                        
+                                                             2+β
+                                        2  log 2 log         β
+                                                                     / min(ω,δ) / min(ω,δ)
+                                    2+β
+                    Ti (t) ≤          β                            log(1/δ)                    Tj (t).
+     Similarly to Step 1 in the proof of Lemma 4 we use the fact that Ti (t) only increases when It is
+played and the above argument to obtain the following inequality for any time t ≥ 1:
+                                                                            2                         
+                                                                           2+β
+                                                      2    log 2 log       β
+                                                                                  / min(ω,δ)   / min(ω,δ)
+                                                  2+β
+        (Ti (t) − 1)1{Ei (ω) ∩ Ej (δ)} ≤           β                            log(1/δ)                     Tj (t).     (8)
+                                                             8
+
+         LIL’  UCB : A N O PTIMAL E XPLORATION A LGORITHM FOR M ULTI -A RMED BANDITS
+Step 2. Using (8) with ω = δ i−1 we see that
+                                 i−1
+                            1 X                                                                     X
+           1{Ei (δ i−1 )}             1{Ej (δ)} > 1 − α ⇒ (1 − α)(Ti (t) − 1) ≤ κ                        Tj (t)
+                          i−1
+                                 j=1                                                                j6=i
+                                            2    
+                                           2+β
+                              log 2 log           /δ
+                   2                                   
+                2+β                         β
+where κ =        β        1+          log(1/δ)               . This implies the following, using that P(Ei (ω)) ≥
+1 − cε ω,
+                                                                                               
+                                                                                  X
+    P ∃ (i, t) ∈ {2, . . . , n} × {1, . . . } : (1 − α)(Ti (t) − 1) ≥ κ                Tj (t)
+                                                                                   j6=i
+                                                                                         
+                                                              i−1
+                                                        1    X
+     ≤ P ∃ i ∈ {2, . . . , n} : 1{Ei (δ i−1 )}                     1{Ej (δ)} ≤ 1 − α
+                                                   i−1
+                                                             j=1
+                                                                                                                     
+          n                                      n                     i−1
+        X                                       X               1     X
+     ≤       P(Ei (δ i−1 ) does not hold) +           P                   1{Ej (δ)} ≤ 1 − cε δ − (α − cε δ) .
+                                                             i−1
+        i=2                                     i=2                   j=1
+Let δ 0 = cε δ. Note that by a simple Hoeffding’s inequality and a union bound one has
+                                                           
+                 i−1
+            1    X
+    P               1{Ej (δ)} ≤ 1 − δ 0 − (α − δ 0 ) ≤ min((i − 1)δ 0 , exp(−2(i − 1)(α − δ 0 )2 ),
+         i−1
+                 j=1
+and thus if we define j∗ = dδ 0−1/4 /2e we obtain with the above calculations
+                                                                                                                           
+                                                                                                           X
+  P ∃ (i, t) ∈ {2, . . . , n} × {1, . . . } : 1 − δ 0 − δ 01/4 log(1/δ 0 ) (Ti (t) − 1) ≥ κ
+                                                                p
+                                                                                                                    Tj (t)
+                                                                                                              j6=i
+       n                                                                                           −2j∗ δ 0 1/4 log( δ10 )
+      X                                             0 1/4 log( δ10 )
+                                                                            δ0                  e
+   ≤        δ 0i−1 + min (i − 1)δ 0 , e−2(i−1)δ                           ≤          + δ 0 j∗2 +
+                                                                            1 − δ0                            0 1/4
+                                                                                                 1 − e−2δ log( δ0 )
+                                                                                                                          1
+      i=2
+        δ0        9 01/2    3 03/4
+                                                   p
+   ≤           +   δ     +    δ     ≤   2cε δ +  4      cε δ.
+      1 − δ0 4              2
+Treating ε, σ 2 and factors of log log(β) as constants, Lemma 4 says that the total number of times
+the suboptimal arms are sampled does not exceed (β + 2)2 (c1 H1 log(1/δ) + c3 H3 ). Lemma 5
+                                                                                                        2
+states that only the optimal arm will meet the stopping condition with λ = cλ 2+β                    β          for some cλ
+constant defined in the lemma. Combining these results, we observe that the total                   number          of times
+                                                                                                                         2 
+                                                                  2                                                 2+β
+all the arms are sampled does not exceed (β + 2) (c1 H1 log(1/δ) + c3 H3 ) 1 + cλ β                                            ,
+completing the proof of the theorem. We also observe using the approximation cλ = 1, the optimal
+choice of β ≈ 1.66.
+                                                              9
+
+                                     JAMIESON M ALLOY N OWAK B UBECK
+5. Implementation and Simulations
+In this section we investigate how the state of the art methods for solving the best arm problem
+behave in practice. Before describing each of the algorithms in the comparison, we briefly describe
+a LIL-based stopping criterion that can be applied to any of the algorithms.
+      LIL Stopping (LS) : For any algorithm and i ∈ [n], after the t-th time we have that the i-th
+       arm has been sampled Ti (t) times and accumulated a mean µ              bi,Ti (t) . We can apply Lemma 3
+                                                                                              1+ε
+       (with a union bound) so that with probability at least 1 − 2+ε        ε
+                                                                                          δ
+                                                                                    log(1+ε)
+                                                                  r                                       
+                                                                                      2 log((1+ε)Ti (t)+2)
+                                                              √      2σ 2 (1+ε) log           δ/n
+                      bi,Ti (t) − µi ≤ Bi,Ti (t) := (1 + ε)
+                      µ                                                               Ti (t)                            (9)
+       for all t ≥ 1 and all i ∈ [n]. We may then conclude that if bi := arg maxi∈[n] µ                      bi,Ti (t) and
+       bbi,Tb(t) − Bbi,Tb(t) ≥ µ
+       µ                        bj,Tj (t) + Bj,Tj (t) ∀j 6= bi then with high probability we have that bi = i∗ .
+            i           i
+The LIL stopping condition is somewhat naive but often quite effective in practice for smaller size
+problems when log(n) is negligible. To implement the strategy for any algorithm with fixed confi-
+dence ν, simply run the algorithm with ν/2 in place of ν and assign the other ν/2 confidence to the
+LIL stopping criterion. Note that to for the LIL bound to hold with probability at least 1 − ν, one
+                                      1/(1+ε)
+                                   νε
+should use δ = log(1 + ε) 2+ε                   . The algorithms compared were:
+    • Nonadaptive + LS : Draw a random permutation of [n] and sample the arms in an order
+       defined by cycling through the permutation until the LIL stopping criterion is met.
+    • Exponential-Gap Elimination (+LS) (Karnin et al., 2013) : This procedure proceeds in stages
+       where at each stage, median elimination (Even-Dar et al., 2002) is used to find an ε-optimal
+       arm whose mean is guaranteed (with large probability) to be within a specified ε > 0 of the
+       mean of the best arm, and then arms are discarded if their empirical mean is sufficiently below
+       the empirical mean of the ε-optimal arm. The algorithm terminates when there is only one
+       arm that has not yet been discarded (or when the LIL stopping criterion is met).
+    • Successive Elimination (Even-Dar et al., 2002) : This procedure proceeds in the same spirit as
+       Exponential-Gap Elimination except the ε-optimal arm is equal to bi := arg maxi∈[n] µ                     bi,Ti (t) .
+    • lil’UCB (+LS)√ : The procedure        of Figure 1 is run with ε = 0.01, β = 1, λ = (2+β)2 /β 2 = 9,
+                  ( 1+ν(/2)−1)    2
+       and δ =            4cε       for input confidence ν. The algorithm terminates according to Fig. 1
+       (or when the LIL stopping criterion is met). Note that δ is defined as prescribed by Theorem 2
+       but we approximate the leading constant in (7) by 1 to define λ.
+    • lil’UCB Heuristic : The procedure of Figure 1 is run with ε = 0, β = 1/2, λ = 1 + 10/n,
+       and δ = ν/5 for input confidence ν. These parameter settings do not satisfy the conditions of
+       Theorem 2, and thus there is no guarantee that this algorithm will find the best arm.
+    • LUCB1 (+ LS) (Kalyanakrishnan et al., 2012) : This procedure pulls two arms at each time:
+       the arm with the highest empirical mean and the arm with the highest upper confidence bound
+       among the remaining arms. The upper confidence bound was of the form prescribed in the
+       simulations section of Kaufmann and Kalyanakrishnan (2013) and is guaranteed to return the
+       arm with the highest mean with confidence 1 − δ.
+                                                          10
+
+           LIL’ UCB : A N O PTIMAL E XPLORATION A LGORITHM FOR M ULTI -A RMED BANDITS
+We did not compare to PRISM of Jamieson et al. (2013) because the algorithm and its empirical per-
+formance are very similar to Exponential-Gap Elimination so its inclusion in the comparison would
+provide very little added value. We remark that the first three algorithms require O(1) amortized
+computation per time step, the lil’UCB algorithms require O(log(n)) computation per time step
+using smart data structures4 , and LUCB1 requires O(n) computation per time step. LUCB1 was
+not run on all problem sizes due to poor computational scaling with respect to the problem size.
+      Three problem scenarios were considered over a variety problem sizes (number of arms). The
+“1-sparse” scenario sets µ1 = 1/2 and µi = 0 for all i = 2, . . . , n resulting in a hardness of
+H1 = 4n. The “α = 0.3” and “α = 0.6” scenarios consider n + 1 arms with µ0 = 1 and
+µi = 1 − (i/n)α for all i = 1, . . . , n with respective hardnesses of H1 ≈ 3/2n and H1 ≈ 6n1.2 .
+That is, the α = 0.3 case should be about as hard as the sparse case with increasing problem size
+while the α = 0.6 is considerably more challenging and grows super linearly with the problem size.
+See Jamieson et al. (2013) for an in-depth study of the α parameterization. All experiments were
+run with input confidence δ = 0.1. All realizations of the arms were Gaussian random variables
+with mean µi and variance 1/45 .
+      Each algorithm terminates at some finite time with high probability so we first consider the
+relative stopping times of each of the algorithms in Figure 2. Each algorithm was run on each
+problem scenario and problem size, repeated 50 times. The first observation is that Exponential-
+Gap Elimination (+LS) appears to barely perform better than nonadaptive sampling with the LIL
+stopping criterion. This confirms our suspicion that the constants in median elimination are just
+too large to make this algorithm practically relevant. While the LIL stopping criterion seems to
+have measurably improved the lil’UCB algorithm, it had no impact on the lil’UCB Heuristic variant
+(not plotted). While lil’UCB Heuristic has no theoretical guarantees of outputting the best arm, we
+remark that over the course of all of our tens of thousands of experiments, the algorithm never failed
+to terminate with the best arm. The LUCB algorithm, despite having worse theoretical guarantees
+than the lil’UCB algorithm, performs surprisingly well. We conjecture that this is because UCB
+style algorithms tend to lean towards exploiting the top arm versus focusing on increasing the gap
+between the top two arms, which is the goal of LUCB.
+      In reality, one cannot always wait for an algorithm to run until it terminates on its own so we now
+explore how the algorithms perform if the algorithm must output an arm at every time step before
+termination (this is similar to the setting studied in Bubeck et al. (2009)). For each algorithm, at each
+time we output the arm with the highest empirical mean. Clearly, the probability that a sub-optimal
+arm is output by any algorithm should very close to 1 in the beginning but then eventually decrease to
+at least the desired input confidence, and likely, to zero. Figure 3 shows the “anytime” performance
+of the algorithms for the three scenarios and unlike the empirical stopping times of the algorithms,
+we now observe large differences between the algorithms. Each experiment was repeated 5000
+times. Again we see essentially no difference between nonadaptive sampling and the exponential-
+gap procedure. While in the stopping time plots of Figure 2 the successive elimination appears
+competitive with the UCB algorithms, we observe in Figure 3 that the UCB algorithms are collecting
+  4. The sufficient statistic for lil’UCB to decide which arm to sample depends only on µ       bi,Ti (t) and Ti (t) which only
+     changes for an arm if that particular arm is pulled. Thus, it suffices to maintain an ordered list of the upper confidence
+     bounds in which deleting, updating, and reinserting the arm requires just O(log(n)) computation. Contrast this with
+     a UCB procedure in which the upper confidence bounds depend explicitly on t so that the sufficient statistics for
+     pulling the next arm changes for all arms after each pull, requiring Ω(n) computation per time step.
+  5. The variance was chosen such that the analyses of algorithms that assumed realizations were in [0, 1] and used
+     Hoeffding’s inequality were still valid using sub-Gaussian tail bounds with scale parameter 1/2.
+                                                             11
+
+                                 JAMIESON M ALLOY N OWAK B UBECK
+        1-sparse, H1 = 4n                α = 0.3, H1 ≈ 32 n               α = 0.6, H1 ≈ 6n1.2
+Figure 2: Stopping times of the algorithms for three scenarios for a variety of problem sizes. The
+            problem scenarios from left to right are the 1-sparse problem (µ1 = 0.5, µi = 0 ∀i > 1),
+            α = 0.3 (µi = 1 − (i/n)α , i = 0, 1, . . . , n), and α = 0.6.
+sufficient information to output the best arm at least twice as fast as successive elimination. This
+tells us that the stopping conditions for the UCB algorithms are still too conservative in practice
+which motivates the use of the lil’UCB Heuristic algorithm which appears to perform very strongly
+across all metrics. The LUCB algorithm again performs strongly here suggesting that LUCB-style
+algorithms are very well-suited for exploration tasks.
+6. Discussion
+This paper proposed a new procedure for identifying the best arm in a multi-armed bandit problem
+in the fixed confidence setting, a problem of pure exploration. However, there are some scenarios
+where one wishes to balance exploration with exploitation and the metric of interest is the cumu-
+lative regret. We remark that the techniques developed here can be easily extended to show that
+the lil’UCB algorithm obtains bounded regret with high probability, improving upon the result of
+Abbasi-Yadkori et al. (2011).
+     In this work we proved upper and lower bounds over the class of distributions with bounded
+means and sub-Guassian realizations and presented our results just in terms of the difference be-
+tween the means of the arms. In contrast to just considering the means of the distributions, Kauf-
+mann and Kalyanakrishnan (2013) studied the Chernoff information between distributions, a quan-
+tity related to the KL divergence, that is sharper and can result in improved rates in identifying the
+best arm in theory and practice (for instance if the realizations from the arms have very different
+variances). Pursuing methods that exploit distributional characteristics beyond the mean is a good
+direction for future work.
+     Finally, an obvious extension of this work is to consider finding the top-m arms instead of
+just the best arm. This idea has been explored in both the fixed confidence setting Kaufmann and
+Kalyanakrishnan (2013) and the fixed budget setting Bubeck et al. (2012) but we believe both of
+these sample complexity results to be suboptimal. It may be possible to adapt the approach devel-
+oped in this paper to find the top-m arms and obtain gains in theory and practice.
+                                                   12
+
+             LIL’   UCB : A N O PTIMAL E XPLORATION A LGORITHM FOR M ULTI -A RMED BANDITS
+               1-sparse, H1 = 4n              α = 0.3, H1 ≈ 32 n           α = 0.6, H1 ≈ 6n1.2
+ n = 10
+ n = 100
+ n = 1000
+ n = 10000
+Figure 3: At every time, each algorithm outputs an arm î that has the highest empirical mean. The
+          P(î 6= i∗ ) is plotted with respect to the total number of pulls by the algorithm. The prob-
+          lem sizes (number of arms) increase from top to bottom. The problem scenarios from left
+          to right are the 1-sparse problem (µ1 = 0.5, µi = 0 ∀i > 1) , α = 0.3 (µi = 1 − (i/n)α ,
+          i = 0, 1, . . . , n), and α = 0.6. The arrows indicate the stopping times (if not shown,
+          those algorithms did not terminate within the time window shown). Note that LUCB1
+          is not plotted for n = 10000 due to computational constraints (see text for explanation).
+          Also note that in some plots it is difficult to distinguish between the nonadaptive sampling
+          procedure, the exponential-gap algorithm, and successive elimination due to the curves
+          being on top of each other.
+                                                    13
+
+                                JAMIESON M ALLOY N OWAK B UBECK
+References
+Yasin Abbasi-Yadkori, Csaba Szepesvári, and David Tax. Improved algorithms for linear stochastic
+   bandits. In Advances in Neural Information Processing Systems, pages 2312–2320, 2011.
+Jean-Yves Audibert, Sébastien Bubeck, and Rémi Munos. Best arm identification in multi-armed
+   bandits. COLT 2010-Proceedings, 2010.
+Peter Auer, Nicolò Cesa-Bianchi, and Paul Fischer. Finite-time analysis of the multiarmed bandit
+   problem. Machine learning, 47(2-3):235–256, 2002.
+Robert E Bechhofer. A sequential multiple-decision procedure for selecting the best one of several
+   normal populations with a common unknown variance, and its use with various experimental
+   designs. Biometrics, 14(3):408–429, 1958.
+S. Bubeck, R. Munos, and G. Stoltz. Pure exploration in multi-armed bandits problems. In Pro-
+   ceedings of the 20th International Conference on Algorithmic Learning Theory (ALT), 2009.
+Sébastien Bubeck, Tengyao Wang, and Nitin Viswanathan. Multiple identifications in multi-armed
+   bandits. arXiv preprint arXiv:1205.3181, 2012.
+DA Darling and Herbert Robbins. Iterated logarithm inequalities. In Herbert Robbins Selected
+   Papers, pages 254–258. Springer, 1985.
+Eyal Even-Dar, Shie Mannor, and Yishay Mansour. PAC bounds for multi-armed bandit and markov
+   decision processes. In Computational Learning Theory, pages 255–270. Springer, 2002.
+R. H. Farrell. Asymptotic behavior of expected sample size in certain one sided tests. The Annals
+   of Mathematical Statistics, 35(1):pp. 36–72, 1964. ISSN 00034851.
+Victor Gabillon, Mohammad Ghavamzadeh, Alessandro Lazaric, and Team SequeL. Best arm iden-
+   tification: A unified approach to fixed budget and fixed confidence. In NIPS, pages 3221–3229,
+   2012.
+Kevin Jamieson, Matthew Malloy, Robert Nowak, and Sebastien Bubeck. On finding the largest
+   mean among many. arXiv preprint arXiv:1306.3917, 2013.
+Shivaram Kalyanakrishnan, Ambuj Tewari, Peter Auer, and Peter Stone. PAC subset selection in
+   stochastic multi-armed bandits. In Proceedings of the 29th International Conference on Machine
+   Learning (ICML-12), pages 655–662, 2012.
+Zohar Karnin, Tomer Koren, and Oren Somekh. Almost optimal exploration in multi-armed bandits.
+   In Proceedings of the 30th International Conference on Machine Learning, 2013.
+Emilie Kaufmann and Shivaram Kalyanakrishnan. Information complexity in bandit subset selec-
+   tion. COLT, 2013.
+Shie Mannor and John N Tsitsiklis. The sample complexity of exploration in the multi-armed bandit
+   problem. The Journal of Machine Learning Research, 5:623–648, 2004.
+Edward Paulson. A sequential procedure for selecting the population with the largest mean from k
+   normal populations. The Annals of Mathematical Statistics, 35(1):174–180, 1964.
+                                                 14
+
+         LIL’ UCB : A N O PTIMAL E XPLORATION A LGORITHM FOR M ULTI -A RMED BANDITS
+Appendix A. Condensed Proof of Lower Bound
+We first re-state the main result of Farrell (1964).
+                                                   i.i.d.
+Theorem 6 (Farrell, 1964, Theorem 1). Let Xi ∼ N (∆, 1), where ∆ 6= 0 is unknown. Consider
+testing whether ∆ > 0 or ∆ < 0. Let Y ∈ {−1, 1} be the decision of any such test based on T
+samples (possibly a random number) and let δ ∈ (0, 1/2). If sup∆6=0 P(Y 6= sign(∆)) ≤ δ, then
+                                                E∆ [T ]
+                                   lim sup ∆−2 log log ∆−2
+                                                             ≥ 2 − 4δ.
+                                     ∆→0
+     In the following we show a weaker result than what is shown in Farrell (1964); nonetheless, it
+shows the log log term is necessary.
+                      i.i.d.
+Theorem 7 Let Xi ∼ N (∆, 1), where ∆ 6= 0 is unknown. Consider testing whether ∆ > 0 or
+∆ < 0. Let Y ∈ {−1, 1} be the decision of any such test based on T samples (possibly a random
+number). If sup∆6=0 P(Y 6= sign(∆)) < 1/2, then
+                                                 E[T ]
+                                  lim sup                          > 0.
+                                    ∆→0     ∆−2 log log ∆−2
+     We rely on two intuitive facts, each which justified more formally in Farrell (1964).
+Fact 1. The form of an optimal test is a generalized sequential probability ratio test (GSPRT),
+       which continues sampling while
+                                                  X  t
+                                           −Bt ≤        Xi ≤ Bt
+                                                   j=1
+       and stops otherwise, declaring ∆ > 0 if tj=1 Xj ≥ Bt , and ∆ < 0 if tj=1 Xj ≤ −Bt
+                                                   P                                 P
+       where Bt > 0 is non-decreasing in t. This is made formal in Farrell (1964).
+Fact 2. If
+                                                     Bt
+                                          lim √                ≤1                                 (10)
+                                         t→∞     2t log log t
+       then Y , the decision output by the GSPRT, satisfies sup∆6=0 P∆ (Y 6= sign ∆) = 1/2.
+       This follows from the LIL and a continuity argument (and note the limit exists as Bt is
+       non-decreasing). Intuitively, if the thresholds satisfy (10), a zero mean random walk will
+       eventually hit either the upper or lower threshold. The upper threshold is crossed first with
+       probability one half, as is the lower. By arguing that the error probabilities are continuous
+       functions of ∆, one concludes this assertion is true.
+     The argument proceeds as follows. If (10) is holds, then the error probability is 1/2. So we can
+                                                          Bt
+focus on threshold sequences satisfying limt→∞ √2t log       log t
+                                                                    ≥ (1 + ε) for some ε > 0. In other
+words, for all t > t1 some ε > 0, some sufficiently large t1
+                                                  p
+                                    Bt ≥ (1 + ε) 2t log log t.
+                                                   15
+
+                                     JAMIESON M ALLOY N OWAK B UBECK
+Define the function
+                                                 ε2 ∆−2              ∆−2
+                                                                        
+                                    t0 (∆) =               log log
+                                                    2                 2
+and let T be the stopping time:
+                                                              t
+                                              (                          )
+                                                            X
+                                 T := inf        t∈N:            Xi ≥ Bt   .
+                                                            i=1
+      (∆)                          iid
+Let St = tj=1 Xj for Xj ∼ N (∆, 1). Without loss of generality, assume ∆ > 0. Additionally,
+            P
+suppose ∆ is sufficiently small, such that both t0 (∆) > t1 (ε) and ∆ ≤ ε (in the following steps we
+consider the limit as ∆ → 0). We have
+  P∆ (T ≥ t0 (∆))
+                                      
+             t0 (∆)−1
+                           (∆)
+                 \
+    = P                |St | < Bt 
+                 t=1
+                                                                                               
+              t1 (ε)                      t0 (∆)−1
+                         (∆)                            (0)                  (0)
+               \                              \
+    =     P        {|St     | < Bt } ∩              {St     < Bt − ∆t} ∩ {St    > −Bt − ∆t}
+               t=1                       t=t1 (ε)+1
+                                                                                     
+              t1 (ε)                      t0 (∆)−1
+                         (∆)                             (0)
+               \                              \                           p
+    ≥     P        {|St     | < Bt } ∩              {|St | < (1 + ε/2) 2t log log t}                    (11)
+               t=1                       t=t1 (ε)+1
+                                                                                                       
+             t1 (ε)                         t0 (∆)−1                                  t1 (ε)
+                      (∆)                                 (0)                                  (0)
+              \                                 \                         p            \
+    = P            |St    | < Bt  P                 |St | ≤ (1 + ε/2) 2t log log t        |St | < Bt 
+              t=1                          t=t1 (ε)+1                                  t=1
+                                                                                  
+             t1 (ε)                             ∞
+                      (∆)                                 (0)
+              \                                 \                         p
+    ≥ P            |St |    < Bt  P                 |St | < (1 + ε/2) 2t log log t                    (12)
+              t=1                          t=t1 (ε)+1
+where (11) holds when ε ≥ ∆ and (12) holds by removing the conditioning, and then by increasing
+                                                                                                     2
+the number of terms in the intersection. To see that (11) holds, note that 2 logtlog t ≥ 2∆        ε    for all
+t ≤ t0 (∆), which is easily verified when ε ≥ ∆ since
+                                             2 −2                −2 
+                                  log log ε ∆2 log log ∆2
+                                                        
+                                                            −2
+                                                                         ≥ 1.
+                                               log log ∆2
+Taking the limit as ∆ → 0, for any ε > 0, gives
+                                      lim P∆ (T ≥ t0 (∆)) ≥ c(ε) > 0
+                                     ∆→0
+where c(ε) is a non-zero constant, and the inequality follows from (12), as the first term is non-zero
+for any ∆ (including ∆ = 0) since t1 (ε) < ∞ and Bt > 0, and the second term is non-zero by the
+LIL for any ε > 0. Note that a finite bound on the second term can be obtained as in Section 2.
+                                                           16
+
+        LIL’ UCB : A N O PTIMAL E XPLORATION A LGORITHM FOR M ULTI -A RMED BANDITS
+    By Markov, E∆ [T ]/t0 (∆) ≥ P∆ (T ≥ t0 (∆)), and we conclude
+                                      E∆ [T ]
+                             lim                  ≥ ε2 c(ε) > 0
+                            ∆→0   ∆−2 log log ∆−2
+for any test with sup∆6=0 P(Y 6= sign(∆)) < 1/2.
+                                               17
+

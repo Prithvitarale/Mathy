@@ -1,0 +1,1570 @@
+     Extending Lipschitz functions via random metric partitions
+                           James R. Lee∗                         Assaf Naor
+                           U.C. Berkeley                    Microsoft Research
+                      jrl@cs.berkeley.edu                 anaor@microsoft.com
+1      Introduction
+Many classical problems in geometry and analysis involve the gluing together of local informa-
+tion to produce a coherent global picture. Inevitably, the difficulty of such a procedure lies at
+the local boundary, where overlapping views of the same locality must somehow be merged.
+It is therefore desirable that the boundaries be “smooth,” allowing a graceful transition from
+one viewpoint to the next. For instance, one may point to Whitney’s use of partitions of unity
+in studying what is now known as the Whitney extension problem [36, 37].
+     In the present work, we consider what is perhaps the most basic Whitney-type extension
+problem, that of extending a Lipschitz function so that it remains Lipschitz. Often such a
+map is extended by first producing a cover of the new domain, extending the mapping locally,
+and then gluing together the individual pieces. Our main observation is that in many cases, if
+one chooses a random cover from the right distribution, the boundary can be made “smooth”
+on average, even when the local maps are individually quite coarse. This insight leads to the
+unification, generalization, and improvement of many known results, as well as to new results
+for many interesting spaces.
+1.1     The Lipschitz extension problem
+Let (Y, dY ), (Z, dZ ) be metric spaces, and for every X ⊆ Y , denote by e(X, Y, Z) the infimum
+over all constants K such that every Lipschitz function f : X → Z can be extended to a
+function f˜ : Y → Z satisfying kf˜kLip ≤ Kkf kLip . (If no such K exists, we set e(X, Y, Z) = ∞).
+We also define e(Y, Z) = sup{e(X, Y, Z) : X ⊆ Y } and for every integer n, en (Y, Z) =
+sup{e(X, Y, Z) : X ⊆ Y, |X| ≤ n}.
+     Estimating e(Y, Z) is a classical and fundamental problem that has attracted a lot of
+attention due to its intrinsic interest and applications to geometry and approximation theory.
+It is a classical fact that for every metric space Y , e(Y, ℓ∞ ) = 1, and Kirszbraun’s famous
+extension theorem [19] states that whenever H1 and H2 are Hilbert spaces, e(H1 , H2 ) = 1. We
+refer to the books [3, 35] for a detailed account of the case e(Y, Z) = 1.
+     Typically, proofs of the fact that e(Y, Z) = 1 involve showing that it is possible to extend
+an arbitrary Lipschitz function to an additional point while preserving the Lipschitz constant.
+Once this is achieved, the existence of the required extension follows from Zorn’s lemma. When
+e(Y, Z) > 1, this “one point at a time” argument cannot work, since the Lipschitz constant
+will deteriorate with each iteration. Hence, in proving “non-isometric” extension results, one
+   ∗
+     Work partially supported by NSF grant CCR-0121555 and an NSF Graduate Research Fellowship. The
+majority of this work was completed while the author was an intern at Microsoft Research, Redmond, WA.
+                                                     1
+
+must argue that it is possible to extend Lipschitz functions to arbitrarily many points at once,
+and it is therefore not surprising that such results are more recent.
+    The following theorem was proved by Marcus and Pisier in [27], via a probabilistic argu-
+ment.
+Theorem 1.1 (Marcus-Pisier [27]). For every 1 < p < 2 there exists a constant C(p) such
+that for every integer n,
+                                 en (Lp , L2 ) ≤ C(p) (log n)1/p−1/2 .
+    The Marcus-Pisier theorem initiated the study of the parameter en (·, ·), and using a differ-
+ent probabilistic argument, Johnson and Lindenstrauss [17] subsequently proved the following
+theorem.
+Theorem 1.2 (Johnson-Lindenstrauss [17]). For every metric space Y and every integer
+n,                                                     p
+                                        en (Y, L2 ) ≤ 2 log n.
+    In [17], it was also shown that Theorem 1.1 and Theorem 1.2 are almost optimal, in the
+                                                                1/p−1/2
+                                                           log n
+sense that, for every 1 ≤ p < 2, en (Lp , L2 ) ≥ C(p) log log n           .
+    In [18] Johnson, Lindenstrauss and Schechtman studied the case when the target space is
+an arbitrary Banach space, proving the following two theorems.
+Theorem 1.3 (Johnson-Lindenstrauss-Schechtman [18]). There exists a universal con-
+stant C such that for every metric space Y , every Banach space Z and every integer n,
+                                          en (Y, Z) ≤ C log n.
+Theorem 1.4 (Johnson-Lindenstrauss-Schechtman [18]). There exists a universal con-
+stant C such that for every d-dimensional normed space Y and every Banach space Z, e(Y, Z) ≤
+Cd.
+    Additionally, Matoušek has shown in [28] that
+Theorem 1.5 (Matoušek [28]). There exists a universal constant C such that for every
+metric tree T and every Banach space Z, e(T, Z) ≤ C.
+    In the important paper [1] (which introduced, among other things, the notion of Markov
+                                                                            6
+type), K. Ball has shown that for every 1 < p < 2, e(L2 , Lp ) ≤ √p−1          . More recently
+     ′
+Tsar kov [34] proved that for every 2 < p < ∞, e(Lp , L2 ) ≤ C(p) < ∞ and the second
+named author proved in [30] that in the same range of p, e(L2 , Lp ) = ∞. A quantitative
+version of the last result is discussed in the next section.
+    The extension problem when the target space Z isn’t linear (e.g. Hadamard manifolds)
+has also received a lot of attention. We deal with this problem in Section 1.3 below.
+1.2    Absolute Lipschitz extendability
+We return to these old problems with the new perspective made possible by recent advances
+in combinatorics and theoretical computer science. Often in theoretical computer science,
+one needs to analyze data with an inherent metric structure (e.g. graphs). A technique
+developed over the past decade to handle such problems can be referred to as the method of
+stochastic metric decomposition. The basic idea is that given a metric space X, one constructs
+                                                    2
+
+a distribution over partitions of X with certain desirable properties. For example, one often
+requires that each set in the partition has small diameter and yet, in expectation, that every
+point is “far from the boundary” of the partition. Variants of this approach have appeared in
+numerous contexts; see for instance [26, 20, 2].
+    We offer a new approach to extension problems by showing that one can pass from a
+stochastic decomposition to a “well-behaved” partition of unity which, in turn, can be used to
+extend Lipschitz functions in such a way that we have control on the growth of the Lipschitz
+constant. This allows us to obtain simple proofs of many of the extension theorems stated
+above, and more importantly, to obtain new extension theorems which, in some cases, are
+significant generalizations of the above results.
+    Additionally, we observe a new phenomenon underlying some of the previous results which
+we refer to as absolute extendability—the notion that for some spaces X, Lipschitz functions
+f from X into any Banach space Z can be extended to any containing space Y ⊇ X, where
+the loss in the Lipschitz constant is independent of Y , Z, and f , and thus depends only on X.
+To this end, let us define, for a metric space X, the absolute extendability constant ae(X) by
+                     ae(X) = sup{e(X, Y, Z) : Y ⊇ X, Z a Banach space}.
+If ae(X) < ∞, we say that X is absolutely extendable. Additionally, for a family of metric
+spaces M, let us define ae(M) = supX∈M ae(X) to be a uniform bound on the extendability
+of metrics in M. As far as we are aware, the only previously known families of absolutely
+extendable metrics had such a property for a “trivial” reason; these are the cases when X
+is an absolute Lipschitz retract or when the family M consists of finite metrics of uniformly
+bounded cardinality (it is not to difficult to see that Theorem 1.3 is true when log n is replaced
+by n). We now turn to our results, some of which have been announced in [24].
+    Recall that the doubling constant (see, e.g. [15]) of a metric space X, denoted λ(X), is
+the infimum over all numbers λ such that every ball in X can be covered by λ balls of half
+the radius. When λ(X) < ∞, one says that X is doubling. Applying our approach to the
+stochastic decomposition of [14] yields the following result.
+Theorem 1.6. There exists a universal constant C > 0 such that
+                                       ae(X) ≤ C log λ(X).
+    Since log λ(X) = O(log n) for any n-point metric space X, and log λ(X) = O(d) whenever
+X is a subset of some d-dimensional normed space, Theorem 1.6 unifies and generalizes The-
+orems 1.3 and 1.4. Moreover, it is interesting to note that, unlike Theorem 1.4, Theorem 1.6
+only assumes a bound on the dimension of some normed space containing X, while Y is al-
+lowed to be arbitrary. The proof of Theorem 1.4 in [18] cannot be used to obtain such a result,
+since their proof uses nets in the complement of X. Techniques used in the proof of the above
+theorem also allow one to extend Lipschitz functions to neighborhoods of subsets of manifolds
+of negative curvature using an estimate of Bishop (see Corollary 3.13 in Section 3.2).
+    Our next theorem provides a significant generalization of Theorem 1.5. Let G = (V, E) be
+a countable graph with edge weights in [0, ∞]. Denote by Σ(G) the one-dimensional simplicial
+complex that arises from G by replacing every edge e of G by an interval whose length is
+equal to that of e. Note that Σ(G) has a natural Riemannian metric structure and that the
+shortest path metric on G occurs as a submetric. For a family of metric spaces M, define
+M = {(X, d) : X ⊆ Y for some (Y, d) ∈ M}, i.e. the closure of M under taking submetrics.
+                                                  3
+
+We now define the set of metrics supported on G by
+                                                        [
+                                             hGi =              Σ(G)
+                                                    all weights
+where the union S is taken over all possible weights on edges of G. Finally, for a family of graphs
+F, let hFi = G∈F hGi. Given such a family of graphs F, one can ask when there exists a
+constant KF such that, ae(hFi) ≤ KF . For instance, note that if F is the family of graph-
+theoretic trees, then hFi is precisely the class of metrics which are a submetric of a separable
+metric tree, and such a result would strengthen Theorem 1.5 in the separable case. We will
+see momentarily that such a result does follow and thus implies that a Lipschitz function on
+any subset of a separable metric tree can be extended to any superspace with a universally
+bounded loss in the Lipschitz constant, while Matoušek’s proof relies heavily on the fact that
+the superspace is a tree.
+     To state the next result, we need to recall the definition of a graph minor. Namely, consider
+the following two operations on a graph G = (V, E).
+   1. Removal of an edge e ∈ E, i.e. moving to the graph G′ = (V, E \ {e}).
+   2. Contraction of an edge {u, v} ∈ E, yielding the graph G′ = (V ′ , E ′ ), where V ′ = V \
+       {u, v} ∪ {v ∗ } and {s, t} ∈ E ′ precisely when either (i) {s, t} ∈ E for v ∗ ∈
+                                                                                     / {s, t} or when
+       (ii) s = v ∗ , t 6= v ∗ , and either {u, t} ∈ E or {v, t} ∈ E.
+When a graph G′ is obtainable from G by a finite sequence of such operations, G′ is called a
+minor of G. If a family of graphs F has the property that G′ ∈ F whenever G ∈ F and G′ is
+a minor of G, we say that F is minor-closed. Finally, we say that a graph G excludes Kr if
+it does not contain the complete graph on r vertices as a minor. Using the decomposition of
+[20], along with its stochastic formulation in [31] and a quantitative improvement due to [10]
+yields
+Theorem 1.7. If a graph G excludes Kr , then ae(hGi) ≤ C r2 for some universal constant C.
+     In particular, it is not difficult to see that trees are precisely the class of graphs which
+exclude K3 as a minor. But the above result provides an even more significant extension to
+Theorem 1.5 by showing, for instance, that the family of planar metrics is absolutely extendable
+(it is well-known that every planar graph excludes K5 as a minor).
+     To see a striking consequence of this result, which is proved in Section 5 in conjunction with
+a deep theorem of Robertson and Seymour [32], let us restrict ourselves (for the moment) to
+families of finite graphs and ask the question, for such a family, when is it that ae(hFi) ≤ KF
+and when do we have ae(hFi) = ∞? Clearly if hFi contains all finite metrics, then ae(hFi) =
+∞ (see, for instance, the remark after the statement of Theorem 1.2, which shows that there
+is no uniform bound for finite subsets of L1 ). It happens that this is the only case.
+Corollary 1.8. For a family of finite graphs F, ae(hFi) < ∞ if and only if hFi does not
+contain all finite metrics.
+     The techniques used in proving Theorem 1.7 also yield the following result.
+Corollary 1.9. If M is a two-dimensional Riemannian manifold of genus g, then for every
+subset X ⊆ M , we have ae(X) ≤ C · (g + 1) for some universal constant C.
+                                                        4
+
+     We note here that since any n-point metric space is isometrically embeddable in a two-
+dimensional Riemannian manifold of genus O(n3 ), in Corollary 1.9, ae(M ) must tend to infinity
+with the genus of M .
+     Using our approach, together with the stochastic decomposition of [6] and the improved
+analysis of [8, 9] (which we generalize to arbitrary measurable metric spaces in Theorem 3.17),
+it is possible to obtain an asymptotic improvement over Theorem 1.3.
+Theorem 1.10. There exists a universal constant C such that for every n-point metric space
+X,
+                                                          log n
+                                           ae(X) ≤ C              .
+                                                        log log n
+     Our techniques, in conjunction with the decomposition of [7], also give a different kind of
+improvement to Theorem 1.4 (of a geometric flavor).
+                                                                  √
+Theorem 1.11. For any Banach space Z, e(ℓd2 , Z) ≤ C d.
+                                                                            √
+     It follows that for any normed space Y , we have e(Y, Z) ≤ C d · dist(Y, ℓd2 ), where dist is
+the Banach-Mazur distance. In particular, when Y is a d-dimensional normed space, John’s
+theorem [16] implies that e(Y, Z) ≤ C · d. When Y is closer to a Hilbert space, improved
+bounds are achieved.
+     Finally, in the case when Y is an Lp space and 1 < p ≤ 2, we obtain the following estimate
+for finite subsets.
+Theorem 1.12. For every 1 < p ≤ 2 there exits a constant C(p) such that for every integer
+n and every Banach space Z,
+                                       en (Lp , Z) ≤ C(p) (log n)1/p .
+The case p = 2 in Theorem 1.12 may be viewed as a “dual” to Theorem 1.2.
+     It has been asked in [18] whether en (L2 , Z) is bounded for every Banach space Z. Since
+in [30] it was shown by the second named author that for 2 < p < ∞, e(L2 , Lp ) = ∞, it
+follows that the answer to this question is negative (this fact was overlooked in [30]). Since
+en (L2 , L2 ) = en (L2 , L∞ ) = 1, it is of interest to give quantitative lower bounds on en (L2 , Lp )
+for 2 < p < ∞. We therefore analyze the proof in [30] and obtain the following lower bound.
+Lemma 1.13. For every integer n and every 2 < p < ∞,
+                                                                   p−2
+                                                           log n      p 2
+                                    en (L2 , Lp ) ≥ C                     ,
+                                                        log log n
+where C is a universal constant.
+1.3      Lipschitz functions which take values in a barycentric metric space
+In recent years there has been considerable effort to obtain extension theorems for Lips-
+chitz functions which take values in spaces which are not Banach spaces. A generalization
+of Kirszbraun’s extension theorem to metric spaces with certain curvature bounds was proved
+by Lang and Schroeder in [26]. The problem of estimating e(X, Y, Z) when Z is the hyperbolic
+space Hn arose in the context of geometric group theory. This problem was posed by Gromov
+                                                      5
+
+in [11] and has been subsequently studied by Lang, Pavlović and Schroeder in [23]. We refer
+to [5, 23, 26] and the references therein for a selection of related results.
+     Since our approach to the extension problem is based on a random construction and an
+averaging argument, it is most natural to present it in the context of Banach spaces (as in this
+case taking expectation has a concrete meaning). However, our methods generalize to a wider
+class of target spaces which encompasses, for example, the spaces considered by Lang, Pavlović
+and Schroeder in [23]. The basic idea is that instead of taking expectations, we need to require
+that every compactly supported measure on the target space Z has a barycenter, and that the
+map which assigns to each measure its barycenter is Lipschitz continuous. A similar notion
+was introduced by Gromov in [13] (see also [33]). It will be instructive to begin by presenting
+the definition of Gromov codiffusion spaces from [13, 33]. For a metric space Z let MZ be the
+set of all regular Borel probability measures on X, topologized with the total variation norm
+k · kT V . A random walk, or a diffusion, on Z is a continuous map µ : Z → MZ . A codiffusion
+on Z is a continuous map c : M → Z defined on a convex subset M ⊆ MZ containing all
+the Dirac measures δz such that c(δz ) = z for every z ∈ Z and such that c−1 (z) is convex for
+every z ∈ Z. The notion of a codiffusion is close to what we need, except that in the context
+of the Lipschitz extension problem it is natural to require that c is not only continuous, but
+also satisfies a certain Lipschitz condition, described in the following definition.
+Definition 1.14 (Barycentric metric space). For a metric space Z let Mbounded       Z        be the
+set of all regular Borel probability measures on Z with bounded support. We shall say that Z
+is barycentric if there exists a constant β > 0 and a map c : Mbounded
+                                                                  Z       → Z such that c(δz ) = z
+for every z ∈ Z and for every µ, ν ∈ MZ    bounded ,
+                     dZ (c(µ), c(ν)) ≤ β · diam(supp(µ + ν)) · kµ − νkT V .                      (1)
+The least constant β for which there exists such a mapping c is denoted β(Z). When β(Z) ≤ β
+we say that Z is β-barycentric.
+                                                                        bounded we define c(µ) to
+     If Z is a Banach space then   R β(Z) = 1. Indeed, for µ ∈ MZ
+be the usual “center of mass” Z xdµ(x). Barycentric metric spaces need not, however, be
+linear. Examples of barycentric spaces are Hadamard spaces, i.e. complete geodesic metric
+spaces satisfying the CAT(0) comparison inequality of Alexandrov-Toponogov (see [23]). This
+class of spaces includes Hadamard manifolds, i.e. complete, simply connected Riemannian
+manifolds of nonpositive sectional curvature and is closed under taking products and gluing
+                                                                       bounded then c(µ) is defined
+along closed convex subsets. If Z is a Hadamard   R space 2and µ ∈ MZ
+as the unique minimizer of the function z 7→ Z d(y, z) dµ(y). The existence and uniqueness
+of c(µ), as well as the fact that this map satisfies the barycentric condition (1) with β = 1 are
+proved in Section 4 of [23].
+     Most of the results presented above (namely Theorem 1.6, Theorem 1.7, Corollary 1.8,
+Corollary 1.9, Theorem 1.11 and Theorem 1.12) transfer to the case when the target space Z
+is allowed to be any complete barycentric metric space, the only difference being that when Z is
+β-barycentric, the estimates for the Lipschitz constant of the extended function are multiplied
+by β. Our proof of Theorem 1.10 does not seem to admit such a generalization—this issue
+is briefly discussed in Appendix 6. We present our results first for the case of linear Z, and
+in Appendix 6 we explain the simple modifications required to transfer them to arbitrary
+barycentric target spaces.
+                                                   6
+
+1.4      Some open problems
+We end this introduction by recalling some related problems which remain open. In [1], K. Ball
+asked whether e(L2 , L1 ) is finite or infinite. Similarly, it is not known whether for 2 < p < ∞
+and 1 < q < 2, e(Lp , Lq ) < ∞. The second problem will be answered affirmatively if Ball’s
+Markov type 2 problem [1] is resolved positively. Finally, it√is not known whether, for every
+metric space X and  √ every normed space Z, en (X, Z) = O log n . All known lower bounds
+fail to beat the “ log n barrier.”
+     The flexibility of our approach suggests that it could be applied to other extension problems.
+For example, the extendability of large scale Lipschitz maps (studied in [22]), Hölder maps
+(studied in [30]) and uniformly continuous maps (studied in [4]) are all of great interest. It
+is also interesting to study the applicability of the random method presented in this paper to
+the higher order Whitney extension problem.
+Acknowledgements: We are grateful to Misha Gromov for his support and many helpful
+suggestions. Specifically, we thank him for suggesting that we look at codiffusion spaces. We
+also thank Yuval Peres for several useful discussions.
+2      Gentle partitions of unity
+Let (Y, d) be a metric space, X a subspace of Y and (Ω, F, µ) a measure space. Given K > 0
+we shall say that a function Ψ : Ω × Y → [0, ∞) is a K-gentle partition of unity with respect
+to X if the following conditions hold true:
+                                                                             R
+    1. For every x ∈ Y \ X the function ω 7→ Ψ(ω, x) is measurable and Ω Ψ(ω, x)dµ(ω) = 1.
+    2. For every ω ∈ Ω and x ∈ X, Ψ(ω, x) = 0.
+    3. There exists a Borel measurable function γ : Ω → X such that for every x, y ∈ Y ,
+                            Z
+                                d(γ(ω), x) · |Ψ(ω, x) − Ψ(ω, y)| dµ(ω) ≤ Kd(x, y).
+                              Ω
+     If in condition (1) above, we require that the set {ω ∈ Ω : Ψ(ω, x) > 0} is finite, we shall
+say the partition of unity Ψ is locally finite.
+Lemma 2.1. Let (Y, d) be a metric space and X a subspace of Y . Fix K ≥ 1 and assume
+that Y admits a K-gentle partition of unity Ψ : Ω × Y → [0, ∞) with respect to X. Let C
+be a closed convex set in some Banach space Z. If Ψ is locally finite or if X is separable,
+then every Lipschitz function f : X → C can be extended to a function f˜ : Y → C such that
+||f˜||Lip ≤ 3K||f ||Lip . Furthermore, the extension depends linearly and continuously on f .
+Proof. The completeness of C implies that f can be extended to the closure of X with the
+same Lipschitz constant, so we may assume without loss of generality that X is closed. Let
+γ : Ω → T be as in condition (2) above. If Ψ is locally finite, then all integrals appearing below
+reduce to finite sums, and we may ignore measurability issues. Thus we now assume that C
+is closed and X is separable.
+     In what follows we refer to [3] for the basic facts on Bochner integration which we use.
+Since X is separable we may assume that Z is separable. In this case, Pettis’ measurability
+                                                     7
+
+lemma implies that for every y ∈ Y the function ω 7→ f (γ(ω))Ψ(ω, y) is Bochner measurable.
+Moreover, for every x ∈ X,
+  Z                                       Z
+                                                                            
+       kf (γ(ω))kΨ(ω, y) dµ(ω) ≤              kf (γ(ω)) − f (x)k + kf (x)k Ψ(ω, y) dµ(ω)
+    Ω                                      Ω
+                                                  Z
+                                    ≤ kf kLip ·       d(γ(ω), x) · |Ψ(ω, x) − Ψ(ω, y)| dµ(ω) + kf (x)k
+                                                    Ω
+                                    ≤ kf kLip · Kd(x, y) + kf (x)k < ∞.
+                                                                   R
+Since C is closed, it follows that the Bochner integral Ω d(γ(ω), x)Ψ(ω, y) dµ(ω) is a well-
+defined element of C. We can therefore define, for x ∈ Y,
+                                  R
+                         ˜
+                         f (x) =     Ω f (γ(ω))Ψ(ω, x) dµ(ω) x ∈ Y \ X,                               (2)
+                                    f (x)                          x ∈ X.
+     Clearly f˜ is an extension of f . To check the Lipschitz condition, take x ∈ Y and y ∈ Y \ X.
+Fix z ∈ X such that d(x, z) ≤ 2 d(x, X), and observe that
+                                   Z
+                                                                             
+                   ˜        ˜
+                   f (y) − f (x) =       f (γ(ω)) − f (z) · Ψ(ω, y) − Ψ(ω, x) dµ(ω).
+                                     Ω
+Indeed, this is obviously true if x, y ∈ Y \ X, while if x ∈ X then necessarily x = z, and the
+required identity follows from (2) and the fact that Ψ(ω, z) ≡ 0.
+     Now,
+                                 Z
+    ˜        ˜
+  ||f (x) − f (y)|| ≤ kf kLip        d(γ(ω), z) · |Ψ(ω, x) − Ψ(ω, y)| dµ(ω)
+                                 Z Ω
+                                                             
+                      ≤ kf kLip        d(γ(ω), x) + d(x, z) · |Ψ(ω, x) − Ψ(ω, y)| dµ(ω)
+                                   Ω
+                                   Z
+                      ≤ 3 kf kLip      d(γ(ω), x) · |Ψ(ω, x) − Ψ(ω, y)| dµ(ω) ≤ 3 K · kf kLip d(x, y).
+                                     Ω
+3      Stochastic metric decomposition
+In this section, we introduce various notions of “well-behaved” random (pointed) partitions of
+a metric space and show that they exist in several important cases. Section 4 establishes that
+such decompositions imply the existence of gentle partitions of unity.
+3.1     Well-behaved decompositions
+In what follows, we use the convention that the distance from a point in a metric space to the
+empty set is ∞.
+Definition 3.1 (Stochastic decomposition). Let (Y, d) be a metric space and X a subspace
+of Y . We shall say that (Ω, µ, {Γi (·), γ i (·)}i∈I ) is a stochastic decomposition of Y with respect to
+X if I is some index set, (Ω, µ) is a probability space, for every ω ∈ Ω, {Γi (ω)}i∈I is a partition
+of Y into Borel subsets and for every x ∈ Y the set {i ∈ I : ∃ ω ∈ Ω such that x ∈ Γi (ω)}
+is countable. We assume that for every i ∈ I, γ i : Ω → X is a Borel measurable function
+                                                       8
+
+                                                                     
+such that for every ω ∈ Ω, d γ i (ω), Γi (ω) < 2d X, Γi (ω) . Finally, we require that for every
+x ∈ Y and i ∈ I the set {ω ∈ Ω : x ∈ Γi (ω)} is measurable.
+     If {{Γi (ω)}i∈I : ω ∈ Ω} ranges over only a finite number of partitions of Y we shall say
+that the decomposition (Ω, µ, {Γi (·), γ i (·)}i∈I ) is finitely supported.
+Definition 3.2 (Bounded decomposition). Let (Ω, µ, {Γi (·), γ i (·)}i∈I ) be a stochastic de-
+composition of Y with respect to X and ∆ > 0. We say that it is ∆-bounded if for every
+ω ∈ Ω and i ∈ I, diam(Γi (ω)) ≤ ∆.
+Definition 3.3 (Padded decomposition). Let (Ω, µ, {Γi (·), γ i (·)}i∈I ) be a ∆-bounded stochas-
+tic decomposition of Y with respect to X and ε, δ > 0. We say that it is (ε, δ)-padded if for
+every x ∈ Y and i ∈ I the function ω 7→ d x, Y \ Γi (ω) is measurable and if d(x, X) ≤ ε∆
+then                                                                    !
+                                 [                           
+                                                         i
+                            µ         ω : d x, X \ Γ (ω) ≥ ε∆             ≥ δ.
+                                 i∈I
+Observe that the assumptions in Definition 3.1 imply that the above union is countable.
+                                                                                                    
+Remark 3.4. Note that when Y is countable, the requirement the function ω 7→ d x, Y \ Γi (ω)
+is measurable is redundant (i.e. it is enough to demand that {ω ∈ Ω : x ∈ Γi (ω)} is measur-
+able). Indeed, for every ρ > 0,
+                                                           [
+                   ω ∈ Ω : d x, Y \ Γi (ω) < ρ =                     {ω ∈ Ω : y ∈/ Γi (ω)}.
+                                                          y∈B ◦ (x,ρ)
+This observation is useful since if we are interested in extending Lipschitz functions from a
+closed subset X of a separable space Y then it is enough to restrict our attention to the case
+when Y is countable. Indeed, let f : X → Z be a Banach space-valued Lipschitz function and
+S ⊆ X, T ⊆ Y be countable dense subsets in X and Y \ X, respectively. Clearly S is closed
+in S ∪ T and if we extend f |S to a Lipschitz function defined on S ∪ T then we may pass to
+the closure and obtain the required extension without further loss in the Lipschitz constant.
+Definition 3.5 (Thick decomposition). Let (Ω, µ, {Γi (·), γ i (·)}i∈I ) be a ∆-bounded stochas-
+tic decomposition of Y with respect to X and ε, δ > 0. We say that it is (ε, δ)-thick if for every
+x ∈ Y and i ∈ I the function ω 7→ d x, Y \ Γi (ω) is measurable and if d(x, X) ≤ ε∆ then
+                          Z X
+                                                          
+                                   min d x, Y \ Γi (ω) , ∆ dµ(ω) ≥ δ∆.
+                           Ω i∈I
+Observe that since {Γi (ω)}∞ i=1 is a partition of X, the above sum contains only one element.
+Remark 3.6. Observe that if (Ω, µ, {Γi (·), γ i (·)}i∈I ) is (ε, δ)-padded then it is also (ε, εδ)-
+thick.
+Definition 3.7 (Separating decomposition). Let (Ω, µ, {Γi (·), γ i (·)}i∈I ) be a ∆-bounded
+stochastic decomposition of Y with respect to X and ε, δ > 0. We say that it is (ε, δ)-separating
+if for every x, y ∈ Y such that d({x, y}, X) ≤ ε∆,
+                          Z X
+                                                                        2d(x, y)
+                                  |1Γi (ω) (x) − 1Γi (ω) (y)| dµ(ω) ≤            .
+                           Ω                                               δ∆
+                             i∈I
+                                                      9
+
+      The next lemma simply states that for a metric space (Y, d) and an arbitrary closed sub-
+space X, an (ε, δ)-padded decomposition of X (with respect to itself) can be extended to a
+(roughly) (ε, δ)-padded decomposition of Y with respect to X. This will make it possible for
+us to place assumptions only on X, letting Y be arbitrary.
+Lemma 3.8 (Partition extension). Let (Y, d) be a metric space and X a closed subspace of
+Y . If X admits a finitely supported (ε, δ)-padded ∆-bounded stochastic decomposition (with re-
+spect to itself ), then Y admits a finitely supported ( 16+8ε       ε
+                                                                         , δ)-padded (1+ 2ε )∆-bounded stochastic
+decomposition with respect to X.
+Proof. Let (Ω, µ, {Γi (·), γ i (·)}i∈I ) be a finitely supported (ε, δ)-padded ∆-bounded stochastic
+decomposition of X. For every point x ∈ Y , let tx ∈ X be such that d(x, tx ) ≤ 2d(x, X). Now,
+for every ω ∈ Ω and i ∈ I, create a new set
+                                     [                                 ε∆                        ε∆
+                                                                                                      
+                  i
+                b (ω) = Γ (ω)   i                               i
+                Γ                          x ∈ Y : d tx , X \ Γ (ω) ≥              and d(x, tx ) ≤      .
+                                                                              2                     4
+                                            S bi
+Finally, for any point x ∈ Y \ i∈I Γ               (ω), place x in a singleton cluster {x}. This constitutes
+a finitely supported distribution over partitions of Y . The selection function corresponding to
+b i (·) is simply chosen to be γ̂ i = γ i , while the selection function corresponding to a singleton
+Γ
+cluster {x} is an arbitrary point t ∈ X satisfying d(t, x) ≤ 2d(x, X) .
+                                                                                       ε
+      Let us now show that the above stochastic decomposition is ( 16                    , δ)-padded and (1 + 2ε )∆-
+                               ε
+bounded. The (1 + 2 )∆-bounded condition is easy; singleton clusters have diameter zero. For
+points x, y ∈ Γ     b i (ω), i ∈ I, we have
+                                                             ε∆                        ε∆            ε
+          d(x, y) ≤ d(x, tx ) + d(tx , ty ) + d(y, ty ) ≤         + diam Γi (ω) +               ≤ 1+      ∆.
+                                                              4                              4         2
+                                                       ε
+                                                                   
+      Fix some x ∈ Y with d(x, X) ≤ 16+8ε                   1 + 2ε ∆ = ε∆      16  . By the definition of padded
+                                                                          i
+                                                                                
+decompositions, with probability at least δ, d tx , X \ Γ (ω) ≥ ε∆ for some i ∈ I. Our goal
+will be to show that in this case we have d x, Y \ Γ            b i (ω) ≥ ε∆ , which will complete the proof.
+                                                                                16
+Assume to the contrary that there is some y ∈ Y \ Γ (ω) with d(x, y) ≤ ε∆ . Observe that
+                                                                   b i
+                                                                                               16
+                                                                           ε∆                              ε∆
+       d(tx , ty ) ≤ d(tx , x) + d(x, y) + d(y, ty ) ≤ 2d(x, X) +              + 2 (d(x, X) + d(x, y)) <      .
+                                                                           16                               2
+Hence,
+                                                                                          ε∆
+                               d ty , X \ Γi (ω) ≥ d tx , X \ Γi (ω) − d(tx , ty ) >           ,
+                                                                                             2
+Since we also have that
+                                                                                        ε∆
+                                  d(y, ty ) ≤ 2d(y, X) ≤ 2d(x, X) + 2d(x, y) ≤              ,
+                                                                                         4
+we see that y ∈ Γ        b i (ω), which contradicts the choice of y.
+Remark 3.9. For later applications, we note that if X is ε∆                       32 -dense in Y and ε < 1, then
+                                                        ε
+the above proof shows that Y admits an ( 32 , δ)-padded 2∆-bounded stochastic decomposition
+with respect to itself.
+Remark 3.10. Lemma 3.8 holds true when Y is countable and the decomposition in not
+necessarily finitely supported (in which case the extended decomposition is not necessarily
+finitely supported either). The proof is the same, and all one has to observe is that in this
+case the resulting decomposition satisfies the required measurability assumptions.
+                                                           10
+
+3.2     Constructions
+In this section, we construct stochastic decompositions for various classes of metric spaces.
+Most of the constructions come directly from the theoretical computer science literature, but
+since we are dealing here with infinite spaces, we must be somewhat delicate in placing these
+finite random processes into the appropriate probability spaces and dealing with the measura-
+bility issues that arise. Because of this, some of the constructions are restated in a form which
+is different than that in which they originally appeared.
+     Let (X, d) be a metric space and R > r > 0. Denote by C(X; R, r) the largest cardinality
+of a set N ⊆ X satisfying for every distinct x, y ∈ N , r ≤ d(x, y) ≤ R. The following result
+is essentially contained in [14], though we must deal with a technical issue due to our use of
+possibly infinite nets.
+                                                                                         
+Lemma 3.11. For every ∆ > 0, every metric space (X, d) admits an ε, 21 -padded ∆-
+bounded finitely supported stochastic decomposition of X with respect to itself, where ε =
+          1
+256 log[C(X;2∆,∆/4)] .
+Proof. For ease of notation, we construct a 4∆-bounded decomposition. We may assume that
+C(X; 8∆, ∆) is finite, since otherwise the result holds vacuously. Let N be a ∆-net of X. First,
+we need to introduce a distribution over partial orders ≺ on N such that for every ball B ⊂ X
+of radius 3∆, ≺ is a uniformly random total order on B ∩ N (note that |B ∩ N | is finite). To
+this end, consider the infinite graph G = (N, E) where {x, y} ∈ E if and only if d(x, y) ≤ 3∆.
+The degree of G is at most C(X; 6∆, ∆) < ∞, and thus G admits a proper coloring using
+some finite number of color classes; call these classes 1, 2, . . . , M . Now let σ be a random
+permutation on {1, . . . , M } and let χ : N → {1, . . . , M } be a proper coloring. Finally, define
+x ≺ y if and only if σ(χ(x)) < σ(χ(y)). It is easy to see that for a ball B of radius 3∆, every
+point in B ∩ N receives a unique color, and thus σ induces a uniformly random permutation
+on B. It follows that ≺ satisfies the desired properties.
+     Now choose a radius R ∈ [∆, 2∆] uniformly at random. For each y ∈ N , define a cluster
+              Cy = {x ∈ X : x ∈ B(y, R) and y ≺ z for all z ∈ N with x ∈ B(z, R)}.
+Since N is a ∆-net and R ≥ ∆, P = {Cy }y∈N constitutes a partition of X. Clearly all the
+clusters Cy have diameter at most 4∆. Finally, we construct the required selectors as follows:
+for y ∈ N let γ y be the minimal element of N in Cy (with respect to ≺).
+     Now fix a value t ∈ [0, ∆] and some x ∈ X. Let W = B(x, 2∆ + t) ∩ N , and note that
+m = |W | ≤ C(X; 6∆, ∆). Arrange the points w1 , . . . , wm ∈ W in order of increasing distance
+from x, and let Ik be the interval [d(x, wk ) − t, d(x, wk ) + t]. Let us say that B(x, t) is cut if
+for some cluster Cwk , Cwk ∩ B(x, t) 6= ∅, but B(x, t) * Cwk . Finally, write Ek for the event
+that wk is the minimal element in W (according to ≺) for which Cwk cuts B(x, t). Then,
+                                    Xm
+             Pr[B(x, t) is cut] ≤       Pr[Ek ]
+                                    k=1
+                                    Xm
+                                =       Pr[R ∈ Ik ] · Pr[Ek | R ∈ Ik ]
+                                    k=1
+                                    Xm
+                                        2t 1     2t                   8t
+                                ≤          · ≤ (1 + log m) ≤             log [C(X; 6∆, ∆)] .
+                                        ∆ k      ∆                    ∆
+                                    k=1
+                                                11
+
+                     ∆
+Setting t = 64 log[C(X;6∆,∆)]  yields the required result. We remark that the stochastic decom-
+position can be made finitely supported by choosing R uniformly from a sufficiently fine mesh
+in [∆, 2∆].
+Corollary 3.12 (Doubling        metrics).
+                                            Let (X, d) be a doubling metric space. Then for every
+                               1     1
+∆ > 0, there exists a C log λ(X) , 2 -padded ∆-bounded finitely supported stochastic decompo-
+sition of X with respect to itself, where C is a universal constant.
+Proof. This is a direct consequence of Lemma 3.11, since it is evident that log [C(X; 2∆, ∆/4)] =
+O (log λ(X)). Indeed, let N ⊆ X be a set such that, for every distinct x, y ∈ N , ∆   4 ≤ d(x, y) ≤
+2∆. Then clearly X is contained in a ball of radius 2∆ which can be covered by λ(X)4 balls of
+radius ∆                                                                                     4
+         8 . Since every such ball contains at most one point of N , we see that |N | ≤ λ(X) .
+Corollary 3.13 (Negatively curved manifolds). Fix r > 0 and let M be an n-dimensional
+Riemannian manifold satisfying Ricci(g) ≥ −(n − 1)rg, where g is the Riemannian metric on
+M and Ricci(g) is the Ricci curvature of g. Then for any subset A ⊆ M and every ∆ > 0,
+A admits an ε, 21 -padded ∆-bounded finitely supported stochastic decomposition (with respect
+to itself ), where ε = n 1+c√r∆ and c is a universal constant.
+                         (       )
+Proof. Fix 0 < R1 < R2 and x ∈ M . The following inequality is a well known consequence of
+Bishop’s inequality (see Lemma 5.3, pg. 275 in [12]):
+                                                R R2   √         √    n−1
+                           Vol (BM (x, R2 ))     0     e  rt − e−   rt      dt
+                                             ≤R        √         √    n−1    .
+                           Vol (BM (x, R1 ))      R1
+                                                 0     e  rt − e−   rt      dt
+By standard arguments it follows that:
+                                                                            √ 
+                  log [C(A; 2∆, ∆/4)] ≤ log [C(M ; 2∆, ∆/4)] ≤ O 1 + r∆ · n,
+so that Lemma 3.11 implies the required result.
+    A strong decomposition for excluded-minor spaces follows from the (graph) decompositions
+of [20], and a similar notion was used in [31] to embed planar metrics into ℓ2 . We sketch the
+argument below.
+Lemma 3.14 (Excluded minors). Let G be a graph which does not possess              Kr as a minor,
+and suppose that X ∈ hGi. Then for every ∆ > 0, X admits a rc2 , 21 -padded ∆-bounded
+finitely supported stochastic decomposition with respect to itself.
+Proof. Let G be a weighted graph without a Kr minor such that X ⊆ Σ(G). Fix some
+β ∈ (0, 1] and k ∈ N. Consider the distribution µ on P which arises from the following random
+process. We decompose Σ(G) recursively. Let x0 be an arbitrary point of X. Choose now
+some u ∈ [0, β∆) uniformly at random and consider, for each n ∈ N ∪ {0}, the annuli
+                         
+                  An = x ∈ Σ(G) : (n − 1)β∆ + u ≤ dΣ(G) (x, x0 ) < nβ∆ + u .
+In general, the sets An may be disconnected in the topology of Σ(G). Let C denote the set of
+(disjoint) connected components of the {An }, and apply the above random process again to
+each component in C. The process ends after k such steps, producing a partition P of Σ(G).
+                                                   12
+
+     In [20], it is shown that for some fixed β = β(r) and k = r, the above process produces
+a partition P such that for every C ∈ P , diam(C) ≤ ∆. Improved quantitative bounds were
+obtained in [10], yielding β(r) = Ω 1r .
+     For every partition P and x ∈ X let πP (X) be the maximal r ≥ 0 for which there exists
+A ∈ P such that BΣ(G) (x, r) ⊆ A. We claim that for any x ∈ Σ(G) and every t > 0,
+                              k
+                            2t
+Pr[πP (x) ≥ t] ≥ 1 − β∆           . To see this, simply note that the probability of BΣ(G) (x, t) being
+separated into two different   connected components             at any step of the decomposition is at most
+ 2t                        ∆                                 1
+β∆  . Choosing     t = Ω   r2
+                                gives  P r[π P (x)   ≥ t] ≥    .
+                                                             2 This random partition can be modified to
+have finite support by choosing u uniformly from a sufficiently fine mesh in [0, β∆), so that
+Σ(G), and hence also X, admits the required padded stochastic decomposition.
+Corollary 3.15 (Surfaces of bounded genus). Let M be a two dimensional                                Riemannian
+                                                                                                             
+                                                                                                       c
+manifold with genus g and X ⊆ M . Then for every ∆ > 0, X admits a g+1                                   , 21 -padded
+∆-bounded finitely supported stochastic decomposition with respect to itself.
+Proof. Let N be an η-net in X. For every x, y ∈ N let ℓx,y be a minimal length geodesic joining
+x and y. Consider the set N ′ ⊇ N obtained from adding all the points of intersection of the
+geodesics {ℓx,y }x,y∈N . Consider the graph G = (N ′ , E), where {u, v} ∈ E if there is some
+x, y ∈ N such that u and v are connected by a sub-geodesic ℓ ⊆ ℓx,y for which ℓ ∩ N ′ = {u, v}.
+By construction, the graph G is embedded in M (in the graph-theoretic sense). It follows
+(see [29]) that G excludes a KΩ(√g+1) minor. Furthermore, N is isometric to a subset of
+Σ(G) where the weight of an edge {u, v} is equal to the length of the sub-geodesic connecting
+u and v. Hence N is a KΩ(√g+1) -excluded metric, so that the required result follows from
+Lemma 3.14 and Remark 3.9 (for η small enough).
+     Optimal decompositions for finite subsets of ℓd2 were given in [7]. The following lemma is
+based on their techniques.
+Lemma 3.16 (Finite dimensional Hilbert space.). For any closed subset X of ℓd2 and
+for every ∆ > 0 there exists a stochastic decomposition of ℓd2 with respect to X which is (ε, δ)-
+                                                                   1
+separating and ∆-bounded for every ε > 0 and δ = 2√                  d
+                                                                       .
+                                                  d                                   d
+Proof. We construct a graph G
+                        d            d
+                                        = (Z , E) where for u, v ∈ Z , {u, v} is an edge if and
+only if d u + [0, 1) , v + [0, 1) ≤ 8∆. As before, the degree of G is uniformly bounded,
+                                                    d
+and thus it admits an M
+               d            d
+                               -coloring χ : Z → {1, 2, . . . , M } such that χ(u) 6= χ(v) whenever
+d u + [0, 1) , v + [0, 1) ≤ 8∆.
+     Denote by md the Lebesgue measure on [0, 1]d Q              and by ν the uniform probability            measure
+on {1, . . . , M }. Consider the product space Ω = ∞               i=1    [0,  1) d × {1, . . . , M } equipped with
+the natural product measure µ. Given ω = (x1 , c1 , x2 , c2 , . . .) ∈ Ω we construct recursively a
+sequence of disjoint subsets of Rd , {Γi,v (ω) : i ∈ N, v ∈ Zd } as follows:
+                              (                    Sk−1 S                         
+                  k,v            B2 v + xk , ∆  2    \     j=1    u∈Z   d Γ j,u (ω)     if χ(v) = ck
+                 Γ (ω) =
+                                 ∅                                                      otherwise,
+where B2 (y, ρ) denotes the closed Euclidean ball of radius ρ centered at y. The sets {Γi,v (ω) :
+i ∈ N, v ∈ Zd } form a partition of [0, 1)d with probability one. We claim                         that there     exist
+                                                                                                                      
+                       i,v                                                      i,v
+measurable maps γ : Ω → X such that for every ω ∈ Ω, d γ (ω), Γ (ω) ≤ 2d X, Γ (ω) .       i,v                  i,v
+                                                          13
+
+Indeed, by a classical measurable selection theorem of Kuratowski and Ryll-Nardzewski [21]
+it is enough to check that for every open ball B ⊆ Rd the set
+                  n                       n                                                     o         o
+                    ω ∈ Ω : B ∩ X ∩ a ∈ Rd ; d a, Γi,v (ω) ≤ 2d X, Γi,v (ω) 6= ∅
+is measurable, and this fact follows directly from the construction.
+     The above decomposition is trivially ∆-bounded. Now, fix x, y ∈ Rd . Since the (ε, δ)-
+separating condition is trivial for d(x, y) > ∆, assume that d(x, y) ≤ ∆. We now bound the
+probability that x and y end up in different clusters. It follows from the construction that x
+and y are separated in the       partition      induced
+                                                           by ω= (x1 , c1 , x2 , c2 , . . .) precisely
+                                                                                                                  when there
+                                                                                                                           
+                                                                ∆                ∆
+is an index j for which xj + χ (cj ) ∩ B2 x, 2 △ B2 y, 2 6= ∅ while xi + χ−1 (ci ) ∩
+                                        −1
+                        ∆
+                            
+ B2 x, ∆  2 ∩ B2 y, 2          = ∅ for every i < j. Notice that since d(x, y) ≤ ∆, no two cubes from
+                                                                           
+{v + [0, 1) : v ∈ Z } which intersect B2 x, ∆
+             d           d                                               ∆
+                                                          2 ∪ B2 y, 2 have           the same color. Denoting by
+                                                                                                   
+K ⊆ R the union of all the cubes which intersect B2 x, 2 ∪ B2 y, ∆
+         n                                                                    ∆
+                                                                                                 2    , it follows that for
+                                                        −1
+                                                                                 Vol(A)
+every Borel measurable A ⊆ K, µ [xk + χ (ck )] ∩ A 6= ∅ = Vol(K) . Hence
+ Z X
+         |1Γi (ω) (x)−1Γi (ω) (y)| dµ(ω) = 2µ({x and y are not in the same Γi (ω)})
+   Ω i∈I
+                               n                                    "                                              #j−1
+                             X    Vol B2 x, ∆     2   △  B  2  y, ∆
+                                                                  2            Vol   B  2    x,  ∆
+                                                                                                  2    ∩  B 2    y, ∆
+                                                                                                                    2
+                      ≤ 2                                                1−
+                                                Vol(K)                                         Vol(K)
+                             j=1
+                                                                    √
+                             Vol B2 x, ∆    2 △ B2 y, 2
+                                                             ∆
+                                                                      4 d
+                      = 2                                   ∆
+                                                                ≤         kx − yk2 ,
+                             Vol B2 x, ∆    2   ∩   B 2  y,  2
+                                                                       ∆
+by straightforward volume estimates.
+     Finally, we present a decomposition theorem for general metric spaces Y with respect to
+a compact, measurable submetric X. The analysis is based on ideas from [6] and [9] for finite
+metrics.
+Theorem 3.17. Let (Y, d) be a metric space and X a compact subspace of Y . If σ is any
+non-degenerate Borel measure on X (i.e. one which assigns non-zero measure to every ball in
+X), then for every ∆ > 0, there exists a ∆-bounded stochastic decomposition of Y with respect
+                                                                        ∆
+to X such that, for every x, y ∈ Y with d({x, y}, X) < 16                 ,
+         Z X                                                                                             
+                                                           2 d(x, y)                σ(BX (x, 5∆))
+                  |1Γi (ω) (x) − 1Γi (ω) (y)| dµ(ω) ≤                   1 + log                                  .         (3)
+           Ω                                                   ∆                     σ(BX (x, ∆))
+              i∈I
+Proof. Since X is compact, we may             Qassume that σ is a probability measure on                           X. Let us
+then equip the product space Ω′ = ∞              i=1  X  with   the  natural    product       measure       µ ′ . Finally, let
+Ω = Ω′ ×[2∆, 4∆], equipped with the probability measure Pr = µ′ ×λ, where λ is the normalized
+Lebesgue measure on [2∆, 4∆]. Given ω = (x1 , x2 , x3 , . . .) ∈ Ω′ and some R ∈ [2∆, 4∆], we
+construct recursively a sequence of disjoint subsets of Y , {Γi (ω, R) : i ∈ N} as follows,
+                                                                                 
+                                                                     k−1
+                                                                     [
+                                   Γk (ω, R) = B(xk , R) \               Γj (ω) .
+                                                                     j=1
+Let S = {y ∈ Y : d(x, y) < ∆            2 }, then with probability 1, for any R ∈ [2∆, 4∆], the sets
+{Γi (ω, R) ∩ S}∞   i=1  form   a partition   of S. To see this, let N be a ∆         4 -net in X, and consider the
+                                                            14
+
+balls B(x, ∆8 ) for x ∈ N . Since σ is non-degenerate, it assigns any such ball positive measure,
+and hence with probability 1, we have xj ∈ B(x, ∆/8) for some j ∈ N. Now fix a point y ∈ Y
+such that d(y, X) < ∆      2 , and let z ∈ X be such that d(y, z) < 2 d(y, X). Observe that z is
+within ∆4  of some     point     of N , and hence within 3∆          8 of some xj with probability 1. But now
+                                                                  3∆
+we see that d(y, xj ) ≤ d(y, z) + d(z, xj ) < ∆ + 8 < 2∆, hence y ∈ B(xj , R). It follows that
+the proposed sets are indeed a partition of S with probability 1.
+    We define the final partition by
+                                                         (                             )
+                                                    [                      [
+                                  i            ∞                                 i
+                              {Γ (ω, R)}i=1               {y} : y ∈ Y \        Γ (ω, R) ,
+                                                                           i∈N
+and note that the required selectors exist due to an application of the Kuratowski, Ryll-
+Nardzewski Theorem as in the proof of Lemma 3.16.
+    Fix x ∈ Y such that d(x, X) < ∆             2 and denote by ν the distribution of the random variable
+z 7→ d(z, x), i.e. for 0 ≤ α < β, ν([α, β)) = σ({z ∈ X : α ≤ d(z, x) < β}). Fix t ≤ ∆ and for
+every R ∈ [2∆, 4∆] denote by DR the set of all z ∈ X for which B(z, R) ∩ B(x, t) ∈                     / {∅, B(x, t)}
+(when this happens we say that B(x, t) is cut by B(z, R)). Finally, let
+                                                                    i−1
+                                                                    [
+                         Ωi,R = {ω ∈ Ω′ : ωi ∈ DR } \                   {ω ∈ Ω′ : ωj ∈ DR }.
+                                                                    j=1
+    Observe that for ω = (ω1 , ω2 , . . .) ∈ Ω′ , if ω ∈ Ωi,R then the triangle inequality implies that
+R ∈ [d(x, ωi ) − t, d(x, ωi ) + t]. Moreover, if ωi ∈ B(x, ∆) then B(x, t) ⊆ B(ωi , R), since t ≤ ∆
+and R ≥ 2∆, so that B(ωi , R) can’t cut B(x, t). Additionally, B(ωi , R) ∩ B(x, t) 6= ∅ implies
+ωi ∈ B(x, 5∆), since R ≤ 4∆. It follows that if ω ∈ Ωi,R , then ∆ < d(ωi , x) ≤ 5∆. Finally, if
+ω ∈ Ωi,R then d(ωj , x) > d(ωi , x) for j < i, since otherwise B(ωi , R) will not be the first ball
+to cut B(x, t). These observations imply that for every i = 1, 2, . . ., every R ∈ [2∆, 4∆] and
+every ρ > 0,
+                µ′ (Ωi,R |d(x, ωi ) = ρ) ≤ 1{R∈[ρ−t,ρ+t]} · 1{∆<ρ≤5∆} [1 − ν([0, ρ])]i−1 .
+Hence,
+                                        Z            ∞
+                                                                   !
+                                     1       4∆     X
+                                                           ′
+     Pr[B(x, t)is cut] =                                 µ (Ωi,R ) dR
+                                   2∆     2∆        i=1
+                                        Z            ∞ Z
+                                                                                            !
+                                             4∆     X        ∞
+                                     1                          ′
+                            =                                  µ (Ωi,R |d(x, ωi ) = ρ)dν(ρ) dR
+                                   2∆     2∆        i=1 0
+                                        Z 4∆         ∞ Z
+                                                                                                           !
+                                     1              X
+                            ≤                                     1{R∈[ρ−t,ρ+t]} · [1 − ν([0, ρ])]i−1 dν(ρ) dR
+                                   2∆ 2∆                  (∆,5∆]
+                                                    i=1
+                                       Z
+                                    t                dν(ρ)
+                            ≤
+                                   ∆ (∆,5∆] ν([0, ρ])
+                                                                                         
+                                    t          ν([0, 5∆])           t        σ(BX (x, 5∆))
+                            ≤          log                      = log                          .                  (4)
+                                   ∆            ν([0, ∆])          ∆         σ(BX (x, ∆))
+The last inequality above Pk isν([0,ρ a classical fact, which can be proved as follows: Approximate the
+                                          i ])−ν([0,ρi−1 ])
+integral by the sum i=1                    ν([0,ρi ])        for some ∆ < ρ0 < ρ1 < . . . < ρk = 5∆, and use
+               ν([0,ρi ])−ν([0,ρi−1 ])       R ν([0,ρi ]) ds
+the estimate          ν([0,ρi ])         ≤ ν([0,ρi−1 ]) s .
+                                                               15
+
+    Observe that (3) holds trivially if d(x, y) ≥ ∆. Otherwise, choosing t = d(x, y) in (4) yields
+the required result.
+4     Constructing gentle partitions
+In this section we show that the various decompositions that were introduced in the previous
+section can be used to construct gentle partitions of unity.
+Theorem 4.1 (Stochastic decompositions yield gentle partitions). There exists a uni-
+versal constant C > 0 such that for every metric space (Y, d) and every subspace X ⊆ Y the
+following assertions hold true:
+   1. If for every n ∈ Z, Y admits an (ε, δ)-thick 2n -bounded stochastic decomposition with
+                                                C
+      respect to X, then Y also admits a εδ        -gentle partition of unity with respect to X.
+   2. If for every n ∈ Z, Y admits an (ε, δ)-padded 2n -bounded stochastic decomposition with
+                                                C
+      respect to X, then Y also admits a εδ        -gentle partition of unity with respect to X.
+   3. If for every n ∈ Z, Y admits an (ε, δ)-separating 2n -bounded stochastic decomposition
+      with respect to X, then Y also admits a C 1ε + 1δ -gentle partition of unity with respect
+      to X.
+Proof. For every n ∈ Z let (Ωn , µn , {Γin (·), γni (·)}i∈I ) be a 2n -bounded stochastic decomposition
+                                                                                                     1
+of Y with respect to X. Let ϕ : R      → R+ be any 2-Lipschitz map with supp(ϕ) ⊂ [ 2 , 4] and
+ϕ ≡ 1 on [1, 2]. Define ϕn (x) = ϕ d(x,X)ε2n−3
+                                                 and let (Ω, µ) be the disjoint union of {I × Ωn }n∈Z
+(where the measure on I is the counting measure). In all the cases of the theorem the partition
+of unity which we construct will have the following form: For every n ∈ Z, ω ∈ Ωn , i ∈ I and
+x ∈ Y denote:
+                                             1
+                            Ψ(i, ω, x) =         θn (x)ϕn (x)1Γin (ω) (x),                             (5)
+                                            S(x) ω
+where for every n ∈ Z and x ∈ Y the function ω 7→ θωn (x) ∈ [0, ∞) is µn -integrable and
+                 XXZ                                                X           Z
+                               n
+         S(x) =               θω (x)ϕn (x)1Γin (ω) (x) dµn (ω) =         ϕn (x)      θωn (x) dµn (ω).
+                 n∈Z i∈I   Ωn                                       n∈Z           Ωn
+Additionally define γ(i, ω) = γni (ω).                                  
+    Observe that supp(ϕn ) ⊆ x ∈ Y : d(x, X) ∈ ε2n−4 , ε2n−1 , so the sum in the denomi-
+nator of (5) contains at most 5 terms, and is therefore finite. Additionally, the definition of
+ϕn ensures that for every x ∈ X and ω ∈ Ω, Ψ(ω, x) = 0.
+    The functions θωn (x) will be different in each particular case, but we begin by making some
+general comments. Our goal is to show that for every x, y ∈ Y ,
+           XXZ                                                                  C
+                        d(γ(i, ω), x) · |Ψ(i, ω, x) − Ψ(i, ω, y)| dµn (ω) ≤        · d(x, y).          (6)
+                     Ωn                                                         εδ
+           n∈Z i∈I
+In cases (1) and (2) above and
+      XXZ                                                                             
+                                                                               1 1
+                   d(γ(i, ω), x) · |Ψ(i, ω, x) − Ψ(i, ω, y)| dµn (ω) ≤ C          +       · d(x, y).   (7)
+               Ωn                                                              ε δ
+      n∈Z i∈I
+in case (3).
+                                                      16
+
+Claim 4.2. Fix ω ∈ Ωn and assume that Ψ(i, ω, x) 6= Ψ(i, ω, y). Then
+                                                     18
+                         d(γ(i, ω), x) ≤ d(x, y) +       · max{d(x, X), d(y, X)}.
+                                                      ε
+Proof. Our assumption implies that either Ψ(i, ω, x) > 0 or Ψ(i, ω, y) > 0. In the first case,
+x ∈ Γin (ω) and
+                                                                              
+    d (γ(i, ω), x) ≤ d γ(i, ω), Γin (ω) + diam(Γin (ω)) ≤ 2d X, Γin (ω) + 2n ≤ 2d(x, X) + 2n .
+On the other hand, ϕn (x) > 0, so d(x, X) ≥ ε2n−4 , which implies the required estimate. In
+the second case, Ψ(i, ω, y) > 0, so that
+           d(γ(i, ω), x) ≤ d(γ(i, ω), y) + d(x, y) ≤ 2d(y, X) + diam(Γin (ω)) + d(x, y)
+                                                               18
+                            ≤ 2d(y, X) + 2n + d(x, y) ≤            · d(y, X) + d(x, y).
+                                                                ε
+    By Claim 4.2 we can estimate the left-hand side of (6) and (7) as follows:
+    XXZ
+                  d(γ(i, ω), x) · |Ψ(i, ω, x) − Ψ(i, ω, y)| dµn (ω)
+    n∈Z i∈I   Ωn
+                     XXZ                                    
+        ≤ d(x, y) ·                  Ψ(i, ω, x) + Ψ(i, ω, y) dµn (ω)
+                     n∈Z i∈I    Ωn
+                                              XX       Z
+              18
+            +     · max{d(x, X), d(y, X)}                   |Ψ(i, ω, x) − Ψ(i, ω, y)| dµn (ω)
+               ε                                        Ωn
+                                              n∈Z i∈I
+                                                        XX        Z
+                         18
+        = 2d(x, y) +         · max{d(x, X), d(y, X)}                   |Ψ(i, ω, x) − Ψ(i, ω, y)| dµn (ω)
+                          ε                                        Ωn
+                                                        n∈Z i∈I
+It is therefore enough to show that:
+          XXZ                                                  C′             d(x, y)
+                       |Ψ(i, ω, x) − Ψ(i, ω, y)| dµn (ω) ≤         ·                          ,          (8)
+                    Ωn                                          δ max{d(x, X), d(y, X)}
+          n∈Z i∈I
+when the decompositions are either (ε, δ)-padded or (ε, δ)-thick and
+      XXZ                                                           ε            d(x, y)
+                   |Ψ(i, ω, x) − Ψ(i, ω, y)| dµn (ω) ≤ C ′ 1 +          ·                          ,     (9)
+                Ωn                                                   δ    max{d(x, X), d(y, X)}
+     n∈Z i∈I
+when the decompositions are (ε, δ)-separating. Here C ′ is a universal constant.
+    We may assume that C ′ > 4, in which case inequality (8) (resp. inequality (9)) holds
+trivially when d(x, y) ≥ d({x, y}, X). Indeed, in this case d(x, X) ≤ d(x, y) + d(y, X) ≤
+2d(x, y) and analogously d(y, X) ≤ 2d(x, y). Hence the right-hand side of (8) (resp. (9)) is
+greater
+P      PthanR 2 while the left-hand side of (8) (resp. (9)) is at most 2 since by construction
+   n∈Z    i∈I Ωn Ψ(i, ω, z)dµn (ω) = 1 for every z ∈ Y .
+                                                     17
+
+    Our goal is therefore to prove (8) (resp. (9)) under the assumption d(x, y) < d({x, y}, X).
+We may also assume without loss of generality that d(x, X) ≥ d(y, X). Now,
+  XXZ
+                 |Ψ(i, ω, x) − Ψ(i, ω, y)| dµn (ω)
+  n∈Z i∈I    Ωn
+       XZ         X θωn (x)ϕn (x)1Γi (ω) (x)S(y) − θωn (y)ϕn (y)1Γi (ω) (y)S(x)
+                                            n                                  n
+  =                                                                                          dµn (ω)
+             Ω n i∈I
+                                                       S(x)S(y)
+       n∈Z
+       X Z X θωn (x)ϕn (x)1Γi (ω) (x) − θωn (y)ϕn (y)1Γi (ω) (y)
+                                            n                            n
+  ≤                                                                                dµn (ω) +
+                                                   S(x)
+       n∈Z Ωn i∈I
+                                               !
+         XZ                                       |S(x) − S(y)|
+                     θωn (y)ϕn (y) dµn (ω)
+                                                     S(x)S(y)
+         n∈Z Ωn
+       X    Z     X θωn (x)ϕn (x)1Γi (ω) (x) − θωn (y)ϕn (y)1Γi (ω) (y)
+                                            n                            n
+  ≤                                                                                dµn (ω) +
+              Ωn                                   S(x)
+       n∈Z        i∈I
+       XZ                                   XZ         X θτn (x)ϕk (x)1Γik (τ ) (x) − θτn (y)ϕk (y)1Γik (τ ) (y)
+                  θωn (y)ϕn (y) dµn (ω)                                                                          dµk (τ )
+                                                                                 S(x)S(y)
+       n∈Z Ωn                                k∈Z Ωk i∈I
+                    Z
+         2 X              X
+  =                             θωn (x)ϕn (x)1Γin (ω) (x) − θωn (y)ϕn (y)1Γin (ω) (y) dµn (ω).                      (10)
+       S(x)
+              n∈Z Ωn i∈I
+    We now deal with each of the particular cases in the statement of the theorem:
+Case 1. The stochastic decomposition (Ωn , µn , {Γin (·), γni (·)}i∈I ) is (ε, δ)-thick and 2n -bounded
+for all n ∈ Z. In this case we take θωn (x) = πωn (x), where for every ω ∈ Ωn and x ∈ Y ,
+                                              X                            
+                                 πωn (x) =         min d x, Y \ Γin (ω) , 2n .                                    (11)
+                                              i∈I
+Observe that since {Γin (ω)}i∈I is a partition of Y , the above sum consists of only one element.
+                                                d(x,X)
+    Let n0 be an integer such that ε2             n0 −3 ∈ [1, 2]. Then
+                                  X                   Z
+            S(x) ≥                           ϕn (x)        πωn (x) dµn (ω)
+                            n: d(x,X)≤ε2n               Ωn
+                                  X                                             
+                                                                       d(x, X)                δ
+                       ≥                        n
+                                             δ2 ϕn (x) ≥ δ2 ϕ    n0
+                                                                                   ≥ δ2n0 ≥     d(x, X).          (12)
+                                                                        ε2n0 −1               ε
+                            n: d(x,X)≤ε2n
+    We now estimate the numerator in (10). Fix n ∈ Z and ω ∈ Ωn . Assume first of all that
+x, y ∈ Γjn (ω) for some j ∈ I. Hence
+  X                                                                                                                
+         n                                n                               n         d(x, X)       n           d(y, X)
+       πω (x)ϕn (x)1Γin (ω) (x) − πω (y)ϕn (y)1Γin (ω) (y) = πω (x)ϕ                          − πω (y)ϕ
+                                                                                     ε2n−3                     ε2n−3
+  i∈I
+                                                                                       
+            d(x, X)          n          n            n           d(x, X)            d(y, X)
+  ≤ ϕ                     |πω (x) − πω (y)| + πω (y) ϕ                      −ϕ
+             ε2n−3                                                ε2n−3              ε2n−3
+                            16d(x, y)                           16d(x, y)     17
+  ≤ d(x, y) + πωn (y)              n
+                                         ≤ d(x, y) + 2n ·            n
+                                                                           ≤      d(x, y).                          (13)
+                                ε2                                 ε2          ε
+                                                              18
+
+    If, on the other hand, there are distinct i, j ∈ I such that x ∈ Γin (ω) and y ∈ Γjn (ω) then
+clearly πωn (x), πωn (y) ≤ d(x, y), so:
+X                                                                                                              
+       n                            n                                n          d(x, X)         n         d(y, X)
+     πω (x)ϕn (x)1Γℓn (ω) (x) − πω (y)ϕn (y)1Γℓn (ω) (y) = πω (x)ϕ                         + πω (y)ϕ
+                                                                                 ε2n−1                     ε2n−1
+ℓ∈I
+                                                               ≤ πωn (x) + πωn (y) ≤ 2 d(x, y).                 (14)
+    Plugging the estimates (12), (13), (14) into (10) we obtain
+ XXZ                                                                            X            Z
+                                                               2ε                                 17
+               |Ψ(i, ω, x) − Ψ(i, ω, y)| dµn (ω) ≤                                                    d(x, y)dµn
+                                                           δ d(x, X)                                ε
+ n∈Z i∈I   Ωn                                                          n: {x,y}∩supp(ϕn )6=∅ Ωn
+                                                           340 d(x, y)
+                                                     ≤                  ,                                    (15)
+                                                            δ d(x, X)
+where we have used the fact that for every z ∈ Y , |{n : z ∈ supp(ϕn )}| ≤ 5.
+Case 2. The stochastic decomposition (Ωn , µn , {Γin (·), γni (·)}i∈I ) is (ε, δ)-padded and 2n -
+bounded for all n ∈ Z. In this case let g : [0, ∞) → [0, ∞) be given by:
+                                                 
+                                                  1         x≥2
+                                       g(x) =      x−1 1≤x≤2
+                                                 
+                                                   0         0 ≤ x ≤ 1,
+                            n 
+                             πω (x)
+and define θωn (x) = g ε2                        n
+                               n−1 , where πω (x) is as in (11). Let n0 be as in the proof of (12).
+Then:
+                             X                Z                         n       
+                                                                         πω (x)
+           S(x) ≥                      ϕn (x)                        g              (x) dµn (ω)
+                                                         n (x)≥ε2n }
+                                                {ω∈Ωn : πω               ε2n−1
+                        n: d(x,X)≤ε2n
+                                                                                              !
+                             d(x, X)           [                                    
+                   ≥ ϕ                  µn0         ω ∈ Ωn0 : d x, X \ Γin (ω) ≥ ε2n0                ≥ δ.    (16)
+                             ε2n0 −3
+                                               i∈I
+    Fix n ∈ Z and ω ∈ Ωn . Assume ϕn (x) · ϕn (y) > 0. In this case {d(x, X), d(y, X)} ∩
+[ε2n−4 , ε2n−1 ]  6= ∅, so that in particular d(y, X) ≤ ε2n−1 . We are assuming that d(x, y) <
+d(y, X), so d(x, X) ≤ d(x, y) + d(y, X) ≤ 2d(y, X) ≤ ε2n . If x, y ∈ Γjn (ω) for some j ∈ I then
+since g is Lipschitz with constant 1 and bounded by 1, the same reasoning as in (13) gives:
+           X                                                               6d(x, y)      6d(x, y)
+                θωn (x)ϕn (x)1Γin (ω) (x) − θωn (y)ϕn (y)1Γin (ω) (y) ≤          n
+                                                                                      ≤            .         (17)
+                                                                             ε2          d(x, X)
+           i∈I
+On the other hand, if there distinct i, j ∈ I such that x ∈ Γin (ω) and y ∈ Γjn (ω) then using the
+fact that πωn (x), πωn (y) ≤ d(x, y) we get :
+       X                                                                      n              n 
+              n                            n                                    πω (x)          πω (y)
+            πω (x)ϕn (x)1Γℓn (ω) (x) − πω (y)ϕn (y)1Γℓn (ω) (y) ≤ g                n−1
+                                                                                          +g
+                                                                                ε2              ε2n−1
+       ℓ∈I
+                                                                           πωn (x) πωn (y)        4d(x, y)
+                                                                      ≤       n−1
+                                                                                    + n−1 ≤                , (18)
+                                                                           ε2          ε2         d(x, X)
+and we conclude as in (15).
+                                                        19
+
+Case 3. The stochastic decomposition (Ωn , µn , {Γin (·), γni (·)}i∈I ) is (ε, δ)-separating 2n -bounded
+for all n ∈ Z. This case is simpler: we take θωn (x) ≡ 1. Arguing as in (12) we get that S(x) ≥ 1.
+Fix n ∈ Z and ω ∈ Ωn and assume as before that ϕn (x) · ϕn (y) > 0. Observe that
+   X
+         ϕn (x)1Γin (ω) (x) − ϕn (y)1Γin (ω) (y) ≤ |ϕn (x) − ϕn (y)|
+    i∈I
+                                                            ϕn (x) + ϕn (y) X
+                                                        +                           1Γin (ω) (x) − 1Γin (ω) (y)
+                                                                   2
+                                                                               i∈I
+                                                         8d(x, y) X
+                                                    ≤              +        1Γin (ω) (x) − 1Γin (ω) (y)
+                                                            ε2n
+                                                                       i∈I
+                                                         8d(x, y) X
+                                                    ≤              +        1Γin (ω) (x) − 1Γin (ω) (y) .       (19)
+                                                         d(x, X)
+                                                                       i∈I
+    Plugging this estimate into (10) we get
+      XXZ                                                   8d(x, y)
+                    |Ψ(i, ω, x)−Ψ(i, ω, y)| dµn (ω) ≤                 · |{n : {x, y} ∩ supp(ϕn ) 6= ∅}|
+                Ω n
+                                                            d(x, X)
+      n∈Z i∈I
+                                                 X            Z X
+                                     +                                  1Γin (ω) (x) − 1Γin (ω) (y) dµn
+                                        n: {x,y}∩supp(ϕn )6=∅ Ωn i∈I
+                                     80 d(x, y)              X             2d(x, y)
+                               ≤                  +
+                                       d(x, X)                                δ2n
+                                                    n: {x,y}∩supp(ϕn )6=∅
+                                     80 d(x, y) 20εd(x, y)
+                               ≤                  +              ,
+                                       d(x, X)       δd(x, X)
+where we have used the (ε, δ)-separating condition and the fact that in the above sum,
+d(x, X) ≤ ε2n .
+    We proceed to construct gentle partitions of unity when X is finite. The proof is analogous
+to the proof of Theorem 4.1, but there are several subtle differences, so we deal with this
+important case separately. The analysis uses ideas from [8, 9], namely that a certain sum
+of logarithms collapses in the analysis of the decomposition of Lemma 3.17. This allows the
+smoothing function ϕ to have larger support, which will be the key to achieving an improved
+result.
+Theorem 4.3. There exists a universal constant C > 0 such that for all m ∈ N, any metric
+space (Y, d) and any m-point subset X ⊆ Y , Y admits a C logloglogmm -gentle partition of unity
+with respect to X.
+Proof. Let M > 2 be an integer which will be determined later. Let ϕ : R → R+ be a 5-
+Lipschitz map with supp(ϕ) ⊆ [ 51 , 5M +1 ] and ϕ ≡ 1 on [1, 5M ]. By Theorem 3.17, with σ the
+counting measure on X, for every n ∈ Z there exists a stochastic decomposition of Y with
+respect to X, (Ωn , µn , {Γin (·), γni (·)}i∈I ), which is 5n -bounded and for every x, y ∈ Y satisfying
+d({x, y}, X) ≤ 5n−2 ,
+        Z X                                                                                     
+                                                         2d(x, y)                 |BX (x, 5n+1 )|
+                1Γin (ω) (x) − 1Γin (ω) (y) dµn (ω) ≤                1 + log                          .         (20)
+         Ωn                                                  5n                    |BX (x, 5n )|
+            i∈I
+                                                       20
+
+                                
+Define ϕn (x) = ϕ 5d(x,X)n−M −4 , and let (Ω, µ), Ψ(i, ω, x), γ(i, ω), S(x) be as in the proof of
+Theorem 4.1, with θωn (x) ≡ 1. Our goal is to show that for every x, y ∈ Y ,
+       XXZ                                                                                 
+                                                                                   log m
+                     d(γ(i, ω), x) · |Ψ(i, ω, x) − Ψ(i, ω, y)| dµ(ω) ≤ O                      · d(x, y).
+                 Ωn                                                              log log m
+       n∈Z i∈I
+   In what follows we fix x, y ∈ Y and we may assume without loss of generality that d(x, X) ≥
+d(y, X). As in the proof of Claim 4.2, if |Ψ(i, ω, x) − Ψ(i, ω, y)| > 0 then d(γ(i, ω), x) ≤
+5n + d(x, y). It is therefore enough to show that
+             X XZ                                                                   
+                                                                            log m
+                  5n            |Ψ(i, ω, x) − Ψ(i, ω, y)| dµ(ω) ≤ O                     · d(x, y).
+                            Ωn                                            log log m
+             n∈Z     i∈I
+                                                                    P                              M
+Since ϕn (x) = 1 for at least M − 1 values of n, S(x) =                n∈Z ϕn (x)   ≥ M −1 ≥       2 .  Hence,
+arguing as in (10) we get that
+               X XZ
+                    5n            |Ψ(i, ω, x) − Ψ(i, ω, y)| dµ(ω)
+               n∈Z      i∈I   Ωn
+                                  Z X
+                      2 X n
+                ≤             5             ϕn (x)1Γin (ω) (x) − ϕn (y)1Γin (ω) (y) dµn (ω) +
+                     M             Ωn i∈I
+                          n∈Z
+                                            !
+                       4     X
+                                   n
+                                  5 ϕn (y) |S(x) − S(y)|.                                                 (21)
+                     M2
+                             n∈Z
+Let j be the maximal integer for which ϕj (y) > 0. Then 5j ≤ 5M +5 d(y, X) and
+                             X                X
+                                  5n ϕn (y) ≤     5n ≤ 5j+1 ≤ 5M +6 d(y, X).
+                             n∈Z              n≤j
+               P         n             M +6 d(x, X). Since in |S(x) − S(y)| there are at most 4M
+Analogously,      n∈Z 5 ϕn (x) ≤ 5
+non-zero summands, each of which is bounded by 2, we get the following estimate:
+  X XZ                                                        4          X                   5M +9 d(y, X)
+      5n          |Ψ(i, ω, x) − Ψ(i, ω, y)| dµ(ω) ≤                                   5n +
+               Ωn                                            M                                     M
+  n∈Z    i∈I                                                    n: {x,y}∩supp(ϕn )6=∅
+                                                             5M +7                            5M +9 d(y, X)
+                                                        ≤          [d(x, X) + d(y, X)] +
+                                                               M                                    M
+                                                             5M +10
+                                                        ≤           [d(y, X) + d(x, y)].
+                                                               2M
+Corollary 4.4. If d(y, X) ≤ d(x, y) then:
+                   X       XZ                                              5M +10
+                         n
+                        5            |Ψ(i, ω, x) − Ψ(i, ω, y)| dµ(ω) ≤              d(x, y).
+                                  Ωn                                         M
+                   n∈Z      i∈I
+   We now deal with the case d(x, X) ≥ d(y, X) > d(x, y). The reasoning above shows that
+                                                     21
+
+the estimate (21) can be written as
+                X XZ
+                     5n           |Ψ(i, ω, x) − Ψ(i, ω, y)| dµ(ω)
+                n∈Z     i∈I    Ωn
+                                  Z X
+                       2 X n
+                 ≤             5              ϕn (x)1Γin (ω) (x) − ϕn (y)1Γin (ω) (y) dµn (ω) +
+                      M            Ωn
+                          n∈Z           i∈I
+                      5 M +7
+                              · d(x, X) · |S(x) − S(y)|.                                                         (22)
+                       M2
+For the sake of simplicity, denote
+   Ex,y = {n ∈ Z : ϕn (x) = ϕn (y) = 1} and Fx,y = {n ∈ Z : ϕn (x) + ϕn (y) > 0} \ Ex,y .
+By the definition of ϕn , if n ∈ Fx,y then 5n must be in
+                         [53 d(x, X), 5M +5 d(x, X)] ∪ [53 d(y, X), 5M +5 d(y, X)]
+but not in
+                        [54 d(x, X), 5M +4 d(x, X)] ∩ [54 d(y, X), 5M +4 d(y, X)].
+Since d(y, X) ≤ d(x, X) ≤ d(y, X) + d(x, y) ≤ 2d(y, Y ), it follows that n can take at most 10
+values. We have shown that |Fx,y | ≤ 10. Hence, using the fact that ϕ is 5-Lipschitz,
+                                 X                                 d(x, y)                d(x, y)
+           |S(x) − S(y)| ≤             |ϕn (x) − ϕn (y)| ≤ 10 n−M −5 ≤ 5M +7 ·                     .             (23)
+                                                                  5                       d(x, X)
+                               n∈Fx,y
+    Fix n ∈ Z and ω ∈ Ωn and argue as in (19) to get that
+X                                                   d(x, y)                  X
+     ϕn (x)1Γin (ω) (x) − ϕn (y)1Γin (ω) (y) ≤      n−M   −5
+                                                              · 1Fx,y (n) +        1Γin (ω) (x) − 1Γin (ω) (y) .
+                                                   5
+i∈I                                                                          i∈I
+Since for n ∈ Ex,y ∪ Fx,y , d(x, X) ≤        5n−2 , we may use (20) to get that
+                    Z X
+                              ϕn (x)1Γin (ω) (x) − ϕn (y)1Γin (ω) (y) dµn (ω)
+                     Ωn i∈I
+                                                                                            
+                           d(x, y)                   2d(x, y)               |BX (x, 5n+1 )|
+                     ≤               · 1Fx,y (n) +               1 + log                                         (24)
+                          5n−M −5                      5n                     |BX (x, 5n )|
+    Let j, J be the minimal and maximal integers i, respectively, for which ϕi (x) + ϕi (y) > 0.
+Observe that in this case J − j ≤ 4M and 5j−3 ≥ d(x,X)            2 . Hence
+           X       Z    X
+                 n
+               5              ϕn (x)1Γin (ω) (x) − ϕn (y)1Γin (ω) (y) dµn (ω)
+           n∈Z       Ωn i∈I
+                   X                             X            Z    X
+                                d(x, y)
+             ≤           5n ·            +                5n            1Γin (ω) (x) − 1Γin (ω) (y) dµn
+                               5n−M −5                          Ωn i∈I
+                 n∈Fx,y                     n∈Ex,y ∪Fx,y
+                                         XJ                                          
+                                                                      |BX (x, 5n+1 )|
+             ≤ 10 · 5M +5 d(x, y) +           2d(x, y) 1 + log
+                                                                       |BX (x, 5n )|
+                                         n=j
+                                                                              
+                   M +7                                        |BX (x, 5J+1 )|
+             ≤ 5        d(x, y) + 2d(x, y) 4M + log
+                                                                 |BX (x, 5j )|
+                     M +7
+                                              
+             ≤ 5          + 8M + 2 log m · d(x, y),                                                              (25)
+    Plugging (23) and (25) into (22) we arrive at the following corollary:
+                                                        22
+
+Corollary 4.5. If d(x, y) < d(y, X) then
+           X       XZ                                                         
+                n                                                  52M   log m
+               5             |Ψ(i, ω, x) − Ψ(i, ω, y)| dµ(ω) ≤ O     2
+                                                                       +         · d(x, y).
+                          Ωn                                       M       M
+           n∈Z     i∈I
+     Using Corollary 4.4 and Corollary 4.5 with M ≈ log log m yields the required result.
+5     Extension theorems
+The following theorem is a direct consequence of the results of Section 2, Section 3 and Sec-
+tion 4.
+Theorem 5.1. There exists a universal constant C > 0 such that
+    1. For every metric space X, ae(X) ≤ C log λ(X).
+    2. For every r > 0 and any Kr -excluded metric space X, ae(X) ≤ C · r2 .
+    3. Let M be a two dimensional Riemannian manifold with genus g and X ⊆ M . Then
+       ae(X) ≤ C · (g + 1).
+    4. If X is an n-point metric space then ae(X) ≤ C logloglogn n .
+                                                                        √
+    5. For every integer d and every Banach space Z, e(ℓd2 , Z) ≤ C d.
+     We also have the following extension result for neighborhoods of subsets of negatively
+curved manifolds.
+Proposition 5.2. Fix r > 0 and let M be an n-dimensional Riemannian manifold satisfying
+Ricci(g) ≥ −(n − 1)rg, where g is the Riemannian metric on M . Then for any subset X ⊆ M ,
+any metric   space Y ⊇ X such that X is ∆-dense in Y , and any Banach space Z, e(X, Y, Z) ≤
+           √ 
+C · n 1 + r∆ . Here C is a universal constant.
+Proof. Observe that in this case in the proof of 4.1 we only require the existence of 2n -
+padded decomposition with 2n ≤ ∆. Hence the required result follows from an application of
+Corollary 3.13 and Lemma 3.8.
+     Let us recall that for a family of finite graphs F, we claim that ae(hFi) ≤ KF if and only
+if hFi does not contain all finite metrics. We now give the simple proof which is based on a
+deep result of Robertson and Seymour [32].
+Proof of Corollary 1.8. For a family of graphs F, let mc(F) denote its closure under taking
+minors, i.e. the maximal minor-closed family containing F. Robertson and Seymour proved
+that if mc(F) is non-trivial, i.e. does not contain all finite graphs, then there is some finite
+list of graphs H1 , · · · , Hk such that G ∈ mc(F) if and only if G does not contain any Hi as a
+minor.
+     Observe that contraction/deletion of an edge corresponds to weighting by 0/∞, respec-
+tively. It follows that hFi = hmc(F)i, thus if hFi does not contain all finite metrics, then
+certainly mc(F) does not contain all finite graphs, hence if X ∈ hFi, it must be supported
+on some graph G which excludes a Kr minor with r = maxi |Hi |, and in this case part (2) of
+Theorem 5.1 applies.
+                                                     23
+
+     We are now in position to prove Theorem 1.12 which was stated in the introduction.
+Proof of Theorem 1.12. We begin with the case p = 2. Let X be an n-point subset of L2 ,
+ Z a Banach space and f : X → Z a Lipschitz function. Let H be the linear span of
+ X and let Q be the orthogonal projection from L2 onto H. By the proof of the Johnson-
+ Lindenstrauss dimension reduction lemma [17] there is a probability space (Ω, P ) such that
+ for every ω ∈ Ω there is a rank d linear operator Tω : H → H such that for every x ∈ H,
+ P kTω (x)k2 − kxk2 ≥ 21 ≤ 2e−cd , where c is a universal constant. We can therefore find
+for d ≈ 4c log n a subset A ⊂ Ω with P (A) ≥ 12 such that for every x, y ∈ X and ω ∈ A,
+ kTω (x) − Tω (y)k2 ≥ 21 kx − yk2 . The function gω = f ◦ (Tω |Tω (X) )−1 is Lipschitz on Tω (X) with
+ constant 2kf kLip . By Theorem 5.1, there is a function g̃ω : Tω (H) → Z such that g̃ω |Tω (X) = gω
+                       √
+ and kg̃ω kLip ≤ 4C√
+                     c
+                         log n · kf kLip . Define f˜ : L2 → Z by:
+                                                       Z
+                                       ˜          1
+                                      f (x) =              g̃ω (Tω Qx)dP (ω).
+                                                P (A) A
+ Clearly f˜ is an extension of f and since P (A) ≥ 21 , for every x, y ∈ Lp ,
+                                                   Z
+                                             1
+                kf˜(x) − f˜(y)kZ ≤                     kg̃ω (Tω Qx) − g̃ω (Tω Qy)kZ dP (ω)
+                                           P (A) A
+                                             p                     Z
+                                      ≤ O         log n kf kLip ·        kTω (Qx − Qy)k2 dP (ω)
+                                                                       Ω
+                                             p         
+                                      = O         log n kf kLip · kx − yk2 ,
+Rwhere we have used the fact that the concentration inequality for kTω zk2 , z ∈ H, implies that
+  Ω kTω zkdP (ω) = O(kzk2 ).
+     We pass to general 1 < p ≤ 2 via a method due to Marcus and Pisier [27]. In [27] they
+ show that for every 0 < p ≤ 2 there is a probability space (Ω′ , P ′ ) such that for every ω ∈ Ω′
+ there is a linear operator Sω : Lp → L2 such that for every x ∈ Lp \ {0} the random variable
+ X = kSkxk
+         ω (x)k2                                           2         p/2
+             p
+                  satisfies for every a ∈ R, Ee−aX = e−a . Let T be an n-point subset of Lp ,
+Z a Banach space and f : T → Z a Lipschitz function. A standard application of Markov’s
+ inequality shows that there is constant cp and a subset A′ ⊂ Ω with P ′ (A′ ) ≥ 12 such that for
+ every x, y ∈ X and ω ∈ A′ ,
+                                                          1   1
+                                kx − ykp ≤ cp (log n) p − 2 kSω (x) − Sω (y)k2 .
+                                                                                   1 1
+                                                                                        
+For every ω ∈ A′ the function gω = f ◦ (Sω |Sω (X) )−1 is O (log n) p − 2 kf kLip Lipschitz. By
+the above reasoning for the case p = 2, gω can be extended to a function g̃ω defined on all of
+ L2 which is Lipschitz with constant O (log n)1/p kf kLip . Define f˜ : Lp → L2 by:
+                                                       Z
+                                                 1
+                                    f˜(x) = ′ ′             g̃ω (Sω (x)) dP ′ (ω).
+                                             P (A ) A′
+Clearly f˜ is an extension of f and since P ′ (A′ ) ≥ 12 , for every x, y ∈ Lp ,
+                                                     Z
+                   ˜        ˜                  1
+                 kf (x) − f (y)kZ ≤                       kg̃ω (Sω (x)) − g̃ω (Sω (y))kZ dP ′ (ω)
+                                           P ′ (A′ ) A′
+                                                                       Z
+                                       ≤ O (log n)1/p kf kLip ·             kSω (x − y)k2 dP ′ (ω)
+                                                                          Ω
+                                                           
+                                                        1/p
+                                       = O (log n)             kf kLip · kx − ykp · EX,
+                                                          24
+
+and we conclude since for p > 1, EX = Cp < ∞.
+Remark 5.3. As stated in the introduction, it was asked in [17] and [18] whether for every
+Banach space X, supn en (L2 , X) < ∞. This is false since in [30] it was shown that for
+2 < p < ∞, e(L2 , Lp ) = ∞. We end by reproducing the argument from [30] (which is based on
+ideas from [25]) in such a way that we get quantitative lower bounds on en (L2 , ℓp ), 2 < p < ∞.
+Since we are essentially repeating the proof from [30], our argument will be somewhat sketchy.
+We claim that, for every integer n and every 2 < p < ∞,
+                                                       "              p−2  #
+                                                              log n      p2
+                                   en (L2 , Lp ) ≥ Ω                           .
+                                                            log log n
+                                                              1
+Proof (sketch). Fix an integer m and set ε = n1/2−1/p              . Let N be an ε net in the unit ball of
+ 2m
+ℓ2 , denoted B. By standard (crude) volume estimates |N | ≤ m2m . Consider the Mazur map
+f : ℓ2m       2m                           2/p sign(x ). From the numerical inequality |a2/p sign(a) −
+      2 → ℓp given by f (x)i = |xi |                   i
+                                                                                                            2/p
+b2/p sign(b)| ≤ 21−2/p |a − b|2/p it follows that for every x, y ∈ ℓ2m      2 , kf (x) − f (y)kp ≤ 2kx − yk2 .
+Since the elements of N are ε separated, the restriction of f to N is Lipschitz with constant
+2/ε1−2/p = 2m(1−2/p)(1/2−1/p) . Assume that it is possible to extend f |N to a function g : ℓ2m           2 →
+ℓp which is K Lipschitz. Since N is ε-dense in B, for every x ∈ B, kf (x)−g(x)kp ≤ Kε+2ε2/p .
+ 2m
+As in [30], by averaging g over all permutations and sign changes we arrive at a function h
+satisfying h(a1A ) = b1A for all scalars a and A ⊂ {1, . . . , 2m}, where b depends only on the
+a and the cardinality of A. Additionally, h is K Lipschitz, and since f is invariant under
+permutations and changes of sign of the coordinates, for every x ∈ B, kh(x) P                 − f (x)kp ≤ Kε +
+2ε2/p . Setting xk = √2m 1
+                            1{k,...,k+m−1} it follows that kh(xm+1 ) − h(x1 )kpp = m            k=1 kh(xk+1 ) −
+h(xk )kpp , and since h is K-Lipschitz we get the estimate kh(xm+1 ) − h(x1 )kp ≤                   K
+                                                                                                m1/2−1/p
+                                                                                                         = Kε.
+On the other hand,
+              2Kε + 2ε2/p ≥ kh(xm+1 ) − f (xm+1 )kp + kh(x1 ) − f (x1 )kp
+                             ≥ kf (xm+1 ) − f (x1 )kp − kh(xn+1 ) − h(x1 )kp ≥ 1 − Kε.
+This implies that
+                n the ratio between K and          othe Lipschitz constant of f is at least K/(2ε2/p−1 ) =
+                                                 2
+Ω(ε−2/p ) = Ω [(log n)/(log log n)](2−p)/p , where n = m2m ≥ |N |.
+6      Appendix: Passing to arbitrary barycentric target spaces
+In order to deal with barycentric metric spaces it is convenient to introduce the following
+variant of the notion of a gentle partition of unity. Let (Y, d) be a metric space, X a subspace
+of Y and (Ω, F, µ) a measure space. Given K, L > 0 we shall say that a function Ψ : Ω × Y →
+[0, ∞) is a (K, L)-gentle partition of unity with respect to X if the following conditions hold
+true:
+                                                                                        R
+    1. For every x ∈ Y \ X the function ω 7→ Ψ(ω, x) is measurable and Ω Ψ(ω, x)dµ(ω) = 1.
+    2. There exists a Borel measurable function γ : Ω → X such that for every x, y ∈ Y ,
+       diam({x, y} ∪ {γ(ω) : Ψ(ω, x) + Ψ(ω, y) > 0}) ≤ K · [d(x, y) + max{d(x, X), d(y, X)}],
+                                                         25
+
+    3. For every x, y ∈ Y , x 6= y,
+                Z
+                                                                         d(x, y)
+                    |Ψ(ω, x) − Ψ(ω, y)| dµ(ω) ≤ L ·                                         .
+                  Ω                                        d(x, y) + max{d(x, X), d(y, X)}
+     The following lemma is a variant of Lemma 2.1
+Lemma 6.1. Let (Y, dY ) be a metric space and X a subspace of Y . Fix K, L > 0 and assume
+that Y admits a (K, L)-gentle partition of unity Ψ : Ω × Y → [0, ∞) with respect to X. Let
+(Z, dZ ) be a complete barycentric metric space and β > β(Z). Then every Lipschitz function
+f : X → Z can be extended to a function f˜ : Y → Z such that kf˜kLip ≤ β max{KL, 2K + 2}.
+Proof. As in the proof of Lemma 2.1, we may assume that X is closed. Let c : Mbounded         Z   →Z
+be a mapping satisfying the conditions of Definition 1.14 and let γ : Ω → X be as in condition 2
+above.
+     For every x ∈ Y \ X define νx ∈ Mbounded Z          by
+                                             Z
+                                   νx (A) =                   Ψ(ω, x)dµ(ω).
+                                              γ −1 (f −1 (A))
+In other words, νx is the pullback of the probability measure Ψ(·, x)dµ under the mapping
+f ◦ γ. For x ∈ X we define νx = δf (x) . Finally, for x ∈ Y set f˜(x) = c(νx ). Clearly f˜ is an
+extension of f .
+     If x, y ∈ Y then by (1),
+                      dZ (f˜(x), f˜(y)) ≤ β · diam(supp(νx + νy )) · kνx − νy kT V .
+Now, if x, y ∈ Y \ X then
+             diam(supp(νx + νy )) ≤ kf kLip · diam({γ(ω) : Ψ(ω, x) + Ψ(ω, y) > 0})
+                                       ≤ kf kLip · K · [d(x, y) + max{d(x, X), d(y, X)}].
+and
+                      Z
+                                                                              d(x, y)
+     kνx − νy kT V ≤      |Ψ(ω, x) − Ψ(ω, y)|dµ(y) ≤ L ·                                        .
+                       Ω                                        d(x, y) + max{d(x, X), d(y, X)}
+This implies that for x, y ∈ Y \ X,
+                                     dZ (f˜(x), f˜(y)) ≤ βKL · kf kLip .
+It remains to deal with the case x ∈ X and y ∈ Y \X. In this case set Γ = {γ(ω) : Ψ(ω, y) > 0}.
+Condition 2 (applied with x = y) implies that diam({y} ∪ Γ) ≤ Kd(y, X). In particular,
+d(x, Γ) ≤ d(x, y) + d(y, Γ) ≤ d(x, y) + Kd(y, X) ≤ (K + 1)d(x, y). It follows that
+             diam(supp(νx + νy )) ≤ kf kLip · diam({x, y} ∪ Γ) ≤ kf kLip (K + 1)d(x, y).
+On the other hand, kνx − νy kT V ≤ 2, and the required result follows.
+     The following theorem is a simple variant of Theorem 4.1, adapted to the case of (K, L)
+gentle partitions of unity.
+                                                       26
+
+Theorem 6.2. For every ε, δ ∈ (0, 1), every metric space (Y, d) and every subspace X ⊆ Y
+the following assertions hold true:
+   1. If for every n ∈ Z, Y admits an (ε, δ)-thick                  n
+                                                    36 680
+                                                             2 -bounded stochastic decomposition with
+        respect to X, then Y also admits a ε , δ -gentle partition of unity with respect to X.
+   2. If for every n ∈ Z, Y admits an (ε, δ)-padded                 n
+                                                    36 680
+                                                             2 -bounded stochastic decomposition with
+        respect to X, then Y also admits a ε , δ -gentle partition of unity with respect to X.
+   3. If for every n ∈ Z, Y admits an (ε, δ)-separating 2n -bounded                     stochastic decomposition
+                                                                               ε
+        with respect to X, then Y also admits a 36          ε  , 160     1  +  δ    -gentle  partition of unity with
+        respect to X.
+Proof. Since the proof is a straightforward modification of the proof of Theorem 4.1, we will
+only sketch the necessary changes. As before, for every n ∈ Z let (Ωn , µn , {Γin (·), γni (·)}i∈I )
+be a 2n -bounded stochastic decomposition of Y with respect to X. Let ϕ :                           R → R   + be any
+                                         1                                                             d(x,X)
+2-Lipschitz map with supp(ϕ) ⊂ [ 2 , 4] and ϕ ≡ 1 on [1, 2]. Define ϕn (x) = ϕ ε2n−3 and let
+(Ω, µ) be the disjoint union of {I × Ωn }n∈Z (where the measure on I is the counting measure).
+The partition of unity which we construct has the following form: For every n ∈ Z, ω ∈ Ωn ,
+i ∈ I and x ∈ Y denote:
+                                               1
+                               Ψ(i, ω, x) =         θn (x)ϕn (x)1Γin (ω) (x),                                     (26)
+                                             S(x) ω
+where for every n ∈ Z and x ∈ Y the function ω 7→ θωn (x) ∈ [0, ∞) is µn -integrable and
+                    XXZ                                                     X            Z
+                                  n
+          S(x) =                 θω (x)ϕn (x)1Γin (ω) (x) dµn (ω) =              ϕn (x)       θωn (x) dµn (ω).
+                    n∈Z i∈I   Ωn                                            n∈Z            Ωn
+Additionally define γ(i, ω) = γni (ω). Fix n ∈ Z, ω ∈ Ω              n , i ∈ I and assume that x ∈ Y is such
+that Ψ(i, ω, x) > 0. Then x ∈ Γin (ω) and d(x, X) ∈ ε2n−4 , ε2n−1 . Since d(γni (ω), Γin (ω)) <
+2d(X, Γin (ω)) ≤ 2d(x, X) there is x′ ∈ Γin (ω) for which d(γni (ω), x′ ) < 2d(x, X). Hence,
+                                                                                        
+       i                                  i                             n             16                  18
+  d(γn (ω), x) ≤ 2d(x, X) + diam(Γn (ω)) ≤ 2d(x, X) + 2 ≤ 2 +                               d(x, X) ≤ d(x, X).
+                                                                                       ε                   ε
+Similarly, if m ∈ Z, ω ′ ∈ Ωm , j ∈ I are such that Ψ(j, ω ′ , y) > 0 for some y ∈ Y then
+                                                            18
+                                            j
+                                         d(γm (ω ′ ), y) ≤       d(y, X).
+                                                              ε
+It follows that
+                                    18              18                  36
+ d(γni (ω), γm
+             j
+               (ω ′ )) ≤ d(x, y) +     d(x, X) + d(y, X) ≤                  (d(x, y) + max{d(x, X), d(y, X)}) .
+                                     ε               ε                   ε
+Hence,
+                                                                         36
+diam ({x, y} ∪ {γ(i, ω) : Ψ(i, ω, x) + Ψ(i, ω, y) > 0}) ≤                    (d(x, y) + max{d(x, X), d(y, X)}) .
+                                                                          ε
+    It is therefore enough to show that:
+    XXZ                                                    680                         d(x, y)
+                   |Ψ(i, ω, x) − Ψ(i, ω, y)| dµn (ω) ≤            ·                                            ,
+               Ωn                                           δ d(x, y) + max{d(x, X), d(y, X)}
+    n∈Z i∈I
+                                                        27
+
+when the decompositions are either (ε, δ)-padded or (ε, δ)-thick and
+XXZ                                                       ε                d(x, y)
+            |Ψ(i, ω, x) − Ψ(i, ω, y)| dµn (ω) ≤ 160 1 +       ·                                  ,
+         Ωn                                                δ    d(x, y) + max{d(x, X), d(y, X)}
+n∈Z i∈I
+when the decompositions are (ε, δ)-separating. From here on the proof is exactly as in the
+proof of Theorem 4.1.
+    Lemma 6.1, Theorem 6.2 and the results of Section 3.2 imply the extension results stated
+in the introduction, in the case when the target space Z is a complete barycentric metric
+space. The above argument does not yield a similar generalization of Theorem 1.10, since
+the construction of Theorem 4.3 does not imply a satisfactory bound as in condition 2 in the
+definition of a (K, L) gentle partition of unity. An inspection of the proof of Lemma 2.1 shows
+that we have only used the following property of the Banach space Z: There exists a map
+c : Mbounded
+       Z       → Z such that c(δz ) = z for every z ∈ Z and for every µ, ν ∈ Mbounded    Z       and
+p ∈ Z,
+                                               Z
+                           dZ (c(µ), c(ν)) ≤ C     d(p, z)d|µ − ν|(z),                          (27)
+                                                Z
+where C is a constant (depending on Z). This inequality holds true in Banach spaces due to
+the identity             Z             Z             Z
+                             zdµ(z) −      zdν(z) = (z − p)d(µ − ν)(z).
+                          Z              Z             Z
+All the results presented in this paper extend to target spaces satisfying (27) (using K-gentle
+partitions of unity), and it would be of interest to find a wider class of spaces with this property.
+References
+ [1] K. Ball. Markov chains, Riesz transforms and Lipschitz maps. Geom. Funct. Anal.,
+     2:137–172, 1992.
+ [2] Y. Bartal. Probabilistic approximation of metric spaces and its algorithmic applications.
+     In Proceedings of the 37th Annual Symposium Foundations of Computer Science, 1998.
+ [3] Y. Benyamini and J. Lindenstrauss. Geometric nonlinear functional analysis. Vol. 1,
+     volume 48 of American Mathematical Society Colloquium Publications. American Math-
+     ematical Society, Providence, RI, 2000.
+ [4] Y. Brudnyi and P. Shvartsman. Stability of the Lipschitz extension property under metric
+     transforms. Geom. Funct. Anal., 12(1):73–79, 2002.
+ [5] S. Buyalo and V. Schroeder. Extension of Lipschitz maps into 3-manifolds. Asian J.
+     Math., 5(4):685–704, 2001.
+ [6] G. Calinescu, H. Karloff, and Y. Rabani. Approximation algorithms for the 0-extension
+     problem. In Proceedings of the 12th Annual ACM-SIAM Symposium on Discrete Algo-
+     rithms. ACM, 2001.
+                                                 28
+
+ [7] M. Charikar, C. Chekuri, A. Goel, S. Guha, and S. A. Plotkin. Approximating a finite
+     metric by a small number of tree metrics. In Proceedings of the 39th Annual Symposium
+     on Foundations of Computer Science, 1998.
+ [8] J. Fakcharoenphol, C. Harrelson, S. Rao, and K. Talwar. An improved approximation
+     algorithm for the 0-extension problem. In Proceedings of the 14th Annual ACM-SIAM
+     Symposium on Discrete Algorithms. ACM, 2003.
+ [9] J. Fakcharoenphol, S. Rao, and K. Talwar. A tight bound on approximating arbitrary
+     metrics by tree metrics. In 35th Annual ACM Symposium on Theory of Computing. ACM,
+     2003.
+[10] J. Fakcharoenphol and K. Talwar. An improved decomposition theorem for graphs exclud-
+     ing a fixed minor. In 7th International Workshop on Randomization and Approximation
+     Techniques in Computer Science. Springer-Verlag, 2003.
+[11] M. Gromov. Asymptotic invariants of infinite groups. In Geometric group theory, Vol.
+     2 (Sussex, 1991), volume 182 of London Math. Soc. Lecture Note Ser., pages 1–295.
+     Cambridge Univ. Press, Cambridge, 1993.
+[12] M. Gromov. Metric structures for Riemannian and non-Riemannian spaces. Birkhäuser,
+     Boston, 1999.
+[13] M. Gromov. Random walk in random groups. Geom. Funct. Anal., 13:73–146, 2003.
+[14] A. Gutpa, R. Krauthgamer, and J. R. Lee. Bounded geometries, fractals, and low-
+     distortion embeddings. In Proceedings of the 44th Annual Symposium on Foundations
+     of Computer Science, 2003.
+[15] J. Heinonen. Lectures on analysis on metric spaces. Universitext. Springer-Verlag, New
+     York, 2001.
+[16] F. John. Extremum problems with inequlities as subsidiary conditions. Courant Anniver-
+     sary Volume. Interscience, New York, pages 187–204–245, 1948.
+[17] W. B. Johnson and J. Lindenstrauss. Extensions of Lipschitz mappings into a Hilbert
+     space. In Conference in modern analysis and probability (New Haven, Conn., 1982),
+     volume 26 of Contemp. Math., pages 189–206. Amer. Math. Soc., Providence, RI, 1984.
+[18] W. B. Johnson, J. Lindenstrauss, and G. Schechtman. Extensions of Lipschitz maps into
+     Banach spaces. Israel J. Math., 54(2):129–138, 1986.
+[19] M. D. Kirszbraun. Über die zusammenziehenden und Lipschitzchen Transformationen.
+     Fund. Math., (22):77–108, 1934.
+[20] P. Klein, S. A. Plotkin, and S. Rao. Excluded minors, network decomposition, and
+     multicommodity flow. In 25th Annual ACM Symposium on Theory of Computing, pages
+     682–690, May 1993.
+[21] K. Kuratowski and C. Ryll-Nardzewski. A general theorem on selectors. Bull. Acad.
+     Polon. Sci. Sér. Sci. Math. Astron. Phys., 13:397–403, 1965.
+                                              29
+
+[22] U. Lang. Extendability of large-scale Lipschitz maps.         Trans. Amer. Math. Soc.,
+     351(10):3975–3988, 1999.
+[23] U. Lang, B. Pavlović, and V. Schroeder. Extensions of Lipschitz maps into Hadamard
+     spaces. Geom. Funct. Anal., 10(6):1527–1553, 2000.
+[24] J. R. Lee and A. Naor. Absolute Lipschitz extendability. C. R. Acad. Sci. Paris, to
+     appear, 2003.
+[25] J. Lindenstrauss. On nonlinear projections in Banach spaces. Michigan Math. J., 11:263–
+     287, 1964.
+[26] N. Linial and M. Saks. Low diameter graph decompositions. Combinatorica, 13(4):441–
+     454, 1993.
+[27] M. B. Marcus and G. Pisier. Characterizations of almost surely continuous p-stable
+     random Fourier series and strongly stationary processes. Acta Math., 152(3-4):245–301,
+     1984.
+[28] J. Matoušek. Extension of Lipschitz mappings on metric trees. Comment. Math. Univ.
+     Carolin., 31(1):99–104, 1990.
+[29] B. Mohar and C. Thomassen. Graphs on surfaces. Johns Hopkins Studies in the Mathe-
+     matical Sciences. Johns Hopkins University Press, Baltimore, MD, 2001.
+[30] A. Naor. A phase transition phenomenon between the isometric and isomorphic extension
+     problems for Hölder functions between Lp spaces. Mathematika, 48:253–271, 2001.
+[31] S. Rao. Small distortion and volume preserving embeddings for planar and Euclidean
+     metrics. In Proceedings of the 15th Annual Symposium on Computational Geometry,
+     pages 300–306. ACM, 1999.
+[32] N. Robertson and P. D. Seymour. Graph minors. VIII. A Kuratowski theorem for general
+     surfaces. J. Combin. Theory Ser. B, 48(2):255–288, 1990.
+[33] L. Silberman. Addendum to ”Random walk in random groups” by M. Gromov. Geom.
+     Funct. Anal., 13:147–177, 2003.
+[34] I. G. Tsar′ kov. Extension of Hilbert-valued Lipschitz mappings. Vestnik Moskov. Univ.
+     Ser. I Mat. Mekh., (6):9–16, 72, 1999.
+[35] J. H. Wells and L. R. Williams. Embeddings and extensions in analysis. Springer-Verlag,
+     New York, 1975. Ergebnisse der Mathematik und ihrer Grenzgebiete, Band 84.
+[36] H. Whitney. Analytic extension of differentiable functions defined in closed sets. Trans.
+     Amer. Math. Soc., 36:63–89, 1934.
+[37] H. Whitney. Differentiable functions defined in closed sets I. Trans. Amer. Math. Soc.,
+     36:369–387, 1934.
+                                              30
+

@@ -1,0 +1,1184 @@
+                                               Selecting the independent coordinates of manifolds
+                                                              with large aspect ratios
+                                                                   Yu-Chia Chen                                      Marina Meilă
+                                                  Department of Electrical & Computer Engineering               Department of Statistics
+arXiv:1907.01651v2 [stat.ML] 29 Aug 2019
+                                                             University of Washington                           University of Washington
+                                                                 Seattle, WA 98195                                 Seattle, WA 98195
+                                                                yuchaz@uw.edu                                       mmp2@uw.edu
+                                                                                         Abstract
+                                                    Many manifold embedding algorithms fail apparently when the data manifold has
+                                                    a large aspect ratio (such as a long, thin strip). Here, we formulate success and
+                                                    failure in terms of finding a smooth embedding, showing also that the problem
+                                                    is pervasive and more complex than previously recognized. Mathematically, suc-
+                                                    cess is possible under very broad conditions, provided that embedding is done by
+                                                    carefully selected eigenfunctions of the Laplace-Beltrami operator ∆. Hence, we
+                                                    propose a bicriterial Independent Eigencoordinate Selection (IES) algorithm that
+                                                    selects smooth embeddings with few eigenvectors. The algorithm is grounded in
+                                                    theory, has low computational overhead, and is successful on synthetic and large
+                                                    real data.
+                                           1   Motivation
+                                           We study a well-documented deficiency of manifold learning algorithms. Namely, as shown in
+                                           [GZKR08], algorithms that find their output Y = ϕ(X) by minimizing a quadratic form under some
+                                           normalization constraints, fail spectacularly when the data manifold has a large aspect ratio, that is,
+                                           it extends much more in one direction than in others, as the long, thin strip illustrated in Figure 1.
+                                           This class, called output normalized (ON) algorithms, includes Locally Linear Embedding (LLE),
+                                           Laplacian Eigenmap, Local Tangent Space Alignment (LTSA), Hessian Eigenmaps (HLLE), and
+                                           Diffusion maps. The problem, often observed in practice, was formalized in [GZKR08] as failure
+                                           to find an Y affinely equivalent to X. They give sufficient conditions for failure, using a linear
+                                           algebraic perspective. The conditions show that, especially when noise is present, the problem is
+                                           pervasive.
+                                           In the present paper, we revisit the problem from a differential geometric perspective. First, we de-
+                                           fine failure not as distortion, but as drop in the rank of the mapping φ represented by the embedding
+                                           algorithm. In other words, the algorithm fails when the map φ is not invertible, or, equivalently,
+                                           when the dimension dim φ(M) < dim M = d, where M represents the idealized data manifold,
+                                           and dim denotes the intrinsic dimension. Figure 1 demonstrates that the problem is fixed by choos-
+                                           ing the eigenvectors with care. In fact, as we show in Section 6, it is known [Bat14] that for the
+                                           DM and LE algorithms, under mild geometric conditions, one can always find a finite set of m
+                                           eigenfunctions that provide a smooth d-dimensional map. We call this problem the Independent
+                                           Eigencoordinate Selection (IES) problem, formulate it and explain its challenges in Section 3.
+                                           Our second main contribution (Section 4) is to design a bicriterial method that will select from a set
+                                           of coordinate functions φ1 , . . . φm , a subset S of small size that provides a smooth full-dimensional
+                                           embedding of the data. The IES problem requires searching over a combinatorial number of sets. We
+                                           show (Section 4) how to drastically reduce the computational burden per set for our algorithm. Third,
+                                           we analyze the proposed criterion under asymptotic limit (Section 6). Finally (Section 7), we show
+                                           Preprint. Under review.
+
+examples of successful selection on real and synthetic data. The experiments also demonstrate that
+users of manifold learning for other than toy data must be aware of the IES problem and have tools
+for handling it. Notations table, proofs, a library of hard examples, extra experiments and analyses
+are in Supplements A–G; Figure/Table/Equation references with prefix S are in the Supplement.
+2      Background on manifold learning
+Manifold learning (ML) and intrinsic geometry Suppose we observe data X ∈ Rn×D , with data
+points denoted by xi ∈ RD ∀ i ∈ [n], that are sampled from a smooth1 d-dimensional submanifold
+M ⊂ RD . Manifold Learning algorithms map xi , i ∈ [n] to yi = φ(xi ) ∈ Rs , where d ≤ s  D,
+thus reducing the dimension of the data X while preserving (some of) its properties. Here we present
+the LE/DM algorithm, but our results can be applied to other ML methods with slight modification.
+The first two steps of LE/DM [CL06, NLCK06] algorithms are generic; they are performed by most
+ML algorithms. First we encode the neighborhood relations in a neighborhood graph, which is an
+undirected graph G(V, E) with vertex set V be the collection of all points i ∈ [n] and edge set
+E be the collections of tuple (i, j) ∈ V 2 such that i is j’s neighbor (and vice versa). Common
+methods for building neighborhood graphs include r-radius graph and k-nearest neighbor graph.
+Readers are encouraged to refer to [HAvL07, THJ10] for details. In this paper, r-radius graph are
+considered, for which principled methods to select the neighborhood size and dimension exist. For
+such method, the edge set E of the neighborhood graph is constructed as follow: E = {(i, j) ∈
+V 2 : kxi − xj k2 ≤ r}. Closely                     neighborhood graph is the kernel matrix K ∈ R
+                                       related to the                                                  n×n
+                                           kx −x k
+whose elements are Kij = exp − iε2 j                   if (i, j) ∈ E and 0 otherwise. Typically, the radius
+r and the bandwidth parameter ε are related by r = cε with c a small constant greater than 1,
+e.g., c ∈ [3, 10]. This ensures that K is close to its limit when r → ∞ while remaining sparse, with
+sparsity structure induced by the neighborhood graph. Having obtained the kernel matrix K, we then
+construct the renormalized graph Laplacian matrix L [CL06], also called the sample Laplacian, or
+Diffusion Maps Laplacian, by the following: L = In −W̃−1 W−1 KW−1 , where W = diag(K1n )
+with 1n be all one vectors and W̃ = diag W−1 KW−1 1n . The method of constructing L as
+described above guarantees that if the data are sampled from a manifold M, L converges to ∆M
+[HAvL05, THJ10]. A summary of the construction of L can be found in Algorithm S2 L APLACIAN.
+The last step of LE/DM algorithm embeds the data by solving the minimum eigen-problem of L. The
+desired m dimensional embedding coordinates are obtained from the second to m + 1-th principal
+eigenvectors of graph Laplacian L, with 0 = λ0 < λ1 ≤ . . . ≤ λm , i.e., yi = (φ1 (xi ), . . . φm (xi ))
+(see also Supplement B).
+To analyze ML algorithms, it is useful to consider the limit of the mapping φ when the data is the
+entire manifold M. We denote this limit also by φ, and its image by φ(M) ∈ Rm . For standard
+algorithms such as LE/DM, it is known that this limit exists [CL06, BN07, HAvL05, HAvL07,
+THJ10]. One of the fundamental requirements of ML is to preserve the neighborhood relations in
+the original data. In mathematical terms, we require that φ : M → φ(M) is a smooth embedding,
+i.e., that φ is a smooth function (i.e. does not break existing neighborhood relations) whose Jacobian
+Dφ(x) is full rank d at each x ∈ M (i.e. does not create new neighborhood relations).
+The pushforward Riemannian metric A smooth φ does not typically preserve geometric quanti-
+ties such as distances along curves in M. These concepts are captured by Riemannian geometry, and
+we additionally assume that (M, g) is a Riemannian manifold, with the metric g induced from RD .
+One can always associate with φ(M) a Riemannian metric g∗φ , called the pushforward Riemannian
+metric [Lee03], which preserves the geometry of (M, g); g∗φ is defined by
+                 hu, vig∗φ (x) = Dφ−1 (x)u, Dφ−1 (x)v           g(x)
+                                                                     for all u, v ∈ Tφ(x) φ(M)          (1)
+In the above, Tx M, Tφ(x) φ(M) are tangent subspaces, Dφ−1 (x) maps vectors from Tφ(x) φ(M)
+to Tx M, and h, i is the Euclidean scalar product. For each φ(xi ), the associated push-forward Rie-
+mannian metric expressed in the coordinates of Rm , is a symmetric, semi-positive definite m × m
+matrix G(i) of rank d. The scalar product hu, vig∗φ (xi ) takes the form u> G(i)v. Given an em-
+bedding Y = φ(X), G(i) can be estimated by Algorithm 1 (RM ETRIC) of [PM13]. The RM ET-
+RIC algorithm also returns the co-metric H(i), which is the pseudo-inverse of the metric G(i), and
+    1
+      In this paper, a smooth function or manifold will be assumed to be of class at least C 3 .
+                                                         2
+
+    its Singular Value Decomposition Σ(i), U(i) ∈ Rm×d . The latter represents an orthogonal basis of
+    Tφ(x) (φ(M)).
+    Algorithm 1: RM ETRIC
+    Input : Embedding Y ∈ Rn×m , Laplacian L, intrinsic dimension d
+1   for all yi ∈ Y, k = 1 → m, l = 1 → m do
+                   P
+2       [H̃(i)]kl = j6=i Lij (yjl − yil )(yjk − yik )
+3   end
+4   for i = 1 → n do
+5       U(i), Σ(i) ← R EDUCED R ANK SVD(H̃(i), d)
+6       H(i) = U(i)Σ(i)U(i)>
+7       G(i) = U(i)Σ−1 (i)U(i)>
+8   end
+    Return: G(i), H(i) ∈ Rm×m , U(i) ∈ Rm×d , Σ(i) ∈ Rd×d , for i ∈ [n]
+    3   IES problem, related work, and challenges
+    An example Consider a continuous two di-             1                         1
+    mensional strip with width W , height H,
+    and aspect ratio W/H ≥ 1, parametrized               φ1,1
+                                                         0                         0φ1,1
+    by coordinates w ∈ [0, W ], h ∈ [0, H].
+    The eigenvalues and eigenfunctions of the           −1                        −1
+                                                           −1       0      1         −1       0         1
+    Laplace-Beltrami operator ∆ with von Neu-                     φ1,0                       φ1,0
+    mann boundary conditions [Str07] are λk1 ,k2 =
+                                                                (a)                        (b)
+      k1 π 2
+                     2
+             + kH 2π
+          
+       W                , respectively φk1 ,k2 (w, h) =
+    cos k1Wπw cos k2Hπh . Eigenfunctions φ1,0 , Figure 1: (a) Eigenfunction φ1,0 versus φ2,0
+                            
+    φ0,1 are in bijection with the w, h coordinates (curve) or φ0,1 (two dimensional manifold). (b)
+    (and give a full rank embedding), while the Eigenfunction φ1,0 versus φ1,1 . All three mani-
+    mapping by φ1,0 , φ2,0 provides no extra infor- folds are colored by the parameterization h.
+    mation regarding the second dimension h in the underlying manifold (and is rank 1). Theoretically,
+    one can choose as coordinates eigenfunctions indexed by (k1 , 0), (0, k2 ), but, in practice, k1 , and
+    k2 are usually unknown, as the eigenvalues are index by their rank 0 = λ0 < λ1 ≤ λ2 ≤ · · · .
+    For a two dimensional strip, it is known [Str07] that λ1,0 always corresponds to λ1 and λ0,1 cor-
+    responds to λ(dW/He) . Therefore, when W/H > 2, the mapping of the strip to R2 by φ1 , φ2 is
+    low rank, while the mapping by φ1 , φdW/He is full rank. Note that other mappings of rank 2 exist,
+    e.g., φ1 , φdW/He+2 (k1 = k2 = 1 in Figure 1b). These embeddings reflect progressively higher
+    frequencies, as the corresponding eigenvalues grow larger.
+    Prior work [GZKR08] is the first work to give the IES problem a rigurous analysis. Their paper
+    focuses on rectangles, and the failure illustrated in Figure 1a is defined as obtaining a mapping Y =
+    φ(X) that is not affinely equivalent with the original data. They call this the Price of Normalization
+    and explain it in terms of the variances along w and h. [DTCK18] is the first to frame the failure
+    in terms of the rank of φS = {φk : k ∈ S ⊆ [m]}, calling it the repeated eigendirection problem.
+    They propose a heuristic, LLRC OORD S EARCH, based on the observation that if φk is a repeated
+    eigendirection of φ1 , · · · , φk−1 , one can fit φk with local linear regreesion on predictors φ[k−1] with
+    low leave-one-out errors rk .
+    Existence of solution Before trying to find an algorithmic solution to the IES problem, we ask
+    the question whether this is even possible, in the smooth manifold setting. Positive answers are
+    given in [Por16], which proves that isometric embeddings by DM with finite m are possible, and
+    more recently in [Bat14], which proves that any closed, connected Riemannian manifold M can be
+    smoothly embedded by its Laplacian eigenfunctions φ[m] into Rm for some m, which depends only
+    on the intrinsic dimension d of M, the volume of M, and lower bounds for injectivity radius and
+    Ricci curvature. The example in Figure 1a demonstrates that, typically, not all m eigenfunctions
+                                                        3
+
+are needed. I.e., there exists a set S ⊂ [m], so that φS is also a smooth embedding. We follow
+[DTCK18] in calling such a set S independent. It is not known how to find an independent S
+analytically for a given M, except in special cases such as the strip. In this paper, we propose a
+finite sample and algorithmic solution, and we support it with asymptotic theoretical analysis.
+The IES Problem We are given data X, and the output of an embedding algorithm (DM for sim-
+plicity) Y = φ(X) = [φ1 , · · · , φm ] ∈ Rn×m . We assume that X is sampled from a d-dimensional
+manifold M, with known d, and that m is sufficiently large so that φ(M) is a smooth embedding.
+Further, we assume that there is a set S ⊆ [m], with |S| = s ≤ m, so that φS is also a smooth
+embedding of M. We propose to find such set S so that the rank of φS is d on M and φS varies as
+slowly as possible.
+Challenges (1) Numerically, and on a finite sample, distiguishing between a full rank mapping
+and a rank-defective one is imprecise. Therefore, we substitute for rank the volume of a unit par-
+allelogram in Tφ(xi ) φ(M). (2) Since φ is not an isometry, we must separate the local distortions
+introduced by φ from the estimated rank of φ at x. (3) Finding the optimal balance between the
+above desired properties. (4) In [Bat14] it is strongly suggested that s the number of eigenfunc-
+tions needed may exceed the Whitney embedding dimension (≤ 2d) [Lee03], and that this number
+may depend on injectivity radius, aspect ratio, and so on. Section 5 shows an example of a flat
+2-manifold, the strip with cavity, for which s > 2. In this paper, we assume that s and m are given
+and focus on selecting S with |S| = s unless otherwise stated; for completeness, in Section 5 we
+present a heuristic to select s.
+(Global) functional dependencies, knots and crossings Before we proceed, we describe three
+different ways a mapping φ(M) can fail to be invertible. The first, (global) functional dependency
+is the case when rank Dφ < d on an open subset of M, or on all of M (yellow curve in Figure
+1a); this is the case most widely recognized in the literature (e.g., [GZKR08, DTCK18]). The knot
+is the case when rank Dφ < d at an isolated point (Figure 1b). Third, the crossing (Figure S8 in
+Supplement G) is the case when φ : M → φ(M) is not invertible at x, but M can be covered with
+open sets U such that the restriction φ : U → φ(U ) has full rank d. Combinations of these three
+exemplary cases can occur. The criteria and approach we define are based on the (surrogate) rank
+of φ, therefore they will not rule out all crossings. We leave the problem of crossings in manifold
+embeddings to future work, as we believe that it requires an entirely separate approach (based, e.g.,
+or the injectivity radius or density in the co-tangent bundle rather than differential structure).
+4     Criteria and algorithm
+4.1    A geometric criterion
+We start with the main idea in evaluating the quality of a subset S of coordinate functions. At
+each data point i, we consider the orthogonal basis U(i) ∈ Rm×d of the d dimensional tangent
+subspace Tφ(xi ) φ(M). The projection of the columns of U(i) onto the subspace Tφ(xi ) φS (M) is
+U(i)[S, :] ≡ US (i). The following Lemma connects US (i) and the co-metric HS (i) defined by
+φS , with the full H(i).
+Lemma 1. Let H(i) = U(i)Σ(i)U(i)> be the co-metric defined by embedding φ, S ⊆ [m], HS (i)
+and US (i) defined above. Then HS (i) = US (i)Σ(i)US (i)> = H(i)[S, S].
+The proof is straightforward and left to the reader. Note that Lemma 1 is responsible for the effi-
+ciency of the search over sets S, given that the push-forward co-metric HS can be readily obtained
+as a submatrix of H. Denote by uSk (i) the k-th column of US (i). We further  √     normalize each uSk
+                                                                                det(US (i)> US (i))
+to length 1 and define the normalized projected volume Volnorm (S, i) =         Qd        S         . Con-
+                                                                                  k=1 kuk (i)k2
+ceptually, Volnorm (S, i) is the volume spanned by a (non-orthonormal) “basis” of unit vectors in
+TφS (xi ) φS (M); Volnorm (S, i) = 1 when US (i) is orthogonal, and it is 0 when rank HS (i) < d.
+In Figure 1a, the Volnorm ({1, 2}) with φ{1,2} = {φ1,0 , φ2,0 } is close to zero, since the projec-
+tion of the two tangent vectors is parallel to the yellow curve; however Volnorm ({1, dw/he}, i)
+is almost 1, because the projections of the tangent vectors U(i) will be (approximately) orthogo-
+                                                    4
+
+nal. Hence, Volnorm (S, i) away from 0 indicates a non-singular φS at i, and we use the average
+log Volnorm (S, i), which penalizes values near 0 highly, as the rank quality R(S) of S.
+Higher frequency φS maps with high R(S) may exist, being either smooth, such as the embeddings
+of the strip mentioned previously, or containing knots involving only small fraction of points, such
+as φφ1,0 ,φ1,1 in Figure 1a. To choose the lowest frequency, slowest varying smooth map, a regular-
+ization term consisting of the eigenvalues λk , k ∈ S, of the graph Laplacian L is added, obtaining
+the criterion
+                          n                                         n    d
+                      1X                                       1 XX
+                                  q                                                           X
+            L(S; ζ) =        log det (US (i)> US (i)) −                     log kuSk (i)k2 −ζ     λk      (2)
+                      n i=1                                    n i=1
+                                                                       k=1                    k∈S
+                      |                {z                } |                {z              }
+                                     1
+                                       Pn                                 1
+                                                                            Pn
+                             R1 (S)= n   i=1 R1 (S;i)           R2 (S)= n     i=1  R2 (S;i)
+4.2     Search algorithm
+With this criterion, the IES problem Algorithm 2: I ND E IGEN S EARCH
+turns into a subset selection problem
+parametrized by ζ                                Input : Data X, bandwith ε, intrinsic dimension d,
+                                                          embedding dimension s, regularizer ζ
+    S∗ (ζ) =      argmax       L(S; ζ) (3)                   n×m
+              S⊆[m];|S|=s;1∈S                      1 Y ∈R           , L, λ ∈ Rm ←D IFF M AP(X, ε)
+                                                   2 U(i), · · · , U(n) ←RM ETRIC (Y, L, d)
+Note that we force the first coordinate φ1                         0              0
+                                                   3 for S ∈ {S ⊆ [m] : |S | = s, 1 ∈ S } do
+                                                                                               0
+to always be chosen, since this coordinate
+                                                   4     R1 (S) ← 0; R2 (S) ← 0
+cannot be functionally dependent on pre-
+vious ones, and, in the case of DM, it also        5     for i = 1, · · · , n do
+has lowest frequency. Note also that R1            6          US (i) ← U(i)[S, :]
+                                                                              1
+                                                                                 · log det US (i)> US (i)
+                                                                                                         
+and R2 are both submodular set function            7          R1 (S) += 2n
+(proof in Supplement C.1). For large s             8
+                                                                                     d
+                                                              R2 (S) += n1 · k=1 log kuSk (i)k2
+                                                                                  P
+and d, algorithms for optimizing over the
+difference of submodular functions can             9     end
+                                                                                              P
+be used (e.g., see [IB12]). For the experi-       10     L(S; ζ) = R1 (S) − R2 (S) − ζ k∈S λk
+ments in this paper, we have m = 20 and 11 end
+d, s = 2 ∼ 4, which enables us to use ex- 12 S∗ = argmaxS L(S; ζ)
+haustive search to handle (3). The exact Return: Independent eigencoordinates set S∗
+search algorithm is summarized in Algo-
+rithm 2 I ND E IGEN S EARCH. A greedy variant is also proposed and analyzed in Supplement D.
+4.3     Regularization path and choosing ζ
+According to (2), the optimal subset S∗ depends on the parameter ζ. The regularization path `(ζ) =
+                 P L(S; ζ) is the upper envelope of multiple lines (each correspond to a set S)
+maxS⊆[m];|S|=s;1∈S
+with slopes − k∈S λk and intercepts R(S). The larger ζ is, the more the lower frequency subset
+penalty prevails, and for sufficiently large ζ the algorithm will output [s]. In the supervised learning
+framework, the regularization parameters are often chosen by cross validation. Here we propose a
+second criterion, that effectively limits how much R(S) may be ignored, or alternatively, bounds ζ
+by a data dependent quantity. Define the leave-one-out regret of point i as follows
+         D(S, i) = R(S∗i ; [n]\{i}) − R(S; [n]\{i}) with S∗i = argmaxS⊆[m];|S|=s;1∈S R(S; i) (4)
+In the above, we denote R(S; T ) = |T1 | i∈T R1 (S; i) − R2 (S; i) for some subset T ⊆ [n]. The
+                                             P
+quantity D(S, i) in (4) measures the gain in R if all the other points [n]\{i} choose the optimal
+subset S∗i . If the regret D(S, i) is larger than zero, it indicates that the alternative choice  P might
+be better compared to original choice S. Note that the mean value for all i, i.e., n1 i D(S, i)
+depends also on the variability of the optimal choice of points i, S∗i . Therefore, it might not fa-
+vor an S, if S is optimal for every i ∈ [n]. Instead, we propose to inspect the distribution of
+D(S, i), and remove the sets S for which α’s percentile are larger than zero, e.g., α = 75%,
+recursively from ζ = ∞ in decreasing order. Namely, the chosen set is S∗ = S∗ (ζ 0 ) with
+ζ 0 = maxζ≥0 P ERCENTILE({D(S∗ (ζ), i)}ni=1 , α) ≤ 0. The optimal ζ∗ value is simply chosen to be
+the midpoint of all the ζ’s that outputs set S∗ i.e., ζ∗ = 21 (ζ 0 + ζ 00 ), where ζ 00 = minζ≥0 S∗ (ζ) =
+S∗ (ζ 0 ). The procedure R EGU PARAM S EARCH is summarized in Algorithm 3.
+                                                      5
+
+     Algorithm 3: R EGU PARAM S EARCH
+     Input : Threshold parameter α
+ 1   for ζ = ζmax → 0 do
+         . ζmax should be sufficiently large such that S∗ (ζmax ) = [s]
+ 2       S ← S∗ (ζ); S∗ ←NULL; ζ 00 ← NULL
+ 3       for i ∈ [n] do
+ 4            D(S, i) ← R(S∗i ; [n]\{i}) − R(S; [n]\{i}) from equation (4)
+ 5       end
+ 6       if P ERCENTILE({D(S, i)}ni=1 , α) ≤ 0 and S∗ = NULL then
+ 7            Optimal set S∗ ← S
+ 8            ζ 0 ← ζ . First found a set that satisfies the criterion.
+ 9       else if S∗ 6= NULL and S∗ = S∗ (ζ) then
+10            ζ 00 ← ζ . Searching for ζ 00
+11       else if S∗ 6= NULL and ζ 00 6= NULL and S∗ 6= S∗ (ζ) then
+12            ζ∗ ← 12 (ζ 0 + ζ 00 )
+13            break . Leave the loop when found ζ 00 = minζ≥0 S∗ (ζ 0 ) = S∗ (ζ)
+14       else
+15            continue
+16       end
+17   end
+     Return: Optimal set S∗ , optimal regularization parameter ζ∗
+                                                                                                          {1, 8}
+                                                                                                                                                  2
+                                                                                                                                                  0    D(S, i)
+                                                                                                                                                  −2
+                                                                                                          {1, 2}
+                                                                                                               10−10   10−7   10−4   10−1   102
+                                                                                                                                ζ
+                                               (a)                                      (b)         (c)                        (d)
+                         0.06
+     Normalized counts
+                         0.04
+                         0.02
+                         0.00
+                                0.0        0.2       0.4       0.6   0.8      1.0
+                                Pointwise unpenalized utlitiy – exp (R(S))
+                                      {1, 8}               {1, 10}         {1, 8, 10}
+                                                      (e)                                     (f)                       (g)
+     Figure 2: (a) Original data of D4 , swiss roll with hole dataset. Embeddings with coordinate subset to
+     be (b) S = {1, 8}, (c) S = {1, 10}, (f) S = {1, 8, 10} and (g) S = {1, 11} on D4 . (e) Histogram of
+     point-wise normalized projected volume on D4 for top two ranking of subsets (purple and yellow)
+     and the union of two sets (red) obtain from I ND E IGEN S EARCH algorithm.
+     5                          A heuristic to determine whether s is sufficiently large
+     In this section, we propose a heuristic method to determine whether the given s is large enough.
+     Our method is based on the histogram of Volnorm (S, i) = exp (R(S, i)), the normalized projected
+     volume of each point i. Recall that this volume is bounded between 0 and 1. Ideally, a perfect choice
+     of cardinality |S| will result in a concentration of mass in larger Volnorm region. The heuristic works
+     as follow: at first we check the histogram of unpenalized Volnorm on the top few ranked subsets in
+     terms of L. If spikes in the small Volnorm regions are witnessed in the histogram, taking the union
+                                                                                              6
+
+of the subsets and inspecting the histogram of unpenalized Volnorm on the combined set again. If
+spikes in small Volnorm region diminished, one can conclude that a larger cardinality size |S| is
+needed for such manifold.
+We illustrate the idea on swiss roll with hole dataset in Figure 2a. Figure 2b is the optimal subset of
+coordinates S∗ = {1, 8} selected by the proposed algorithm that best parameterize the underlying
+manifold. Figure 2d suggests one should eliminate S0 = {1, 2} because D(S0 , i) ≥ 0 for all the
+points by R EGU PARAM S EARCH. However, as shown in Figure 2b, though it has low frequency
+and having rank 2 for most of the places, set {1, 8} might not be suitable for data analysis for
+the very thin arms in left side of the embedding. Figure 2e is the histograms of the point-wise
+unpenalized Volnorm on different subsets. Purple and yellow curves correspond to the histogram of
+top two ranked subsets S from I ND E IGEN S EARCH. Both curves show a concentration of masses in
+small Volnorm region. The histogram of point-wise unpenalized Volnorm on {1, 8, 10} (red curve),
+which is the union of the aforementioned two subsets, shows less concentration in the small Volnorm
+region and implies that |S| = 3 might be a better choice for data analysis. Figure 2f shows the
+embedding with coordinate S = {1, 8, 10}, which represents a two dimensional strip embedded
+in three dimensional space. The thin arc in Figure 2b turns out to be a collapsed two dimensional
+manifold via projection, as shown in the upper right part of Figure 2f and left part of Figure 2c. Here
+we have to restate that the embedding in Figure 2b, although is a degenerated embedding, is still the
+best set one can choose for s = 2 such that the embedding varies slowest and has rank 2. However,
+choosing s = 3 might be better for data analysis.
+6     R as Kullbach-Leibler divergence
+In this section we analyze R in its population version, and show that it is reminiscent of a Kullbach-
+Leibler divergence between unnormalized measures on φS (M). The population version of the reg-
+ularization term takes the form of a well-known smoothness penalty on the embedding coordinates
+φS .
+Volume element and the Riemannian metric Consider a Riemannian manifold (M, g) mapped
+by a smooth embedding φS into (φS (M), g∗φS ), φS : M → Rs , where g∗φS is the push-forward
+metric defined
+          √     in (1). A Riemannian metric g induces a Riemannian measure on M, with volume
+element det g. Denote now by µM , respectively µφS (M) the Riemannian measures corresponding
+to the metrics induced on M, φS (M) by the ambient spaces RD , Rs ; let g be the former metric.
+Lemma 2. Let S, φ, φS , HS (x), US (x), Σ(x) be defined as in Section 4 and Lemma 1. For sim-
+plicity, we denote by HS (y) ≡ HS (φ−1  S (y)), and similarly for US (y), Σ(y). Assume that φS is a
+smooth embedding. Then, for any measurable function f : M → R,
+                      Z                    Z
+                          f (x)dµM (x) =           f (φ−1
+                                                       S (y))jS (y)dµφS (M) (y),                    (5)
+                        M                    φS (M)
+with
+                                                              1/2
+                                 jS (y) = 1/ Vol(US (y)ΣS (y)).                                     (6)
+Proof. Let µ∗φS (M) denote the Riemannian measure induced by g∗φS . Since (M, g) and
+(φS (M), g∗φS ) are isometric by definition, M f (x)dµM (x) = φS (M) f (φ−1                ∗
+                                              R                     R
+                                                                                S (y))dµφS (M) (y) =
+         f (φ−1
+R                   p
+  φS (M)     S (y)) det g∗φS (y)dµφS (M) (y) follows from the change of variable formula. It re-
+                                           p
+mains to find the expression of jS (y) = det g∗φS (y). The matrix US (y) (note that US (y) is not
+orthogonal) can be written as
+                                         US (y) = VQS (y)                                           (7)
+where V ∈ Rs×d is an orthogonal matrix and QS (y) ∈ Rd×d is upper triangular. Then,
+             HS (y) = US (y)Σ(y)US (y)> = VS (y) (QS (y)Σ(y)QS (y)> ) VS (y)> .                     (8)
+                                                         |          {z          }
+                                                                  H̃S (y)
+                                                   7
+
+In the above H̃S (y) is the co-metric expressed in the new coordinate system induced by VS (y).
+Hence, in the same basis, g∗φS is expressed by
+                            G̃S (y) = H̃S (y)−1 = (QS (y)Σ(y)QS (y)> )−1 .                                (9)
+The volume element, which is invariant to the chosen coordinate system, is
+                                                                  d
+                                                       −1/2     Y
+                     det QS (y)Σ(y)QS (y)>                    =      σk (y)−1/2 qS,kk (y)−1 .            (10)
+                                                                 k=1
+From (7), it follows also that
+                                                        −1/2           
+                                                                                        1/2
+                                                                                            
+                       det QS (y)Σ(y)QS (y)>                  = 1/ Vol US (y)Σ(y)                        (11)
+                                                                                                            
+Asymptotic limit of R We now study the first term of our criterion in the limit of infinite sample
+size. We make the following assumptions.
+Assumption 1. The manifold M is compact of class C 3 , and there exists a set S, with |S| = s so
+that φS is a smooth embedding of M in Rs .
+Assumption 2. The data are sampled from a distribution on M continuous with respect to µM ,
+whose density is denoted by p.
+Assumption 3. The estimate of HS in Algorithm 1 computed w.r.t. the embedding φS is consistent.
+We know from [Bat14] that Assumption 1 is satisfied for the DM/LE embedding. The remaining
+assumptions are minimal requirements ensuring that limits of our quantities exist. Now consider the
+setting in Sections 3, in which we have a larger set of eigenfunctions, φ[m] so that [m] contains the
+                                                      Qd                         −1
+set S of Assumption 1. Denote by ̃S (y) = k=1 ||uSk (y)||σk (y))1/2                   a new volume element.
+Theorem 3 (Limit of R). Under Assumptions 1–3,
+                                             1X
+                                      lim            ln R(S, xi ) = R(S, M),                             (12)
+                                     n→∞ n
+                                                  i
+and
+                             Z
+                                           jS (y)                                  def
+          R(S, M) = −                  ln           p(φ−1
+                                                        S (y))jS (y)dµφS (M) (y) = −D(pjS kp̃S )        (13)
+                               φS (M)      ̃S (y)
+Proof. Because φS is a smooth embedding, jS (y) > 0 on φS (M), and because M is compact,
+                                                                  Qd      −1/2
+minφS (M) jS (y) > 0. Similarly, noting that ̃S (y) ≥ k=1 σk (y), we conclude that ̃S (y) is
+also bounded away from 0 on M. Therefore ln jS (y) and ln ̃S (y) are bounded, and the integral in
+the r.h.s. of (13) exists and has a finite value. Now,
+                                                Z
+                     1X
+                            ln R(S, xi ) →            ln R(S, x)p(x)dµM (x) = R(S, M).                   (14)
+                    n i                           M
+        Z
+              ln R(S, x)p(x)dµM (x)                                                                        (15)
+          M
+        Z
+   =              ln R(φ−1              −1
+                           S (y))p(φS (y))jS (y)dµφS (M) (y)
+          φS (M)
+                "                                                Qd      1/2
+                                                                               #
+                  1 Vol U>                             p(φ−1
+                                                
+                                S (y)US (y)
+       Z
+                                                          S (y)    k=1 σk (y)
+   =                ln                             −             Qd      1/2
+                                                                                 p(φ−1 S (y))jS (y)dµφS (M) (y)
+                  2             ̃S (y)                   −1
+        φS (M)                                         p(φS (y) k=1 σk (y)
+                     jS (y)p(φ−1
+        Z
+                                 S (y)
+   =              ln             −1      p(φ−1S (y))jS (y)dµφS (M) (y) = −D(pjS kp̃S )                    (16)
+          φS (M)     ̃S (y)p(φS (y)
+                                                                                                            
+                                                           8
+
+                 Original data X             Embedding φS∗                  Regularization path
+                                                                       {1, 7}
+                                                                                                                                2
+       D1
+                                                                                                                                0     D(S, i)
+                                                                                                                                −2
+                                                                       {1, 2}
+                                                                            10−2          100           102            104
+                                                                                                    ζ
+                                                                       {1, 4, 5}
+                                                                                                                                1
+       D7
+                                                                                                                                      D(S, i)
+                                                                                                                                0
+                                                                       {1, 2, 4}
+                                                                                                                                −1
+                                                                       {1, 2, 3}
+                                                                               10−10      10−7     10−4         10−1     102
+                                                                                                        ζ
+       D13                                                             {1, 5, 6, 10}                                             4
+                                                                       {1, 2, 5, 10}                                             2
+                                                                                                                                      D(S, i)
+                                                                        {1, 2, 3, 5}                                             0
+                                                                                                                                 −2
+                                                                        {1, 2, 3, 4}
+                                                                                   10−2     10−1        100        101         102
+                                                                                                            ζ
+Figure 3: Experimental result for synthetic datasets. Rows correspond to different synthetic datasets
+(please refer to Table S2). Optimal subset S∗ is selected by I ND E IGEN S EARCH.
+Note that D(·k·) is a Kullbach-Leibler divergence, where the measures defined by pjS , p̃S normal-
+ize to different values; because jS ≥ ̃S the divergence D is always positive.
+It is known that λk , the k-th eigenvalue of the Laplacian, converges under certain technical condi-
+tions [BN07] to an eigenvalue of the Laplace-Beltrami operator ∆M and that
+                                                   Z
+                       λk (∆M ) = hφk , ∆M φk i =      k grad φk (x)k22 dµ(M).                  (17)
+                                                      M
+Hence, a smaller value for the regularization term encourages the use of slow varying coordinate
+functions, as measured by the squared norm of their gradients, as in equation (17). Hence, under
+Assumptions 1, 2, 3, L converges to
+                                                          ζ   X
+                       L(S, M) = −D(pjS kp̃S ) −                 λk (M).                   (18)
+                                                      λ1 (M)
+                                                                 k∈S
+The rescaling of ζ in comparison with equation (2) aims to make ζ adimensional, whereas the
+eigenvalues scale with the volume of M.
+7   Experiments
+We demonstrate the proposed algorithm on three synthetic datasets, one where the minimum em-
+bedding dimension s equals d (D1 long strip), and two (D7 high torus and D13 three torus) where
+s > d. The complete list of synthetic manifolds (transformations of 2 dimensional strips, 3 di-
+mensional cubes, two and three tori, etc.) investigated can be found in Supplement G and Table
+S2. The examples have (i) aspect ratio of at least 4 (ii) points sampled non-uniformly from the un-
+derlying manifold M, and (iii) Gaussian noise added. The sample size of the synthetic datasets is
+n = 10, 000 unless otherwise stated. Additionally, we analyze several real datasets from chemistry
+and astronomy. All embeddings are computed with the DM algorithm, which outputs m = 20 eigen-
+vectors. Hence, we examine 171 sets for s = 3 and 969 sets for s = 4. No more than 2 to 5 of these
+sets appear on the regularization path. Detailed experimental results are in Table S3. In this section,
+we show the original dataset X, the embedding φS∗ , with S∗ selected by I ND E IGEN S EARCH and
+ζ∗ from R EGU PARAM S EARCH, and the maximizer sets on the regularization path with box plots of
+D(S, i) as discussed in Section 4. The α threshold for R EGU PARAM S EARCH is set to 75%. All the
+experiments are replicated for more than 5 times, and the outputs are similar because of the large
+sample size n.
+                                                  9
+
+    (a) Embedding φ[3]          (b) L({1, i, j})        (c) φS1 = φ{1,4,6}      (d) φS2 = φ{1,5,7}
+  (e) L({1, 2}) = −1.24     (f) L({1, 3}) = −0.39    (g) Subset φ{1,2,5} by LLR      (h) rk vs. φk
+Figure 4: First row: Choloromethane dataset; second row: SDSS dataset in (e), (f) and (g), (h) show
+the example when LLR failed. (c) and (d) are embeddings with top two ranked subsets S1 and S2 ,
+colored by the distances between C and two different Cl – , respectively. (e) and (f) are embeddings
+of φ{1,2} (suboptimal set) and φ{1,3} (maximizer of L), respectively (values shown in caption).
+Synthetic manifolds The results of synthetic manifolds are in Figure 3. (i) Manifold with s = d.
+The first synthetic dataset we considered, D1 , is a two dimensional strip with aspect ratio W/H =
+2π. Left panel of the top row shows the scatter plot of such dataset. From the theoretical analysis
+in Section 3, the coordinate set that corresponds to slowest varying unique eigendirection is S =
+{1, dW/He} = {1, 7}. Middle panel, with S∗ = {1, 7} selected by I ND E IGEN S EARCH with ζ cho-
+sen by R EGU PARAM S EARCH, confirms this. The right panel shows the box plot of {D(S, i)}ni=1 .
+According to the proposed procedure, we eliminate S0 = {1, 2} since D(S0 , i) ≥ 0 for almost all
+the points. (ii) Manifold with s > d. The second data D7 is displayed in the left panel of the second
+row. Due to the mechanism we used to generate the data, the resultant torus is non-uniformly dis-
+tributed along the z axis. Middle panel is the embedding of the optimal coordinate set S∗ = {1, 4, 5}
+selected by I ND E IGEN S EARCH. Note that the middle region (in red) is indeed a two dimensional
+narrow tube when zoomed in. The right panel indicates that both {1, 2, 3} and {1, 2, 4} (median
+is around zero) should be removed. The optimal regularization parameter is ζ∗ ≈ 7. The result of
+the third dataset D13 , three torus, is in the third row of the figure. We displayed only projections
+of the penultimate and the last coordinate of original data X and embedding φS∗ (which is {5, 10})
+colored by α1 of (S7) in the left and middle panel to conserve space. A full combinations of coor-
+dinates can be found in Figure S5. The right panel implies one should eliminate the set {1, 2, 3, 4}
+and {1, 2, 3, 5} since both of them have more than 75% of the points such that D(S, i) ≥ 0. The
+first remaining subset is {1, 2, 5, 10}, which yields an optimal regularization parameter ζ∗ ≈ 5.
+Molecular dynamics dataset [FTP16] In SN2 reaction molecular dynamics of chloromethane
+[FTP16] dataset, two chloride atoms substitute with each other in different configurations/points
+xi as described in the following chemical equation CH3 Cl + Cl – ←−→ CH3 Cl + Cl – . The dataset
+exhibits some kind of clustering structure with a sparse connection between two clusters which
+represents the time when the substitution happened. The dataset has size n ≈ 30, 000 and ambient
+dimension D = 40, with the intrinsic dimension estimate be dˆ = 2 The embedding with coordinate
+set S = [3] is shown in Figure 4a. The first three eigenvectors parameterize the same directions,
+which yields a one dimensional manifold in the figure. Top view (S = [2]) of the figure is a u-
+shaped structure similar to the yellow curve in Figure 1a. The heat map of L({1, i, j}) for different
+combinations of coordinates in Figure 4b confirms that L for S = [3] is low and that φ1 , φ2 and
+φ3 give a low rank mapping. The heat map also shows high L values for S1 = {1, 4, 6} or S2 =
+{1, 5, 7}, which correspond to the top two ranked subsets. The embeddings with S1 , S2 are in
+Figures 4c and 4d, respectively. In this case, we obtain two optimal S sets due to the data symmetry.
+                                                    10
+
+Galaxy spectra from the Sloan Digital Sky survey (SDSS) 2 [AAMA+ 09], preprocessed as in
+[MMVZ16]. We display a sample of n = 50, 000 points from the first 0.3 million points which
+correspond to closer galaxies. Figures 4e and 4f show that the first two coordinates are almost
+dependent; the embedding with S∗ = {1, 3} is selected by I ND E IGEN S EARCH with d = 2. Both
+plots are colored by the blue spectrum magnitude, which is correlated to the number of young stars
+in the galaxy, showing that this galaxy property varies smoothly and non-linearly with φ1 , φ3 , but is
+not smooth w.r.t. φ1 , φ2 .
+Comparison with [DTCK18] The LLRC OORD S EARCH method outputs similar candidate coor-
+dinates as our proposed algorithm most of the time (see Table S3). However, the results differ for
+high torus as in Figure 4. Figure 4h is the leave one out (LOO) error rk versus coordinates. The
+coordinates chosen by LLRC OORD S EARCH was S = {1, 2, 5}, as in Figure 4g. The embedding is
+clearly shown to be suboptimal, for it failed to capture the cavity within the torus. This is because the
+algorithm searches in a sequential fashion; the noise eigenvector φ2 in this example appears before
+the signal eigenvectors e.g., φ4 and φ5 .
+Additional experiments with real data are shown in Table 1. Not surprisingly, for most real data
+sets we examined, the independent coordinates are not the first s. They also show that the algorithm
+scales well and is robust to the noise present in real data.
+Table 1: Results for other real datasets. Columns from left to right are sample size n, ambient
+dimension of data D, average degree of neighbor graph degavg , (s, d) and runtime for IES, and the
+chosen set S ∗ , respectively. Last three datasets are from [CTS+ 17].
+                                           n      D degavg (s, d) t (sec)                   S∗
+             SDSS (full)           298,511      3750   144.91     (2, 2)  106.05         (1, 3)
+             Aspirin               211,762       244   101.03     (4, 3)   85.11   (1, 2, 3, 7)
+             Ethanol               555,092       102   107.27     (3, 2)  233.16      (1, 2, 4)
+             Malondialdehyde       993,237        96   106.51     (3, 2)  459.53      (1, 2, 3)
+The asymptotic runtime of LLRC OORD S EARCH has quadratic dependency on n, while for our
+algorithm is linear in n. Details of runtime analysis are Supplement E. LLRC OORD S EARCH was
+too slow to be tested on the four larger datasets (see also Figure S1).
+8      Conclusion
+Algorithms that use eigenvectors, such as DM, are among the most promising and well studied in
+ML. It is known since [GZKR08] that when the aspect ratio of a low dimensional manifold exceeds
+a threshold, the choice of eigenvectors becomes non-trivial, and that this threshold can be as low
+as 2. Our experimental results confirm the need to augment ML algorithms with IES methods in
+order to successfully apply ML to real world problems. Surprisingly, the IES problem has received
+little attention in the ML literature, to the extent that the difficulty and complexity of the problem
+have not been recognized. Our paper advances the state of the art by (i) introducing for the first
+time a differential geometric definition of the problem, (ii) highlighting geometric factors such as
+injectivity radius that, in addition to aspect ratio, influence the number of eigenfunctions needed for
+a smooth embedding, (iii) constructing selection criteria based on intrinsic manifold quantities, (iv)
+which have analyzable asymptotic limits, (v) can be computed efficiently, and (vi) are also robust to
+the noise present in real scientific data. The library of hard synthetic examples we constructed will
+be made available along with the python software implementation of our algorithms.
+Acknowledgements
+The authors acknowledge partial support from the U.S. Department of Energy, Solar Energy Tech-
+nology Office award de-ee0008563 and from the NSF DMS PD 08-1269 and NSF IIS-0313339
+awards. They are grateful to the Tkatchenko and Pfaendtner labs and in particular to Stefan Chmiela
+     2
+       The Sloan Digital Sky Survey data can be downloaded from https://www.sdss.org
+                                                      11
+
+and Chris Fu for providing the molecular dynamics data and for many hours of brainstorming and
+advice.
+References
+[AAMA+ 09] Kevork N Abazajian, Jennifer K Adelman-McCarthy, Marcel A Agüeros, Sahar S
+              Allam, Carlos Allende Prieto, Deokkeun An, Kurt SJ Anderson, Scott F Anderson,
+              James Annis, Neta A Bahcall, et al. The seventh data release of the sloan digital sky
+              survey. The Astrophysical Journal Supplement Series, 182(2):543, 2009.
+[Bat14]       Jonathan Bates. The embedding dimension of laplacian eigenfunction maps. Applied
+              and Computational Harmonic Analysis, 37(3):516–530, 2014.
+[BN07]        Mikhail Belkin and Partha Niyogi. Convergence of laplacian eigenmaps. In
+              B. Schölkopf, J. C. Platt, and T. Hoffman, editors, Advances in Neural Information
+              Processing Systems 19, pages 129–136. MIT Press, 2007.
+[CL06]        R. R. Coifman and S. Lafon. Diffusion maps. Applied and Computational Harmonic
+              Analysis, 30(1):5–30, 2006.
+[CTS+ 17]     Stefan Chmiela, Alexandre Tkatchenko, Huziel E Sauceda, Igor Poltavsky, Kristof T
+              Schütt, and Klaus-Robert Müller. Machine learning of accurate energy-conserving
+              molecular force fields. Science advances, 3(5):e1603015, 2017.
+[Dry16]       I. L. (Ian L.) Dryden. Statistical shape analysis : with applications in R. Wiley
+              series in probability and statistics. Wiley, Chichester, West Sussex, England, 2nd ed.
+              edition, 2016.
+[DS13]        Sanjoy Dasgupta and Kaushik Sinha. Randomized partition trees for exact nearest
+              neighbor search. In Conference on Learning Theory, pages 317–337, 2013.
+[DTCK18]      Carmeline J Dsilva, Ronen Talmon, Ronald R Coifman, and Ioannis G Kevrekidis.
+              Parsimonious representation of nonlinear dynamical systems through manifold learn-
+              ing: A chemotaxis case study. Applied and Computational Harmonic Analysis,
+              44(3):759–773, 2018.
+[FTP16]       Kelly L. Fleming, Pratyush Tiwary, and Jim Pfaendtner. New approach for inves-
+              tigating reaction dynamics and rates with ab initio calculations. Jornal of Physical
+              Chemistry A, 120(2):299–305, 2016.
+[GZKR08]      Yair Goldberg, Alon Zakai, Dan Kushnir, and Yaacov Ritov. Manifold learning: The
+              price of normalization. Journal of Machine Learning Research, 9(Aug):1909–1939,
+              2008.
+[Har98]       David A Harville. Matrix algebra from a statistician’s perspective, 1998.
+[HAvL05]      Matthias Hein, Jean-Yves Audibert, and Ulrike von Luxburg. From graphs to man-
+              ifolds - weak and strong pointwise consistency of graph laplacians. In Learning
+              Theory, 18th Annual Conference on Learning Theory, COLT 2005, Bertinoro, Italy,
+              June 27-30, 2005, Proceedings, pages 470–485, 2005.
+[HAvL07]      Matthias Hein, Jean-Yves Audibert, and Ulrike von Luxburg. Graph laplacians and
+              their convergence on random neighborhood graphs. Journal of Machine Learning
+              Research, 8:1325–1368, 2007.
+[HHJ90]       Roger A Horn, Roger A Horn, and Charles R Johnson. Matrix analysis. Cambridge
+              university press, 1990.
+[IB12]        Rishabh Iyer and Jeff Bilmes. Algorithms for approximate minimization of the differ-
+              ence between submodular functions, with applications. In Proceedings of the Twenty-
+              Eighth Conference on Uncertainty in Artificial Intelligence, UAI’12, pages 407–417,
+              Arlington, Virginia, United States, 2012. AUAI Press.
+[LB05]        Elizaveta Levina and Peter J Bickel. Maximum likelihood estimation of intrinsic
+              dimension. In Advances in neural information processing systems, pages 777–784,
+              2005.
+[Lee03]       John M. Lee. Introduction to smooth manifolds, 2003.
+                                                  12
+
+[MHM18]  Leland McInnes, John Healy, and James Melville. Umap: Uniform manifold approx-
+         imation and projection for dimension reduction. arXiv preprint arXiv:1802.03426,
+         2018.
+[MMVZ16] James McQueen, Marina Meilă, Jacob VanderPlas, and Zhongyue Zhang. Mega-
+         man: Scalable manifold learning in python. Journal of Machine Learning Research,
+         17(148):1–5, 2016.
+[NLCK06] Boaz Nadler, Stephane Lafon, Ronald Coifman, and Ioannis Kevrekidis. Diffusion
+         maps, spectral clustering and eigenfunctions of Fokker-Planck operators. In Y. Weiss,
+         B. Schölkopf, and J. Platt, editors, Advances in Neural Information Processing Sys-
+         tems 18, pages 955–962, Cambridge, MA, 2006. MIT Press.
+[NWF78]  George L Nemhauser, Laurence A Wolsey, and Marshall L Fisher. An analysis of
+         approximations for maximizing submodular set functionsi. Mathematical program-
+         ming, 14(1):265–294, 1978.
+[PM13]   D. Perraul-Joncas and M. Meila. Non-linear dimensionality reduction: Riemannian
+         metric estimation and the problem of geometric discovery. ArXiv e-prints, May 2013.
+[Por16]  Jacobus W Portegies. Embeddings of riemannian manifolds with heat kernels and
+         eigenfunctions. Communications on Pure and Applied Mathematics, 69(3):478–518,
+         2016.
+[Str07]  Walter A Strauss. Partial differential equations: An introduction. Wiley, 2007.
+[THJ10]  Daniel Ting, Ling Huang, and Michael I. Jordan. An analysis of the convergence of
+         graph laplacians. In Proceedings of the 27th International Conference on Machine
+         Learning (ICML-10), pages 1079–1086, 2010.
+                                             13
+
+                                                 Supplement to
+         Selecting the independent coordinates of manifolds with large aspect ratios
+        A    Notational table                            B      Pseudocodes
+            Table S1: Notational table                   Algorithm S1: D IFF M AP
+                 Matrix operation                        Input : Data matrix X ∈ Rn×D , bandwidth ε,
+                                                                   embedding dimension m
+   M      Matrix                                         Compute similarity         matrix K
+  mi      Vector represents the i-th row of M
+                                                       1
+                                                                                              i with
+                                                                                 ||xi −xj ||2
+                                                                   (        h
+  mT:,j   Vector represents the j-th column of M                      exp −           ε2         if kx − yk ≤ 3ε
+                                                           Kij =
+  mij     Scalar represents ij-th element of M                        0                          otherwise
+ [M]ij    Scalar, alternative notation for mij         2 L ← L APLACIAN(K) ∈ Rn×n (Algorithm S2)
+M[α, β]   Submatrix of M of index sets α, β            3 Compute eigenvectors of L for smallest m + 1
+    v     Column vector
+   vi     Scalar represents i-th element of vector v       eigenvalues [φ0 φ1 . . . φm ] ∈ Rn×(m+1)
+  [v]i    Scalar, alternative notation for vi            Return: Φ = [φ1 . . . φm ] ∈ Rn×m The
+                                                                   embedding coordinates of xi are
+                        Scalars                                    (Φi1 , . . . , Φim ) ∈ Rm
+    n     Number of samples
+   D      Ambient dimension
+   m      Dimension of diffusion embedding               Algorithm S2: L APLACIAN
+    s     (Minimum) embedding dimension
+                                                         Input : Symmetric similarity matrix K
+    d     Intrinsic dimension
+                                                       1 Calculate thePndegree of node i,
+                Vectors & Matrices                           [w]i = j=1 Kij . Set W = diag(w)
+   X      Data matrix                                  2 L̃ = W−1 KW−1
+   xi     Point i in ambient space                                 Pn
+                                                       3 [w̃]i ← j=1 L̃ij . Set W̃ = diag(w̃)
+   Y      Diffusion coordinates
+   yi     Point i in diffusion coordinates             4 L = In − W̃−1 L̃
+   φi     The i-th diffusion coordinate of all points    Return: Renormalized graph Laplacian L
+   K      Kernel (similarity) matrix
+    L     Graph Laplacian
+  H(i)    Dual metric at point i                         Algorithm S3: LLRC OORD S EARCH
+   Ik     Identity matrix in k dimension space           Input : Embedding
+   1n     All one vector ∈ Rn                                      Y = [φ1 , · · · , φm ] ∈ Rn×m
+   1S     [1S ]i = 1 if i ∈ S 0 otherwise              1 Set the leave-one-out validation error
+                   Miscellaneous                           r = [1, · · · , 1] ∈ Rm
+                                                       2 for s = 2 → m do
+G(V, E)   Graph with vertex set V and edge set E
+                                                       3      Bandwidth of LLR:
+   M      Data manifold
+  φ(·)    Embedding mapping                                     h ← 13 · M EDIAN(PAIRWISE D IST(φ[s−1] ))
+L(S; ζ)   Utilities                                    4      φ̂s ←
+   R      Unpenalized utilities                                 L OCAL L INEAR R EGRESSION(φs , φ[s−1] , h)
+   [s]    Set {1, · · · , s}
+                                                                    q
+                                                                                    2
+D(·k·)    KL divergence                                5      rs = kφ̂kφ    s −φs k
+                                                                               sk
+                                                                                  2
+    D     Jacobian                                     6 end
+D(S, i)   Leave-one-out regret of point i              7 S∗ ← A RG S ORT(r)
+                                                         . Sort in descending order.
+                                                         Return: Sorted independent coordinates S∗
+                                                      14
+
+C    Extra theorems
+C.1    Submodularity of the objective functions
+Theorem S1. For a rank d tangent space matrix U ∈ Rm×d , if any submatrix US , with index set
+S ⊆ [m] and |S| = s ≥ d, is rank d, we have R1 be a submodular set function.
+Proof. W.L.O.G, set n = 1, with slightly abuse of notation, let U = UT ∪{i} ∈ R(|T |+1)×d . The
+matrix can be written in the following form
+                                            "S#
+                                           T
+                                    U=         = V ∈ R(|T |+1)×d
+                                            a
+                                                    a
+With US = S, UT = T and U{i} = a for set S ⊆ T ⊆ [m] and i ∈ [m]\T . Here a ∈ R1×d . By
+the definition of R1 in (2), one has (ignoring the constants)
+                                         R1 (S) = log det(S> S)
+                                        R1 (T ) = log det T> T
+                                                                  
+                                                             >  !
+                                                              S     S
+                                 R1 (S ∩ {i}) = log det
+                                                              a     a
+                                     R1 (T ∩ {i}) = log det(U> U)
+Denote ∂i f (S) = f (S ∪ {i}) − f (S) for some function f , we have
+                          ∂i R1 (S) = log det(S> S + a> a) − log det(S> S)
+                         ∂i R1 (T ) = log det(T> T + a> a) − log det(T> T)
+The full rank of any submatrices guarantees the positive definiteness of S> S, T> T, by matrix de-
+terminant lemma [Har98], we have
+                         det(S> S + a> a) = det(S> S) 1 + a(S> S)−1 a>
+                                                                            
+Therefore
+                                     ∂i R1 (S) = 1 + a(S> S)−1 a>
+Similar equation holds for set T . Therefore,
+                                                          1 + a(S> S)−1 a>
+                            ∂i R1 (S) − ∂i R1 (T ) = log
+                                                          1 + a(T> T)−1 a>
+Because T> T  S> S, we have (S> S)−1  (T> T)−1 [HHJ90], which implies ∂i R1 (S) −
+∂i R1 (T ) ≥ 0 for all S ⊆ T ⊆ [m] and i ∈ [m]\T . This completes the proof.                     
+Theorem S2. R2 is a submodular set function.
+Proof. W.L.O.G, set n, d = 1. With slightly abuse of notation, let u ← u1 (i) and uS ← uS1 (i). For
+any set S ⊆ T ⊆ [m] and i ∈ [m]\T , we have
+                                                                 u2 + u2
+                                                          P
+                                                                               Σ + u2i
+             ∂i R2 (S) = R2 (S ∩ {i}) − R2 (S) = log k∈S     P k 2 i = log S
+                                                                k∈S uk          ΣS
+                                                              2     2
+                                                                           ΣS + ΣT \S + u2i
+                                                      P
+                                                             u +u
+       ∂i R2 (T ) = R2 (T ∩ {i}) − R2 (T ) = log k∈T    P k 2 i = log
+                                                           k∈T uk            ΣS + ΣT \S
+Where ΣS = k∈S u2k . By definition, we have ΣS , ΣT \S , u2i ≥ 0. Therefore,
+                P
+                                                                             
+                                                      ΣS + u2i · ΣS + ΣT \S
+                       ∂i R2 (S) − ∂i R2 (T ) = log                         
+                                                      ΣS · ΣS + ΣT \S + u2i
+                               "                                     #
+                                 Σ2S + ΣS ΣT \S + u2i + u2i ΣT \S
+                        = log                                          ≥0
+                                       Σ2S + ΣS ΣT \S + u2i
+                               |                  {z                  }
+                                                  ≥1
+Which completes the proof.                                                                       
+                                                   15
+
+  D     Greedy search
+  Algorithm S4: G REEDY I ND E IGEN S EARCH
+  Input : Orthogonal basis {U(i)}ni=1 , eigenvalues λ, intrinsic dimension d, regularization
+             parameter ζ
+1 Solve S∗ ← argmaxS⊆[m];|S|=d;1∈S L(S; ζ).
+2 for s = d + 1 → m do
+3      k∗ = argmaxk∈[m]\S∗ L(S∗ ∪ {k}; ζ)
+4      S∗ ← S∗ ∪ {k∗ } . Record order
+5 end
+  Return: Independent coordinates S∗
+  Inspired by the greedy version of submodular maximization [NWF78], a greedy heuristic has been
+  proposed, as in Algorithm S4. The algorithm starts from an observation that the optimal value of
+  the S 0 = argmaxS;d≤|S|<s L(S; ζ) will often time be a subset of the optimal S∗ of (3). Since the
+  appropriate cardinality of the set S is unknown, we can simply scan from |S| = d to m. The order
+  of the returned elements indicates the significance of the corresponding coordinate.
+  E     Computational complexity analysis
+  E.1    The proposed algorithms
+  For computation complexity analysis, we assume the embedding has already been obtained. There-
+  fore, the computational complexity for building neighbor graph and solving the eigen-problem of
+  graph Laplacian can be omitted. This is also the case for LLRC OORD S EARCH.
+  Co-metrics and orthogonal basis According to [PM13], time complexity for computing H(i) ∈
+  Rm×m ∀ i ∈ [n] is O(nm2 δ), with δ be the average degree of the neighbor graph G(V, E). In man-
+  ifold learning, the graph will be sparse therefore δ  n. Time complexity for obtaining principal
+  space U(i) of point i via SVD will be O(m3 ). Total time complexity will be O(nm2 δ + nm3 ).
+  Exact search Evaluating the objective function L for each point i takes O(sd2 ) in computing
+  US (i)> US (i), O(d3 ) in evaluating the determinant of a d × d matrix. Normalization   (R2 term)
+  takes O(ds). Exhaustive search over all the subset with cardinality s takes O m      s   . The total
+  computational complexity will therefore be O(nms (d3 + d2 s) + nm2 δ + nm3 ) = O(nms+3 +
+  nm2 δ).
+  Greedy algorithm First step of greedy algorithm includes solving argmaxS⊆[m];|S|=d L(S, d),
+  which takes O(nmd d3 ) = O(nmd+3 ). Starting from s = d + 1 → m, each step includes ex-
+  haustively search over m − s candidates, with the time complexity of evaluating L be n(d3 + d2 s).
+  Putting things together, one has the second part of the greedy algorithm be
+                                      Xm
+                                           n(m − s)(d3 + d2 s) = O(nm5 )                         (S1)
+                                      s=d
+  The total computational complexity will therefore be O(n(md+3 + m5 + m2 δ)).
+  E.2    Time complexity of [DTCK18] & discussion
+  The Algorithm LLRC OORD S EARCH is summarized in Algorithm S3. For searching over
+  fixed coordinate s, the algorithm first build a kernel for local linear regression by construct-
+  ing a neighbor graph, which takes O(n log(n)s)3 using approximate nearest neighbor search.
+  The s dependency come from the dimension of the feature. For each point i, a ordi-
+  nary least square (OLS) problem is solved, which results in O(n2 s2 + ns3 ) time complexity.
+      3
+        This is a simplified lower bound, see [DS13] for details.
+                                                         16
+
+                          (a)                                                (b)
+Figure S2: UMAP embeddings of 2D long stripe with different initializations and choices of
+hyper-parameters. Rows from top to bottom correspond to UMAP embedding initialized with DM
+which coordinates chosen by I ND E IGEN S EARCH, naı̈ve DM and random initialization, respectively.
+Columns represent different choices of (a) points separation and (b) number of neighbors.
+Searching from s = 2 → m will make the total                       104
+time complexity be
+m                                                                  102
+                                                        Time (s)
+X
+      n2 s2 + ns3 + ns log n = O(n2 m3 + nm4 )
+s=2
+                                                                   100
+                                           (S2)
+For a sparse graph, the overheads of
+                                                                 103           104   105
+the I ND E IGEN S EARCH and G REEDY I N -                            Sample size n
+D E IGEN S EARCH algorithms come from the                    Exact         Greedy   LLR
+enumeration of the subset S. Because of
+the linear dependency on the sample size Figure S1: Runtimes of different IES algorithms
+n, the algorithm is tractable for small s and on two dimensional long strip. Purple, yellow
+d. However, LLRC OORD S EARCH has a and red curves correspond to I ND E IGEN S EARCH,
+quadratic dependency on sample size n, which G REEDY I ND E IGEN S EARCH and LLRC OORD -
+is more computationally intensive for large S EARCH algorithm, respectively.
+sample size. For large s and d, one can use the
+techniques in difference between submodular function optimization (e.g. [IB12]) as R1 , R2 are
+both submodular set function from Theorems S1 and S2. An empirical runtime plot for different
+algorithms can be found in Figure S1. The runtime was evaluated on two dimensional long strip
+with s = d = 2 and was performed on a single desktop computer running Linux with 32GB RAM
+and a 8-Core 4.20GHz Intel® Core™ i7-7700K CPU.
+F     A discussion on UMAP
+UMAP [MHM18] is a commonly used data visualization alternative of t-SNE. The authors pro-
+posed to use the spectral embedding of the graph Laplacian as an initialization to the algorithm
+for faster convergence (compared to random initialization). In this section, we showed empirically
+that, (1) given reasonable computing resources, the IES problem also appears in the UMAP embed-
+ding and (2) by initializing with spectral embedding with carefully selected coordinate set chosen
+by I ND E IGEN S EARCH, one can obtain a faster convergence and a globally interpretable embed-
+ding. Figure S2 is the UMAP embedding of 2D long stripe dataset D1 with different choices of
+hyper-parameters (points separation in S2a and number of neighbors in S2b), with total number of
+epochs be 500. The first row of both plots are the embedding initialized with I ND E IGEN S EARCH,
+the second row corresponds to those initialized with naı̈ve DM. The embeddings in the third row are
+initialized randomly. As shown in the results, algorithmic/random artifacts can be easily seen in the
+embeddings with Naı̈ve DM or random initialization (2nd and 3rd rows). More precisely, unwanted
+patterns which reduce the interpretability of the embeddings, e.g., the “knots” in the second row
+or disconnected components in the second/third rows, are generated. The sum of square procrustes
+                                                  17
+
+        error M 2 between ground truth dataset and the embedding shown on each subplots also confirm our
+        statement. Note that it is possible to unroll the algorithmic artifact with more epochs in the sampling
+        steps of UMAP. (3 to 5 times more iterations are needed in this example.) However, due to the ef-
+        ficiency of performing I ND E IGEN S EARCH, it is beneficial to initialize with the embedding selected
+        by I ND E IGEN S EARCH.
+        G      Additional experiments & details of the used datasets
+        In this paper, a total of 13 different synthetic manifolds are considered. Table S2 summarized the
+        synthetic manifolds constructed and its abbreviations (from D1 to D13 ). Embedding results for the
+        synthetic manifolds are in Figures S3, S4 and S5. The ranking of the first few candidate sets S from
+         I ND E IGEN S EARCH, G REEDY I ND E IGEN S EARCHand LLRC OORD S EARCH can be found in Table
+        S3. The table shows the optimal subsets return by three different algorithms are often time the same,
+        with exception for D7 high torus as discussed in Section 7.
+        Table S2: Abbreviations for different synthetic manifolds in this paper. The abbreviation with aster-
+        isk represents such dataset is discussed in main manuscript.
+                                                   Manifold with s = d
+                                     D1∗     Two dimensional strip (aspect ratio 2π)
+                                     D2      2D strip with cavity (aspect ratio 2π)
+                                     D3      Swiss roll
+                                     D4      Swiss roll with cavity
+                                     D5      Gaussian manifold
+                                     D6      Three dimensional cube
+                                                   Manifold with s > d
+                                     D7∗     High torus
+                                     D8      Wide torus
+                                     D9      z-asymmetrized high torus
+                                    D10      x-asymmetrized high torus
+                                    D11      z-asymmetrized wide torus
+                                    D12      x-asymmetrized wide torus
+                                       ∗
+                                    D13      Three-torus
+        G.1      Additional experiments on synthetic manifolds with s = d
+        Below summarized the details of generating the datasets.
+                  Table S3: Results returned from different algorithms on different synthetic datasets.
+                                   Exact search                                   Greedy rank            LLR rank
+    1               2              3                4              5
+D1  [1, 7]          [1, 8]         [1, 9]           [1, 10]        [1, 12]        [1, 7, 6, 4, 3, 2, 5]  [1, 7, 14, 16, 11, 18, 6]
+D2  [1, 4]          [1, 8]         [1, 9]           [1, 10]        [1, 12]        [1, 4, 8, 6, 5, 3, 2]  [1, 4, 8, 5, 17, 11, 14]
+D3  [1, 9]          [1, 10]        [1, 11]          [1, 13]        [1, 18]        [1, 9, 5, 2, 3, 4, 6]  [1, 9, 19, 16, 12, 10, 4]
+D4  [1, 8]          [1, 10]        [1, 11]          [1, 14]        [1, 15]        [1, 8, 3, 2, 4, 10, 5] [1, 8, 11, 10, 19, 16, 4]
+D5  [1, 6]          [1, 8]         [1, 10]          [1, 11]        [1, 13]        [1, 6, 2, 8, 3, 10, 4] [1, 6, 19, 8, 18, 14, 12]
+D6  [1, 2, 8]       [1, 2, 11]     [1, 4, 8]        [1, 2, 17]     [1, 2, 13]     [1, 2, 8, 3, 4, 6, 5]  [1, 2, 8, 10, 3, 13, 6]
+D7  [1, 4, 5]       [1, 4, 8]      [1, 5, 7]        [1, 7, 12]     [1, 7, 8]      [1, 5, 4, 3, 6, 2, 8]  [1, 2, 5, 4, 15, 6, 10]
+D8  [1, 2, 7]       [1, 4, 7]      [1, 3, 7]        [1, 2, 9]      [1, 5, 7]      [1, 7, 2, 4, 3, 13, 5] [1, 2, 7, 13, 12, 15, 14]
+D9  [1, 3, 4]       [1, 3, 7]      [1, 4, 6]        [1, 3, 10]     [1, 7, 9]      [1, 3, 4, 2, 9, 7, 6]  [1, 3, 4, 2, 19, 8, 7]
+D10 [1, 2, 4]       [1, 3, 4]      [1, 4, 5]        [1, 6, 9]      [1, 6, 14]     [1, 4, 2, 3, 5, 6, 8]  [1, 4, 2, 3, 8, 5, 6]
+D11 [1, 2, 5]       [1, 4, 8]      [1, 4, 5]        [1, 8, 9]      [1, 2, 8]      [1, 5, 2, 4, 8, 3, 9]  [1, 2, 5, 8, 10, 9, 11]
+D12 [1, 2, 5]       [1, 4, 5]      [1, 2, 7]        [1, 3, 5]      [1, 2, 8]      [1, 5, 2, 3, 4, 6, 8]  [1, 5, 2, 6, 10, 9, 4]
+D13 [1, 2, 5, 10]   [1, 3, 5, 10]  [1, 4, 5, 10]    [1, 5, 6, 10]  [1, 2, 8, 10]  [1, 5, 10, 2, 4, 3, 6] [1, 2, 10, 5, 14, 15, 16]
+                                                              18
+
+      1. D1∗ : points from this dataset are sampled uniformly from xi ∼ U NIF([−2, 2] × [−4π, 4π]).
+      2. D2 : points are first sampled uniformly from [−2, 2] × [−4π, 4π]. Points i are removed if
+         |Xi1 | < 4π/3 and |Xi2 | < 2/3.
+      3. D3 : first sampling points Xtrue = [x0 , y0 ] uniformly from a two dimensional strip. The
+         data X can be obtained by the following non-linear transformation.
+                                                                             
+                                               x0 ◦ cos x0        x0 ◦ sin x0
+                                       X=                  , y0 ,                                (S3)
+                                                    2                  2
+         With ◦ denotes Hadamard (element-wise) product.
+      4. D4 : sampling points Xtrue = [x0 , y0 ] uniformly from 2D strip with cavity then applying
+         the transformation (S3) to get X.
+                                                                 n              2      2     o
+      5. D5 : sampling points Xtrue uniformly from ellipse (x, y) ∈ R2 : x6 + y2 = 1 . The
+         data is obtained by
+                                                  X = [Xtrue , z]
+                                    2
+                                                
+         With zi = exp − X3i1 + Xi2
+                                            2
+                                                 /2
+      6. D6 : points are sampled uniformly from [−1, 1] × [−2, 2] × [−4, 4].
+The experimental results are in Figure S3 (D4 in Figure 2).
+G.2   Additional experiments on synthetic manifolds with s > d
+G.2.1   Tori and asymmetrized tori
+A torus can be parametrized by
+                                        x = (a + b cos α) cos β
+                                        y = (a + b cos α) sin β                                  (S4)
+                                         z = h sin(β)
+      1. D7∗ : sampling α, β uniformly from [0, 2π) and generating the torus with (a, b, h) =
+         (3, 2, 8) from (S4).
+      2. D8 : generating the torus with (a, b, h) = (10, 2, 2).
+      3. D9 : generating a high torus with (a, b, h) = (3, 2, 8) and applying the following transfor-
+         mation
+                                              z ← (z − min(z))γ /ς                               (S5)
+         with (γ, ς) = (3, 1500)
+      4. D10 : generating a high torus with (a, b, h) = (3, 2, 8) and applying the following transfor-
+         mation
+                                              x ← (x − min(x))κ /η                               (S6)
+         with (κ, η) = (2, 10)
+      5. D11 : generating a wide torus with (a, b, h) = (10, 2, 2) and applying transformation (S5)
+         with (γ, ς) = (3, 50).
+      6. D12 : generating a wide torus with (a, b, h) = (10, 2, 2) and applying transformation (S6)
+         with(κ, η) = (3, 1000).
+The experimental results are in Figure S4.
+G.2.2   Three-torus
+                                                    19
+
+                                                                     {1, 4}
+                                                                                                                                    2
+                                                                                                                                    0    D(S, i)
+                                                                                                                                    −2
+                                                                     {1, 2}
+                                                                          10−4       10   −2
+                                                                                                10      0
+                                                                                                                 10   2
+                                                                                                                               10   4
+                                                                                                    ζ
+                (a)                                 (b)                                         (c)
+                                                                     {1, 9}
+                                                                                                                                    2
+                                                                     {1, 3}                                                         0    D(S, i)
+                                                                                                                                    −2
+                                                                     {1, 2}
+                                                                          10−10      10   −7
+                                                                                               10   −4
+                                                                                                            10   −1
+                                                                                                                          10   2
+                                                                                                    ζ
+                (d)                                 (e)                                             (f)
+                                                                     {1, 6}
+                                                                                                                                    2
+                                                                                                                                    0    D(S, i)
+                                                                                                                                    −2
+                                                                     {1, 2}
+                                                                          10−10      10−7      10−4         10−1          102
+                                                                                                    ζ
+                (g)                                 (h)                                             (i)
+                                                                     {1, 2, 8}
+                                                                                                                                    2
+                                                                                                                                         D(S, i)
+                                                                                                                                    0
+                                                                                                                                    −2
+                                                                     {1, 2, 3}                                                      −4
+                                                                             10−10    10−7      10−4        10−1          102
+                                                                                                        ζ
+                (j)                                 (k)                                             (l)
+Figure S3: Synthetic manifolds with minimum embedding dimension s equals intrinsic dimension
+d. Rows from top to bottom represent two dimensional strip with cavity (aspect ratio W/H =
+2π), swiss roll, gaussian manifold and three dimensional cube dataset, respectively. Columns from
+left to right are the original data X, embedding φS∗ with optimal coordinate sets S∗ chosen by
+I ND E IGEN S EARCH and the regularization path, respectively.
+The parameterization of the three torus is
+ x1   = a1 sin α1
+ x2   = (a2 + a1 cos α1 ) sin α2
+ x3   = (a3 + (a2 + a1 cos α1 ) cos α2 ) sin α3
+ x4   = (a3 + (a2 + a1 cos α1 ) cos α2 ) cos α3
+                                             (S7)
+                                                       Figure S6: M 2 and dˆ vs. ranking of D13
+To generate D13 , we sample αk uniformly from
+[0, 2π) for k ∈ [3] and apply the transformation (S7) with (a1 , a2 , a3 ) = (8, 2, 1). The sample size
+for this dataset is n = 50, 000. The experimental result of three-torus can be found in Figure S5.
+                                                    20
+
+G.3    Verification of the chosen subsets on synthetic manifolds
+Unlike 2D strip, the close form solution of the optimal set is oftentimes unknown in general. In
+this section, we verify the correctness of the chosen subset by reporting the full procrustes distance
+(disparity score) M 2 [Dry16], which is defined to be the normalized sum of square of the point-wise
+difference between the procrustes transformed ground truth data Xtrue ∈ Rn×k and the test data
+Xtest ∈ Rn×k . Namely,
+                      M 2 (Xtrue , Xtest ) = min kXtrue − βXtest Γ − 1n γ > k2F
+                                              β,γ,Γ
+                                                                                                  (S8)
+                                      s.t. β > 0, γ ∈ Rk , Γ ∈ SO(k)
+Here β is a scale parameter, γ is the centering parame-
+ter and Γ is a k × k rotation matrix. We further require
+kXtrue kF = 1 so that the disparity score will be be-
+tween 0 and 1. Intuitively, one can expect the optimal
+choice of eigencoordinates S∗ will yield a small dis-
+parity score M 2 (Xtrue , φS∗ ), with score increases as
+the coordinate set S contains duplicate parameteriza-
+tions or φS contains knots, crossings, etc. (e.g., Figure
+S8). Note that the score can only be calculated when the
+ground truth data Xtrue is available. For dataset without
+obtainable ground truth, one cannot proposed to report Figure S8: Embedding that has crossing.
+the disparity score of φS and the original data X as the proxy of Xtrue , for X might not be a affine
+transformation of Xtrue , e.g., Swiss roll. Besides, small M 2 given φS does not imply S is optimal,
+which will be clear in the discussion of Figure 2g. Besides disparity scores, we will also report the
+estimated dimension d.  ˆ One can expect the estimated dimension for the optimal set dim(φS ) will
+                                                                                               ∗
+be close to the intrinsic dimension d, while the estimated dimension for sets containing duplicate
+parameterizations will be smaller than the intrinsic dimension. One cannot propose to use it as a cri-
+terion to choose the optimal set, for the suboptimal sets can also have estimated dimensions closed
+to the intrinsic dimension, e.g., Figure 4g. Throughout the experiment, the dimension estimation
+method by [LB05] is used for its ability to estimate dimension among all candidate subsets fairly
+fast. Blue and red curves in Figure S7 and S6 show the disparity scores and estimated dimensions
+versus ranking of coordinate subsets for different synthetic manifolds, respectively. As expected,
+we have an increasing in M 2 and decreasing in dˆ with respect to ranking. We first highlight that
+the set that produces the lowest disparity score is not necessarily optimal, although S∗ does yield
+a small disparity. This can be shown in the example of D4 swiss roll with hole dataset. Figure 2g
+is the embedding φS3 of D4 , with S3 is ranked third subset in terms of L(S; ζ), that minimizes the
+disparity score M 2 in D4 as shown in Figure S7d. This is because the embedding of the subset
+S3 = {1, 11} has larger area on the left, compared to Figure Figure 2b. This balances out the high
+disparity caused by the flipped region between two knots in the embedding φS3 when matched with
+Xtrue . Since all the ranked first subset has low disparity compared to other subsets, we have higher
+confidence saying that the ranked 1st subset is indeed the optimal choice for the synthetic manifolds.
+                                                    21
+
+                                                                {1, 2, 7}
+                                                                                                                     0.5
+                                                                {1, 2, 4}                                            0.0    D(S, i)
+                                                                                                                     −0.5
+                                                                {1, 2, 3}
+                                                                        10−3 10−2 10−1    100   101     102     103
+                                                                                           ζ
+              (a)                             (b)                                         (c)
+                                                                {1, 3, 4}
+                                                                                                                      0
+                                                                                                                            D(S, i)
+                                                                                                                      −1
+                                                                {1, 2, 3}
+                                                                        10−10   10−7     10−4    10−1          102
+                                                                                            ζ
+              (d)                             (e)                                         (f)
+                                                                {1, 2, 4}
+                                                                                                                     0.0
+                                                                                                                            D(S, i)
+                                                                                                                     −0.5
+                                                                {1, 2, 3}
+                                                                        10−10   10−7     10−4   10−1          102
+                                                                                           ζ
+              (g)                             (h)                                         (i)
+                                                                {1, 2, 5}
+                                                                                                                     0.5
+                                                                                                                            D(S, i)
+                                                                                                                     0.0
+                                                                                                                     −0.5
+                                                                {1, 2, 3}
+                                                                        10−10   10−7     10−4   10−1          102
+                                                                                           ζ
+              (j)                             (k)                                         (l)
+                                                                {1, 2, 5}
+                                                                                                                     0.5
+                                                                                                                            D(S, i)
+                                                                                                                     0.0
+                                                                                                                     −0.5
+                                                                {1, 2, 3}
+                                                                        10−10   10−7     10−4   10−1          102
+                                                                                           ζ
+             (m)                              (n)                                         (o)
+Figure S4: Synthetic manifolds with minimum embedding dimension s greater than intrinsic dimen-
+sion d. Rows from top to bottom represent wide torus, z-asymmetrized high torus, x-asymmetrized
+high torus, z-asymmetrized wide torus and x-asymmetrized wide torus, respectively. Columns from
+left to right are the original data X, embedding φS∗ with optimal coordinate sets S∗ chosen by
+I ND E IGEN S EARCH and the regularization path, respectively.
+                                              22
+
+                                                (a)
+                                                (b)
+Figure S5: Experiment on three-torus dataset. (a) Original data X of three torus. (b) Embedding
+φS∗ with optimal coordinate sets S∗ chosen by I ND E IGEN S EARCH. Rows for both (a) and (b) from
+top to bottom are embedding colored by the parameterization (α1 , α2 , α3 ) in (S7), respectively.
+                                                23
+
+     (a) D1                             (b) D2                            (c) D3
+     (d) D4                             (e) D5                             (f) D6
+     (g) D7                             (h) D8                             (i) D9
+    (j) D10                            (k) D11                            (l) D12
+Figure S7: Verification of the correctness of the chosen sets in synthetic manifolds.
+                                          24
+

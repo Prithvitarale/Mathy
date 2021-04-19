@@ -1,0 +1,141 @@
+                       Closing the Learning-Planning Loop with
+                                  Predictive State Representations
+                                                   (Extended Abstract)
+                                                                                     ∗
+                      Byron Boots                               Sajid M. Siddiqi                       Geoffrey J. Gordon
+            Machine Learning Department                           Robotics Institute              Machine Learning Department
+              Carnegie Mellon University                   Carnegie Mellon University               Carnegie Mellon University
+                  Pittsburgh, PA 15213                          Pittsburgh, PA 15213                     Pittsburgh, PA 15213
+                  beb@cs.cmu.edu                              siddiqi@google.com                    ggordon@cs.cmu.edu
+ABSTRACT                                                                     General Terms
+A central problem in artificial intelligence is to plan to maximize          Algorithms, Theory
+future reward under uncertainty in a partially observable environ-
+ment. Models of such environments include Partially Observable
+                                                                             Keywords
+Markov Decision Processes (POMDPs) [4] as well as their general-             Machine Learning, Predictive State Representations, Planning
+izations, Predictive State Representations (PSRs) [9] and Observ-
+able Operator Models (OOMs) [7]. POMDPs model the state of                   Closing the Learning-Planning Loop with PSRs
+the world as a latent variable; in contrast, PSRs and OOMs repre-
+sent state by tracking occurrence probabilities of a set of future           We propose a novel algorithm for learning a variant of PSRs [12]
+events (called tests or characteristic events) conditioned on past           directly from execution traces. Our algorithm is closely related to
+events (called histories or indicative events). Unfortunately, exact         subspace identification for linear dynamical systems (LDSs) [15]
+planning algorithms such as value iteration [14] are intractable for         and spectral algorithms for Hidden Markov Models (HMMs) [5]
+most realistic POMDPs due to the curse of history and the curse of           and reduced-rank HMMs [13]. We then use the algorithm to learn a
+dimensionality [11]. However, PSRs and OOMs hold the promise                 model of a simulated high-dimensional, vision-based mobile robot
+of mitigating both of these curses: first, many successful approx-           planning task, and compute a policy by approximate point-based
+imate planning techniques designed to address these problems in              planning in the learned model [6]. Finally, we show that the learned
+POMDPs can easily be adapted to PSRs and OOMs [8, 6]. Second,                state space compactly captures the essential features of the environ-
+PSRs and OOMs are often more compact than their corresponding                ment, allows accurate prediction, and enables successful and effi-
+POMDPs (i.e., need fewer state dimensions), mitigating the curse             cient planning.
+of dimensionality. Finally, since tests and histories are observable            By comparison, previous POMDP learners such as Expectation-
+quantities, it has been suggested that PSRs and OOMs should be               Maximization (EM) [1] do not avoid local minima or scale to large
+easier to learn than POMDPs; with a successful learning algorithm,           state spaces; recent extensions of approximate planning techniques
+we can look for a model which ignores all but the most important             for PSRs have only been applied to models constructed by hand [8,
+components of state, reducing dimensionality still further.                  6]; and, although many learning algorithms have been proposed for
+   In this paper we take an important step toward realizing the above        PSRs (e.g. [16, 3]) and OOMs (e.g. [10]), none have been shown to
+hopes. In particular, we propose and demonstrate a fast and statis-          learn models that are accurate enough for lookahead planning. As a
+tically consistent spectral algorithm which learns the parameters            result, there have been few successful attempts at closing the loop.
+of a PSR directly from sequences of action-observation pairs. We                Our learning algorithm starts from PH , PT ,H , and PT ,ao,H , ma-
+then close the loop from observations to actions by planning in the          trices of probabilities of one-, two-, and three-tuples of observa-
+learned model and recovering a policy which is near-optimal in the           tions conditioned on present and future actions. (For additional
+original environment. Closing the loop is a much more stringent              details see [2].) We show that, for a PSR with true parameters
+test than simply checking short-term prediction accuracy, since the          m1 , m∞ , and Mao (the initial state, the normalization vector, and
+quality of an optimized policy depends strongly on the accuracy of           a transition matrix for each action-observation pair), the matrices
+the model: inaccurate models typically lead to useless plans.                PT ,H and PT ,ao,H are low-rank, and can be factored using smaller
+                                                                             matrices of test predictions R and S:
+Categories and Subject Descriptors
+                                                                                                    PT ,H = RSdiag(PH )                        (1a)
+I.2.6 [Computing Methodologies]: Artificial Intelligence
+                                                                                                 PT ,ao,H = RMao Sdiag(PH )                    (1b)
+∗now at Google Pittsburgh                                                    Next we prove that the true PSR parameters may be recovered, up
+                                                                             to a linear transform, from the above matrices and an additional
+Cite as: Closing the Learning-Planning Loop with Predictive State Repre-     matrix U that obeys the condition that U T R is invertible:
+sentations (Extended Abstract), Byron Boots, Sajid M. Siddiqi and Geoffrey
+J. Gordon, Proc. of 9th Int. Conf. on Autonomous Agents and Mul-                  b1 ≡ U T PT ,H 1k = (U T R)m1                                (2a)
+tiagent Systems (AAMAS 2010), van der Hoek, Kaminka, Lespérance,
+Luck and Sen (eds.), May, 10–14, 2010, Toronto, Canada, pp. XXX-XXX.             bT∞  ≡ PH T
+                                                                                             (U T PT ,H )† =  mT∞ (U T R)−1                    (2b)
+Copyright c 2010, International Foundation for Autonomous Agents and                       T             T       †       T
+                                                                                Bao ≡ U PT ,ao,H (U PT ,H ) = (U R)Mao (U R)        T    −1
+                                                                                                                                               (2c)
+Multiagent Systems (www.ifaamas.org). All rights reserved.
+
+ A.          Outer Walls
+                           B. −3                           C.−3                         D. −3                           E.                            F. Mean # of                    507.8
+                            x 10                          x 10                          x 10                                                                     Actions
+                           4                              4                             4                                                                            13.9
+                                                                                                                                                                             18.2 *   ~
+                                                                                                                                                                                      ~
+      Inner Walls
+                           0                              0                             0
+                                                                                                                                                                 Opt. Learned Rnd.
+                                                                                                                                                             1
+                                                                                                                                                                      Optimal
+                           −4                            −4                            −4                                                       Cumulative               Learned
+                                                                                                                                                         .5
+                                                                                                                                                 Density                    Random
+                            −8     −4    0     4      8 −3 −8     −4    0      4    8 −3 −8      −4      0      4      8 −3
+                                                      x 10                          x 10        Policies Executed in   x 10    Paths Taken in                0
+  Agent Environment                Learned Subspace                Value Function                                             Geometric Space
+                                                                                                                                                                 0            50         100
+                                                                                                 Learned Subspace                                                     # of Actions
+Figure 1: Experimental results. (A) Simulated robot domain and sample images from two positions. (B) Training histories embed-
+ded into learned subspace. (C) Value function at training histories (lighter indicates higher value). (D) Paths executed in learned
+subspace. (E) Corresponding paths in original environment. (F) Performance analysis.
+ Our learning algorithm works by building empirical estimates PbH ,           EEEC-0540865. BB and GJG were supported by ONR MURI
+PbT ,H , and PbT ,ao,H of PH , PT ,H , and PT ,ao,H by repeatedly sam-        grant number N00014-09-1-1052.
+pling execution traces of an agent interacting with an environment.
+We then pick U    b by singular value decomposition of PbT ,H , and           References
+learn the transformed PSR parameters by plugging U         b , PbH , PbT ,H ,
+                                                                               [1] J. Bilmes. A gentle tutorial on the EM algorithm and its
+and PbT ,ao,H into Eq. 2. As we include more data in our estimates                 application to parameter estimation for Gaussian mixture and
+PbH , PbT ,H , and PbT ,ao,H , the law of large numbers guarantees that            hidden Markov models. Technical Report, ICSI-TR-97-021,
+they converge to their true expectations. So, if our system is truly a             1997.
+PSR of finite rank, the resulting parameters b         b∞ , and B
+                                                  b1 , b         bao con-      [2] B. Boots, S. Siddiqi, and G. Gordon. Closing the
+verge to the true parameters of the PSR up to a linear transform—                  learning-planning loop with predictive state representations.
+that is, our learning algorithm is consistent.                                     http://arxiv.org/abs/0912.2385, 2009.
+   Fig. 1 shows our experimental domain and results. A simulated               [3] M. Bowling, P. McCracken, M. James, J. Neufeld, and
+robot uses visual sensing to traverse a square domain with multi-                  D. Wilkinson. Learning predictive state representations using
+colored walls and a central obstacle (1A). We collect data by run-                 non-blind policies. In Proc. ICML, 2006.
+ning short trajectories from random starting points, and then learn            [4] A. R. Cassandra, L. P. Kaelbling, and M. R. Littman. Acting
+a PSR. We visualize the learned state space by plotting a projec-                  optimally in partially observable stochastic domains. In Proc.
+tion of the learned state for each history in our training data (1B),              AAAI, 1994.
+with color equal to the average RGB color in the first image in                [5] D. Hsu, S. Kakade, and T. Zhang. A spectral algorithm for
+the highest probability test. We give the robot high reward for ob-                learning hidden Markov models. In COLT, 2009.
+serving a particular image (facing the blue wall), and plan using              [6] M. T. Izadi and D. Precup. Point-based planning for
+point-based value iteration; (1C) shows the resulting value func-                  predictive state representations. In Proc. Canadian AI, 2008.
+tion. To demonstrate the corresponding greedy policy, we started
+                                                                               [7] H. Jaeger. Observable operator models for discrete stochastic
+the robot at four positions (facing the red, green, magenta, and yel-
+                                                                                   time series. Neural Computation, 12:1371–1398, 2000.
+low walls); (1D) and (1E) show the resulting paths in the state space
+                                                                               [8] M. R. James, T. Wessling, and N. A. Vlassis. Improving
+and in the original environment (in red, green, magenta, and yellow,
+                                                                                   approximate value iteration using memories and predictive
+respectively). Note that the robot cannot observe its position in the
+                                                                                   state representations. In AAAI, 2006.
+original environment, yet the paths in E still appear near-optimal.
+To support this intuition, we sampled 100 random start positions               [9] M. Littman, R. Sutton, and S. Singh. Predictive
+and recorded statistics of the resulting greedy trajectories (1F): the             representations of state. In Advances in Neural Information
+bar graph compares the mean number of actions taken by the op-                     Processing Systems (NIPS), 2002.
+timal solution found by A* search in configuration space (left) to            [10] M. Zhao and H. Jaeger and M. Thon. A bound on modeling
+the greedy policy (center; the asterisk indicates that this mean was               error in observable operator models and an associated
+only computed over the 78 successful paths) and to a random pol-                   learning algorithm. Neural Computation, 2009.
+icy (right). The line graph illustrates the cumulative density of the         [11] J. Pineau, G. Gordon, and S. Thrun. Point-based value
+number of actions given the optimal, learned, and random policies.                 iteration: an anytime algorithm for POMDPs. In Proc.
+   To our knowledge this is the first research to combine several                  IJCAI, 2003.
+benefits which have not previously appeared together: our learner             [12] M. Rosencrantz, G. J. Gordon, and S. Thrun. Learning low
+is computationally efficient and statistically consistent; it handles              dimensional predictive representations. In Proc. ICML, 2004.
+high-dimensional observations and long time horizons by work-                 [13] S. M. Siddiqi, B. Boots, and G. J. Gordon. Reduced-rank
+ing from real-valued features of observation sequences; and finally,               hidden Markov models. http://arxiv.org/abs/0910.0902,
+our close-the-loop experiments provide an end-to-end practical test.               2009.
+See the long version [2] for further details.                                 [14] E. J. Sondik. The optimal control of partially observable
+                                                                                   Markov processes. PhD. Thesis, Stanford University, 1971.
+Acknowledgements                                                              [15] P. Van Overschee and B. De Moor. Subspace Identification
+                                                                                   for Linear Systems: Theory, Implementation, Applications.
+SMS was supported by the NSF under grant number 0000164, by                        Kluwer, 1996.
+the USAF under grant number FA8650-05-C-7264, by the USDA                     [16] E. Wiewiora. Learning predictive representations from a
+under grant number 4400161514, and by a project with Mobile-                       history. In Proc. ICML, 2005.
+Fusion/TTC. BB was supported by the NSF under grant number
+

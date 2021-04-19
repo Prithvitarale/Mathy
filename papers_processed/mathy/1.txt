@@ -1,0 +1,631 @@
+                    Bounded geometries, fractals, and low-distortion embeddings
+                            Anupam Gupta∗                    Robert Krauthgamer†                 James R. Lee‡
+                              Abstract                                    distortion in terms of certain fundamental properties of the
+                                                                          metric (X, d).
+    The doubling constant of a metric space (X, d) is the                     The general case is well-understood. Bourgain [4]
+smallest value λ such that every ball in X can be covered by              showed that every n-point metric embeds into Lp with
+λ balls of half the radius. The doubling dimension of X is                O(log n) distortion for any fixed p; it is shown in [25] that
+then defined as dim(X) = log2 λ. A metric (or sequence of                 this bound is tight, for all p ≤ 2, for the shortest path met-
+metrics) is called doubling precisely when its doubling di-               ric on constant-degree expander graphs. This was later ex-
+mension is bounded. This is a robust class of metric spaces               tended in [26], showing a tight upper bound of O( logp n ) for
+which contains many families of metrics that occur in ap-                 any Lp space.
+plied settings.                                                               In light of this, a significant amount of effort has been
+    We give tight bounds for embedding doubling metrics                   made to understand the distortion achievable for restricted
+into (low-dimensional) normed spaces. We consider both                    classes of metric spaces. So far, the restrictions consid-
+general doubling metrics, as well as more restricted fami-                ered have been mostly topological. For L1 embeddings,
+lies such as those arising from trees, from graphs excluding              this is due partly to the intimate connection with multi-
+a fixed minor, and from snowflaked metrics. Our techniques                commodity flows and approximations for the sparsest cut,
+include decomposition theorems for doubling metrics, and                  see e.g. [25, 3, 12].It is not too difficult to see that ev-
+an analysis of a fractal in the plane due to Laakso [20]. Fi-             ery tree metric embeds isometrically into L1 . Matoušek
+nally, we discuss some applications and point out a central               [27] showed that every tree embeds into Lp with distortion
+                                                                                              1 1
+open question regarding dimensionality reduction in L2 .                  O((log log n)min( 2 , p ) ) and that this bound is tight for all
+                                                                          p > 1. Rao [32] showed√that every planar graph embeds
+                                                                          into L2 with distortion O( log n), and this in fact holds for
+1 Introduction                                                            any family which excludes a fixed minor. A matching lower
+                                                                          bound, yielded by a family of series-parallel metrics was
+A basic goal in the study of finite metric spaces is to approx-           given in [29] (see also [19, 21]). Gupta et al. [12] show that
+imate some class of metric spaces by another more simple                  K4 -free (series-parallel) and K2,3 -free (outerplanar) graphs
+or tractable class. Apart from being beautiful objects of                 embed into L1 with constant distortion.
+study lying at the intersection of analysis, combinatorics,                   Here, we consider restrictions not on the topology of the
+and geometry, the ideas and techniques generated in this                  metric, but on its geometry. More specifically, we exam-
+field have led to a number of powerful algorithmic applica-               ine how the “volume growth” of a metric affects its embed-
+tions (see, e.g. [14, 24, 28]).                                           dability into Lp spaces. The notion of growth that we use is
+    We consider embeddings of finite metric spaces into Lp                well-studied, and is very similar to a notion of Assouad [2],
+spaces. Given a metric (X, d), the goal is to find a map                  see also [13]. Our definition is technically slightly different
+f : X → Lp such that ||f (x)−f (y)||p is close to d(x, y) for             from Assouad’s, but the flavor is left unaltered; in particu-
+all x, y ∈ X. The worst-case factor by which distances are                lar, the notion of bounded growth is equivalent under either
+expanded or contracted is called the distortion of the map                framework.
+f . In general, our goal is to find bounds on the achievable                  For a metric (X, d), let λ be the smallest value such that
+   ∗ Department of Computer Science, Carnegie Mellon University, Pitts-   every ball in X can be covered by λ balls of half the ra-
+burgh, PA 15213. Email: anupamg@cs.cmu.edu                                dius. We define the doubling dimension of X as dim(X) =
+    † International Computer Science Institute and Computer Science Di-   log2 λ. It can be shown, for instance, that for every fixed
+vision, U.C. Berkeley, Berkeley, CA 94720. Supported in part by NSF       p, the doubling dimension of d-dimensional `p space is
+grants CCR-9820951 and CCR-0121555 and DARPA cooperative agree-
+ment F30602-00-2-0601. Email: robi@cs.berkeley.edu
+                                                                          roughly d, and clearly for a finite metric dim(X) ≤ log |X|.
+    ‡ Microsoft Research and Computer Science Division, U.C. Berkeley.    A metric (or sequence of metrics) is called doubling pre-
+Email: jrl@cs.berkeley.edu                                                cisely when its doubling dimension is bounded. We discuss
+                                                                        1
+
+this notion more thoroughly in Section 1.3.                          In Section 4, we devise a number of embeddings, some
+    Not only are doubling metrics interesting objects in their   which rely heavily on the clustering of Section 3. First,
+own right, but they are also of practical concern. Growth        we give a Bourgain-style embedding which shows that ev-
+restrictions are very natural and are thought to occur in        ery general doubling metric (X, d) embeds into `p with dis-
+                                                                                           1 1
+real-world phenomena such as peer-to-peer networks (see          tortion O((log n)min( 2 , p ) ) for any p ∈ [1, ∞). Instead of
+e.g. [30]) and data analysis (e.g., when the input data re-      forming coordinates by taking the distance to arbitrary sub-
+sides on a low-dimensional manifold, cf. [34]). In fact,         sets of X, we instead use only subsets of appropriately sized
+various algorithms can be tailored to run efficiently on cer-    nets in X (see Section 1.2 for the definition of a net). Using
+tain classes of growth-restricted metrics, as demonstrated       this embedding, along with another application of the local
+in [8, 31, 16, 17]. The metrics considered there are either      lemma, we show that every doubling metric can be embed-
+equivalent to or a subclass of those metrics which are dou-                                         O(log n)
+                                                                 ded with 1 +  distortion into `∞            . See Section 6 for an
+bling; see Section 1.3.                                          application to distance labeling schemes.
+                                                                     Unfortunately, although fairly simple, the distortion of
+1.1     Results and techniques                                   this Bourgain-style embedding degrades badly (exponen-
+We are concerned with the broad roles of “volume” and            tially) with dim(X). Based on the clustering of Section
+“structure” in determining the embeddability of a met-           3, and an embedding technique of Rao [32], we show that
+ric. For instance, in Section 2, we show that every dou-         every n-point metric (X, d) embeds into `p with distortion
+bling tree metric admits a constant distortion embedding         at most                                           
+                                                                                                                1 1
+into `p
+       O(1)
+             (i.e., constant dimensional `p space) for any                         O dim(X) · (log n)min( 2 , p ) .
+p ∈ [1, ∞]. This exhibits a very natural class of met-
+ric spaces which embed into `2 with O(1) distortion, but         This provides a smooth upper bound on the distortion of
+not isometrically.                                               general metrics in terms of their dimension. In the case
+                 √ As discussed before, some tree met-           of Euclidean embeddings, for instance, it beats
+rics require Ω( log log n) distortion to embed into `2 [5],                                                           √ Bourgain’s
+while we                                                         general upper bound as long as dim(X) = o( log n).
+         √ prove that some doubling metrics require distor-          In [2], it is proved that if (X, d) is a doubling metric, then
+tion Ω( log n) (see Section 5). Thus it is precisely the
+synthesis of these two properties that yields an enormous        for any 0 < α < 1, (X, dα ) embeds into `k2 with distortion
+improvement in embeddability.                                    D, where k and D depend only on the doubling dimension
+    That these metrics can be embedded using only O(1)           of X. Here, (X, dα ) is the metric with all distances raised
+dimensions is perhaps even more surprising (see the dis-         to the power α (this is called a snowflaked version of X).
+cussion in Section 2), and as we will soon see, proves a         Unfortunately, the dependence of k and D on dim(X) is
+special case of a conjecture of Assouad. Our embedding           exponential. In Section 4, using a slight twist on the above
+makes use of a novel partitioning algorithm for doubling         embedding technique, we give an algorithmic version of
+trees. The partition is described conveniently by a coloring     Assouad’s proof, and drastically improve the dependence
+of the edges. Our algorithm either finds a good coloring or      of k and D to near-linear Assouad also conjectured that the
+a submetric which is a counterexample to the doubling as-        above result holds even when α = 1. Although Semmes
+sumption. To achieve an embedding into O(1) dimensions,          [33] disproved this conjecture, we have shown that it holds
+we must reuse colors. We do this by defining a notion of ad-     whenever (X, d) is a doubling tree metric.
+jacency between paths, and arguing that the resulting graph          In Section 5, we exhibit a family √ of series-parallel dou-
+(whose vertices are paths) has bounded chromatic number.         bling metrics which requires Ω( log n) distortion to em-
+    In Section 3, we construct low-diameter decompositions       bed into `2 , which shows that the upper bound of Section 4
+for general metrics whose parameters depend smoothly on          is tight. This family is based on the construction of a frac-
+the doubling dimension. Such decompositions are the main         tal due to Laakso [20]. (It was brought to our attention that
+tool in many embedding results, as well as a number of           a similar analysis was obtained independently in [21], but
+other applications. To construct these decompositions, we        without an explicit dependence on n. In addition, the proof
+adapt a probabilistic technique of [7]. For applications of      techniques are subtly different.)
+the decomposition later in the paper, it is important that the       Finally, in Section 6, we mention some algorithmic ap-
+probability space that we sample from be very compactly          plications of our results, and point out a very intriguing open
+defined (e.g., of size O(1) for the case of doubling metrics).   question regarding the roles of volume and structure in di-
+For this purpose, we use some ideas from [18], in conjunc-       mensionality reduction in Euclidean spaces.
+tion with Lovász Local Lemma, in order to exploit certain
+locality properties of our decomposition. Our use of the lo-
+                                                                 1.2     Preliminaries
+cal lemma here, and elsewhere in the paper, can be made          Here are some definitions used in the paper; the books by
+algorithmic using standard techniques.                           Deza and Laurent [9] and by Heinonen [13] give more de-
+                                                               2
+
+tails on metric spaces. Let (X, dX ) and (Y, dY ) be two met-               by only a factor of 2.
+ric spaces,1 and consider an injective map f : X → Y . We                       The seminal paper of Assouad [2] showed that this no-
+define                                                                      tion attains several natural properties (see also [13, Ch. 10]).
+                                                                            For instance, it can be shown that dim(Rk ) = Θ(k) when
+                                                 dX (a, b)
+        contraction(f )         =      sup                      ,           Rk is endowed with the `p norm. It follows that the upper
+                                      a,b∈X   dY (f (a), f (b))             bound O(k) applies to any subset of Rk . For a finite met-
+                                              dY (f (a), f (b))             ric space, clearly dim(X) ≤ log |X|. The next proposition
+          expansion(f )         =      sup                      .
+                                      a,b∈X      dX (a, b)                  will be key. Its proof follows by applying the definition sev-
+                                                                            eral times to obtain a cover with balls of sufficiently small
+The distortion of f is defined by dist(f ) = expansion(f ) ·                radius, and then arguing that each net point is covered by a
+contraction(f ) = ||f ||Lip · ||f −1 ||Lip . The distortion with            distinct ball.
+which X embeds into Y is the infimum of dist(f ) over all
+injective maps f : X → Y .                                                  Proposition 1.1. Let (X, d) be a metric with doubling con-
+    As usual, we define cp (X) as the least distortion with                 stant λ. If all pairwise distances in Y ⊆ X are at least r
+which X embeds into some `p space. Let G = (V, E) be                        (e.g., Y is an r-net of X), then for any point x ∈ X and
+                                                                            radius t ≥ r we have |B(x, t) ∩ Y | ≤ λdlog r e .
+                                                                                                                            2t
+a simple undirected graph with non-negative edge lengths.
+The edge lengths on G induce a natural metric dG (u, v)
+given by the length of a shortest path between u and v in                   The counting measure. Karger and Ruhl [16] considered
+G.                                                                          a notion of dimension that relies on the counting measure
+    If we have two maps f1 : X → Y1 and f2 : X → Y2 , we                    (in finite metric spaces): Let K be the smallest constant
+define their direct sum f1 ⊕ f2 as the map f : X → Y1 × Y2                  such that |B(x, 2r)| ≤ K|B(x, r)| for all x ∈ X, r ≥ 0.
+given by f (x) = (f1 (x), f2 (x)). This extends naturally to                (Strictly speaking, the requirement in their definition was
+a direct sum of more than two functions.                                    enforced only when |B(x, r)| was at least some threshold
+    We define the aspect ratio of (X, d) to be the ratio of                 n0 . We ignore this for simplicity, but most of our tech-
+the largest distance to the smallest in X. For x ∈ X and                    niques are local and allow for such restrictions.) Through-
+r ≥ 0, we define the open ball of radius r about x to be                    out, we refer to K as the KR-constant of X and define the
+B(x, r) = {y ∈ X : d(x, y) < r}.                                            KR-dimension of X as dimKR (X) = log2 K. The next
+    Finally, we say that a subset Y of X is an -net if                     proposition shows that bounded KR-dimension is a more
+       S (1) For every x, y ∈ Y, d(x, y) ≥  and (2)
+it satisfies                                                                stringent requirement than bounded doubling dimension. Its
+X ⊆ y∈Y B(y, ). Such nets always exist for any  > 0.                      proof is relatively simple and is omitted from this version.
+For finite metrics, they can be constructed greedily. For ar-               However, bounded KR-dimension means that the counting
+bitrary metrics, proof of their existence is an easy applica-               measure is doubling, and thus this proposition is no more
+tion of Zorn’s lemma.                                                       than an instantiation of a well-known basic result: If a met-
+                                                                            ric space (X, d) has a doubling measure then the metric is
+1.3     Notions of dimension and volume                                     doubling. (See e.g. [13] for a thorough treatment of dou-
+Here we consider some notions meant to capture the “vol-                    bling measures.)
+ume growth” of arbitrary metric spaces and discuss relations
+                                                                            Proposition 1.2. For any finite metric (X, d), dim(X) ≤
+between them.
+                                                                            4 · dimKR (X).
+Doubling dimension. An alternative definition for the dou-
+bling constant considers diameter (of subsets) instead of ra-                   The converse, however, is not true; there are metrics
+dius (of balls); that is, the doubling constant of a metric                 with bounded Assouad dimension whose KR-dimension is
+space (X, d) is as the smallest λ such that every subset of                 Ω(log |X|). For example, take an integer grid in the Eu-
+X of diameter 2r can be covered by at most λ subsets of                     clidean plane, and consider only the origin and the points
+diameter at most r. Again, the doubling dimension of X is                   in the annulus n/2 < ||x|| ≤ n. This reflects certain frail-
+then defined as dim(X) = log2 λ. The main advantage of                      ties in the definition of KR-dimension: Even if dimKR (X)
+this definition is that for any submetric Y ⊆ X, we have                    is bounded, this does not necessarily hold for submetrics
+dim(Y ) ≤ dim(X). In what follows, we will find it easier                   of X. Furthermore, the annulus itself has a bounded KR-
+to work with balls rather than arbitrary sets. Thus we will                 dimension, but this property is not maintained when even
+use the definition given earlier (i.e., every ball in X can be              one point (the origin) is added.
+covered by λ balls of half the radius). It is easy to see that              Local density. Finally, there is another natural notion of
+moving between the two definitions affects the dimension                    volume, which has been used widely in the study of the
+   1 We are concerned mostly with finite metrics, but most of our results   bandwidth of graphs [10]. Given an unweighted connected
+extend to arbitrary metric spaces via standard compactness arguments.       graph G = (V, E), the local density of G, denoted β(G),
+                                                                          3
+
+is the smallest value β such that |B(v, r)| ≤ β r for all       Algorithm B OUNDED -D ISTORTION :
+v ∈ V, r > 0. It is easy to see that since G is unweighted       (Initially all the edges are uncolored.)
+and connected, |B(v, r)| ≥ r, hence |B(v, 2r)| ≤ 2βr ≤           1. set k = dlog2 diam(T )e and Y0 = ∅.
+2β|B(v, r)|, which implies that dim(G) ≤ 4 dimKR (G) ≤           2. for i = 1, . . . , k do
+4(log β(G) + 1).                                                 3. set ri = 2k−i and let Yi ⊇ Yi−1 be ri -net of T .
+                                                                 4. for every y ∈ Yi \ Yi−1 (in an arbitrary order) do
+                                                                 5.       color all the uncolored edges in Py with a new color
+2 Trees
+                                                                          Figure 2.1. Edge-coloring the tree T
+In this section we prove Assouad’s conjecture for trees,
+showing that every doubling tree can be embedded with
+constant distortion into constant dimensional `p space for
+every p ∈ [1, ∞], where both constants depend only on the       is an α-good coloring of T if χ is proper, and for every ver-
+doubling constant of the tree. Not many families of metrics     tex v ∈ V and every ancestor u of v, the path from u to
+are known to have such powerful embeddings, and it may          v in T contains a monochromatic portion of length at least
+be surprising that two seemingly orthogonal constraints are     α · d(u, v). The following lemma is standard, and thus a
+needed for such a result. However, as mentioned in the in-      proof is omitted (see, for instance, [27]).
+troduction, a constant distortion Euclidean embedding can-      Lemma 2.1. Let T = (V, E) be a rooted tree with non-
+not be achieved if either of the constraints is dropped. Fur-   negative edge lengths. If T has an α-good coloring then
+thermore, the tree requirement cannot be relaxed either         cp (T ) ≤ α2 for all p ∈ [1, ∞].
+topologically (i.e., to graphs excluding a fixed minor) or
+                                              √ graphs), as
+graph-theoretically (i.e., to bounded treewidth                     We now define a certain class of “bad comb” metrics,
+even series-parallel graphs might require Ω( log n) distor-     and then show that doubling metrics do not have submet-
+tion in any Euclidean embedding (see Section 5).                rics which are arbitrarily bad combs. A k-comb is a metric
+    The fact that these results can be extended to constant     induced by an edge-weighted tree T having the following
+dimension is even more surprising, especially since recent      properties: It has a distinguished vertex c called the center,
+results of Brinkman and Charikar [6] (see also a short proof    and k edge-disjoint simple paths p1 , . . . , pk called hairs.
+of [23], which even generalizes to the metrics exhibited in     For a constant γ, the comb is called γ-bad if for some value
+Section 5 [22]) show extremely strong lower bounds on the       L ≥ maxi d(c, pi ), the length of every hair is in the interval
+dimension required to embed simple series-parallel graphs       [L, γL). We omit the proof of the next lemma, as it follows
+into `1 .                                                       easily from Proposition 1.1.
+    On a high level, our embeddings consist of two steps.
+Without loss of generality, we can assume that the tree is      Lemma 2.2. A 2γ -bad k-comb (X, d) has doubling con-
+rooted at some vertex. The first step partitions the edges of   stant λX > k 1/(γ+3) .
+the tree into monotone paths (i.e., those lying on some root-       It thus suffices to exhibit good colorings for tree metrics
+leaf path), a process conveniently described by a coloring      which exclude bad combs.
+of the tree edges. In the second step we identify the vari-
+ous colors with distinct unit-length vectors, and map each      Theorem 2.3. Let 0 < α ≤ 1/60. Then every tree metric
+vertex v to the sum of the vectors corresponding to the col-    has either an α-good coloring or a submetric which is a
+ors of the edges along the path from the root to v. We first    4-bad (1/40α)-comb.
+exhibit a simple constant distortion (but high-dimensional)
+embedding in Section 2.1; we then show how to reduce the            We prove here the unweighted case of Theorem 2.3; the
+dimensionality in Section 2.2.                                  weighted case is more involved and thus deferred to the full
+                                                                version. (Notice that subdividing edges might increase the
+2.1     Constant distortion embeddings                          doubling constant; consider for instance an n-leaf star with
+                                                                edge lengths 2i for i = 1, . . . , n.)
+Let T = (V, E) be a tree rooted at r with (positive) edge
+lengths ` : E → R+ ; by scaling, we can assume that all         Proof of unweighted case. Let Pz be the set of edges in the
+edge have at least unit length. Let d denote the metric in-     path from the root to z in the tree T , and let Pxy be the
+duced on T . An edge-coloring of T with colors from C is        edges on the path between x and y. We proceed by showing
+simply a map χ : E → C. Since we have a rooted tree,            an algorithm that finds an α-good coloring, unless the tree
+the ancestor-descendant relationship is well-defined: Now       metric has a 4-bad (1/40α)-comb. The algorithm is given
+a monotone path in T is the simple path between a vertex        in Figure 2.1.
+and one of its descendants. We call an edge-coloring proper         Algorithm B OUNDED -D ISTORTION clearly colors every
+if each color-class forms a monotone path in T . Finally, χ     edge exactly once and thus defines an edge-coloring χ; we
+                                                              4
+
+claim χ is proper. Indeed, the algorithm maintains the in-       Theorem 2.4. Every doubling tree metric T has cp (T ) =
+variant that the colored edges form a connected subtree of       O(1).
+T containing the root. It follows that the edges colored in
+any single execution of step 4 form a monotone path. Since       Proof. Let λ = λT be the doubling constant of the met-
+we use a new color each time around, the claim follows.          ric T . Setting γ = 2 in Lemma 2.2, the tree T does not
+   Now assume that χ is not α-good. Then there exist ver-        contain a 4-bad λ6 -comb. Let α = 1/40λ6 ; since λ ≥ 2,
+tices u, v with u an ancestor of v and D = d(u, v) = |Puv |      the parameter α is bounded above by 1/60, and hence The-
+with the following property: if u = w0 , w1 , . . . , w` = v     orem 2.3 implies that T has an α-good coloring. Finally,
+are the color-transition vertices on Puv , i.e., the subpath     applying Lemma 2.1 gives us an embedding with distortion
+Pwj wj+1 is a maximal monochromatic segment for each j,          cp (T ) ≤ 80λ6 .
+then d(wj , wj+1 ) < αD for all j. For each wj , consider        2.2     Bounding the dimension (frugal coloring)
+the execution of Step 5 in which Pwj−1 wj falls in Py and is
+colored, and let yj denote the vertex y at this point in time.   The algorithm of Section 2.1 gave us a constant distortion
+(See Figure 2.2.)                                                embedding into `p spaces; however, it used up to a linear
+                                                                 number of dimensions. In this section, we reduce this dras-
+                   u = w0                                        tically by embedding into a constant number of dimensions.
+                          ≤ αD                                   Theorem 2.5. Every doubling tree metric embeds into
+                                                                  O(1)
+                                                                 `p     with O(1) distortion for every p ∈ [1, ∞].
+               D     wj                                              The proof again proceeds by edge-coloring the tree T =
+                                               yj                (V, E), this time with O(1) colors; of course, the coloring
+                     wj+1
+                                          yj+1                   can no longer be proper, and we will have to reanalyze the
+                                                                 embedding. We will still make use of the ideas given in
+                                                                 Lemmas 2.1 and 2.3. In particular, we edge-color the tree
+                    v = wl                                       using only colors from a set C of |C| = λO(log λ) colors;
+                                                                 essentially, we apply algorithm Bounded-Distortion with
+             Figure 2.2. An α-bad coloring.                      an unbounded number of temporary colors (not from C),
+                                                                 and at the end of each iteration we replace the temporary
+                                                                 colors by colors from C. We prove here the unweighted case
+   Let m be such that D/4 < rm ≤ D/2. We now claim
+                                                                 and defer the extension to weighted trees to the full version.
+that for any j, if d(v, wj ) ≥ D/2 then yj ∈ Ym . Indeed,
+Ym is an rm ≤ D/2 net, hence B(v, D/2) must contain a            Proof of unweighted case. For a path p, let `(p) be the
+net point y 0 ∈ Ym . Furthermore, this net point must be a       length of p. A coloring χ : V → C will be called α-
+descendant of wj in T . It follows that all the edges in the     reasonable if, for every pair u, v ∈ V with x = lca(u, v),
+path Py0 are colored by the time y 0 is considered as a net      there exists a color c ∈ C such that the following holds: If
+point. Since that path contains Pwj−1 wj , we know that yj is    Pu is the set of paths between x and u which are colored c,
+considered no later than y 0 , and thus yj ∈ Ym .                and Pv is the same for v, then
+   Finally, consider all the vertices wj with d(u, wj ) ≤
+D/10. We just proved that all the corresponding yj are
+                                                                           P              P
+                                                                              p∈Pu `(p) −    p∈Pv `(p) ≥ α · d(u, v).
+in Ym ; since Ym is an rm -net, d(yj , yj+1 ) ≥ rm >
+D/4. This implies that either d(wj , yj ) ≥ D/10 or              It is straightforward that applying the embedding of
+d(wj+1 , yj+1 ) ≥ D/10, as otherwise we would contra-            Lemma 2.1 to an α-reasonable coloring of T with k col-
+dict the triangle inequality d(yj , yj+1 ) ≤ d(yj , wj ) +       ors yields an embedding of T into `kp with distortion at
+d(wj , wj+1 ) + d(wj+1 , yj+1 ). We can now obtain the           most α. (In fact, the dimension can be reduced further to
+comb: for each j, at least one of Pwj yj and Pwj+1 yj+1 is       O( α12 log k) by using vectors βi that are near-orthogonal;
+a hair of length at least D/10. (Since the edges are unit-       the details are omitted from this version of the paper.) Thus
+weighted, we can cut off the paths to a length of exactly        it suffices to show that T has an α-reasonable coloring.
+D/10). These hairs are edge-disjoint because they are col-           We now color the edges of T using algorithm
+ored differently, and the total number of hairs is at least      B OUNDED -D&D given in Figure 2.2. Let λ be the dou-
+1 D/10            1                                              bling constant of T , and set α = 1/40λ6 as in Theorem
+2 ( αD −3) ≥ 40α . Letting u be the center of the comb, we
+have d(u, wj ) ≤ D/10 for each hair (wj , yj ), so we indeed     2.4. Let C be a set of |C| = λ3 log(68/α) = λO(log λ) colors.
+obtained a 4-bad (1/40α)-comb. (For unit-weight trees we         To complete the proof of Theorem 2.5 it suffices to show
+actually get a 1.01-bad comb.)                                   that this algorithm produces an α/2-reasonable coloring χ
+                                                                 of T using only colors from C. To this end, Lemma 2.7
+                                                               5
+
+below shows that the algorithm can be implemented with             Proof of Lemma 2.8. Let u, v ∈ V with x = lca(u, v),
+these few colors, and Lemma 2.8 proves that the coloring           and assume without loss of generality that t = d(x, u) ≥
+                                                                   1                                    6
+the algorithm produces is α/4-reasonable.                          2 d(u, v). Recall that α = 1/40λ ≤ 1/60; hence Theorem
+                                                                   2.4 guarantees a monochromatic path p of length at least αt
+    We will make use of the following proposition.                 between x and u. We will show that the lengths of all the
+                                                                   paths between x and v with color χ(p) add up to at most
+Proposition 2.6. Along any root-leaf path, the edges that          αt/2, which immediately implies that χ is α/4-reasonable,
+are colored in iteration i have total length at most 2ri . In      as desired.
+particular, `(p) ≤ 2ri for every path p ∈ Pi .                         Consider any maximal monochromatic path p0 between
+                                                                   x and v with χ(p) = χ(p0 ), and let i0 be the iteration in
+Proof of Proposition 2.6. We can assume i > 1; the claim
+                                                                   which p0 is colored. We claim that i0 > i0 + 2 where i0 is
+is trivial for i = 1 since 2r1 > diam(T ). For a leaf v, let
+                                                                   the maximum index such that 2ri0 ≥ αt. (We may assume
+Si,v be the subset of edges along Pv that are actually colored
+                                                                   that αt ≥ 1 and thus ri0 ≤ αt ≤ 2ri0 .) Assuming this
+in iteration i. Consider the edge (x, y) of Si,v farthest from
+                                                                   claim, let us prove the lemma. For every such value of i0 ,
+the root, with y ∈ Yi \ Yi−1 . Since y 6∈ Yi−1 , there exists
+                                                                   Proposition 2.6 implies that the corresponding paths p0 have
+y 0 ∈ Yi−1 with d(y, y 0 ) ≤ ri−1 = 2ri , and furthermore,
+                                                                   total length at most 2ri0 ; now summing over all values i0 >
+Si,v ⊆ Py \ Py0 . It follows that Si,v is contained in the
+                                                                   i0 + 2 shows P that the total length of paths having color χ(p)
+path between y and lca(y, y 0 ), and thus its length is at most
+                                                                   is at most i0 >i0 +2 2ri0 ≤ 4ri0 +3 = ri0 /2 < αt/2.
+d(y, lca(y, y 0 )) ≤ d(y, y 0 ) ≤ 2ri .
+                                                                       It remains to prove the claim. Assume for contradiction
+                                                                   that i0 ≤ i0 + 2. We now have two cases, depending on the
+Lemma 2.7. Step 9 of algorithm Bounded-D&D can be
+                                                                   iteration i at which p was colored. The first case is when
+done greedily with |C| = λ3 log(68/α) .
+                                                                   i0 ≤ i, and hence p0 ∈ Pi∗ . Clearly, d(p, p0 ) ≤ d(u, v) ≤ 2t,
+Proof of Lemma 2.7. The proof idea is very simple: For             and Proposition 2.6 implies that αt ≤ 2ri ; putting the two
+each path p ∈ Pi , it suffices to show that the number of          together gives d(p, p0 ) ≤ α4 ri . Hence p, p0 are adjacent at
+paths that are adjacent to p and were permanently colored          iteration i and cannot have the same color, which contra-
+before p is less than |C|−1, and hence we can color p greed-       dicts the assumption that χ(p) = χ(p0 ). The second case
+ily. We will, in fact, show something slightly stronger: We        is where i < i0 ≤ i0 + 2, in which case p ∈ Pi∗0 . A simi-
+show that the number of paths p0 ∈ Pi∗ with p ↔ p0 is at           lar argument applies; since d(p, p0 ) ≤ 2t ≤ α4 ri0 ≤ 16  α ri ,
+                                                                                                                                 0
+most |C| − 1. Let z ∈ p be its endpoint farther from the root.     we have that p, p0 are adjacent at iteration i0 , giving us the
+Let p0 ∈ Pi∗ be adjacent to p, and let y 0 ∈ p0 ∩ Yi be the net    desired contradiction.
+point that caused p0 to be colored (in some iteration no later
+than i). We now split the paths p0 into two types.                 3 Clustering
+    Type 1: `(p0 ) ≤ 17                            0
+                           α ri . In this case, y is close to      In this section, we give decomposition theorems (for gen-
+                             0                   0
+z; quantitatively, d(z, y ) ≤ `(p) + d(p, p ) + `(p0 ) ≤           eral metrics) whose performance behaves smoothly in terms
+2ri + 16         17       34                             0
+        α ri + α ri < α ri . Hence each such path p corre-         of their doubling dimension, yielding greatly improved re-
+                                0        34            0
+sponds to a distinct point y ∈ B(z, α ri ). But y belongs          sults when the dimension is bounded.
+to the ri -net Yi , so Proposition 1.1 implies that the number
+of such points y 0 , and hence the number of paths p0 , is at      3.1      The padded decomposition
+most λdlog 68/αe  |C|/2.                                          First, we describe a useful low-diameter decomposition for
+    Type 2: `(p0 ) > 17                        0
+                          α ri . These paths p form hairs of       metric spaces. Under other guises, such decompositions
+                  17
+length at least α ri in a comb centered at z. (Since we are        are the main tool in many embeddings, and have numerous
+in a unit-weighted tree, we can truncate these paths to get        other applications.
+the correct length.) The distance of each hair from the cen-           For a metric space (X, d) and a subset S ⊆ X, let
+ter z is d(z, p0 ) ≤ `(p) + d(p, p0 ) ≤ 2ri + 16           17
+                                                   α ri ≤ α ri .   diam(S) denote the diameter of the submetric induced on
+Lemma 2.2 implies that X cannot have a 1.01-bad λ3 -               S. Let P be a collection of all the partitions of X. Given a
+comb, and thus the number of such hairs (and thus the num-         partition P ∈ P and x ∈ X, define
+ber of paths p0 ) is less than λ4 ≤ |C|/4.
+    Hence the total number of paths p0 ∈ Pi∗ that are adja-                 πP (x) = sup{t : ∃C ∈ P with B(x, t) ⊂ C}.
+cent to any single path p ∈ Pi is less than 43 |C| ≤ |C| − 1,
+and we can extend the coloring to p.                               Definition 3.1. An (r, ε)-padded probabilistic decomposi-
+                                                                   tion of a metric (X, d) is a distribution µ over P satisfying:
+Lemma 2.8. Algorithm Bounded-D&D computes an α/4-                     1. Bounded diameter: diam(C) ≤ r for every cluster C
+reasonable coloring.                                                      in every partition P in the support of µ.
+                                                                 6
+
+Algorithm B OUNDED -D&D: (Initially all the edges are uncolored.)
+      1. set k = dlog2 diam(T )e and Y0 = ∅.
+      2. for i = 1, . . . , k do
+      3.      set ri = 2k−i and let Yi ⊇ Yi−1 be ri -net of T .
+      4.      for every point y ∈ Yi \ Yi−1 (in an arbitrary order) do
+      5.            temporarily color all the uncolored edges in Py with a single new color.
+      6.      let Pi be the set of temporarily colored paths.
+      7.      let Pi∗ = Pi ∪ {all paths colored with a color from C}.
+      8.      remark paths p1 , p2 ∈ Pi∗ are adjacent, written p1 ↔ p2 , if d(p1 , p2 ) ≤ 16      α ri .
+      9.      recolor the (temporarily colored) paths in Pi with colors from C
+              such that χ(p1 ) 6= χ(p2 ) for all p1 , p2 ∈ Pi∗ with p1 ↔ p2 .
+                                         Figure 2.3. Frugal edge-coloring of the tree T
+  2. Padding: Prµ [πP (x) ≥ εr] ≥         1
+                                          2 for all x ∈ X.             and the latter quantity is at most 8t    r dim(X). Finally, note
+                                                                       that when B(x, t) is not cut, we have πP (x) ≥ t. Setting
+   Such decompositions have been given earlier for general             t = 64 dim    4r
+                                                                                            , we see that Pr[πP (x) ≥ t] ≥ 21 as desired.
+                                                                                      C (X)
+metrics, where 1/ε = O(log |X|). We show that such de-
+compositions exist where ε depends only on the doubling
+dimension of X. The probabilistic technique we use is in-              3.2       Locality and dimension
+spired by the analysis of [7].
+                                                                       Decompositions like that given by Theorem 3.2 have seen
+Theorem 3.2. Let (X, d) be a finite metric space. Then                 numerous applications in recent years. Often, one wants
+for every r > 0 there exists an (r, ε)-padded probabilistic            a small distribution, i.e. a multi-set of m partitions D =
+decomposition of X with 1/ε ≤ 64 dim(X).                               [P1 , . . . , Pm ] such that the uniform distribution on D satis-
+                                                                       fies condition (2) of Definition 3.1.
+Proof. For ease of notation, we construct a (4r, ε)-padded                 Usually, this is accomplished by choosing m = Θ(log n)
+decomposition. Let N be an r-net of X. Let σ be a ran-                 independent partitions according to µ; a Chernoff bound
+dom permutation on N , and choose a radius R uniformly at              then yields the desired result. Here, we show that m =
+random from (r, 2r]. For each y ∈ N , define a cluster                 O(dim(X) log dim(X)) partitions suffice. The idea is to
+                                                                      use the Lovász Local Lemma along with some ideas bor-
+ Cy = x ∈ X : x ∈ B(y, R) and σ(y) < σ(z)                              rowed from [18] to exploit the locality of the padded de-
+                      for all z ∈ N with x ∈ B(z, R) .                 composition.
+Clearly, diam(Cy ) ≤ 4r. Finally, let P = {Cy }y∈N and                 Theorem 3.3. For a metric space (X, d), let 1/ε =
+note it is a partition of X because N is an r-net and R ≥ r.           512 dim(X). Then for any r ≥ 0, there exists a multi-set
+   Now fix a point x ∈ X and some t ∈ [0, r]. Let                      D = [P1 , . . . , Pm ] of m = O(dim(X) log dim(X)) parti-
+W = B(x, 2r + t) ∩ N , and note that m = |W | ≤ 8dim(T )               tions such that
+by Proposition 1.1. Arrange the points w1 , . . . , wm ∈ W in                                    Sm
+order of increasing distance from x, and let Ik be the inter-            1. For every C ∈ i=1 Pi , diam(C) ≤ r.
+val [d(x, wk )−t, d(x, wk )+t]. Let us say that B(x, t) is cut           2. If µ is the uniform distribution on D then for all x ∈ X,
+by a cluster Cwk if Cwk ∩ B(x, t) 6= ∅ but B(x, t) * Cwk .
+Finally, write Ek for the event that wk is the minimal ele-                                                            1
+                                                                                                  Pr[πP (x) ≥ εr] ≥      .
+ment in W (according to σ) for which Cwk ∩ B(x, t) 6= ∅                                            µ                   2
+and Cwk cuts B(x, t). Then,
+                                                                       Proof of Theorem 3.3. Let r > 0 be fixed and let µ be as
+                                m
+                               X                                       in Theorem 3.2 (note that µ depends on r). Let P1 , . . . , Pm
+ Pr[B(x, t) is cut] ≤              Pr[Ek ]                             be partitions of X chosen according to µ (for some m to
+                               k=1                                     be chosen later). For x ∈ X, let Yx be the number of Pi
+                                m
+                               X                                       for which πPi (x) ≤ 2εr. The probability of the latter event
+                         =         Pr[R ∈ Ik ] · Pr[Ek | R ∈ Ik ]
+                                                                       is at most 18 according to the analysis of Theorem 3.2, and
+                               k=1
+                                m                                      thus EYx ≤ m                        m                        m
+                                                                                         8 . Finally, let Ex be the event that Yx > 2 =
+                               X   2t 1       2t                       4 EYx . A standard Chernoff bound (see e.g. [1]) shows that
+                         ≤            · ≤ (1 + ln m),
+                               k=1
+                                   r k        r                        Pr[Exm ] ≤ (9/10)m .
+                                                                   7
+
+                                              hV        i
+Claim 3.4. If N is an εr-net in X then Pr        y∈N Eym > 0.        By adapting the analysis of the above proof we can prove
+                                                                 the following theorem. In order to reduce the dimension to
+    Notice that the above claim suffices to prove the Theo-      O(log n), we bound the distortion among points in certain
+rem. Indeed, if πP (y) ≥ 2εr for every y ∈ N , then by the       nets using the Lovász Local Lemma, and deduce from that
+triangle inequality, πP (x) ≥ εr for every x ∈ X.                a bound on the distortion among all points. The 1 +  dis-
+    In proving the claim, we will require the following sym-     tortion is achieved by suitably modifying various constants
+metric form of the Lovász Local Lemma (see, e.g., [1]).         in the proof.
+Lemma 3.5 (Lovász Local Lemma). Let A1 , . . . , An be          Theorem 4.2. For any fixed  > 0, every doubling metric
+events in an arbitrary probability space. Suppose that each                              O(log n)
+                                                                 (1 + )-embeds into `∞           .
+Ai is mutually independent of all but at most d other events
+Aj , and suppose that Pr[Ai ] ≤ p for all 1 ≤ i ≤ n. If
+                                                                 4.2     Embeddings via clustering
+ep(d + 1) ≤ 1 then Pr[∧ni=1 Ai ] > 0.
+                                                                 In this section, we obtain embeddings that degrade grace-
+    We now claim that Eym is mutually independent of all         fully with the doubling dimension; these are based on the
+events Eym0 for which d(y, y 0 ) > 4r. To see this, note that    decomposition theorems of Section 3. The next theorem
+every cluster formed under µ (according to Theorem 3.2)          uses an embedding technique due to Rao [32]. Our analysis
+has diameter at most r, thus no such cluster can simultane-      requires considerably more effort since we must keep tight
+ously cut B(y, r) and B(y 0 , r); the claimed independence       control on the dimension of our embedding (this improves
+follows.                                                         the dimension of the host space by a factor of Ω(log n), say,
+    It follows that we can upper bound the number of             for doubling metrics, and is essential for Section 4.2.1).
+events that are non-mutually independent of Eym by d =
+|B(y, 4r) ∩ N | ≤ dim(X)O(dim(X)) (by Proposition 1.1).          Theorem 4.3. For any metric (X, d) and any p ∈ [1, ∞),
+                            1
+Now if Pr[Eym ] ≤ e(d+1)       , then the local lemma implies                                                        
+                                                                                                                 1 1
+Claim 3.4. But this is easily accomplished by choosing                     cp (X) = O dim(X) · (log n)min( 2 , p ) .
+some m = O(dim(X) log dim(X)).
+                                                                 Proof (outline). Let (X, d) be an arbitrary metric and fix a
+4 Upper bounds for doubling metrics                              value r ≥ 0. We discuss the case p = 2; the proof for other
+                                                                 values of p is similar. We produce a map Φr : X → Rk with
+4.1     Bourgain-style embeddings via nets                       k = O(dim(X) log dim(X)) as follows. Let P1 , . . . , Pm
+Here, we give a simple proof that                                be the multi-set of decompositions guaranteed by Theorem
+                                      √ doubling metrics em-
+bed into Euclidean space with O( log n) distortion. This         3.3. Fix some i ∈ {1, . . . , m}, and for every cluster C ∈ Pi ,
+is based on Bourgain’s proof for general metrics, with the       choose a value sgn(C) ∈ {−1, +1} uniformly at random.
+added twist that we take distances from subsets of nets,         Following Rao [32] (see also [28, Ch. 15]), define the map
+rather than subsets of the entire metric. A full proof is de-    ϕi : X → R by
+ferred to the full version.                                                             X
+                                                                              ϕi (x) =        sgn(C) · d(x, X \ C).
+Theorem 4.1. For any n-point doubling metric (X, d),                                   C∈Pi
+the√distortion required to embed X into `2 is c2 (X) =
+O( log n).                                                       Finally, set Φr = √1m ϕ1 ⊕ · · · ⊕ ϕm .
+                                                                                                                  εr
+Proof (sketch). The idea of the embedding is as follows.             Let ε be as in Theorem 3.3, let Nr be an 64     -net, and set
+                                                                                        2
+For every scale 2k , kp   ∈ Z, we construct a map ϕk : X → `2    Sr = {{x, y} ∈ Nr : d(x, y) > r}. For {x, y} ∈ Sr ,
+given by ϕk (x) = 1/2|Yk | (d(x, A))A∈Yk , where Yk is           let Ex,y be the event that ||Φr (x) − Φr (y)|| < 81 εr. The
+the set of all subsets of some 2k -net in X. The final map       following lemma is deferred to the full version.
+is basically the normalized direct sum of all such maps,                             hV               i
+            1
+i.e. ⊕k 2− 2 |Yk | ϕk , though standard considerations must be   Lemma 4.4. Pr {x,y}∈Sr Ex,y > 0. In other words,
+made to achieve a distortion which depends only on n and         there exists a map Φr such that for all {x, y} ∈ Sr ,
+not the aspect ratio of X.                                       ||Φr (x) − Φr (y)|| ≥ 18 εr.
+    It turns out that the dependence of the distortion on            For any i ∈ Z, let Φ(i) = Φ2i , and set Φ = ⊕i∈Z Φ(i) .
+dim(X) in the above theorem is exponential, and its worst-
+case performance is much worse than Bourgain’s O(log n)
+bound. We will remedy this in the next section, using the            The proof that Φ satisfies the statement of Theorem 4.3
+decomposition theorems of Section 3.                             appears in the full version.
+                                                               8
+
+4.2.1      Assouad’s Theorem                                           By summing appropriately weighted versions of this in-
+                                      α
+Recall that for 0 < α ≤ 1, (X, d ) is the metric that arises        equality over all six-point subsets corresponding to “copies”
+from a metric (X, d) by raising all distances to the power α.       of G1 , it is possible to obtain a simple Poincaré inequality
+In his seminal paper [2], Assouad proved the following (per-        which immediately yields the desired lower bound.
+haps surprising) result: For any doubling metric, and every
+fixed 0 < α < 1, there exist constants k and D (depend-                        G0
+ing only on the doubling constant of X) such that (X, dα )                                      b
+embeds into `k2 with distortion at most D.                                     G1
+     Although Assouad’s proof is easily converted to an al-                       s      a            c      t
+gorithm, the parameters k and D grow exponentially with                                         d
+dim(X). We present an algorithmic version based on the
+formation of coordinates in Section 4.2 and a trick of As-
+souad [2] to avoid interaction between scales. The values k                    G2
+and D that we achieve are both nearly linear in dim(X).
+Theorem 4.5. Let (X, d) be an arbitrary metric, and fix
+a value 0 < α < 1. Then there exist values k =
+                                                                               G3
+O(dim(X) log dim(X)) and D = O(dim(X)) such that
+(X, dα ) can be embedded into `k2 with distortion at most D.
+     We now show the construction of the embedding. A
+                                                                             Figure 5.4. The lower bound graphs.
+proof is deferred to the full version. Let m = m(α), choose
+{e1 , . . . , em } to be an orthonormal basis of Rm , and extend
+it to an infinite periodic sequence {ei }i∈Z . Now simply de-
+fine Φ : X → Rk by                                                  6 Discussion
+                             X
+                    Φ(x) =       2αi Φ(i) (x) ⊗ ei .                Applications. We briefly mention several algorithmic ap-
+                             i∈Z                                    plications of our results, deferring details to the final ver-
+                                                                    sion. Using the decomposition theorems in    √ Section 3, we
+5 Lower bounds on distortion                                        can show that doubling metrics admit (k, log n)-volume
+In this section we show that the dependence on n in the             respecting embeddings for all k; doubling metrics can also
+upper bounds of Theorems 4.1 and 4.3 is necessary. In fact,         be embedded into distributions of doubling trees (HSTs of
+the next theorem shows that for Euclidean embeddings (p =           bounded degree) with distortion O(log n), and they embed
+2) of doubling metrics, the aforementioned upper bounds             into the line with constant average distortion. These results
+are existentially tight. (It extends easily to a tight lower        can be used to improve approximation algorithms and on-
+bound for any fixed p ≥ 2.)                                         line algorithms for doubling metrics.
+Theorem 5.1. There exists a family of metrics (Gk , dk )               The approximation ratio of the minimum bandwidth (lin-
+which are uniformly       doubling and series-parallel, such that   ear ordering) problem can be improved using our results to
+                  p
+c2 (Gk ) = Ω( log |Gk |).                                           O(log2 n) for doubling trees and O(log3 n) for general √ dou-
+                                                                    bling√graphs, improving over the general case by log n
+     We now describe the metrics (Gk , dk ); they are shortest      and log log n factors respectively. Furthermore, our tree
+path metrics on weighted series-parallel graphs. G0 consists        coloring in conjunction with a modification of [11] show
+of a single edge of weight 1. Gk+1 is obtained from Gk              that the bandwidth of a graph with local density β is at most
+by replacing every edge in (u, v) in Gk with the six-edge           O(β 1.5 log2 n).
+configuration shown in Figure 5.4. The weight of each new              Distance-labelings of graphs assign labels to vertices so
+edge is 4−k . It is easy to see that (Gk , dk ) is a submetric of   that the distance between two vertices can be computed (ap-
+(Gk+1 , dk+1 ).                                                     proximately) from their labels alone. For simplicity, assume
+     In [19, 20], it is shown that a similar family of metrics is   that all pairwise distances are integers and are bounded by
+uniformly doubling (see [21] for a very simple proof). The          ∆. Theorem 4.2 can then be used to give labels for dou-
+lower bound follows from an appropriate Poincaré inequal-          bling metrics with O(log n log ∆) bits, allowing to approx-
+ity whose basis is the following geometric fact: For any six        imate the distances within a (1 + ) factor. This has an ex-
+points s, t, a, b, c, d ∈ L2 , we have                              ponential dependence on dim(X), which can be improved
+   ||s − t||2 + ||b − d||2 ≤ 4(||a − s||2 + ||c − t||2 )            to O(dim(X) log ∆ log n ( 4 )dim(X) ) bits per label for any
+        + 2(||a − b||2 + ||b − c||2 + ||c − d||2 + ||d − a||2 ).    0 <  < 1, using techniques from Section 3.
+                                                                       Finally, the techniques of Section 3 can be used to exhibit
+                                                                  9
+
+an O(dim(T ))-approximation for the 0-extension problem                        [15] W. B. Johnson and J. Lindenstrauss. Extensions of Lipschitz map-
+where (T, d) is the metric on terminals.                                            pings into a Hilbert space. In Conference in modern analysis and
+                                                                                    probability, pages 189–206. Amer. Math. Soc., Providence, RI, 1984.
+Dimensionality reduction. In previous sections, we stud-
+                                                                               [16] D. Karger and M. Ruhl. Finding nearest neighbors in growth-
+ied the distortion of general metrics in terms of their dou-                        restricted metrics. In 34th Annual ACM Symposium on the Theory
+bling dimension. Here, let us consider an n-point set X ⊆                           of Computing, pages 63–66, 2002.
+`n2 with dim(X) = O(1). The Johnson-Lindenstrauss flat-                        [17] R. Krauthgamer and J. Lee. Navigating nets: Simple algorithms for
+tening lemma [15] tells us that there is a 1 +  embedding                          proximity search. Manuscript, 2003.
+                O(−2 log n
+of X into `2                 ). We pose the following intriguing               [18] R. Krauthgamer and J. R. Lee. The intrinsic dimensionality of
+                                                                                    graphs. In 35th Annual ACM Symposium on Theory of Computing,
+question which was asked independently in [21].
+                                                                                    pages 438–447. ACM, 2003.
+Question 1. Can every doubling submetric of `2 be O(1)-                        [19] T. J. Laakso. Ahlfors Q-regular spaces with arbitrary Q > 1 admit-
+                      O(1)                                                          ting weak Poincaré inequality. Geom. Funct. Anal., 10(1):111–123,
+embedded into `2 ?                                                                  2000.
+    It can be shown that no linear projection can achieve                      [20] T. J. Laakso. Plane with A∞ -weighted metric not bi-Lipschitz em-
+such a result (as in [15]), but there are a number reasons to                       beddable to RN . Bull. London Math. Soc., 34(6):667–676, 2002.
+believe that its resolution might be positive; these are dis-                  [21] U. Lang and C. Plaut. Bilipschitz embeddings of metric spaces into
+                                                                                    space forms. Geom. Dedicata, 87(1-3):285–307, 2001.
+cussed in the full version.
+                                                                               [22] J. R. Lee, M. Mendel, and A. Naor. Metric structures in L1 : Dimen-
+Acknowledgments. We thank Yair Bartal, Manor Mendel, Assaf                          sion, snowflakes, and average distortion. Manuscript, July 2003.
+Naor, and Oded Schramm for some enlightening discussions, and                  [23] J. R. Lee and A. Naor. Embedding the diamond graph in Lp and
+Stephen Semmes for useful pointers to the literature.                               dimension reduction in L1 . Manuscript, June 2003.
+                                                                               [24] N. Linial. Finite metric spaces - combinatorics, geometry and algo-
+References                                                                          rithms. In Proceedings of the International Congress of Mathemati-
+                                                                                    cians III, pages 573–586, 2002.
+ [1] N. Alon and J. H. Spencer. The probabilistic method.            Wiley-
+      Interscience, New York, second edition, 2000.                            [25] N. Linial, E. London, and Y. Rabinovich. The geometry of graphs
+                                                      n                             and some of its algorithmic applications. Combinatorica, 15(2):215–
+ [2] P. Assouad. Plongements lipschitziens dans R . Bull. Soc. Math.
+                                                                                    245, 1995.
+      France, 111(4):429–448, 1983.
+                                                                               [26] J. Matoušek. On embedding expanders into lp spaces. Israel J.
+ [3] Y. Aumann and Y. Rabani. An O(log k) approximate min-cut
+                                                                                    Math., 102:189–197, 1997.
+      max-flow theorem and approximation algorithm. SIAM J. Comput.,
+      27(1):291–301, 1998.                                                     [27] J. Matoušek. On embedding trees into uniformly convex Banach
+                                                                                    spaces. Israel J. Math., 114:221–237, 1999.
+ [4] J. Bourgain. On Lipschitz embedding of finite metric spaces in
+      Hilbert space. Israel J. Math., 52(1-2):46–52, 1985.                     [28] J. Matoušek. Lectures on discrete geometry, volume 212 of Graduate
+                                                                                    Texts in Mathematics. Springer-Verlag, 2002.
+ [5] J. Bourgain. The metrical interpretation of superreflexivity in Banach
+      spaces. Israel J. Math., 56(2):222–230, 1986.                            [29] I. Newman and Y. Rabinovich. A lower bound on the distortion of
+                                                                                    embedding planar metrics into Euclidean space. Discrete Comput.
+ [6] B. Brinkman and M. Charikar. On the impossibility of dimension re-
+                                                                                    Geom., 29(1):77–81, 2003.
+      duction in `1 . To appear in 44th Annual IEEE Symposium on Foun-
+      dations of Computer Science, 2003.                                       [30] T. S. E. Ng and H. Zhang. Predicting internet network distance with
+ [7] G. Calinescu, H. Karloff, and Y. Rabani. Approximation algorithms              coordinates-based approaches. In 21st Annual Joint Conference of
+      for the 0-extension problem. In 12th Annual ACM-SIAM Symposium                the IEEE Computer and Communications Society (INFOCOM-02),
+      on Discrete Algorithms, pages 8–16. SIAM, 2001.                               pages 170–179, 2002.
+ [8] K. L. Clarkson. Nearest neighbor queries in metric spaces. In 29th        [31] C. G. Plaxton, R. Rajaraman, and A. W. Richa. Accessing nearby
+      Annual ACM Symposium on Theory of Computing, pages 609–617.                   copies of replicated objects in a distributed environment. Theory
+      ACM, New York, 1997.                                                          Comput. Syst., 32(3):241–280, 1999.
+ [9] M. M. Deza and M. Laurent. Geometry of cuts and metrics. Springer-        [32] S. Rao. Small distortion and volume preserving embeddings for pla-
+      Verlag, Berlin, 1997.                                                         nar and Euclidean metrics. In 15th Annual Symposium on Computa-
+                                                                                    tional Geometry, pages 300–306. ACM, 1999.
+[10] U. Feige. Approximating the bandwidth via volume respecting em-
+      beddings. J. Comput. System Sci., 60(3):510–539, 2000.                   [33] S. Semmes. On the nonexistence of bi-Lipschitz parameterizations
+                                                                                    and geometric problems about A∞ -weights. Rev. Mat. Iberoameri-
+[11] A. Gupta. Improved bandwidth approximation for trees and chordal               cana, 12(2):337–410, 1996.
+      graphs. J. Algorithms, 40(1):24–36, 2001.
+                                                                               [34] J. B. Tenenbaum, V. de Silva, and J. C. Langford. A global geo-
+[12] A. Gupta, I. Newman, Y. Rabinovich, and A. Sinclair. Cuts, trees and           metric framework for nonlinear dimensionality reduction. Science,
+      l1 -embeddings of graphs. In 40th Annual Symposium on Foundations             290(5500):2319–2323, 2000.
+      of Computer Science, pages 399–408. IEEE, 1999.
+[13] J. Heinonen. Lectures on analysis on metric spaces. Universitext.
+      Springer-Verlag, New York, 2001.
+[14] P. Indyk. Algorithmic applications of low-distortion geometric em-
+      beddings. In 42nd Annual IEEE Symposium on Foundations of Com-
+      puter Science, pages 10–33, 2001.
+                                                                            10
+

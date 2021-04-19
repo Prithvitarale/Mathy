@@ -1,0 +1,885 @@
+                                            Query Complexity of Derivative-Free Optimization
+                                                Kevin G. Jamieson                Robert D. Nowak                    Benjamin Recht
+                                              University of Wisconsin          University of Wisconsin           University of Wisconsin
+arXiv:1209.2434v1 [stat.ML] 11 Sep 2012
+                                              Madison, WI 53706, USA           Madison, WI 53706, USA            Madison, WI 53706, USA
+                                              kgjamieson@wisc.edu               nowak@engr.wisc.edu               brecht@cs.wisc.edu
+                                                                                       Abstract
+                                                   This paper provides lower bounds on the convergence rate of Derivative Free Op-
+                                                   timization (DFO) with noisy function evaluations, exposing a fundamental and
+                                                   unavoidable gap between the performance of algorithms with access to gradients
+                                                   and those with access to only function evaluations. However, there are situations
+                                                   in which DFO is unavoidable, and for such situations we propose a new DFO al-
+                                                   gorithm that is proved to be near optimal for the class of strongly convex objective
+                                                   functions. A distinctive feature of the algorithm is that it uses only Boolean-valued
+                                                   function comparisons, rather than function evaluations. This makes the algorithm
+                                                   useful in an even wider range of applications, such as optimization based on paired
+                                                   comparisons from human subjects, for example. We also show that regardless of
+                                                   whether DFO is based on noisy function evaluations or Boolean-valued function
+                                                   comparisons, the convergence rate is the same.
+                                          1 Introduction
+                                          Optimizing large-scale complex systems often requires the tuning of many parameters. With train-
+                                          ing data or simulations one can evaluate the relative merit, or incurred loss, of different parameter
+                                          settings, but it may be unclear how each parameter influences the overall objective function. In such
+                                          cases, derivatives of the objective function with respect to the parameters are unavailable. Thus,
+                                          we have seen a resurgence of interest in Derivative Free Optimization (DFO) [1, 2, 3, 4, 5, 6, 7, 8].
+                                          When function evaluations are noiseless, DFO methods can achieve the same rates of convergence
+                                          as noiseless gradient methods up to a small factor depending on a low-order polynomial of the di-
+                                          mension [9, 5, 10]. This leads one to wonder if the same equivalence can be extended to the case
+                                          when function evaluations and gradients are noisy.
+                                                                            p We show that when function evaluations are noisy, the opti-
+                                          Sadly, this paper proves otherwise.
+                                          mization error of any DFO is Ω( 1/T ), where T is the number of evaluations. This lower bound
+                                          holds even for strongly convex functions. In contrast, noisy gradient methods exhibit Θ(1/T ) error
+                                          scaling for strongly convex functions [9, 11]. A consequence of our theory is that finite differencing
+                                          cannot achieve the rates of gradient methods when the function evaluations are noisy.
+                                          On the positive side, we also present a new derivative-free algorithm that achieves this lower bound
+                                          with near optimal dimension dependence. Moreover, the algorithm uses only boolean comparisons
+                                          of function values, not actual function values. This makes the algorithm applicable to situations in
+                                          which the optimization is only able to probably correctly decide if the value of one configuration is
+                                          better than the value of another. This is especially interesting in optimization based on human subject
+                                          feedback, where paired comparisons are often used instead of numerical scoring. The convergence
+                                          rate of the new algorithm is optimal in terms of T and near-optimal in terms of its dependence
+                                          on the ambient dimension. Surprisingly, our lower bounds show that this new algorithm that uses
+                                          only function comparisons achieves the same rate in terms of T as any algorithm that has access to
+                                          function evaluations.
+                                                                                            1
+
+2 Problem formulation and background
+We now formalize the notation and conventions for our analysis of DFO. A function f is strongly
+convex with constant τ on a convex set B ⊂ Rd if there exists a constant τ > 0 such that
+                                                                 τ
+                             f (y) ≥ f (x) + h∇f (x), y − xi + ||x − y||2
+                                                                 2
+for all x, y ∈ B. The gradient of f , if it exists, denoted ∇f , is Lipschitz with constant L if
+||∇f (x) − ∇f (y)|| ≤ L||x − y|| for some L > 0. The class of strongly convex functions with
+Lipschitz gradients defined on a nonempty, convex set B ⊂ Rn which take their minimum in B with
+parameters τ and L is denoted by Fτ,L,B .
+The problem we consider is minimizing a function f ∈ Fτ,L,B . The function f is not explicitly
+known. An optimization procedure may only query the function in one of the following two ways.
+  Function Evaluation Oracle: For any point x ∈ B an optimization procedure can observe
+                                               Ef (x) = f (x) + w
+          where w ∈ R is a random variable with E[w] = 0 and E[w2 ] = σ 2 .
+  Function Comparison Oracle: For any pair of points x, y ∈ B an optimization procedure can
+          observe a binary random variable Cf (x, y) satisfying
+                                                           1        
+                    P (Cf (x, y) = sign{f (y) − f (x)}) ≥ + min δ0 , µ|f (y) − f (x)|κ−1           (1)
+                                                           2
+          for some 0 < δ0 ≤ 1/2, µ > 0 and κ ≥ 1. When κ = 1, without loss of generality
+          assume µ ≤ δ0 ≤ 1/2. Note κ = 1 implies that the comparison oracle is correct with
+          a probability that is greater than 1/2 and independent of x, y. If κ > 1, then the oracle’s
+          reliability decreases as the difference between f (x) and f (y) decreases.
+To illustrate how the function comparison oracle and function evaluation oracles relate to each other,
+suppose Cf (x, y) = sign{Ef (y) − Ef (x)} where Ef (x) is a function evaluation oracle with ad-
+                                                                                    2
+ditive noise w. If w is Gaussian distributed with mean zero and variance σ then κ = 2 and
+            2 −1/2
+µ ≥ 4πσ e              (see Appendix A). In fact, this choice of w corresponds to Thurston’s law of
+comparative judgment which is a popular model for outcomes of pairwise comparisons from human
+subjects [12]. If w is a “spikier” distribution such as a two-sided Gamma distribution with shape
+parameter in the range of (0, 1] then all values of κ ∈ (1, 2] can be realized (see Appendix A).
+Interest in the function comparison oracle is motivated by certain popular derivative-free optimiza-
+tion procedures that use only comparisons of function evaluations (e.g. [7]) and by optimization
+problems involving human subjects making paired comparisons (for instance, getting fitted for pre-
+scription lenses or a hearing aid where unknown parameters specific to each person are tuned with
+the familiar queries “better or worse?”). Pairwise comparisons have also been suggested as a novel
+way to tune web-search algorithms [13]. Pairwise comparison strategies have previously been an-
+alyzed in the finite setting where the task is to identify the best alternative among a finite set of
+alternatives (sometimes referred to as the dueling-bandit problem) [13, 14]. The function compar-
+ison oracle presented in this work and its analysis are novel. The main contributions of this work
+and new art are as follows (i) lower bounds for the function evaluation oracle in the presence of
+measurement noise (ii) lower bounds for the function comparison oracle in the presence of noise
+and (iii) an algorithm for the function comparison oracle, which can also be applied to the function
+evaluation oracle setting, that nearly matches both the lower bounds of (i) and (ii).
+We prove our lower bounds for strongly convex functions with Lipschitz gradients defined on a com-
+pact, convex set B, and because these problems are a subset of those involving all convex functions
+(and have non-empty intersection with problems where f is merely Lipschitz), the lower bound also
+applies to these larger classes. While there are known theoretical results for DFO in the noiseless
+setting [15, 5, 10], to the best of our knowledge we are the first to characterize lower bounds for
+DFO in the stochastic setting. Moreover, we believe we are the first to show a novel upper bound for
+stochastic DFO using a function comparison oracle (which also applies to the function evaluation
+oracle). However, there are algorithms with upper bounds on the rates of convergence for stochastic
+DFO with the function evaluation oracle [15, 16]. We discuss the relevant results in the next section
+following the lower bounds .
+                                                    2
+
+While there remains many open problems in stochastic DFO (see Section 6), rates of convergence
+with a stochastic gradient oracle are well known and were first lower bounded by Nemirovski and
+Yudin [15]. These classic results were recently tightened to show a dependence on the dimension
+of the problem [17]. And then tightened again to show a better dependence on the noise [11] which
+matches the upper bound achieved by stochastic gradient descent [9]. The aim of this work is to
+start filling in the knowledge gaps of stochastic DFO so that it is as well understood as the stochastic
+gradient oracle. Our bounds are based on simple techniques borrowed from the statistical learning
+literature that use natural functions and oracles in the same spirit of [11].
+3 Main results
+The results below are presented with simplifying constants that encompass many factors to aid in
+exposition. Explicit constants are given in the proofs in Sections 4 and 5. Throughout, we denote
+the minimizer of f as x∗f . The expectation in the bounds is with respect to the noise in the oracle
+queries and (possible) optimization algorithm randomization.
+3.1 Query complexity of the function comparison oracle
+Theorem 1. For every f ∈ Fτ,L,B let Cf be a function comparison oracle with parameters
+(κ, µ, δ0 ). Then for n ≥ 8 and sufficiently large T
+                                                                     
+                                                          c1 exp −c2 Tn       if κ = 1
+                    inf sup E f (b      xT ) − f (x∗f ) ≥            
+                     x
+                     bT f ∈Fτ,L,B                                        1
+                                                               c3 Tn 2(κ−1)      if κ > 1
+ where the infimum is over the collection of all possible estimators of x∗f using at most T queries to
+a function comparison oracle and the supremum is taken with respect to all problems in Fτ,L,B and
+function comparison oracles with parameters (κ, µ, δ0 ). The constants c1 , c2 , c3 depend the oracle
+and function class parameters, as well as the geometry of B, but are independent of T and n.
+For upper bounds we propose a specific algorithm based on coordinate-descent in Section 5 and
+prove the following theorem for the case of unconstrained optimization, that is, B = Rn .
+Theorem 2. For every f ∈ Fτ,L,B with B = Rn let Cf be a function comparison oracle with
+parameters (κ, µ, δ0 ). Then there exists a coordinate-descent algorithm that is adaptive to unknown
+κ ≥ 1 that outputs an estimate x      bT after T function comparison queries such that with probability
+1−δ
+                                                                  n      q o
+                                                         
+                                                          c   exp   −c      T
+                                                                                 if κ = 1
+                                               ∗
+                                                            1          2     n
+                        sup E f (b   xT ) − f (xf ) ≤
+                     f ∈Fτ,L,B                           
+                                                                   1
+                                                           c3 n Tn 2(κ−1)        if κ > 1
+where c1 , c2 , c3 depend the oracle and function class parameters as well as T ,n, and 1/δ, but only
+poly-logarithmically.
+3.2 Query complexity of the function evaluation oracle
+Theorem 3. For every f ∈ Fτ,L,B let Ef be a function evaluation oracle with variance σ 2 . Then
+for n ≥ 8 and sufficiently large T
+                                                                         2  21
+                                                                          nσ
+                               inf sup E f (b     xT ) − f (x∗f ) ≥ c
+                               x
+                               bT f ∈Fτ,L,B                                  T
+ where the infimum is taken with respect to the collection of all possible estimators of x∗f using just
+T queries to a function evaluation oracle and the supremum is taken with respect to all problems in
+Fτ,L,B and function evaluation oracles with variance σ 2 . The constant c depends on the oracle and
+function class parameters, as well as the geometry of B, but is independent of T and n.
+Because a function evaluation oracle can always be turned into a function comparison oracle (see
+discussion above), the algorithm and upper bound in Theorem 2 with κ = 2 applies to many typical
+                                                        3
+
+                                                                                                      1/2
+function evaluation oracles (e.g. additive Gaussian noise), yielding an upper bound of n3 σ 2 /T
+ignoring constants and log factors. This matches the rate of convergence as a function of T and σ 2 ,
+but has worse dependence on the dimension n.
+Alternatively, under a less restrictive setting, Nemirovski and Yudin proposed two algorithms for
+the class of convex, Lipschitz functions that obtain rates of n1/2 /T 1/4 and p(n)/T 1/2 , respectively,
+where p(n) was left as an unspecified polynomial of n [15]. While focusing on stochastic DFO with
+bandit feedback, Agarwal et. al. built on the ideas developed in [15] to obtain a result that they
+point out implies a convergence rate of n16 /T 1/2 in the optimization setting considered here [16].
+Whether or not these rates can be improved to those obtained under the more restrictive function
+classes of above is an open question.
+A related but fundamentally different problem that is somewhat related with the setting considered
+in this paper is described as online (or stochastic) convex optimization with multi-point feedback
+[18, 5, 19]. Essentially, this setting allows the algorithm to probe the value of the function f plus
+noise at multiple locations where the noise changes at each time step, but each set of samples at each
+time experiences the same noise. Because the noise model of that work is incompatible with the one
+considered here, no comparisons should be made between the two.
+4 Lower Bounds
+The lower bounds in Theorems 1 and 3 are proved using a general minimax bound [20, Thm. 2.5].
+Our proofs are most related to the approach developed in [21] for active learning, which like opti-
+mization involves a Markovian sampling process. Roughly speaking, the lower bounds are estab-
+lished by considering a simple case of the optimization problem in which the global minimum is
+known a priori to belong to a finite set. Since the simple case is “easier” than the original optimiza-
+tion, the minimum number of queries required for a desired level of accuracy in this case yields a
+lower bound for the original problem.
+The following theorem is used to prove the bounds. In the terms of the theorem, f is a function to
+be minimized and Pf is the probability model governing the noise associated with queries when f
+is the true function.
+Theorem 4. [20, Thm. 2.5] Consider a class of functions F and an associated family of probability
+measures {Pf }f ∈F . Let M ≥ 2 be an integer and f0 , f1 , . . . , fM be functions in F . Let d(·, ·) :
+F × F → R be a semi-distance and assume that:
+       1. d(fi , fj ) ≥ 2s > 0, for all 0 ≤ i < j ≤ M ,
+            1
+              PM
+       2. M      j=1 KL(Pi ||P0 ) ≤ a log M ,
+                                                               R    dPi
+where the Kullback-Leibler divergence KL(Pi ||P0 ) := log dP           0
+                                                                         dPi is assumed to be well-defined
+(i.e., P0 is a dominating measure) and 0 < a < 1/8 . Then
+                                                                         √                 q       
+inf sup P(d(fb, f ) ≥ s) ≥ inf         max         P(d(fb, f ) ≥ s) ≥ 1+√  M
+                                                                            M
+                                                                                 1 − 2a − 2     a
+                                                                                              log M   > 0,
+ fb f ∈F                       fb f ∈{f0 ,...,fM }
+where the infimum is taken over all possible estimators based on a sample from Pf .
+We are concerned with the functions in the class F := Fτ,L,B . The volume of B will affect only
+constant factors in our bounds, so we will simply denote the class of functions by F and refer
+explicitly to B only when necessary. Let xf := arg minx f (x), for all f ∈ F . The semi-distance we
+use is d(f, g) := kxf − xg ||, for all f, g ∈ F . Note that each point in B can be specified by one of
+many f ∈ F . So the problem of selecting an f is equivalent to selecting a point x ∈ B. Indeed, the
+semi-distance defines a collection of equivalence classes in F (i.e., all functions having a minimum
+at x ∈ B are equivalent). For every f ∈ F we have inf g∈F f (xg ) = inf x∈B f (x), which is a useful
+identity to keep in mind.
+We now construct the functions f0 , f1 , . . . , fM that will be used for our proofs. Let Ω = {−1, 1}n so
+that each ω ∈ Ω is a vertex of the d-dimensional hypercube. Let V ⊂ Ω with cardinality |V| ≥ 2n/8
+such that for all ω 6= ω ′ ∈ V, we have ρ(ω, ω ′ ) ≥ n/8 where ρ(·, ·) is the Hamming distance. It is
+known that such a set exists by the Varshamov-Gilbert bound [20, Lemma 2.9]. Denote the elements
+                                                       4
+
+of V by ω0 , ω1 , . . . , ωM . Next we state some elementary bounds on the functions that will be used
+in our analysis.
+Lemma 1. For ǫ > 0 define the set B ⊂ Rn to be the ℓ∞ ball of radius ǫ and define the functions
+on B: fi (x) := τ2 ||x − ǫωi ||2 , for i = 0, . . . , M , ωi ∈ V, and xi := arg minx fi (x) = ǫωi . Then
+for all 0 ≤ i < j ≤ M and x ∈ B the functions fi (x) satisfy
+       1. fi is strongly convex-τ with Lipschitz-L gradients and xi ∈ B
+                             p
+       2. ||xi − xj || ≥ ǫ n2
+       3. |fi (x) − fj (x)| ≤ 2τ nǫ2 .
+We are now ready to prove Theorems 1 and 3. Each proof uses the functions f0 , . . . , fM a bit
+differently, and since the noise model is also different in each case, the KL divergence is bounded
+differently in each proof. We use the fact that if X and Y are random variables distributed according
+to Bernoulli distributions PX and PY with parameters 1/2 + µ and 1/2 − µ, then KL(PX ||PY ) ≤
+4µ2 /(1/2 − µ). Also, if X ∼ N (µX , σ 2 ) =: PX and Y ∼ N (µY , σ 2 ) =: Py then KL(PX ||PY ) =
+  1                  2
+2σ2 ||µX − µY || .
+4.1 Proof of Theorem 1
+First we will obtain the bound for the case κ > 1. Let the comparison oracle satisfy
+                                                             1          
+             P (Cfi (x, y) = sign{fi (y) − fi (x)}) = + min µ|fi (y) − fi (x)|κ−1 , δ0 .
+                                                             2
+In words, Cfi (x, y) is correct with probability as large as the right-hand-side of above and is
+monotonic increasing in fi (y) − fi (x). Let {xk , yk }Tk=1 be a sequence of T pairs in B and let
+{Cfi (xk , yk )}Tk=1 be the corresponding sequence of noisy comparisons. We allow the sequence
+{xk , yk }Tk=1 to be generated in any way subject to the Markovian assumption that Cfi (xk , yk ) given
+(xk , yk ) is conditionally independent of {xi , yi }i<k . For i = 0, . . . , M , and ℓ = 1, . . . , T let Pi,ℓ
+denote the joint probability distribution of {xk , yk , Cfi (xk , yk )}ℓk=1 , let Qi,ℓ denote the conditional
+distribution of Cfi (xℓ , yℓ ) given (xℓ , yℓ ), and let Sℓ denote the conditional distribution of (xℓ , yℓ )
+given {xk , yk , Cfi (xk , yk )}ℓ−1
+                                  k=1 . Note that Sℓ is only a function of the underlying optimization al-
+gorithm and does not depend on i.
+                                                      "     QT              #          "     QT           #
+                                      Pi,T                      ℓ=1 Qi,ℓ Sℓ                       ℓ=1 Qi,ℓ
+  KL(Pi,T ||Pj,T ) = EPi,T log               = EPi,T log QT                      = EPi,T log QT
+                                      Pj,T                      ℓ=1 Qj,ℓ Sℓ                       ℓ=1 Qj,ℓ
+           X T                                                                                           
+                                      Qi,ℓ            T                                          Qi,1
+       =        EPi,T EPi,T log             {xk , yk }k=1 ≤ T sup EPi,1 EPi,1 log                      x1 , y1
+                                      Qj,ℓ                         x1 ,y1 ∈B                    Qj,1
+           ℓ=1
+By the second claim of Lemma 1, |fi (x) − fj (x)| ≤ 2τ nǫ2 , and therefore the bound above is
+less than or equal to the KL divergence between the Bernoulli distributions with parameters 21 ±
+            (κ−1)
+µ 2τ nǫ2            , yielding the bound
+                                                         2(κ−1)
+                                          4T µ2 2τ nǫ2                                  2(κ−1)
+                    KL(Pi,T |Pj,T ) ≤                       (κ−1)
+                                                                    ≤ 16T µ2 2τ nǫ2
+                                         1/2 − µ (2τ nǫ ) 2
+provided ǫ is sufficiently small. We also assume ǫ (or, equivalently, B) is sufficiently small so that
+|fi (x) − fj (x)|κ−1 ≤ δ0 . We are now ready to apply Theorem 4. Recalling that M ≥ 2n/8 , we
+want to choose ǫ such that
+                                                           2(κ−1)       n
+                      KL(Pi,T |Pj,T ) ≤ 16T µ2 2τ nǫ2              ≤ a log(2) ≤ a log M
+                                                                          8
+with an a small enough so that we can apply the theorem. By setting a = 1/16 and equating the two
+                                                         1/2  n log(2)  4(κ−1)
+                                                                               1
+sides of the equation we have ǫ = ǫT := 2√1 n τ2                      2
+                                                                2048µ T            (note that this also implies a
+sequence of sets BT by the definition of the functions in Lemma 1). Thus, the semi-distance satisfies
+                                                              1/2                  1
+                                        p                1     2            n log(2) 4(κ−1)
+          d(fj , fi ) = ||xj − xi || ≥ n/2ǫT ≥ √                                               =: 2sT .
+                                                       2 2 τ               2048µ2 T
+                                                          5
+
+Applying Theorem 4 we have
+inf sup P(kxfb − xf k ≥ sT ) ≥ inf            max       P(kxfb − xi k ≥ sT ) = inf         max      P(d(fb, fi ) ≥ sT )
+ fb f ∈F                                fb i∈{0,...,M}                              fb i∈{0,...,M}
+                                          √                   q        
+                                            M                       a
+                                  ≥        √
+                                        1+ M
+                                                  1 − 2a   −2     log M    > 1/7 ,
+where the final inequality holds since M ≥ 2 and a = 1/16. Strong convexity implies that f (x) −
+f (xf ) ≥ τ2 ||x − xf ||2 for all f ∈ F and x ∈ B. Therefore
+                                              τ                                                   τ 
+         inf sup P f (xfb) − f (xf ) ≥ s2T ≥ inf max P fi (xfb) − fi (xi ) ≥ s2T
+          fb f ∈F                              2          fb i∈{0,...,M}                             2
+                                                                            τ                     τ   
+                                                       ≥ inf max P              kxfb − xi k2 ≥ s2T
+                                                          fb i∈{0,...,M}      2                    2
+                                                                                                 
+                                                       = inf max P kxfb − xi k ≥ sT > 1/7 .
+                                                          fb i∈{0,...,M}
+Finally, applying Markov’s inequality we have
+                                  h                     i 1  1   n log(2)  2(κ−1)       1
+                      inf sup E f (xfb) − f (xf ) ≥                                   .
+                       fb f ∈F                               7 32         2048µ2T
+4.2 Proof of Theorem 1 for κ = 1
+To handle the case when κ = 1 we use functions of the same form, but the construction is slightly
+different. Let ℓ be a positive integer and let M = ℓn . Let {ξi }M        i=1 be a set of uniformly space points
+in B which we define to be the unit cube in Rn , so that kξi − ξj k ≥ ℓ−1 for all i 6= j. Define
+fi (x) := τ2 ||x − ξi ||2 , i = 1, . . . , M . Let s := 2ℓ 1
+                                                              so that d(fi , fj ) := ||x∗i − x∗j || ≥ 2s. Because
+κ = 1, we have P (Cfi (x, y) = sign{fi (y) − fi (x)}) ≥ µ for some µ > 0, all i ∈ {1, . . . , M }, and
+all x, y ∈ B. We bound KL(Pi,T ||Pj,T ) in exactly the same way as we bounded it in Section 4.1
+except that now we have Cfi (xk , yk ) ∼ Bernoulli( 12 + µ) and Cfj (xk , yk ) ∼ Bernoulli( 21 − µ). It
+then follows that if we wish to apply the theorem, we want to choose s so that
+                                                                                                
+                      KL(Pi,T |Pj,T ) ≤ 2T µ2 /(1/2 − µ) ≤ a log M = an log 2s                1
+for some a < 1/8. Using the same sequence of steps as in Section 4.1 we have
+                                h                    i 1 τ  1 2           
+                                                                                   128T µ2
+                                                                                                
+                   inf sup E f (xfb) − f (xf ) ≥                       exp −                      .
+                    fb f ∈F                               72 2                   n(1/2 − µ)
+4.3 Proof of Theorem 3
+Let fi for all i = 0, . . . , M be the functions considered in Lemma 1. Recall that the evaluation oracle
+is defined to be Ef (x) := f (x) + w, where w is a random variable (independent of all other random
+variables under consideration) with E[w] = 0 and E[w2 ] = σ 2 > 0. Let {xk }nk=1 be a sequence
+of points in B ⊂ Rn and let {Ef (xk )}Tk=1 denote the corresponding sequence of noisy evaluations
+of f ∈ F . For ℓ = 1, . . . , T let Pi,ℓ denote the joint probability distribution of {xk , Efi (xk )}ℓk=1 ,
+let Qi,ℓ denote the conditional distribution of Efi (xk ) given xk , and let Sℓ denote the conditional
+distribution of xℓ given {xk , Ef (xk )}ℓ−1   k=1 . Sℓ is a function of the underlying optimization algorithm
+and does not depend on i. We can now bound the KL divergence between any two hypotheses as in
+Section 4.1:
+                                                                                       
+                                                                              Qi,1
+                         KL(Pi,T ||Pj,T ) ≤ T sup EPi,1 EPi,1 log                     x1     .
+                                                    x1 ∈B                     Qj,1
+To compute a bound, let us assume that w is Gaussian distributed. Then
+                                                                                             
+                     KL(Pi,T ||Pj,T ) ≤ T sup KL N (fi (z), σ 2 )||N (fj (z), σ 2 )
+                                                 z∈B
+                                               T                                 T             2
+                                           = 2 sup |fi (z) − fj (z)|2 ≤            2
+                                                                                        2τ nǫ2
+                                              2σ z∈B                           2σ
+                                                           6
+
+by the third claim of Lemma 1. We then repeat the same procedure as in Section 4.1 to attain
+                                  h                i 1  1   nσ 2 log(2)  21
+                       inf sup E f (xfb) − f (xf ) ≥                                    .
+                        fb f ∈F                           7 32              64T
+5 Upper bounds
+The algorithm that achieves the upper bound using a pairwise comparison oracle is a combination
+of standard techniques and methods from the convex optimization and statistical learning literature.
+The algorithm is explained in full detail in Appendix B, and is summarized as follows. At each
+iteration the algorithm picks a coordinate uniformly at random from the n possible dimensions
+and then performs an approximate line search. By exploiting the fact that the function is strongly
+convex with Lipschitz gradients, one guarantees using standard arguments that the approximate line
+search makes a sufficient decrease in the objective function value in expectation [23, Ch.9.3]. If
+the pairwise comparison oracle made no errors then the approximate line search is accomplished
+by a binary-search-like scheme, essentially a golden section line-search algorithm [24]. However,
+when responses from the oracle are only probably correct we make the line-search robust to errors
+by repeating the same query until we can be confident about the true, uncorrupted direction of the
+pairwise comparison using a standard procedure from the active learning literature [25] (a similar
+technique was also implemented for the bandit setting of derivate-free optimization [8]). Because
+the analysis of each component is either known or elementary, we only sketch the proof here and
+leave the details to the supplementary materials.
+5.1 Coordinate descent
+Given a candidate solution xk after k ≥ 0 iterations, the algorithm defines a search direction dk = ei
+where i is chosen uniformly at random from the possible n dimensions and ei is a vector of all zeros
+except for a one in the ith coordinate. We note that while we only analyze the case where the search
+direction dk is a coordinate direction, an analysis with the same result can be obtained with dk
+chosen uniformly from the unit sphere. Given dk , a line search is then performed to find an αk ∈ R
+such that f (xk+1 ) − f (xk ) is sufficiently small where xk+1 = xk + αk dk . In fact, as we will see in
+the next section, for some input parameter η > 0, the line search is guaranteed to return an αk such
+that |αk − α∗ | ≤ η where α∗ = minα∈R f (xk + dk α∗ ). Using the fact that the gradients of f are
+Lipschitz (L) we have
+                                                 L                            L                 L
+           f (xk + αk dk ) − f (xk + α∗ dk ) ≤      ||(αk − α∗ )dk ||2 = |αk − α∗ |2 ≤ η 2 .
+                                                 2                            2                 2
+If we define αˆk = − h∇f (xLk ),dk i then we have
+                                                                  L 2
+       f (xk + αk dk ) − f (xk ) ≤ f (xk + α∗ dk ) − f (xk ) +       η
+                                                                   2
+                                                                  L             h∇f (xk ), dk i2    L
+                                  ≤ f (xk + α̂k dk ) − f (xk ) + η 2 ≤ −                         + η2
+                                                                   2                  2L            2
+where the last line follows from applying the fact that the gradients are Lipschitz (L). Arranging the
+bound and taking the expectation with respect to dk we get
+                                                           E[||∇f (xk )||2 ]                                 
+E [f (xk+1 ) − f (x∗ )] −   L 2
+                            2η  ≤ E [f (xk ) − f (x∗ )] −       2nL          ≤ E [f (xk ) − f (x∗ )] 1 −  τ
+                                                                                                         4nL
+where the second inequality follows from the fact that f is strongly convex (τ ). If we define ρk :=
+E [f (xk ) − f (x∗ )] then we equivalently have
+                                                                                                 
+                 2nL2 η 2              τ           2nL2 η 2                  τ k           2nL2 η 2
+        ρk+1 −             ≤ 1−              ρk −               ≤ 1−                  ρ0 −
+                     τ               4nL                τ                    4nL                 τ
+which leads to the following result.
+                                                      7
+
+Theorem 5. Let f ∈ Fτ,L,B with B = Rn . For any η > 0 assume the line search returns an αk that
+is within η of the optimal after at most Tℓ (η) queries from the pairwise comparison oracle. If xK is
+an estimate of x∗ = arg minx f (x) after requesting no more than K pairwise comparisons, then
+                                                                                                         
+                                  4nL2 η 2                                4nL           f (x0 ) − f (x∗ )
+  sup E[f (xK ) − f (x∗ )] ≤                       whenever         K≥          log                         Tℓ (η)
+   f                                  τ                                    τ               η 2 2nL2 /τ
+where the expectation is with respect to the random choice of dk at each iteration.
+                                                                                                 p ǫτ
+This implies that if we wish supf E[f (xK ) − f (x∗ )] ≤ ǫ it suffices to take η = 4nL                 2 so that at
+                                       p ǫτ 
+       4nL       f (x0 )−f (x∗ )
+most τ log             ǫ/2         Tℓ      4nL2 pairwise comparisons are requested.
+5.2 Line search
+This section is concerned with minimizing a function f (xk +αk dk ) over some αk ∈ R. In particular,
+we wish to find an αk ∈ R such that |αk −α∗ | ≤ η where α∗ = minα∈R f (xk +dk α∗ ). First assume
+that the function comparison oracle makes no errors. The line search operates by maintaining a pair
+of boundary points α+ , α− such that if at some iterate we have α∗ ∈ [α− , α+ ] then at the next iterate,
+we are guaranteed that α∗ is still contained inside the boundary points but |α+ −α− | ← 21 |α+ −α− |.
+An initial set of boundary points α+ > 0 and α− < 0 are found using simple binary search. Thus,
+regardless of how far away or close α∗ is, we converge to it exponentially fast. Exploiting the fact
+that f is strongly convex (τ ) with Lipschitz (L) gradients we can bound how far away or close α∗
+is from our initial iterate.
+Theorem 6. Let f ∈ Fτ,L,B with B = Rn and let Cf be a function comparison oracle that makes
+no errors. Let x ∈ Rn be an initial position and let d ∈ Rn be a search direction with ||d|| = 1. If
+αK is an estimate of α∗ = arg minα f (x + dα) that is output from the line search after requesting
+no more than K pairwise comparisons, then for any η > 0
+                                                                                                      
+                                                                      256L (f (x) − f (x + d α∗ ))
+          |αK − α∗ | ≤ η           whenever            K ≥ 2 log2                                         .
+                                                                                   τ 2 η2
+5.3 Making the line search robust to errors
+Now assume that the responses from the pairwise comparison oracle are only probably correct in
+accordance with the model introduced above. Essentially, the robust procedure runs the line search
+as if the oracle made no errors except that each time a comparison is needed, the oracle is repeatedly
+queried until we can be confident about the true direction of the comparison. This strategy applied
+to active learning is well known because of its simplicity and its ability to adapt to unknown noise
+conditions [25]. However, we mention that when used in this way, this sampling procedure is known
+to be sub-optimal so in practice, one may want to implement a more efficient approach like that of
+[21]. Nevertheless, we have the following lemma.
+Lemma 2. [25] For any x, y ∈ B with P (Cf (x, y) = sign{f (y) − f (x)}) = p, with probability
+at least 1 − δ the coin-tossing algorithm          of [25] correctly identifies the sign of E [Cf (x, y)] and
+                            log(2/δ)            log(2/δ)
+requests no more than      4|1/2−p|2    log2   4|1/2−p|2     pairwise comparisons.
+It would be convenient if we could simply apply the result of Lemma 2 to our line search procedure.
+Unfortunately, if we do this there is no guarantee that |f (y) − f (x)| is bounded below so for the
+case when κ > 1, it would be impossible to lower bound |1/2 − p| in the lemma. To account
+for this, we will sample at multiple locations per iteration as opposed to just two in the noiseless
+algorithm to ensure that we can always lower bound |1/2 − p|. Intuitively, strong convexity ensures
+that f cannot be arbitrarily flat so for any three equally spaced points x, y, z on the line dk , if
+f (x) is equal to f (y), then it follows that the absolute difference between f (x) and f (z) must be
+bounded away from zero. Applying this idea and union bounding over the total number of times
+one must call the coin-tossing algorithm, one finds that with probability at least 1 − δ, the total
+number of calls to the pairwise comparison
+                                                           over the
+                                                        oracle        course of the whole algorithm does
+             e   nL n 2(κ−1)             2 f (x0 )−f (x∗ )
+not exceed O τ ǫ                    log           ǫ          log(n/δ) . By finding a T > 0 that satisfies this
+                                                            8
+
+                                                                                2(κ−1)
+                                                                                     1   
+                                                                              n
+bound for any ǫ we see that this is equivalent to a rate of O n log(n/δ)     T             for κ > 1 and
+        n q               o
+                     T
+O exp −c n log(n/δ)           for κ = 1, ignoring polylog factors.
+6 Conclusion
+This paper presented lower bounds on the performance of derivative-free optimization for (i) an ora-
+cle that provides noisy function evaluations and (ii) an oracle that provides probably correct boolean
+comparisons between function evaluations. Our results were proven for the class of strongly convex
+functions but because this class is a subset of all, possibly non-convex functions, our lower bounds
+                            as well. Under both oracle models we showed that the expected error
+hold for much larger classes
+decays like Ω (n/T )1/2 . Furthermore, for the class of strongly convex functions with Lipschitz
+                                                                                
+gradients, we proposed an algorithm that achieves a rate of O    e n(n/T )1/2 for both oracle mod-
+els which shows that the lower bounds are tight with respect to the dependence on the number of
+iterations T and no more than a factor of n off in terms of the dimension.
+A number of open questions still remain. In particular, one would like to resolve the gap between
+the lower and upper bounds with respect to the dependence on the dimension. Due to real world
+constraints, it is also desirable to extend the pairwise comparison algorithm to operate under the
+conditions of constrained optimization where B is a convex, proper subset of Rd . Also, while the
+analysis of our algorithm relies heavily on the assumption that the function is strongly convex with
+Lipschitz gradients, it is unclear whether these assumptions are necessary to achieve the same rates
+of convergence. Developing a practical algorithm that achieves our lower bounds and does not suffer
+from these limiting assumptions would be a significant contribution.
+                                                    9
+
+References
+ [1] T. Eitrich and B. Lang. Efficient optimization of support vector machine learning parameters
+     for unbalanced datasets. Journal of computational and applied mathematics, 196(2):425–436,
+     2006.
+ [2] R. Oeuvray and M. Bierlaire. A new derivative-free algorithm for the medical image registra-
+     tion problem. International Journal of Modelling and Simulation, 27(2):115–124, 2007.
+ [3] A.R. Conn, K. Scheinberg, and L.N. Vicente. Introduction to derivative-free optimization,
+     volume 8. Society for Industrial Mathematics, 2009.
+ [4] Warren B. Powell and Ilya O. Ryzhov. Optimal Learning. John Wiley and Sons, 2012.
+ [5] Y. Nesterov. Random gradient-free minimization of convex functions. CORE Discussion
+     Papers, 2011.
+ [6] N. Srinivas, A. Krause, S.M. Kakade, and M. Seeger. Gaussian process optimization in the
+     bandit setting: No regret and experimental design. Arxiv preprint arXiv:0912.3995, 2009.
+ [7] R. Storn and K. Price. Differential evolution–a simple and efficient heuristic for global opti-
+     mization over continuous spaces. Journal of global optimization, 11(4):341–359, 1997.
+ [8] A. Agarwal, D.P. Foster, D. Hsu, S.M. Kakade, and A. Rakhlin. Stochastic convex optimization
+     with bandit feedback. Arxiv preprint arXiv:1107.1744, 2011.
+ [9] A. Nemirovski, A. Juditsky, G. Lan, and A. Shapiro. Robust stochastic approximation approach
+     to stochastic programming. SIAM Journal on Optimization, 19(4):1574, 2009.
+[10] V. Protasov. Algorithms for approximate calculation of the minimum of a convex function
+     from its values. Mathematical Notes, 59:69–74, 1996. 10.1007/BF02312467.
+[11] M. Raginsky and A. Rakhlin. Information-based complexity, feedback, and dynamics in con-
+     vex programming. Information Theory, IEEE Transactions on, (99):1–1, 2011.
+[12] L.L. Thurstone. A law of comparative judgment. Psychological Review; Psychological Review,
+     34(4):273, 1927.
+[13] Y. Yue, J. Broder, R. Kleinberg, and T. Joachims. The k-armed dueling bandits problem.
+     Journal of Computer and System Sciences, 2012.
+[14] K.G. Jamieson and R.D. Nowak. Active ranking using pairwise comparisons. Arxiv preprint
+     arXiv:1109.3701, 2011.
+[15] A.S. Nemirovsky and D.B. Yudin. Problem complexity and method efficiency in optimization.
+     1983.
+[16] A. Agarwal, D.P. Foster, D. Hsu, S.M. Kakade, and A. Rakhlin. Stochastic convex optimization
+     with bandit feedback. Arxiv preprint arXiv:1107.1744, 2011.
+[17] A. Agarwal, P.L. Bartlett, P. Ravikumar, and M.J. Wainwright. Information-theoretic lower
+     bounds on the oracle complexity of stochastic convex optimization. Information Theory, IEEE
+     Transactions on, (99):1–1, 2010.
+[18] A. Agarwal, O. Dekel, and L. Xiao. Optimal algorithms for online convex optimization with
+     multi-point bandit feedback. In Conference on Learning Theory (COLT), 2010.
+[19] S. Ghadimi and G. Lan. Stochastic first-and zeroth-order methods for nonconvex stochastic
+     programming. 2012.
+[20] A.B. Tsybakov. Introduction to nonparametric estimation. Springer Verlag, 2009.
+[21] R.M. Castro and R.D. Nowak. Minimax bounds for active learning. Information Theory, IEEE
+     Transactions on, 54(5):2339–2353, 2008.
+[22] Anonymous. Supplementary material. Advances in Neural Information Processing Systems
+     (NIPS), 2012.
+[23] S.P. Boyd and L. Vandenberghe. Convex optimization. Cambridge Univ Pr, 2004.
+[24] R.P. Brent. Algorithms for minimization without derivatives. Dover Pubns, 2002.
+[25] M. Kääriäinen. Active learning in the non-realizable case. In Algorithmic Learning Theory,
+     pages 63–77. Springer, 2006.
+                                                 10
+
+A     Bounds on (κ, µ, δ0 ) for some distributions
+In this section we relate the function evaluation oracle to the function comparison oracle for some
+common distributions. That is, if Ef (x) = f (x) + w for some random variable w, we lower
+bound the probability η(y, x) := P(sign{Ef (y) − Ef (x)} = sign{f (y) − f (x)}) in terms of the
+parameterization of (1).
+Lemma 3. Let w nbe a Gaussian random variable          o       with mean zero and variance σ 2 . Then
+η(y, x) ≥ 12 + min √2πe   1       1
+                             , √4πσ 2e
+                                       |f (y) − f (x)| .
+                                                           √
+Proof. Notice that η(y, x) = P(Z + |f (y) − f (x)|/ 2σ 2 ≥ 0) where Z is a standard normal. The
+                                                                1
+result follows by lower bounding the density of Z by √2πe           1{|Z| ≤ 1} and integrating where 1{·}
+is equal to one when its arguments are true and zero otherwise.
+We say w is a 2-sided gamma distributed random variable if its density is given by
+  βα      α−1 −β|x|
+2Γ(α) |x|     e       for x ∈ [−∞, ∞] and α, β > 0. Note that this distribution is unimodal only
+for α ∈ (0, 1] and is equal to a Laplace distribution for α = 1. This distribution has variance
+σ 2 = α/β 2 .
+Lemma 4. Let w be a 2-sided gamma   n       distributed random variable with parameters o      α ∈ (0, 1] and
+                          1                1
+                                                    
+                                                   α 2α (β/2e)
+                                                                   2α
+                                                                                     2α
+β > 0. Then η(y, x) ≥ 2 + min 4α2 Γ(α)2 e                , 4α2 Γ(α)2 |f (y) − f (x)|      .
+Proof. Let Ef (y) = f (y) + w and Ef (x) = f (x) + w′ where w and w′ are i.i.d. 2-sided gamma
+                                                          −β|x|
+distributed random variables. If we lower  n bound e             with e−α 1{|x|
+                                                                              o ≤ α/β} and integrate we
+                                                          α          α
+                                                1      α      (β/e)         α
+find that P(−t/2 ≤ w ≤ 0) ≥ min 2αΓ(α) e , 2αΓ(α) (t/2) . And by the symmetry and
+                                                                 1
+independence of w and w′ we have P(−t ≤ w − w′ ) ≥               2  + P(−t/2 ≤ w ≤ 0)P(−t/2 ≤ w ≤ 0).
+While the bound in the lemma immediately above can be shown to be loose, these two lemmas are
+sufficient to show that the entire range of κ ∈ (1, 2] is possible.
+B Upper Bounds - Extended
+The algorithm that achieves the upper bound using a pairwise comparison oracle is a combination of
+a few standard techniques and methods pulled from the convex optimization and statistical learning
+literature. The algorithm can be summarized as follows. At each iteration the algorithm picks a
+coordinate uniformly at random from the n possible dimensions and then performs an approximate
+line search. By exploiting the fact that the function is strongly convex with Lipschitz gradients, one
+guarantees using standard arguments that the approximate line search makes a sufficient decrease in
+the objective function value in expectation [23, Ch.9.3]. If the pairwise comparison oracle made no
+errors then the approximate line search is accomplished by a binary-search-like scheme that is known
+in the literature as the golden section line-search algorithm [24]. However, when responses from the
+oracle are only probably correct we make the line-search robust to errors by repeating the same
+query until we can be confident about the true, uncorrupted direction of the pairwise comparison
+using a standard procedure from the active learning literature [25].
+B.1    Coordinate descent algorithm
+Theorem 7. Let f ∈ Fτ,L,B with B = Rn . For any η > 0 assume the line search in the algorithm of
+Figure 1 requires at most Tℓ (η) queries from the pairwise comparison oracle. If xK is an estimate
+of x∗ = arg minx f (x) after requesting no more than K pairwise comparisons, then
+                                                                                                     
+                               4nL2 η 2                                  4nL        f (x0 ) − f (x∗ )
+  sup E[f (xK ) − f (x∗ )] ≤                   whenever           K≥          log                       Tℓ (η)
+   f                              τ                                       τ            η 2 2nL2 /τ
+where the expectation is with respect to the random choice of dk at each iteration.
+                                                      11
+
+                n-dimensional Pairwise comparison algorithm
+                Input: x0 ∈ Rn , η ≥ 0
+                For k=0,1,2,. . .
+                     Choose dk = ei for i ∈ {1, . . . , n} chosen uniformly at random
+                     Obtain αk from a line-search such that
+                         |αk − α∗ | ≤ η where α∗ = arg minα f (xk + αdk )
+                     xk+1 = xk + αk dk
+                end
+Figure 1: Algorithm to minimize a convex function in d dimensions. Here ei is understood to be a
+vector of all zeros with a one in the ith position.
+Proof. First note that ||dk || = 1 for all k with probability 1. Because the gradients of f are Lipschitz
+(L) we have from Taylor’s theorem
+                                                                                 α2 L
+                                f (xk+1 ) ≤ f (xk ) + h∇f (xk ), αk dk i + k .
+                                                                                    2
+Note that the right-hand-side is convex in αk and is minimized by
+                                                       h∇f (xk ), dk i
+                                             αˆk = −                   .
+                                                             L
+However, recalling how αk is chosen, if α∗ = arg minα f (xk + αdk ) then we have
+                                                      L                          L                    L
+           f (xk + αk dk ) − f (xk + α∗ dk ) ≤ ||(αk − α∗ )dk ||2 = |αk − α∗ |2 ≤ η 2 .
+                                                      2                           2                   2
+This implies
+                                                                                          L
+                          f (xk + αk dk ) − f (xk ) ≤ f (xk + α∗ dk ) − f (xk ) + η 2
+                                                                                          2
+                                                                                          L 2
+                                                     ≤ f (xk + α̂k dk ) − f (xk ) + η
+                                                                                           2
+                                                          h∇f (xk ), dk i2        L 2
+                                                     ≤−                       + η .
+                                                                  2L              2
+Taking the expectation with respect to dk , we have
+                                                                     
+                                                    h∇f (xk ), dk i2       L
+              E [f (xk+1 )] ≤ E [f (xk )] − E                           + η2
+                                                           2L               2
+                                                                      2
+                                                                                             
+                                                        h∇f (xk ), dk i                             L
+                               = E [f (xk )] − E E                         d0 , . . . , dk−1 + η 2
+                                                              2L                                    2
+                                                                2
+                                                                   
+                                                    ||∇f (xk )||        L
+                               = E [f (xk )] − E                     + η2
+                                                        2nL              2
+                                                                    ∗
+where we applied the law of iterated expectation. Let x = arg minx f (x) and note that x∗ is a
+unique minimizer by strong convexity (τ ). Using the previous calculation we have
+                                                              E[||∇f (xk )||2 ]                                     
+E [f (xk+1 ) − f (x∗ )] − L2 η 2 ≤ E [f (xk ) − f (x∗ )] −           2nL         ≤ E [f (xk ) − f (x∗ )] 1 − 4nL τ
+where the second inequality follows from
+                             2                           2
+       (f (xk ) − f (x∗ )) ≤ (h∇f (xk ), xk − x∗ i)
+                                                                                 τ −1
+                               ≤||∇f (xk )||2 ||xk − x∗ ||2 ≤ ||∇f (xk )||2                (f (xk ) − f (x∗ )) .
+                                                                                   2
+If we define ρk := E [f (xk ) − f (x∗ )] then we equivalently have
+                                                                                                         
+                 2nL2 η 2              τ              2nL2 η 2                  τ k             2nL2 η 2
+        ρk+1 −                 ≤ 1−              ρk −                ≤ 1−                    ρ0 −
+                      τ                4nL                 τ                    4nL                    τ
+which completes the proof.
+                                                                                                   p   ǫτ
+This implies that if we wish supf E[f (xK ) − f (x∗ )] ≤ ǫ it suffices to take η =                    4nL2 so that at
+                                     p ǫτ 
+                  f (x0 )−f (x∗ )
+most 4nLτ log           ǫ/2         Tℓ    4nL2 pairwise comparisons are requested.
+                                                         12
+
+B.2    Line search
+This section is concerned with minimizing a function f (xk + αdk ) over some α ∈ R. Because we
+are minimizing over a single variable, α, we will restart the indexing at 0 such that the line search
+algorithm produces a sequence α0 , α1 , . . . , αK ′ . This indexing should not be confused with the
+indexing of the iterates x1 , x2 , . . . , xK . We will first present an algorithm that assumes the pairwise
+comparison oracle makes no errors and then extend the algorithm to account for the noise model
+introduced in Section 2.
+Consider the algorithm of Figure 2. At each iteration, one is guaranteed to eliminate at least 1/2
+the search space at each iteration such that at least 1/4 the search space is discarded for every
+pairwise comparison that is requested. However, with a slight modification to the algorithm, one
+can guarantee a greater fraction of removal (see the golden section line-search algorithm). We use
+this sub-optimal version for simplicity because it will help provide intuition for how the robust
+version of the algorithm works.
+                 One Dimensional Pairwise comparison algorithm
+                 Input: x ∈ Rn , d ∈ Rn , η > 0
+                 Initialize: α0 = 0, α+                     −
+                                            0 = α0 + 1, α0 = α0 − 1, k = 0
+                 If Cf (x, x + d α0 ) > 0 and Cf (x, x + d α−
+                                         +
+                                                                       0)< 0
+                     α+0  =  0
+                 end
+                 If Cf (x, x + d α−                                    +
+                                         0 ) > 0 and Cf (x, x + d α0 ) < 0
+                     α−0 = 0
+                 end
+                 While Cf (x, x + d α+        k)< 0
+                     α+k+1  =  2α   +
+                                    k  , k  =  k+1
+                 end
+                 While Cf (x, x + d α−        k)< 0
+                     α−k+1  =  2α   −
+                                    k  ,  k =  k+1
+                 end
+                 αk = 21 (α− k + αk )
+                                       +
+                 While |α+           −
+                            k − αk | ≥ η/2
+                    if Cf (x + d αk , x + d 12 (αk + α+       k )) < 0
+                      αk+1 = 21 (αk + α+       k ), α+
+                                                     k+1  =  α +    −
+                                                               k , αk+1 = αk
+                                                        1           −
+                    else if Cf (x + d αk , x + d 2 (αk + αk )) < 0
+                      αk+1 = 21 (αk + α−              +             −
+                                               k ), αk+1 = αk , αk+1 = αk
+                                                                            −
+                    else
+                      αk+1 = αk , α+               1         +      −     1
+                                          k+1 = 2 (αk + αk ), αk+1 = 2 (αk + αk )
+                                                                                      −
+                    end
+                 end
+                 Output: αk
+               Figure 2: Algorithm to minimize a convex function in one dimension.
+Theorem 8. Let f ∈ Fτ,L,B with B = Rn and let Cf be a function comparison oracle that makes
+no errors. Let x ∈ Rn be an initial position and let d ∈ Rn be a search direction with ||d|| = 1. If
+αK is an estimate of α∗ = arg minα f (x + dα) that is output from the algorithm of Figure 2 after
+requesting no more than K pairwise comparisons, then for any η > 0
+                                                                                                  
+                  ∗                                                   256L (f (x) − f (x + d α∗ ))
+         |αK − α | ≤ η           whenever             K ≥ 2 log2                                     .
+                                                                                 τ 2 η2
+Proof. First note that if αK is output from the algorithm, we have 12 |αK − α∗ | ≤ |α+              −    1
+                                                                                             K − αK | ≤ 2 η,
+as desired.
+We will handle the cases when |α∗ | is greater than one and less than one separately. First assume that
+|α∗ | ≥ 1. Using the fact that f is strongly convex (τ ), it is straightforward to show that immediately
+                                                         13
+
+                                                             1         8
+                                                                                                   
+after exiting the initial while loops, (i) at most 2 +       2 log2    τ (f (x) − f (x + d α∗ )) pairwise com-
+                                                                                                                 1/2
+parisons were requested, (ii) α∗ ∈ [α−           +                   +     −      8
+                                            k , αk ], and (iii) |αk − αk | ≤ τ (f (x) − f (x + d α ))
+                                                                                                             ∗
+                                                                                                                       .
+                                −      +                  −     +
+We also have that α∗ ∈ [αk+1 , αk+1 ] if α∗ ∈ [αk , αk ] for all k. Thus, it follows that
+                                                                                               1/2
+                                                                   8
+                |α+          −        −l +        −
+                    k+l − αk+l | = 2 |αk − αk | ≤ 2
+                                                            −l
+                                                                     (f (x) − f (x + d α∗ ))          .
+                                                                   τ
+                                                                                                                   
+                                                                                       ( τ8 (f (x)−f (x+d α∗ )))1/2
+To make the right-hand-side less than or equal to η/2, set l = log2                                 η/2                .
+This brings the total number of pairwise comparison requests to no more than
+                             ∗
+2 log2 32(f (x)−fτ η(x+d α )) .
+Now assume that |α∗ | ≤ 1. A straightforward          calculation shows that the while loops will terminate
+after requesting at most 2 + 21 log2 Lτ pairwise comparisons. And immediately after exiting the
+while loops we have |α+            −
+                             k − αk | ≤ 2. It follows by     the same arguments of above that if we want
+|α+          −                                                 4
+   k+l − αk+l | ≤ η/2 it suffices to set l = log2 η . This brings the total number of pairwise
+                                                     
+comparison requests to no more than 2 log2 8L          τ η . For sufficiently small η both cases are positive
+and the result follows from adding the two.
+This implies that if the function comparison oracle makes no errors and it is given an                               
+                                                    p ǫτ                                    2
+                                                                                                        (xk +dk α∗ ))
+iterate xk and direction dk then Tℓ                      4nL2        ≤ 2 log2 2048nL (f (xkτ)−f     3ǫ
+which brings the  total  number of pairwise comparisons                          requested to at most
+8nL         f (x0 )−f (x∗ )        2048nL2 maxk (f (xk )−f (xk +dk α∗ ))
+  τ log           ǫ/2        log2                   τ 3ǫ                    .
+B.3    Proof of Theorem 2
+We now introduce a line search algorithm that is robust to a function comparison oracle that makes
+errors. Essentially, the algorithm consists of nothing more than repeatedly querying the same random
+pairwise comparison. This strategy applied to active learning is well known because of its simplicity
+and its ability to adapt to unknown noise conditions [25]. However, we mention that when used
+in this way, this sampling procedure is known to be sub-optimal so in practice, one may want to
+implement a more efficient approach like that of [21]. Consider the subroutine of Figure 3.
+                    Repeated querying subroutine
+                    Input: x, y ∈ Rn , δ > 0
+                    Initialize: S = ∅, l = −1
+                    do
+                        l = l +q1
+                        ∆l = (l+1) log(2/δ)
+                                       2l
+                                    l
+                        S = SP  ∪ {2 i.i.d. draws of Cf (x, y)}
+                    while 21 ei ∈S ei − ∆l < 0
+                                  P
+                    return sign       ei ∈S ei .
+    Figure 3: Subroutine that estimates E [Cf (x, y)] by repeatedly querying the random variable.
+Lemma 5. [25] For any x, y ∈ Rn with P (Cf (x, y) = sign{f (y) − f (x)}) = p, then with proba-
+bility at least 1−δ the algorithm of Figure 3 correctly identifies the sign of E [Cf (x, y)] and requests
+no more than
+                                                                             
+                                         log(2/δ)                log(2/δ)
+                                                      log2
+                                       4|1/2 − p|2             4|1/2 − p|2
+pairwise comparisons.
+                                                          14
+
+It would be convenient if we could simply apply the result of Lemma 2 to the algorithm of Figure 2.
+Unfortunately, if we do this there is no guarantee that |f (y) − f (x)| is bounded below so for the case
+when κ > 1, it would be impossible to lower bound |1/2 − p| in the lemma. To account for this, we
+will sample at four points per iteration as opposed to just two in the noiseless algorithm to ensure
+that we can always lower bound |1/2 − p|. We will see that the algorithm and analysis naturally
+adapts to when κ = 1 or κ > 1.
+Consider the following modification to the algorithm of Figure 2. We discuss the sampling process
+that takes place in [αk , α+     k ] but it is understood that the same process is repeated symmetrically in
+[α−k , α k ]. We begin  with     the  first two while loops. Instead of repeatedly sampling Cf (x, x+d α+                 k)
+we will have two sampling procedures running in parallel that repeatedly compare αk to α+                        k    and α k
+to 2α+ k . As soon as the repeated sampling procedure terminates for one of them we terminate the
+second sampling strategy and proceed with what the noiseless algorithm would do with α+                        k assigned
+to be the sampling location that finished first. Once we’re out of the initial while loops, instead of
+comparing αk to 21 (αk + α+                                                                       1
+                                    k ) repeatedly, we will repeatedly compare αk to 3 (αk + αk ) and αk to
+                                                                                                             +
+2             +                                                                                       1           +
+3 (αk + αk ). Again, we will treat the location that finishes its sampling first as 2 (αk + αk ) in the
+noiseless algorithm.
+If we perform this procedure every iteration, then at each iteration we are guaranteed to remove at
+least 1/3 the search space, as opposed to 1/2 in the noiseless case, so we realize that the number
+of iterations of the robust algorithm is within a constant factor of the number of iterations of the
+noiseless algorithm. However, unlike the noiseless case where at most two pairwise comparisons
+were requested at each iteration, we must now apply Lemma ?? to determine the number of pairwise
+comparisons that are requested per iteration.
+Intuitively, the repeated sampling procedure requests the most pairwise comparisons when the dis-
+tance between the two function evaluations being compared smallest. This corresponds to when
+the distance between probe points is smallest, i.e. when η/2 ≤ |αk − α∗ | ≤ η. By con-
+sidering this worst case, we can bound the number of pairwise comparisons that are requested
+at any  iteration. By strong convexity (τ ) we find through a straightforward                            calculation that
+max |f (x + d αk ) − f (x + d 32 (αk + α+             k ))|, |f (x +   d  α k ) − f (x + d  1
+                                                                                            3 (αk  +  α +            τ 2
+                                                                                                        k ))| ≥ 18 η for
+                                                     
+                                                 τ 2 κ−1
+all k. This implies |1/2 − p| ≥ µ 18               η        so that on on any given call to the repeated     querying      
+subroutine, with probability at least 1 − δ the subroutine requests no more than O (τlog(1/δ)             e
+                                                                                                                η 2 )2(κ−1)
+pairwise comparisons. However, because we want the total number of calls to the subroutine to
+hold with probability 1 − δ, not just one, we must union bound over 4 pairwise comparisons
+per iteration times the number of iterations per line search times the number of line searches.
+This brings
+               the total number of calls           to the repeated
+                                                                                            to no more than∗ 4
+                                                                            query subroutine                              ×
+3          256L maxk (f (xk )−f (xk +dk α∗    k ))      4nL         f (x0 )−f (x∗ )             L      2 f (x0 )−f (x )
+2  log 2                  τ 2 η2                     ×   τ    log     η 2 2nL2 /τ     =  O    n τ  log         nη 2          .
+                     ǫτ
+                           1/2
+If we set η = 4nL       2         so that E [f (xK ) − f (x∗ )] ≤ ǫ by Theorem 7, then the total number of
+requested pairwise comparisons does not exceed
+                                       2(κ−1)                                              
+                           e nL n                              f (x0 ) − f (x∗ )
+                          O                           log2                           log(n/δ) .
+                                   τ      ǫ                              ǫ
+Byfinding a T > 0 that satisfies this bound for any            n ǫqwe see thatothis is equivalent to a rate of
+                       1                                                        T
+O n log(n/δ) Tn 2(κ−1) for κ > 1 and O exp −c n log(n/δ)                                   for κ = 1, ignoring polylog
+factors.
+                                                               15
+
