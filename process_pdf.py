@@ -5,30 +5,43 @@ usage: python process_pdf.py --input_dir [papers_raw/mathy] --output_dir [papers
 import pdftotext
 import glob
 import os
-import sys
 import argparse
+from sklearn.model_selection import train_test_split
+
 def process_pdf(input_dir, output_dir):
-    print(glob.glob(input_dir))
+    files = []
     for i, pdf_file in enumerate(glob.glob(input_dir)):
         pdf = open(pdf_file, "rb")
-        # print(i)
-        # print(pdf)
-        # print(pdf)
-        text = pdftotext.PDF(pdf)
+        text = pdftotext.PDF(pdf, raw=True)
         pdf.close()
         pdfintext = ""
         for page in text:
-            pdfintext += page + "\n"
-        output_filename = os.path.join(output_dir, f"{i}.txt")
-        f = open(output_filename, "w+", encoding="utf8")
-        f.write(pdfintext)
-        f.close()
-os.mkdir(".\\papers_processed")
-os.mkdir(".\\papers_processed\\mathy")
+            # print((" ").join(page))
+            # print(page)
+            pdfintext += page
+        # print("\n\n".join(text))
+        # print(pdfintext)
+        files.append(pdfintext)
+        # exit()
+    x_train, x_test = train_test_split(files, test_size=0.20)
+    write_to_disk("train", output_dir, x_train)
+    write_to_disk("test", output_dir, x_test)
 
+
+def write_to_disk(dir_name, output_dir, data):
+    output_filename = os.path.join(output_dir, dir_name)
+    os.mkdir(output_filename)
+    for i, x in enumerate(data):
+        txt_file = os.path.join(output_filename, f"{i}.txt")
+        f = open(txt_file, "w+", encoding="utf8")
+        f.write(x)
+        f.close()
+# print(pdftotext.PDF.__dict__)
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_dir")
 parser.add_argument("--output_dir")
 args = parser.parse_args()
 # print(args.url_file)
+os.makedirs(args.output_dir)
+
 process_pdf(args.input_dir, args.output_dir)
