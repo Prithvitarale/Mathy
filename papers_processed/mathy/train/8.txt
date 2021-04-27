@@ -1,0 +1,1460 @@
+A regression approach for explaining manifold embedding
+coordinates
+Marina Meila∗
+Samson Koelle Hanyu Zhang
+Department of Statistics
+University of Washington
+Seattle, WA 98195-4322
+{mmp2,sjkoelle,hanyuz6}@uw.edu
+November 30, 2018
+Abstract
+Manifold embedding algorithms map high dimensional data, down to coordinates in a
+much lower dimensional space. One of the aims of the dimension reduction is to find the
+intrinsic coordinates that describe the data manifold. However, the coordinates returned by the
+embedding algorithm are abstract coordinates. Finding their physical, domain related meaning
+is not formalized and left to the domain experts. This paper studies the problem of recovering
+the domain-specific meaning of the new low dimensional representation in a semi-automatic,
+principled fashion. We propose a method to explain embedding coordinates on a manifold
+as non-linear compositions of functions from a user-defined dictionary. We show that this
+problem can be set up as a sparse linear Group Lasso recovery problem, find sufficient recovery
+conditions, and demonstrate its effectiveness on data.
+Manifold learning algorithms, also known as embedding algorithms, map data from high di-
+mensional, possibly infinite dimensional spaces down to coordinates in a much lower dimensional
+space. In the sciences, one of the goals of dimension reduction is the discovery of descriptors of
+the data generating process. Both linear dimension reduction algorithms like Principal Component
+Analysis (PCA) and non-linear algorithms such as Diffusion Maps [CL06] are used in applications
+from genetics to chemistry to uncover collective coordinates describing large scale properties of the
+interrogated system. For example, in chemistry, a common objective is to discover so-called reaction
+coordinates describing evolution of molecular configurations [CNO00, NC17] .
+For example, Figure 1 shows the toluene molecule (C7H8), consisting of Na = 15 atoms. By
+Molecular Dynamics (MD) simulation, configurations of this molecule are generated in D = 3×Na =
+45 dimensions. They are then mapped into m = 2 dimensions by a manifold learning algorithm.
+The figure shows that this configuration space is well approximated by a one-dimensional manifold,
+and this manifold is parametrized by a geometric quantity, the torsion of the bond connecting the
+CH3 methyl group with the C6H5 benzene group. Torsions are dihedral angles in tetrahedra with
+vertices at atoms of the molecule. In a molecule, any two atoms which are not too distant interact;
+hence the toluene molecule has many more interactions than the graph edges presented in Figure
+∗www.stat.washington.edu/mmp
+1
+arXiv:1811.11891v1
+[stat.ML]
+29
+Nov
+2018
+Figure 1: Explaining the collective coordinates in Molecular Dynamics (MD) simulations. In such
+simulations, a molecular configuration is represented by the D = 3Na vector of spatial locations of the Na
+atoms comprising the molecule (not shown). Left, top: The toluene molecule, with the bond defining the
+important torsion τ marked in blue. Left, bottom: Embedding of the configurations of toluene into m = 2
+dimensions, showing a manifold of d = 1. The color corresponds to the values of τ. Right: Embedding of the
+configurations of the ethanol (C2H5OH) in m = 2 dimensions, showing a manifold of d = 2. This manifold
+is colored by two bond torsions in the ethanol molecule; it can be seen that each torsion explains one of the
+circles generating the torus.
+1. Our problem is to select the torsion τ that explains the one-dimensional manifold of toluene
+configurations out of the many torsions to be considered.
+Finding the meaning behind the coordinates output by an embedding algorithm through com-
+parison to problem-relevant covariates is usually done via visual inspection by human experts. This
+paper introduces a regression method for automatically establishing such relationships between the
+abstract coordinates output by a manifold learning algorithm and functions of the data that have
+meaning in the domain of the problem.
+The next section defines the problem formally, Section 2 presents useful background in manifold
+estimation, while Sections 3, 4 and 5 develop our method. Section 3 is of independent interest as it
+introduces Functional Lasso (FLasso), a novel method for sparsely representing a function f as a non-
+linear composition of functions from a dictionary. Section 4 introduces a new differential-geometric
+method for estimating the gradient of a function defined on a manifold. These two methods are
+combined to obtain our main algorithm, ManifoldLasso in Section 5. The relationship to previous
+work is discussed in Section 6. Section 8 presents experiments with FLasso and ManifoldLasso,
+respectively. Recovery results are presented in Section 7.
+1 Problem formulation, assumptions and challenges
+We make the standard assumption that the observed data D = {ξi ∈ RD
+: i ∈ 1 . . . n} are sampled
+i.i.d. from a smooth manifold 1
+M of intrinsic dimension d smoothly embedded in RD
+by the inclusion
+map. In this paper, we will call smooth any function or manifold of class at least C3
+. We assume
+that the intrinsic dimension d of M is known; for example, by having been estimated previously
+1The reader is referred to [Lee03] for the definitions of the differential geometric terms used in this paper.
+2
+by one method in [KvL15]. The manifold M is a Riemannian manifold with Riemannian metric
+inherited from the ambient space RD
+. Furthermore, we assume the existence of a smooth embedding
+map φ : M → φ(M) ⊂ Rm
+, where typically m << D. We call the coordinates φ(ξi) in this m
+dimensional ambient space the embedding coordinates; let Φ = [φ(ξi)T
+]i=1:n ∈ Rn×m
+. In practice,
+the mapping of the data D onto φ(D) represents the output of an embedding algorithm, and we
+only have access to M and φ via D and its image φ(D).
+In addition, we are given a dictionary of user-defined and domain-related smooth functions
+G = {g1, . . . gp, with gj : RD
+→ R}. Our goal is to express the embedding coordinate functions
+φ1 . . . φm in terms of functions in G.
+More precisely, we assume that φ(x) = h(gj1
+(x), . . . gjs
+(x)) with h : O ⊆ Rs
+→ Rm
+a smooth
+function of s variables, defined on a open subset of Rs
+containing the range of gj1
+, . . . gjs
+. Let
+S = {j1, . . . js}, and gS = [gj1
+(x), . . . gjs
+]T
+. The problem is to discover the set S ⊂ [p] such that
+φ = h◦gS. We call S the functional support of h, or the explanation for the manifold M in terms of G.
+For instance, in the toluene example, the functions in G are all the possible torsions in the molecule,
+s = 1, and gS = τ is the explanation for the 1-dimensional manifold traced by the configurations.
+Indeterminacies In differential geometric terms, the explanation gS is strongly related to finding
+a parametrization of M. Hence, |S| ≥ d. Since the function φ given by the embedding algorithm is
+not unique, the function h cannot be uniquely determined. Moreover, whenever g1 = t(g2) where t
+is a smooth monotonic function, the support S may not be unique either.
+In Section 7 we give sufficient and necessary conditions under which S can be recovered uniquely;
+intuitively, they consist of functional independencies between the functions in G. For instance, it
+is sufficient to assume that that the dictionary G is a functionally independent set, i.e. there is no
+g ∈ G that can be obtained as a smooth function of other functions in G.
+Hence, in this paper we resolve the indeterminacies w.r.t. the support S, and we limit our scope
+to recovering S. We leave to future work the problem of recovering information on how the functions
+gS combine to explain M.
+2 Background on manifold estimation: neighborhood graph,
+Laplacian and estimating tangent subspaces
+Manifold learning and intrinsic geometry Suppose we observe data points ξi ∈ RD
+that are
+sampled from a smooth d-dimensional submanifold M ⊂ RD
+. The task of manifold learning is to
+provide a diffeomorphism φ : M → φ(M) ⊂ Rm
+where m  D. The Whitney Embedding Theorem
+[Lee03] guarantees the existence of a map satisfying this property with m ≤ 2d. Hence, a good
+manifold learner will identify a smooth map φ : M → Rm
+with d ≤ m ≤ 2d  D.
+The neighborhood graph and kernel matrix The neighborhood graph is a data structure that
+associates to each data point ξi ∈ D its set of neighbors Ni = {i0
+∈ [n], with ||ξi0 − ξi|| ≤ rN , where
+rN is a neighborhood radius parameter. The neighborhood relation is symmetric, and determines an
+undirected graph with nodes represented by the data points ξ1:n.
+Closely related to the neighborhood graph are the local position matrices Ξi = {ξi0 : i0
+∈ Ni} ∈
+R|Ni|×d
+, local embedding coordinate matrices Φi = {φ(ξi0 ) : i0
+∈ Ni} ∈ R|Ni|×d
+, and the kernel
+3
+matrix K ∈ Rn×n
+whose elements are
+Kii0 =
+(
+exp
+
+−||ξi−ξi0 ||
+2
+N
+
+if i0
+∈ Ni
+0 otherwise.
+(1)
+Typically, the radius rN and the bandwidth parameter N are related by rN = cN with c a small
+constant greater than 1. This ensures that K is close to its limit when rN → ∞ while remaining
+sparse, with sparsity structure induced by the neighborhood graph. Rows of this matrix will be
+denoted Ki,Ni to emphasize that when a particular row is passed to an algorithm, only |Ni| values
+need to be passed. The neighborhood graph, local position matrices, and kernel matrix play crucial
+roles in our manifold estimation tasks.
+Estimating tangent spaces in the ambient space RD
+The tangent subspace at point ξi in
+the data can be estimated by Weighted Local Principal Component Analysis, as described in the
+LocalPCA algorithm. The output of this algorithm is an orthogonal matrix Ti ∈ RD×d
+, representing
+a basis for Tξi
+M. For this algorithm and others we define the SVD algorithm SVD(X, d) of a
+symmetrical matrix X as outputting V, Λ, where Λ and V are the largest d eigenvalues and their
+eigenvectors, respectively, and denote a column vector of ones of length k by 1k. We denote |Ni| by
+ki.
+LocalPCA (local data Ξi, kernel row Ki,Ni , intrinsic dimension d)
+1: Compute weighted mean ¯
+ξi = (Ki,Ni
+1ki
+)−1
+Ki,Ni
+Ξi
+2: Compute weighted local difference matrix Zi = (Ki,Ni
+1ki
+)−1
+Ki,Ni
+(Ξi − 1ki
+¯
+ξi)
+3: Compute Ti, Λ ← SVD(ZT
+i Zi, d)
+4: Output Ti
+The renormalized graph Laplacian The renormalized graph Laplacian, also known as the
+sample Laplacian, or Diffusion Maps Laplacian L, constructed by Laplacian , converges to the
+manifold Laplace operator ∆M; [CL06] shows that this estimator is unbiased w.r.t. the sampling
+density on M (see also [HAvL05, HAvL07, THJ10]). The Laplacian L is a sparse matrix; row i of
+L contains non-zeros only for i0
+∈ Ni. Thus, as for K, rows of this matrix will be denoted Li,Ni .
+Again, sparsity pattern is given by the neighborhood graph; construction of the neighborhood graph
+is therefore the computationally expensive component of this algorithm.
+Laplacian (neighborhoods Ni:n, local data Ξ1:n, bandwidth N )
+1: Compute kernel matrix K using (1)
+2: Compute normalization weights wi ← Ki,Ni
+1ki
+, i = 1, . . . n, W ← diag(wi i = 1 : n)
+3: Normalize L̃ ← W−1
+KW−1
+4: Compute renormalization weights w̃i ← L̃i,Ni
+1ki
+, i = 1, . . . n, W̃ = diag(w̃i i = 1 : n)
+5: Renormalize L ← 4
+2
+N
+(W̃−1
+L̃ − In)
+6: Output Kernel matrix K, Laplacian L, [optionally w̃1:n]
+The m principal eigenvectors of the Laplacian L (or alternatively of the matrix L̃ of Algorithm
+Laplacian), corresponding to its smallest eigenvalues, are sometimes used as embedding coordinates
+4
+Φ of the data; the embedding obtained is known as the Diffusion Map [CL06] or the Laplacian
+Eigenmap [BN02] of D. We use this embedding approach for convenience, but in general, any
+algorithm which asymptotically generates a smooth embedding is acceptable.
+The pushforward Riemannian metric Geometric quantities such as angles and lengths of
+vectors in the tangent bundle T M, distances along curves in M, etc., are captured by Riemannian
+geometry. We assume that (M, id) is a Riemannian manifold, with the metric id induced from
+RD
+. Furthermore, we associate with φ(M) a Riemannian metric g which preserves the geometry of
+(M, id). This metric is called the pushforward Riemannian metric and is defined by
+hu, vig = hDφ−1
+(ξ)u, Dφ−1
+(ξ)vi for all u, v ∈ Tφ(ξ)φ(M). (2)
+In the above, Dφ−1
+(ξ) maps vectors from Tφ(ξ)φ(M) to TξM, and h, i is the Euclidean scalar
+product.
+For each φ(ξi), the associated push-forward Riemannian metric expressed in the coordinates of
+Rm
+, is a symmetric, semi-positive definite m × m matrix Gi of rank d. The scalar product hu, vig
+takes the form uT
+Giv.
+The matrices Gi can be estimated by the algorithm RMetric of [PM13]. The algorithm uses
+only local information, and thus can be run efficiently. For notational simplicity, we refer to the m
+embedding coordinates of the points in a neighborhood of a point i as Φi.
+RMetric (Laplacian row Li,Ni , local embedding coordinates Φi, intrinsic dimension d)
+1: Compute centered local embedding coordinates Φ̃i ← Φi − φ(ξi)1T
+ki
+2: Hikk0 = Li,Ni (Φ̃i,k Φ̃i,k0 ) for k, k0
+= 1 : m. Hi ← [Hikk0 ]k,k0∈1:m
+3: Compute Vi, Λi ← SVD(Hi, d)
+4: Gi ← ViΛ−1
+i V T
+i .
+5: Output Gi
+3 Flasso: sparse non-linear functional support recovery
+Our approach for explaining manifold coordinates is predicated on the following general method
+for decomposing a real-valued function f over a given dictionary G. The main idea is that when
+f = h ◦ g, their differentials Df, Dh, Dg at any point are in the linear relationship Df = DhDg.
+This is expressed more precisely as follows.
+Proposition 1 (Leibniz Rule) Let f = h ◦ gS with gS = [g1, g2, · · · , gs]T
+: RD
+→ Rs
+, h : Rs
+→ R.
+All maps are assumed to be smooth. Then at every point,
+∇f =
+∂h
+∂g1
+∇g1 +
+∂h
+∂g2
+∇g2 + . . .
+∂h
+∂gs
+∇gs, (3)
+or, in matrix notation
+Df = DhDgS.
+5
+Given samples ξ1:n ∈ RD
+, dictionary G, and function f, we would like to discover that f is a function
+of gS without knowing h. The usefulness of this decomposition is that even if f is a non-linear
+function of g1:s, its gradient is a linear combination of the gradients ∇g1:s at every point. That
+is, proposition 1 transforms the functional, non-linear sparse recovery problem into a set of linear
+sparse recovery problems, one for each data point.
+Formulating the problem as Group Lasso Let ∇f(ξi) = yi and ∇gj(ξi)/||∇gj(ξ)||2 = xij,
+for i = 1 : n. These vectors in RD
+could be estimated, or available analytically. Then, by (3) we
+construct the following linear model
+yi =
+p
+X
+j=1
+βijxij + i = Xiβi: + i, for i = 1 : n. (4)
+In the above, βi: ∈ Rp
+is the vector [βij]j=1:p. If there exists some h such that f = h ◦ gS holds, then
+non-zero βijs are estimations of ∂h
+gj
+(ξi)||∇gj(ξi)|| for j ∈ S and zeros βij indicate j /
+∈ S . Hence, in
+βi:, only s elements are non-zero. The term i is added to account for noise or model misspecification.
+The key characteristic of the functional support that we leverage is that the same set of elements
+will be non-zero for all i’s. Denote by βj ∈ Rn
+the vector [βij]i=1:n. Since finding the set S ⊂ [p] for
+which βj 6≡ 0, given y1:n and X1:n is underdetermined when for example s > d, we use Group Lasso
+[YL06] regularization in order to zero out as many βj vectors as possible. In particular, each group
+has size n. Thus, the support recovery can be reformulated as the globally convex optimization
+problem
+(FLasso) min
+β
+Jλ(β) = 1
+2
+n
+X
+i=1
+||yi − Xiβi||2
+2 + λ/
+√
+n
+X
+j
+||βj||, (5)
+with λ > 0 a regularization parameter. This framework underscores why we normalize gradients
+by k∇gjk2; else we would favor dictionary functions that are scaled by large constants, since their
+coefficients would be smaller. Note that normalization of f is not necessary since it rescales all
+estimated partials the same. We call problem (5) Functional Lasso (FLasso). Experiments on
+synthetic data in Section 8 illustrate the effectiveness of this algorithm.
+Multidimensional FLasso The FLasso extends easily to vector valued functions f : RD
+→ Rm
+.
+To promote finding a common support S for all m embedding coordinates, groups will overlap the
+m embedding coordinates. Let
+yik = ∇fk(ξi) βijk =
+∂hk
+∂gj
+(ξi) (6)
+and
+βj = vec(βijk, i = 1 : n, k = 1 : m) ∈ Rmn
+, βik = vec(βijk, j = 1 : p) ∈ Rp
+. (7)
+Then the FLasso objective function becomes
+Jλ(β) =
+1
+2
+n
+X
+i=1
+m
+X
+k=1
+||yik − Xiβik||2
++
+λ
+√
+mn
+p
+X
+j=1
+||βj||. (8)
+In the above, βj is the vector of regression coefficients corresponding to the effect of function gj,
+which form group j in the multivariate group Lasso problem. The size of each group is mn.
+6
+4 Explaining manifold coordinates with FLasso on the tan-
+gent bundle
+To explain the coordinates φ1:m with the FLasso method of Section 3, we need (i) to extend
+FLasso to functions defined on a manifold M, and (ii) to reliably estimate their differentials Dφ1:m
+in an appropriate coordinate system.
+These tasks require bringing various “gradients” values into the same coordinate system. For
+function g defined on a neighborhood of M in RD
+, we denote ∇ξg the usual gradient ∂g
+∂ξ . Similarly
+for a function f defined on a neighborhood of φ(M) in Rm
+, the gradient is denoted ∇φf. To define
+the gradient of a function on a manifold, we recall that the differential of a scalar function f on
+M at point ξ ∈ M is a linear functional Df(ξ) : TξM → R. The gradient of f at ξ, denoted
+grad f(ξ) ∈ TξM is defined by hgrad f(ξ), vi = Df(ξ)v for any v ∈ TξM. To distinguish between
+gradients in the tangent bundles of M, respectively φ(M), we denote the former by gradT and the
+latter by gradφ.
+In this section, we will be concerned with the coordinate functions φ1, . . . φm seen as functions
+on M, and with the gradients ∇ξgj and gradTi
+gj of the dictionary functions. It is easy to see that
+for a choice of basis Ti ∈ RD×d
+in Tξi M,
+gradT gj(ξ) = TT
+i ∇ξgj(ξi). (9)
+4.1 FLasso for vector-valued functions on M
+We start from the FLasso objective function Jλ for m-dimensional vector valued functions (8).
+Since differentials of functions on a manifold M operate on the tangent bundle T M, the definitions
+of yi and Xi from (FLasso) are replaced with the values of the respective gradients in T M. For the
+moment we assume that these are given. In Section 4.2 we will concern ourselves with estimating
+the parameters yik of Jλ from the data, while Xi is given in (12) below.
+For each i, we fix an orthogonal basis in Tξi M , and denote the orthogonal D × d matrix
+representing the respective basis vectors by Ti. Hence, any vector in Tξi M can be expressed as
+v ≡ [v1 . . . vd]T
+by its d coordinates in the chosen basis, or as Tiv ∈ RD
+. For any vector w in
+RD
+, TT
+i ξ ∈ Rd
+represents the coordinates of its projection onto Tξi
+M; in particular, if w ∈ Tξi
+M,
+TT
+i Tiw = w. These elementary identities are reflected in (9) above. Let
+yik = ∇T φk(ξi) Yi = [yik]m
+k=1 ∈ Rd×m
+βijk =
+∂hk
+∂gj
+(ξi) (10)
+and
+βj = vec(βijk, i = 1 : n, k = 1 : m) ∈ Rmn
+, βik = vec(βijk, j = 1 : p) ∈ Rp
+. (11)
+In the above, the columns of Yi are the coordinates of gradT φk(ξi) in the chosen basis of Tξi
+M; βj
+is the vector of regression coefficients corresponding to the effect of function gj, which form group j
+in the multivariate group Lasso problem. The size of each group is mn. By comparing (6) and (7)
+with (10) and (11) we see, first, the change in the expression of yik due to projection. We also note
+that in the definition of βijk the normalization is omitted. For the present, we will assume that the
+dictionary functions g1:p have been appropriately normalized; how to do this is deferred to Section 5.
+To obtain the matrices Xi, we project the gradients of the dictionary functions gj onto the
+tangent bundle, i.e.
+Xi = TT
+i ∇ξgj(ξi)]j=1:p ∈ Rd×p
+. (12)
+7
+The FLasso objective function is
+Jλ(β) =
+1
+2
+n
+X
+i=1
+m
+X
+k=1
+||yik − Xiβik||2
++
+λ
+√
+mn
+p
+X
+j=1
+||βj||, (13)
+an expression identical to (8), but in which yi, Xi denote the quantities in (10) and (12). To note
+that Jλ(β) is invariant to the change of basis Ti. Inded, let T̃i = TiΓ be a different basis, with
+Γ ∈ Rd×d
+a unitary matrix. Then, ỹik = ΓT
+yik, X̃i = ΓT
+Xi, and ||ỹik − X̃iβ||2
+= ||yik − Xiβ||2
+.
+The next section is concerned with estimating the gradients yik from the data.
+4.2 Estimating the coordinate gradients by pull-back
+Since φ is implicitly determined by a manifold embedding algorithm, the gradients of φk are in
+general not directly available, and φk is known only through its values at the data points. We
+could estimate these gradients naively from differences φk(ξi) − φk(ξi0 ) between neighboring points,
+but we choose a differential geometric method inspired by [LSW09] and [PM13], that pulls back
+the differentials of φ1:m(ξi) from Rm
+to Tξi
+M, thus enabling them to be compared in the same
+coordinate system with the derivatives gradT gj.
+If the range of φ were Rm
+, then the gradient of a coordinate function φk would be trivially
+equal to the k-th basis vector, and ∇φφ = Id. If d < m, by projecting the rows of Im onto the
+tangent subspace Tφ(ξi)φ(M), we get gradTφ
+φ. We then pull back the resulting vectors to Tξi
+M to
+get gradT φ(ξi) ≡ Yi, as defined in (10).
+Pulling back gradφ φ = I into Tξi
+M If the embedding induced by φ were an isometry, the
+estimation of Tφ(ξi)φ(M) could be performed by LocalPCA, and the pull-back following [PM13].
+Here we do not assume that φ is isometric. The method we introduce exploits the fact that, even
+when φ is not an isometry, the distortion induced by φ can be estimated and corrected [PM13].
+More precisely, we make use of the RMetric algorithm described in Section |refsec:background to
+estimate for each φ(ξi), the associated push-forward Riemannian metric, expressed in the coordinates
+of Rm
+by Gi, a symmetric, semi-positive definite m × m matrix of rank d. Additionally, since the
+theoretical rank of Gi equals d, the d principal eigenvectors of Gi represent (an estimate of) an
+orthonormal basis of Tφ(ξi)φ(M).
+We now apply (2) to the set of vectors ProjTξi
+M(ξi0 − ξi) for i0
+∈ Ni. Let
+Ai =
+h
+ProjTξi
+M(ξi0 − ξi)
+i
+i0∈Ni
+∈ Rd×ki
+Bi = [φ(ξi0 ) − φ(ξi)]i0∈Ni
+∈ Rm×ki
+(14)
+and Yi = gradT φ(ξi) ∈ Rm×d
+as defined in the previous section. Then, (2) implies
+AT
+i Yi ≈ BT
+i GiI. (15)
+The equality is approximate to first order because the ProjTξi
+M operator above is a first order
+approximation to the logarithmic map ; the error tends to 0 with the neighborhood radius [dC92]. If
+A is full rank d, for ki ≥ d, we can obtain Yi by least-squares as
+Yi = (AiAT
+i )−1
+AiBT
+i Gi. (16)
+This equation recovers gradT φ(ξi) in the local basis Ti of Tξi M.
+8
+If we desired to obtain gradx iφ(ξi) in the global RD
+coordinates, it suffices to express the columns
+of Ai as vectors in RD
+(or equivalently to apply the appropriate linear transformation to Yi).
+Algorithm PullBackDPhi summarizes the above steps. For the estimation of Gi, the Laplacian
+must be available. Note also that in obtaining (15) explicit projection on Tφ(ξi)φ(M) is not necessary,
+because any component orthogonal to this subspace is in the null space of Gi.
+PullBackDPhi (basis Ti, local data Ξi, local embedding coordinates Φi, Laplacian row Li,Ni
+,
+intrinsic dimension d
+1: Compute pushforward metric Gi ← RMetric(Li,Ni , Φi, d)
+2: Project Ai = TT
+i (Ξi − ξi1T
+ki
+).
+3: Compute Bi = Φi − φ(ξi)1T
+ki
+∈ R|Ni|×m
+.
+4: Solve linear system AT
+i Yi = BT
+i Gi as in (16)
+5: Output Yi
+5 The full ManifoldLasso algorithm
+We are now ready to combine the algorithms of Section 2 with the results of Sections 3 and 4 into
+the main algorithm of this paper. Algorithm ManifoldLasso takes as input data D sampled near
+an unknown manifold M, a dictionary G of functions defined on M (or alternatively on an open
+subset of the ambient space RD
+that contains M) and an embedding φ(D) in Rm
+. The output of
+ManifoldLasso is a set S of indices in G, representing the functions G that explain M.
+ManifoldLasso (Dataset D, dictionary G, embedding coordinates φ(D), intrinsic dimension d,
+kernel bandwidth N , neighborhood cutoff size rN , regularization parameter λ)
+1: Construct Ni for i = 1 : n; i0
+∈ Ni iff ||ξi0 − ξi|| ≤ rN , and local data matrices Ξ1:n
+2: Construct kernel matrix and Laplacian K, L ← Laplacian(N1:n, Ξ1:n, N )
+3: [Optionally compute embedding: φ(ξ1:n) ←EmbeddingAlg(D, N1:n, m, . . .)]
+4: for i = 1, 2, . . . n (Prepare gradients for group lasso) do
+5: Compute basis Ti ←LocalPCA(Ξi, Ki,Ni
+, d)
+6: Compute ∇ξgj(ξi) for j = 1, . . . p
+7: Project Xi ← TT
+i ∇ξg1:p
+8: Compute Yi ←PullBackDPhi(Ti, Ξi, Φi, Li,Ni
+, Ki,Ni
+, d)
+9: end for
+10: β, S ← FLasso(Xi:n, Yi:n, λ)
+11: Output S
+Computation The first two steps of ManifoldLasso are construction of the neighborhood
+graph, and estimation of the Laplacian L. As shown in Section 2, L is a sparse matrix, hence
+RMetric can be run efficiently by only passing values corresponding to one neighborhood at a time.
+Note that in our examples and experiments, Diffusion Maps is our chosen embedding algorithm, so
+the neighborhoods and Laplacian are already available, though in general this is not the case.
+The second part of the algorithm estimates the gradients and constructs matrices Y1:n, X1:n. The
+gradient estimation runtime is O(qd2
++nd3
+) where q is the number of edges in the neighborhood graph,
+9
+using Cholesky decomposition-based solvers. Finally, the last step is a call to the GroupLasso,
+which estimates the support S of φ. The computation time of each iteration in GroupLasso is
+O(n2
+m2
+pd). For large data sets, one can perform the “for” loop over a subset I ⊂ [n] of the original
+data while retaining the geometric information from the full data set. This replaces the n in the
+computation time with the smaller factor |I|.
+Normalization In Group Lasso, the columns of the X matrix corresponding to each group are
+rescaled to have unit Euclidean norm. This ensures that the FLasso algorithm will be invariant to
+rescaling of dictionary functions by a constant. Since any multiplication of gj by a non-zero constant,
+simultaneously with dividing its corresponding βj by the same constant leaves the reconstruction
+error of all y’s invariant, but affects the norm ||βj||, rescaling will favor the dictionary functions
+that are scaled by large constants. Therefore, the relative scaling of the dictionary functions gj can
+influence the support S recovered.
+When the dictionary functions gj are defined on M, but not outside M. In this case we follow
+the standard Group Lasso recipe. We calculate the normalizing constant
+γ2
+j =
+1
+n
+n
+X
+i=1
+k gradT gj(ξi)||2
+. (17)
+The above is the finite sample version of k gradT gjkL2(M), integrated w.r.t. the data density on M.
+Then we set gj ← gj/γj which has the same effect as the normalization for FLasso in Section 3.
+In the case when the dictionary functions are defined on a neighborhood around M in RD
+, we
+compute the normalizing constant with respect to ∇ξgj, that is
+γ2
+j =
+1
+n
+n
+X
+i=1
+k∇ξgj(ξi)k2
+. (18)
+Then, once again, we set gj ← gj/γj. Doing this favors the dictionary functions whose gradients
+are parallel to the manifold M, and penalizes the gj’s which have large gradient components
+perpendicular to M.
+Tuning As the tuning parameter λ is increased, the cardinality of the support decreases. Tuning
+parameters are often selected by cross-validation in Lasso-type problems, but this is not possible
+in our unsupervised setting. We base our choice of λ on matching the cardinality of the support
+to d. The recovery results proved in Section 7.2 state that for a single chart, s = d functionally
+independent dictionary functions suffice.
+In manifolds which cannot be represented by a single chart, the situation is more complicated,
+and it depends on the topology of the co-domains of the functions gj. For example, in the toluene
+data presented in Section 8, the manifold is a circle. This cannot be covered by a single chart, but it
+can be parametrized by a single function in the dictionary, the angle of the bond torsion in Figure
+5. Another case when s > d is the case when no single dictionary function can parametrize the
+manifold. When G is not a functionally independent set, it is possible that the parametrization of
+M by G is not unique. Hence, in general, the support size s may be equal to d or larger.
+5.1 Variants and extensions
+The approach utilized here can be extended in several interesting ways. First, our current approach
+explains the embedding coordinates φ produced by a particular embedding algorithm. However, the
+10
+same approach can be used to directly explain the tangent subspace of M, independently of any
+embedding.
+Second, one could set up FLasso problems that explain a single coordinate function. In general,
+manifold coordinates do not have individual meaning, so it will not be always possible to find a good
+explanation for a single φk. However, Figure 6 shows that for the ethanol molecule, whose manifold
+is a torus, there exists a canonical system of coordinates in which each coordinate is explained by
+one torsion.
+Third, manifold codomains of G can be used, eliminating certain issues of continuity and
+chart-counting.
+Finally, when the gradients of the dictionary functions are not analytically available, they can
+also be estimated from data.
+6 Related work
+To our knowledge, ours is the first solution to estimating a function f as a non-linear sparse
+combination of functions in a dictionary. Below we cite some of the closest related work.
+Group Lasso has been widely used in sparse regression and variable selection. In [OPV+
+14] the
+Functional Sparse Shrinkage and (FuSSO) is introduced to solve similar problem in Euclidean space
+setting. FuSSO uses Group Lasso to recover F as a sparse linear combination of functions from an
+infinite dictionary given implictly by the decomposition over the Fourier basis. More importantly,
+this method imposes an additive model between the response and the functional covariates, which is
+not true in our method.
+Gradient Learning [YX12]is also a similar work trying to recover non-zero partial derivatives via
+Group Lasso type regression as methods of variable selection and dimension reduction. Their work
+does not have functional covariate like us as input. Moreover, the goal of [YX12] is not explaining
+the coordinates but instead predicting a response given the covariates.
+The Active Subspace method of [CDW14] uses the information in the gradient to discover a
+subspace of maximum variation of f. This subspace is given by the principal subspace of the
+matrix C = Eρ[∇f∇fT
+], where ρ is a weighting function averaging over a finite or infinite set of
+points in the domain of f. While this method uses the gradient information, it can only find a
+global subspace, which would not be adequate for function composition, or for functions defined on
+non-linear manifolds.
+The work of [BPK16] is similar to ours in that it uses a dictionary. The goal is to identify the
+functional equations of non-linear dynamical systems by regressing the time derivatives of the state
+variables on a subset of functions in the dictionary, with a sparsity inducing penalty. The recovered
+functional equation is linear in the dictionary functions, hence any non-linearity in the state variables
+must be explicitly included in the dictionar. On the other hand, when the functional equation can
+be expressed as a sum of dictionary functions, then the system is completely identified.
+With respect to parametrizing manifolds, the early work of [SR03, TR02] (and references therein)
+proposes parametrizing the manifold by finite mixtures of local linear models, aligned in a way that
+provides global coordinates, in a way reminiscent of LTSA[ZZ04].
+A point of view different from ours views a set of d eigenvectors of the Laplace-Beltrami operator
+∆M as a parametrization of M. Hence, the Diffusion Maps coordinates could be considered such
+a parametrization [CL06, CLL+
+05, Gea12]. With [MN17] it was shown that principal curves and
+surfaces can provide an approximate manifold parametrization. Our work differs from these in two
+ways (1) first, obviously, the explanations we obtain are endowed with the physical meaning of
+11
+the domain specific dictionaries, (2) less obviously, descriptors like principal curves or Laplacian
+eigenfunctions are generally still non-parametric (i.e exist in infinite dimensional function spaces),
+while the parametrizations by dictionaries we obtain (e.g the torsions) are in finite dimensional spaces.
+[DTCK18] tackles a related problem: choosing among the infinitely many Laplacian eigenfunctions d
+which provide a d-dimensional parametrization of the manifold; the approach is to solve a set of Local
+Linear Embedding [RS00] problems, each aiming to represent an eigenfunction as a combination of
+the preceding ones.
+7 Uniqueness and recovery results
+7.1 Functional dependency and uniqueness of representation
+Here we study the conditions under which f = h ◦ gS is uniquely represented over a dictionary G
+that contains gS. Not surprisingly, we will show that these are functional (in)dependency conditions
+on the dictionary.
+We first study when a group of functions on an open U ⊂ Rd
+can be represented with a subset
+of functionally independent functions. The following lemma implies that if a group of non-full-rank
+smooth functions has a constant rank in a neighborhood, then it can be showed that locally we can
+choose a subset of these functions such that the others can be smoothly represented by them. This
+is a direct result from the constant rank theorem.
+Lemma 2 (Remark 2 after Zorich[Zor04] Theorem 2 in Section 8.6.2) Let f : U → Rm
+be a mapping defined in an neighborhood U ⊂ Rd
+of a point x ∈ Rd
+. Suppose f ∈ C`
+and the rank
+of the mapping f is k at every point of a neighborhood U and k < m. Moreover assume that the
+principal minor of order k of the matrix Df is not zero. Then in some neighborhood of x ∈ U there
+exist m − k C`
+functions gi
+, i = k + 1, · · · , m such that
+fi
+(x1, x2, · · · , xd) = gi
+(f1
+(x1, x2, · · · , xd), f2
+(x1, x2, · · · , xd), · · · , fk
+(x1, x2, · · · , xd)) (19)
+Applying this lemma we can construct a local representation of a subset in gS. The following
+classical result in differential geometry lets us expand the above lemma beyond local to global.
+We start with a definition. A smooth partition of unity subordiante to {Uα} is an indexed family
+(φα)α∈A of smooth functions φα : M → R with the following properties:
+1. 0 ≤ φα(x) for all α ∈ A and all x ∈ M;
+2. supp φα ⊂ Uα for each α ∈ A;
+3. Every ξ ∈ M has a neighborhood that intersects supp φα for only finitely many values of α;
+4.
+P
+α∈A φα(x) = 1 for all ξ ∈ M.
+Lemma 3 (John 2013[Lee03] Theorem 2.23) Suppose M is a smooth manifold, and {Uα}α∈A
+is any indexed open cover of M. Then there exists a smooth partition of unity subordinate to {Uα}
+Now we state our main results.
+12
+Theorem 4 Assume G and gS are defined as in Section 3, with g1:p are C`
+functions in open set
+U ⊂ Rd
+and let S0
+⊂ [p], S0
+6= S, |S0
+| < d be another subset of C`
+functions. Then there exists a C`
+mapping τ : Rs0
+→ Rs
+on U such that gS = τ ◦ gS0 iff
+rank
+
+DgS
+DgS0
+
+= rank DgS0 on U (20)
+Proof If DgS0 is not full rank on U, we replace S0
+with a subset of S0
+so that DgS0 is full rank
+globally on U. The existence of such subsets are guaranteed by step-wise eliminating functions in
+gS0 , which will result in a zero matrix in r.h.s if such a subset does not exist and thus leads to a
+contradiction. Since s0
+= |S0
+| ≤ d, rank DgS0 = s0
+. Let
+gS0∪S(ξ) =
+
+gS0 (ξ)
+gS(ξ)
+
+(21)
+and DgS0∪S denote the l.h.s. matrix in (20). When the rank of DgS∪S0 equals the rank of
+DgS0 , according to Lemma 2, there exists some neighborhood Ux ∈ Rd
+of x and C`
+functions
+τi
+x, i = s0
++ 1, s0
++ 2, · · · , s0
++ s
+gi
+S0∪S(ξ) = τi
+x(g1(ξ), · · · , gs0 (ξ)), for i = s0
++ 1, s0
++ 2, · · · , s0
++ s, ξ ∈ Ux (22)
+Here we should notice that τi
+x is defined only on a neighborhood of x. We denote such a neighborhood
+by Ux and then since this holds for every x ∈ U, therefore we can find an open cover {Ux} of the
+original open set U. Since each open set in Rd
+is a manifold, the classical result of partition of unity
+in Lemma 3 holds, that U admits a smooth partition of unity subordinate to the cover {Ux}. We
+denote this partition of unity by φx(·).
+Hence we can define
+τi
+(ξ) =
+X
+x
+φx(ξ)τi
+x(gj1 (ξ), · · · , gj|S∪S0|
+(ξ)), (23)
+where the functions in gS∪S0 are taken without repetition. For each x ∈ U, the product φxτi
+x is C`
+on the neighborhood Ux. According to the properties of partition of unity, this is a locally finite
+sum, which means that we do not have to deal with the problem of convergence. Also this will be a
+C`
+function.
+Therefore, globally in U we have
+gi
+S∪S0 (ξ) = τi
+(g1(ξ), · · · , gs0 (ξ)), for i = s0
++ 1, s0
++ 2, · · · , s0
++ s, ξ ∈ U (24)
+Now we prove the converse implication. If rank DgS∪S0 > s0
+, then there is j ∈ S, so that
+Dgj 6∈ rowspan DgS0 . Pick ξ0
+∈ U such that Dgj(ξ0
+) 6= 0; such an ξ0
+must exist because otherwise it
+will be in rowspan DgS0 . By the theorem’s assumption, DgS = DτDgS0 . This implies that (DgS)T
+is in rowspan(DgS0 )T
+for any ξ. But this is impossible at ξ0
+.
+A direct corollary of this theorem is that in a single chart scenario, we can use exactly d
+functionally independent functions in the dictionary to give the explanation.
+Corollary 5 Let G, gS defined as before. M is a smooth manifold with dimension d embedded
+in RD
+. Suppose that φ : M ⊂ RD
+→ Rm
+is also an embedding of M and has a decomposition
+φ(ξ) = h ◦ gS(ξ) for each ξ ∈ M. If there is a C`
+diffeomorphism ϕ : Rd
+→ M, then there is a
+subset of functions gS0 ⊂ gS with |S0
+| = d such that for some C`
+function e
+h we can find φ = e
+h ◦ gS0
+on each ξ ∈ M
+13
+Proof Since ϕ is a diffeomorphism, we can write uniquely ξ = ϕ(η) for each ξ ∈ M. And also
+ϕ−1
+(M) = Rd
+. Then the original decomposition of φ(ξ) = h ◦ gS on each ξ ∈ M is actually
+φ ◦ ϕ(η) = h ◦ gS ◦ ϕ(η) (25)
+and e
+gS = gS ◦ ϕ is a C`
+mapping Rd
+→ Rs
+. Now we choose S0
+⊆ S such that De
+gS0 is full rank and
+rank De
+gS = rank De
+gS0 . From
+rank
+
+De
+gS
+De
+gS0
+
+= rank De
+gS0 (26)
+and the previous theorem, we know that there exists a C`
+function τ such that e
+gS = τ ◦ e
+gS0 on each
+η ∈ Rd
+. Finally let e
+h = h ◦ τ then
+φ(ξ) = φ ◦ ϕ ◦ ϕ−1
+(ξ) = h ◦ e
+gS ◦ ϕ−1
+(ξ) = h ◦ τ ◦ e
+gS0 ◦ ϕ−1
+(ξ) = e
+h ◦ gS0 (ξ) (27)
+holds for each ξ ∈ M. Now we determine the number of functions in S0
+. On one hand we can select
+S0
+so that De
+gS0 = DgS0 Dϕ is full rank, hence |S0
+| = rank DgS0 = s0
+≤ d. On the other hand, since
+φ is an embedding, which means that φ(M) is also an d−dimension manifold, we could consider
+another diffeomorphism ψ : φ(M) → Rd
+such that
+ψ ◦ φ ◦ ϕ(η) = ψ ◦ e
+h ◦ e
+gS0 (η) (28)
+is Rd
+→ Rd
+and one-to-one.Therefore the Jacobian of l.h.s. is of rank d, which should be less than
+the rank of each of the r.h.s. differentials. Therefore s0
+≥ d. To combine these results we have s0
+= d.
+We say that S itself is functionally independent when that every g ∈ GS is functionally independent
+of GS \ {g}. Corollary 5 states that S can be uniquely recovered iff S is a functionally independent
+subset of G.
+In a finite sample setting, Theorem 4 states that S and S0
+are equivalent explanations for f
+whenever (20) holds on open sets around the sample points. For example, Theorem 4 does not have
+to hold globally.
+For low dimensional settings, i.e. when s ≥ d, the Theorem implies that in general there will be
+many equivalent explanations of f in G. Assuming no noise, the solution to (13) will be the subset
+S that minimizes the penalty term λ
+√
+mn
+Pp
+j=1 kβjk on the data set.
+7.2 Recovery guarantees for FLasso
+We now give recovery guarantees for the (FLasso) problem. The guarantees are deteriministic,
+but they depend on the noise sample covariance, hence they can lead to statistical guarantees
+holding w.h.p. in the usual way. The first theorem deals with support recovery, proving that all
+coefficients outside the support are zeroed out, under conditions that depend only on the dictionary,
+the true support S and the noise. The second result completes the previous with error bounds on
+the estimates β̂j, assuming an additional condition on the magnitude of the true βj coefficients.
+Since these coefficients are partial derivatives w.r.t. the dictionary functions, the condition implies
+that the the dependence on each function must be strong enough to allow the accurate estimation
+of the partial derivatives.
+Introduce the following quantitites
+S-incoherence in G µ = max
+i=1:n,j∈S,j06∈S
+|xT
+ijxij0 | (29)
+14
+noise level σ defined by
+n
+X
+i=1
+||i||2
+= ndσ2
+, (30)
+and internal colinearity ν, defined as follows. Let
+Σi =
+
+xT
+ijxij0
+
+j,j0∈S
+= XT
+iSXiS, and Σ = diag{Σ1:n} (31)
+and denote by ν ≤ 1 the maximum eigenvalue of Σ−1
+; a smaller ν means that the xij gradients are
+closer to being orthogonal at each datapoint i.
+Theorem 6 (Support recovery) Assume that equation (4) holds, and that ||xij|| = 1 for all
+i = 1 : n, j = 1 : p. Denote by β̄ the solution of (5) for some λ > 0. If µν
+√
+s + σ
+√
+nd
+λ < 1, then
+β̄ij = 0 for j 6∈ S and all i = 1, . . . n.
+Proof We structure equation (4) in the form
+y = ¯
+X̄β̄∗
++ ¯
+ with y = [yi]i=1:n ∈ Rnd
+, β̄ = [βi]i=1:n ∈ Rnp
+, (32)
+X̃ij ∈ Rnd
+is obtained from xij by padding with zeros for the entries not in the i-th segment,
+¯
+X̄j = [[X̃tj]j=1:p]i=1:n ∈ Rnd×np
+, and ¯
+X̄j = [X̃ij]i=1:n ∈ Rnd×n
+collects the colums of ¯
+X̄ that
+correspond to the j-th dictionary entry. Note that
+X̃T
+ijX̃ij0 = xT
+ijxij0 and X̃T
+ijX̃i0j0 = 0 whenever i 6= i0
+. (33)
+The proof is by the Primal Dual Witness method, following [ESJ+
+17, OWJ11]. It can be shown
+[ESJ+
+17, Wai09] that β̄ is a solution to (FLasso) iff, for all j = 1 : p,
+¯
+X̄T
+j
+¯
+X̄(β̄ − β̄∗
+) − ¯
+X̄T
+j ¯
+ + λzj = 0 ∈ Rn
+with zj =
+βj
+||βj||
+if βj 6= 0 and ||zj|| < 1 otherwise. (34)
+The matrix ¯
+X̄T
+j
+¯
+X̄ is a diagonal matrix with n blocks of size 1 × p, hence the first term in (34)
+becomes
+[xT
+ijXi(β̄i: − β̄∗
+i:)]i=1:n ∈ Rn
+. (35)
+Similarly ¯
+X̄T
+j ¯
+ = [xT
+ijwi]i=1:n ∈ Rn
+.
+We now consider the solution β̂ to problem (5) (FLasso) under the additional constraint that
+βtj0 = 0 for j0
+6∈ S. In other words, β̂ is the solution we would obtain if S was known. Let ẑ be the
+optimal dual variable for this problem, and let ẑS = [ẑj]j∈S.
+We will now complete ẑS to a z ∈ Rnp
+so that the pair (β̂, z) satisfies (34). If we succeed, then
+we will have proved that β̂ is the solution to the original FLasso problem, and in particular that
+the support of β̂ is included in S.
+From (34) we obtain values for zj when j 6∈ S.
+zj =
+−1
+λ
+¯
+X̄T
+j
+h
+¯
+X̄T
+(β̂ − β̄∗
+) − ¯
+
+i
+. (36)
+In the same time, if we consider all j ∈ S, we obtain from (34) that ¯
+X̄S = [ ¯
+X̄j]j∈S (here the vectors
+βS, βS∗ and all other vectors are size ns, with entries sorted by j, then by i).
+¯
+X̄T
+S
+¯
+X̄S(β̂S − β∗
+S) − ¯
+X̄T
+S ¯
+ + λẑS = 0. (37)
+15
+Solving for β̂S − β∗
+S in (37), we obtain
+β̂S − β∗
+S = ( ¯
+X̄T
+S
+¯
+X̄S)−1
+
+¯
+X̄T
+S ¯
+ − λẑS
+
+= Σ−1
+
+¯
+X̄T
+S ¯
+ − λẑS
+
+. (38)
+After replacing the above in (36) we have
+zj =
+−1
+λ
+¯
+X̄T
+j
+h
+¯
+X̄SΣ−1 ¯
+X̄T
+S w − ¯
+X̄SΣ−1
+λẑS − ¯
+
+i
+= ¯
+X̄T
+j
+¯
+X̄SΣ−1
+ẑS +
+1
+λ
+¯
+X̄T
+j (I − ¯
+X̄SΣ−1 ¯
+X̄T
+S )¯
+. (39)
+Finally, by noting that Π = I − ¯
+X̄SΣ−1 ¯
+X̄T
+S is the projection operator on the subspace span( ¯
+X̄S)⊥
+,
+we obtain that
+zj = ( ¯
+X̄T
+j
+¯
+X̄S)Σ−1
+ẑS +
+1
+λ
+¯
+X̄T
+j Π¯
+, for j 6∈ S. (40)
+We must show that ||zj|| < 1 for j 6∈ S. To bound the first term, we note that ¯
+X̄T
+j
+¯
+X̄S is n×ns, block
+diagonal, with blocks of size 1×s, and with all non-zero entries bounded in absolute value by µ. Hence,
+for any vector v = [vi]i=1:n ∈ Rns
+, || ¯
+X̄T
+j
+¯
+X̄Sv||2
+= ||[(xT
+ijxiS)vi]i=1:n||2
+=
+Pn
+i=1 ||(xT
+ijxiS)vi||2
+≤
+µ2
+Pn
+i=1 ||vi||2
+= µ2
+||v||2
+. But in our case v = Σ−1
+ẑS, hence ||v|| ≤ ||Σ−1
+||||ẑS|| = ν
+√
+s.
+To bound the second term, we note that || ¯
+X̄j|| = ||xij|| = 1, and that ||Π¯
+|| ≤ ||¯
+|| because Π is a
+projection. Hence, the norm squared of this term is bounded above
+Pn
+i=1 ||i||2
+||xij||2
+/λ2
+= ndσ2
+/λ2
+.
+Replacing these bounds in (40) we obtain that
+||zj|| ≤ || ¯
+X̄T
+j
+¯
+X̄SΣ−1
+ẑS|| + ||
+1
+λ
+¯
+X̄T
+j Π¯
+|| ≤ µν
+√
+s +
+σ
+√
+dn
+λ
+for any j 6∈ S. (41)
+
+Theorem 7 Assume that equation (5) holds, and that ||xij|| = 1 for all i = 1 : n, j = 1 : p. Denote
+by β̂ the solution to problem (FLasso) for some λ > 0. If (1) µν
+√
+s < 1, (2) λ = (c − 1)σ
+√
+dn with
+c > 1 + 1
+1−µν
+√
+s
+, (3) ||β∗
+j || > cσ
+√
+dn(1 +
+√
+s) for all j ∈ S, then the support S is recovered exactly
+and ||β̂j − β∗
+j || < cσ
+√
+dn(1 +
+√
+s) for all j ∈ S.
+Proof According to Theorem 6, β̂j = 0 for j 6∈ S. It remains to prove the error bound for j ∈ S.
+According to Lemma V.2 of [ESJ+
+17], for any j ∈ S,
+||β̂j − β∗
+j || ≤ || ¯
+X̄T
+j ¯
+|| + || ¯
+X̄T
+S ¯
+|| + λ(1 +
+√
+s) (42)
+≤ (|| ¯
+X̄j|| + || ¯
+X̄S||)||¯
+|| + σ(c − 1)
+√
+dn(1 +
+√
+s) (43)
+≤ (1 +
+√
+s)σ
+√
+dn + σ(c − 1)
+√
+dn(1 +
+√
+s) = cσ
+√
+dn(1 +
+√
+s) (44)
+Hence, if ||β∗
+j || > cσ
+√
+dn(1 +
+√
+s), β̂j 6= 0 and the support is recovered. 
+Note that for this value of c, σ
+√
+dn
+λ + µν
+√
+s = 1
+c−1 + µν
+√
+s < 1.
+The assumptions we make are not probabilistic, while those in [ESJ+
+17] are. In spite of this
+difference, the assumptions in our work bear comparison with [ESJ+
+17]. Specifically, our conditions
+only concern the internal collinearity, for functions j ∈ S, while [ESJ+
+17] requires bounds on the
+intra-block coherence (the equivalent condition) for the whole dictionary. Second, we only require
+incoherence between gS and the functions not in S; this property is most similar to the inter-block
+coherence bound from [ESJ+
+17]. In other words, in a deterministic framework incoherence between
+functions outside the support is not necessary. This conclusion can be extended in a straightforward
+manner to other group Lasso recovery proofs.
+16
+8 Experimental results
+8.1 FLasso on synthetic data
+We illustrate the effectiveness of FLasso for sparse functional support recovery where the output
+function is composed of products of dictionary functions. In such situations, methods which only
+consider linear combinations of dictionary functions will not be able to recover the support. The
+ability to distinguish such multiplied signals is therefore a key advantage of our approach. These
+examples have analytically known true solutions in the absence of noise, and also show the robustness
+of FLasso to noise.
+8.1.1 Example 1
+Consider the following case where D = 4 and m = 1 and ξ is drawn from a standard normal
+distribution with covariance .2.
+f(ξ) = ξ1ξ2
+∇f = [ξ2, ξ1, 0, 0]
+We consider the algorithm output on the following two dictionaries.
+G1 : ξ 7→ {ξ1, ξ2, ξ3, ξ4}
+∇G1 =
+
+
+
+
+1 0 0 0
+0 1 0 0
+0 0 1 0
+0 0 0 1
+
+
+
+
+G2 : ξ 7→ {ξ1, ξ2, ξ1ξ2, 0}
+∇G2 =
+
+
+
+
+1 0 0 0
+0 1 0 0
+ξ2 ξ1 0 0
+0 0 0 0
+
+
+
+
+For the first dictionary, the only loss zero partials are ∂h
+∂g = [ξ2, ξ1, 0, 0], while for the second
+dictionary, ∂h1
+∂g = [x2, x1, 0, 0] and ∂h2
+∂g = [0, 0, γ3, 0] both result in loss-zero solutions. However,
+k∂h2
+∂g k1,2 < k∂h1
+∂g k1,2 for all distributions of x, since
+R
+k∂h2
+∂g k1,2µ(dx) = γ3 =
+R
+(x2
+2 + x2
+1)1/2
+µ(dx) =
+R
+k∂h1
+∂g k1,2µ(dx) =
+R
+(x2 + x1)µ(dx) and 1−norm is bounded by 2−norm. . Figure 2 shows that
+FLasso recovers the correct support in both dictionaries.
+17
+Figure 2: Regularization path of FLasso for Example 1 with 100 points. The first row shows support
+recovery over a range of λ values for dictionary G1, and the second for G2. On the left are results with no
+noise, and on the right, independent Gaussian noise with σ2
+= 0.01 was added to the differentials of g and f.
+8.1.2 Example 2
+This example shows that FLasso is effective at selecting between more complex functional covariates.
+As in the previous example, the function is a product of two dictionary functions. ξ is drawn from a
+standard normal distribution with covariance .2 and d = 8, 20. We have experimented with other
+distributions and found that the sampling of ξ has little or no effect, as long as it is not restricted to
+specific low dimensional sets. Let
+f = g1gd+2 = sin(ξ1 + ξ2)(ξ2
+3 + ξ2
+5)
+∇f = [cos(ξ1 + ξ2)(ξ2
+3 + ξ2
+5), cos(ξ1 + ξ2)(ξ2
+3 + ξ2
+5), 2ξ3 sin(ξ1 + ξ2), 0, 2ξ5 sin(ξ1 + ξ2), 0, . . . ]
+G1 = {gk = sin(ξk + ξk+1), k = 1 : d − 1}
+G2 = {gd−1+k = ξ2
+k + ξ2
+k+2, k = 1 : d − 2}
+G = G1 ∪ G2.
+Here, we have not included ∇G for brevity, but it can be readily derived.
+18
+Figure 3: Regularization path of FLasso for Example 2 with 100 points. The first row shows support
+recovery over a range of λ values for d = 8, and the second for d = 20. To produce the results on the left,
+independent Gaussian noise with σ2
+= 0.05 was added to the differentials of g and f, while on the right
+σ2
+= 0.1.
+FLasso coefficients for the true support are highest. However, one of the elements of the true
+support decays rapidly along the solution path, so our variable selection procedure is not quite
+robust enough to detect the functional support.
+8.2 Manifold FLasso on synthetic data
+8.2.1 Articulated ethanol skeleton
+This simulation is on an ethanol skeleton with simplified behavior. This skeleton articulates in a
+full rotation around the C − C and C − O bonds. Configurations are distributed uniformly around
+these two angles of rotation. Thus, each configuration is determined by angles of rotation around
+the C − C and C − O bonds, and the noise (independent Gaussian with σ2
+= .01) that is added to
+the position of each atom. The learned manifold is a twisted torus explained by these two angles.
+Our dictionary consists of four torsions, two which correspond to the articulated angles, and two
+corresponding to noise. FLasso is able to detect which of these torsions explain the embedding
+coordinates with respect to the manifold.
+19
+A B
+C
+Figure 4: A) The learned manifold on the entire data set colored by the first angle of rotation. B) A radial
+slice of the learned manifold colored by the other angle of rotation. C) Regularization path of FLasso for 8
+repeats of 200 randomly selected points. The first two embedding coordinates are explained by torsion A
+(corresponding to A), while the last coordinate is explained by torsion B (corresponding to B). The final
+panel corresponds to the combined norm used for variable selection.
+8.3 Manifold FLasso on molecular dynamics data
+These experiments are based off of molecular dynamics simulations of two small molecules. In
+molecular dynamics simulations, individual atoms are moved according to the interatomic force
+fields acting upon them. Each data point corresponds to a position along such a trajectory. We
+20
+apply a manifold learning algorithm to identify the low-dimensional manifold these trajectories
+define, seek an explanation of this manifold in terms of bond torsions. A major complicating factor
+in this is that the true configuration space is R3
+\SE(3) (the 3 − D special Euclidean group), since
+configurations which differ by rotations and translations (but not mirror images) are equivalent. To
+respect this symmetry, we parametrize each configuration by the angles of the triangles formed by
+each combination of three atoms. Torsions are computed with respect to the angular representation.
+8.3.1 Toluene
+The toluene molecule has one rotational degree of freedom. The manifold learning algorithm therefore
+discovers that the data manifold is a circle. Out of a functional dictionary consisting of the putatively
+significant dihedral angle and several other dihedral angles, FLasso then identifies the bond torsion
+that explains the circle.
+Figure 5: Regularization path of FLasso for molecular dynamics simulation of toluene with 3 repeats
+selecting 25 random points out of 50000 used to learn the manifold.
+8.3.2 Ethanol
+The ethanol molecule has two rotational degree of freedom. The manifold learning algorithm
+therefore discovers that the data manifold is a torus. Out of a functional dictionary consisting of
+the two putatively significant dihedral angles and two other dihedral angles, FLasso then identifies
+the bond torsions that explain this torus.
+21
+Figure 6: Regularization path of FLasso for molecular dynamics simulation ethanol with 8 repeats of
+selecting 200 random points out of 50000 used to learn the manifold.
+References
+[BN02] M. Belkin and P. Niyogi. Laplacian eigenmaps and spectral techniques for embedding and
+clustering. In Advances in Neural Information Processing Systems 14, Cambridge, MA, 2002.
+MIT Press.
+[BPK16] Steven L. Brunton, Joshua L. Proctor, and J. Nathan Kutz. Discovering governing equations
+from data by sparse identification of nonlinear dynamical systems. Proceedings of the National
+Academy of Sciences, 113(15):3932–3937, 2016.
+[CDW14] P. Constantine, E. Dow, and Q. Wang. Active subspace methods in theory and practice:
+Applications to kriging surfaces. SIAM Journal on Scientific Computing, 36(4):A1500–A1524,
+2014.
+[CL06] R. R. Coifman and S. Lafon. Diffusion maps. Applied and Computational Harmonic Analysis,
+30(1):5–30, 2006.
+[CLL+
+05] R. R. Coifman, S. Lafon, A. Lee, Maggioni, Warner, and Zucker. Geometric diffusions as a tool
+for harmonic analysis and structure definition of data: Diffusion maps. In Proceedings of the
+National Academy of Sciences, pages 7426–7431, 2005.
+[CNO00] C. Clementi, H. Nymeyer, and J.N. Onuchic. Topological and energetic factors: what determines
+the structural details of the transition state ensemble and “en-route” intermediates for protein
+folding? an investigation for small globular proteins. Journal of molecular biology, 2000. says
+topology (of protein) more important than energy wells.
+[dC92] Manfredo do Carmo. Riemannian Geometry. Springer, 1992.
+[DTCK18] Carmeline J Dsilva, Ronen Talmon, Ronald R Coifman, and Ioannis G Kevrekidis. Parsimonious
+representation of nonlinear dynamical systems through manifold learning: A chemotaxis case
+study. Appl. Comput. Harmon. Anal., 44(3):759–773, May 2018.
+22
+[ESJ+
+17] M.K. Elyaderani, S.Jain, J.M.Druce, S.Gonella, and J.D.Haupt. Improved support recov-
+ery guarantees for the group lasso with applications to structural health monitoring. CoRR,
+abs/1708.08826, 2017.
+[Gea12] C W Gear. Parameterization of non-linear manifolds. August 2012.
+[HAvL05] Matthias Hein, Jean-Yves Audibert, and Ulrike von Luxburg. From graphs to manifolds -
+weak and strong pointwise consistency of graph laplacians. In Learning Theory, 18th Annual
+Conference on Learning Theory, COLT 2005, Bertinoro, Italy, June 27-30, 2005, Proceedings,
+pages 470–485, 2005.
+[HAvL07] Matthias Hein, Jean-Yves Audibert, and Ulrike von Luxburg. Graph laplacians and their
+convergence on random neighborhood graphs. Journal of Machine Learning Research, 8:1325–
+1368, 2007.
+[KvL15] Matthäus Kleindessner and Ulrike von Luxburg. Dimensionality estimation without distances.
+In AISTATS, 2015.
+[Lee03] John M. Lee. Introduction to Smooth Manifolds. Springer-Verlag New York, 2003.
+[LSW09] Chuanjiang Luo, Issam Safa, and Yusu Wang. Approximating gradients for meshes and point
+clouds via diffusion metric. Comput. Graph. Forum, 28(5):1497–1508, July 2009.
+[MN17] Kitty Mohammed and Hariharan Narayanan. Manifold learning using kernel density estimation
+and local principal components analysis. arxiv, 1709.03615, 2017.
+[NC17] Frank Noé and Cecilia Clementi. Collective variables for the study of long-time kinetics from
+molecular trajectories: theory and methods. Curr. Opin. Struct. Biol., 43:141–147, April 2017.
+[OPV+
+14] Junier Oliva, Barnabas Poczos, Timothy Verstynen, Aarti Singh, Jeff Schneider, Fang-Cheng
+Yeh, and Wen-Yih Tseng. FuSSO: Functional Shrinkage and Selection Operator. In International
+Conference on AI and Statistics(AISTATS), 2014.
+[OWJ11] Guillaume Obozinski, Martin J. Wainwright, and Michael I. Jordan. Support union recovery in
+high-dimensional multivariate regression. The Annals of Statistics, 39(1):1–47, 2011.
+[PM13] D. Perraul-Joncas and M. Meila. Non-linear dimensionality reduction: Riemannian metric
+estimation and the problem of geometric discovery. ArXiv e-prints, May 2013.
+[RS00] Sam Roweis and Lawrence Saul. Nonlinear dimensionality reduction by locally linear embedding.
+Science, 290(5500):2323–2326, December 2000.
+[SR03] Lawrence K. Saul and Sam T. Roweis. Think globally, fit locally: Unsupervised learning of low
+dimensional manifolds. J. Mach. Learn. Res., 4:119–155, December 2003.
+[THJ10] Daniel Ting, Ling Huang, and Michael I. Jordan. An analysis of the convergence of graph
+laplacians. In Proceedings of the 27th International Conference on Machine Learning (ICML-10),
+pages 1079–1086, 2010.
+[TR02] Yee Whye Teh and Sam T. Roweis. Automatic alignment of local representations. In NIPS, 2002.
+[Wai09] Martin J. Wainwright. Sharp thresholds for high-dimensional and noisy sparsity recovery using
+`1 -constrained quadratic programming (lasso). IEEE Transactions on Information Theory,
+55:2183–2202, 2009.
+[YL06] M Yuan and Y Lin. Model selection and estimation in regression with grouped variables. J. R.
+Stat. Soc. Series B Stat. Methodol., 2006.
+[YX12] Gui-Bo Ye and Xiaohui Xie. Learning sparse gradients for variable selection and dimension
+reduction. Machine Learning, 87(3):303–355, Jun 2012.
+[Zor04] Vladimir A. Zorich. Mathematical Analysis I. Springer-Verlag Berlin Heidelberg, 2004.
+[ZZ04] Zhenyue Zhang and Hongyuan Zha. Principal manifolds and nonlinear dimensionality reduction
+via tangent space alignment. SIAM J. Scientific Computing, 26(1):313–338, 2004.
+23
+

@@ -1,0 +1,1015 @@
+Comparing Clusterings – An Axiomatic View
+Marina Meilă mmp@stat.washington.edu
+University of Washington, Box 354322, Seattle, WA 98195-4322
+Abstract
+This paper views clusterings as elements of
+a lattice. Distances between clusterings are
+analyzed in their relationship to the lattice.
+From this vantage point, we first give an ax-
+iomatic characterization of some criteria for
+comparing clusterings, including the varia-
+tion of information and the unadjusted Rand
+index. Then we study other distances be-
+tween partitions w.r.t these axioms and prove
+an impossibility result: there is no “sensi-
+ble” criterion for comparing clusterings that
+is simultaneously (1) aligned with the lattice
+of partitions, (2) convexely additive, and (3)
+bounded.
+1. Introduction
+This paper views clusterings as elements of a lattice,
+the natural algebraic structure for the partitions of
+a set. A criterion for comparing clusterings is thus
+seen as a function of pairs of elements in the lattice.
+The goal in doing this is to contribute to the better
+understanding of the space of all clusterings of a set
+and of the problem of comparing clusterings.
+This task is is an important component in the evalua-
+tion of clustering algorithms. A clustering, or a clus-
+tering algorithm, can be evaluated by internal crite-
+ria, e.g distortion, likelihood, that are generally prob-
+lem and algorithm dependent. There is another kind
+of evaluation, called external evaluation, that simply
+measures how close is the obtained clustering to a gold
+standard clustering. The comparison criteria studied
+here are all external. As such, they are independent
+of the algorithm or of the way the clusterings were
+obtained.
+There are many competing criteria for comparing clus-
+terings, with no clear best choice. In fact, as this paper
+Appearing in Proceedings of the 22 nd
+International Confer-
+ence on Machine Learning, Bonn, Germany, 2005. Copy-
+right 2005 by the author(s)/owner(s).
+will underscore, it is probably meaningless to search
+for a best criterion for comparing clusterings, just as
+it is meaningless to search for the best clustering al-
+gorithm. Algorithms are “good” in as much as they
+match the task at hand. With respect to distances
+between clusterings, our goal is to better understand
+their properties, their limitations, and the implied as-
+sumptions underlying them. This paper does so via
+an axiomatic study of several distances.
+We first discuss some desirable properties of distances
+between clusterings that amount to decomposing them
+additively over elementary operations on clusterings
+like splitting a cluster, merging two data sets, etc.
+Then we give an axiomatic characterization for one
+criterion, the variation of information. The choice is
+not incidental: this criterion is closely matched to the
+lattice of partitions, as it will be shown. It will turn
+out that the resulting axioms have each an intuitive
+interpretation.
+The axiomatic framework introduced is extended to
+characterize other distances between clusterings (the
+Mirkin metric, the Rand index and the van Dongen
+metric). We also discuss the “classification error” clus-
+tering distance. Finally, we derive an impossibility
+result for comparing clusterings: we show that no dis-
+tance on the space of partitions can simultaneously
+satisfy three desirable properties, each of which makes
+the distance intuitive in some sense.
+2. Additive properties for distances and
+the lattice of partitions
+This section introduces the basic notation, then in-
+troduces the lattice of partitions and and lists some
+properties related to the lattice representation which
+will be relevant in the rest of the paper.
+A clustering C is a partition of a data set D into sets
+C1, C2, . . . CK called clusters such that
+Ck ∩ Cl = ∅ and
+K
+[
+k=1
+Ck = D.
+Comparing Clusterings – An Axiomatic View
+Let the number of data points in D and in cluster Ck
+be n and nk respectively. We have, of course, that
+n =
+PK
+k=1 nk. We also assume that nk ≥ 1; in other
+words, that K represents the number of non-empty
+clusters.
+Let a second clustering of the same data set D be
+C0
+= {C0
+1, C0
+2, . . . C0
+K0 }, with cluster sizes n0
+k0 . The
+two clusterings may have different numbers of clusters.
+To compare C and C0
+is to define a symmetric, non-
+negative function d(C, C0
+) that measures how different
+are the two clusterings. If C = C0
+then d(C, C0
+) = 0.
+We shall call the function d a distance although in
+general it may not satisfy the triangle inequality. If
+the triangle inequality is satisfied, then d is called a
+metric.
+It should also be noted that this definition is not
+aligned to the majority of clustering comparison cri-
+teria, like the Rand (Rand, 1971), Fowlkes-Mallows
+(Fowlkes & Mallows, 1983) and other indices. These
+are taking values in [0, 1], with larger values as the
+clusterings become more similar (and being 1 when
+C = C0
+). This will not preclude us to consider these
+indices, as one can turn any index i(C, C0
+) into a dis-
+tance by simply setting d(C, C0
+) = 1 − i(C, C0
+).
+The number of points in the intersection of clusters Ck
+of C and C0
+k0 of C0
+is denoted nkk0 .
+nkk0 = |Ck ∩ C0
+k0 |
+A distance d between that depends only on the relative
+values nkk0 /n and does not directly depend on n is said
+to be n-invariant.
+The lattice of partitions One can represent all clus-
+terings of a finite set D as the nodes of a graph, as
+illustrated by figure 1; in this graph an edge between
+C, C0
+will be present if C0
+is obtained by splitting a clus-
+ter of C into two parts. The set of all clusterings of a
+dataset D forms a lattice called the lattice of partitions
+(Stanley, 1997). The graph just described is known as
+the Hasse diagram1
+of this lattice. At the top of the
+diagram is the clustering with just one cluster, denoted
+by 1̂ = {D}. At the bottom is 0̂ = {{1}, {2}, . . . {n}}
+the clustering with n clusters each containing a sin-
+gle point. For all but the smallest n, the space of all
+clusterings, although finite, is huge (superexponential
+in n (Stanley, 1997)); a graphical representation like
+the Hasse diagram can aid the understanding of the
+complex relationships between and thus guide us in
+choosing or designing the most relevant distances on
+this space. In particular, we may ask if there are dis-
+1
+The emphasized terms in this section represent stan-
+dard lattice terminology. Their precise definitions can be
+found in e.g (Stanley, 1997).
+tances between clusterings that are “aligned” with the
+lattice, in the sense that d(C, C0
+) can be expressed as
+a sum of distances along edges of the lattice?
+In the following we give a formal definition of three
+additivity properties, all related to the lattice of parti-
+tions, and we explain why they are desirable.
+Additivity w.r.t refinement (AR) If C0
+is obtained
+from C by splitting one or more clusters, then we say
+that C0
+is a refinement of C. A distance d is additive
+w.r.t refinement iff for any clusterings C, C0
+, C00
+such
+that C0
+is a refinement of C and C00
+a refinement of C0
+we have
+d(C, C00
+) = d(C, C0
+) + d(C0
+, C00
+) (1)
+For instance, C00
+= {{a}, {b}, {c}, {d}} is a refinement
+of C0
+= {{a}, {b}, {c, d}}, which in turn is a refinement
+of C = {{a, b}, {c, d}}. The AR property says that the
+distance d(C, C00
+) is a sum of the distances correspond-
+ing to the two succesive refinements that transform C
+into C00
+. Cluster splitting corresponds to taking down-
+ward steps in the Hasse diagram.
+Additivity w.r.t the join (AJ). The join of clus-
+terings C and C0
+is defined as
+C × C0
+= {Ck ∩ C0
+k0 | Ck ∈ C, C0
+k0 ∈ C0
+, Ck ∩ C0
+k0 6= ∅}
+(2)
+Hence, the join of two clusterings is the clustering
+formed from all the nonempty intersections of clusters
+from C with clusters from C0
+. A distance d is additive
+w.r.t to the join iff for any clusterings C, C0
+d(C, C0
+) = d(C, C × C0
+) + d(C0
+, C × C0
+) (3)
+This property is relevant for clusterings C, C0
+which are
+not a refinement of each other. One can think of ob-
+taining such a C0
+from C by a series of cluster splits
+(downward steps along the lattice edges) followed by a
+set of cluster mergers (upward steps in the lattice). A
+distance d is AJ if it can be expressed as a sum of dis-
+tances along such a path. Note that usually there are
+several possible paths between two clusterings (see for
+instance {{a}, {b, c, d}} and {{a, c}, {b}, {d}} in figure
+1); the sum is the same no matter what path is taken.
+From a practical point of view, AJ also means that for
+any two clusterings C, C0
+there is a clustering C × C
+(and usually others) which has more clusters than
+both C and C0
+but is closer to both of them than
+d(C, C0
+). In a geometric sense, the join C, C0
+is “on
+the line segment” between C, C0
+. If in an applica-
+tion two clusterings should be close only if the num-
+ber of clusters K, K0
+are nearly equal, then the dis-
+tance d should not be AJ. However, there are other
+Comparing Clusterings – An Axiomatic View
+{a,b,c,d}
+{a}{b,c,d} {b}{a,c,d} {c}{a,b,d} {d}{a,b,c} {a,b}{c,d} {a,c}{b,d} {a,d}{b,c}
+{a},{b}{c,d} {a},{c}{b,d} {a},{d}{b,c} {a,b}{c},{d} {a,c}{b},{d} {a,d}{b},{c}
+{a},{b}{c},{d}
+Figure 1. The lattice of partitions of D ={a,b,c,d}. Note that 1̂ ={{a,b,c,d}}, 0̂ ={{a},{b},{c},{d}}; the clusterings
+1̂, {{a},{b, c, d}}, {{a},{b},{c, d}}, 0̂ are collinear according to A3; the clusterings {{a},{b, c, d}}, {{a},{b},{c, d}},
+{{a,b},{c, d}} are collinear according to A4; the clusterings {{a},{b, c, d}}, {{a},{b},{c, d}}, {{b},{a, c, d}} and 1̂ are
+on a closed straight line; and there are 3 straight lines from {{d},{a, b, c}} to 0̂.
+applications, image segmentation being a prime ex-
+ample, where breaking off a set b of pixels from
+a segment {a, b} is less of a mistake than break-
+ing them off and attaching them to another seg-
+ment c (i.e we want d({{a, b}, {c}}, {{a}, {b}, {c}}) <
+d({{a, b}, {c}}, {{a}, {b, c}})). In such applications,
+the number of segments is less meaningful than the
+grouping of the pixels; therefore AJ is reasonable as
+it represents the total error as as sum of two kinds of
+error.
+Convex additivity (CA). Let C = {C1, . . . CK} be a
+clustering and C0
+, C00
+be two refinements of C. Denote
+by C0
+k (C00
+k ) the partitioning induced by C0
+(respectively
+C00
+) on Ck. Let P(k) represent the proportion of data
+points that belong to cluster Ck. Then
+d(C0
+, C00
+) =
+K
+X
+k=1
+P(k)d(C0
+k, C00
+k ) (4)
+This property expresses additivity of d over the sub-
+lattices corresponding to the individual clusters Ck. In
+particular, CA implies that if only some cluster(s) of
+C are changed to obtain C0
+, then then d(C, C0
+) depends
+only on the affected clusters, and is independent on
+how the unaffected part of D is partitioned. For an
+example, consider the pairs C = {{a, b}, {c, d}}, C0
+=
+C = {{a}, {b}, {c, d}} and ˜
+C = {{a, b}, {c}, {d}}, ˜
+C =
+{{a}, {b}, {c}, {d}}. In both cases the first cluster is
+split while the remaining cluster(s) are left unchanged.
+Therefore, if d is CA then d(C, C0
+) = d( ˜
+C, ˜
+C0
+).
+Properties AJ and CA were described in (Meilă, 2003),
+where several distances were discussed w.r.t satisfying
+them. In this section we extend and deepen the geo-
+metric view suggested there. The remainder of the pa-
+per addresses the reverse question: instead of checking
+whether a given distance satisfies a certain property,
+we will ask what properties uniquely define a certain
+distance. The focus will be on the additive properties
+discussed above. Hence the complementary question:
+how can one characterize all the distances that satisfy
+them?
+The reason we pay special attention to the properties
+AV, CA and AJ in this paper, is because splitting a
+cluster, forming a clustering by taking the union of two
+clusterings on two subsets of the data, and merging two
+clusters are (sequences of) elementary and intuitive
+operations that one can do on clusterings. It is easy
+and natural to think of changing a clustering C into
+C0
+by appying these operations one after the other. If
+the distance d satisfies AV, CA and AJ, then d will
+measure the change between C and C0
+as a sum of
+elementary changes, each corresponding to one step.
+Finally, if d is also a metric, some additional geometric
+insights are possible. One can extend the notion of a
+straight line from Euclidean space to a metric space: 3
+points in a metric space for which triangle inequality is
+satisfied with equality are said to lie on a straight line,
+in other words to be collinear. Additivity w.r.t refine-
+ment implies that the clusterings along a vertical chain
+of lattice edges are collinear. As all “vertical” straight
+lines meet both at 1̂ and 0̂, this space is clearly non-
+Euclidean. In general, if C0
+is a refinement of C, then
+each of the possible ways of subdividing C to obtain
+C0
+generates a straight line in the lattice. Unless C, C0
+are connected by a single edge, there will be multiple
+“straight lines” between the two clusterings. Figure 1
+illustrates these properties on a simple example. An
+even more interesting picture is implied by the “hor-
+izontal” straight lines that exist because of the addi-
+tivity w.r.t the joint. These lines are composed of the
+vertical “descending” segment C, C × C0
+, continued by
+Comparing Clusterings – An Axiomatic View
+the “ascending” segment C × C0
+, C0
+. Figure 1 shows an
+example of such a straight line. Moreover, using both
+properties, one can derive that the union of any two
+chains that have the same endpoints forms a “closed”
+straight line according to such a metric.
+3. The axioms of the variation of
+information
+The variation of information (dVI ), introduced in
+(Meilă, 2003), measures the distance between two clus-
+terings in terms of the information difference between
+them.
+dVI (C, C0
+) = H(C) + H(C0
+) − 2I(C, C0
+) (5)
+where H and I represent respectively the entropies2
+of
+and the mutual information3
+between the two cluster-
+ings.
+In (Meilă, 2003) the variation of information was
+shown to satisfy AJ and AC and that it is a metric,
+among several other properties. It is also easy to show
+that it satisfies additivity w.r.t refinement (see the ap-
+pendix).
+Now we show that a subset of these properties uniquely
+defines dVI .
+Theorem 1 The variation of information is the
+unique cluster comparison criterion d that satisfies the
+axioms:
+A1 Symmetry For any two clusterings C, C0
+d(C, C0
+) = d(C0
+, C)
+A2 Additivity w.r.t refinement Denote by 0̂ and
+1̂ the unique clusterings having K = n respectively
+K = 1 clusters. For any clustering C
+d(0̂, C) + d(C, 1̂) = d(0̂, 1̂)
+A3 Additivity w.r.t the join For any two cluster-
+ings C, C0
+d(C, C0
+) = d(C, C × C0
+) + d(C0
+, C × C0
+)
+A4 Convex additivity Let C = {C1, . . . CK} be a
+clustering and C0
+be a refinement of C. Denote by
+C0
+k the partitioning induced by C0
+on Ck. Then
+d(C, C0
+) =
+K
+X
+k=1
+nk
+n
+d(1̂nk
+, C0
+k)
+2
+H(C) = −
+PK
+k=1
+nk
+n
+log nk
+n
+3
+I(C, C0
+) =
+PK
+k=1
+PK0
+k0=1
+nk,k0
+n
+log
+nk,k0
+n
+nk
+n
+n0
+k0
+n
+A5 Scale Denote by CU
+K the “uniform” clustering, i.e
+the clustering with K equal clusters. If CU
+K exists,
+then
+d(1̂, CU
+K) = log K
+In the above, 1̂nk
+is the 1̂ clustering of the dataset
+Ck containing nk points. The proof of the theorem is
+constructive and is given in the appendix. Note that
+the axioms do not require d to be a metric; this follows
+implicitly.
+Intuitively, axioms A2 and A3 describe the geomet-
+ric properties of dVI , i.e that it is aligned with the
+lattice of partitions. Axiom A2 is a weak version of
+the AR property defined in the previous section. Ax-
+ioms A4 and A5 set the scale of d and in particular its
+logarithmic growth rate. They are reminiscent of the
+postulates III and IV of entropy as given in (Rènyi,
+1970).
+It is interesting to see what happens if the last two
+axioms are changed. In other words, if one maintains
+that the distance has to be aligned with the lattice of
+partitions, but allows the scale to differ. This is what
+we are going to do in the next section.
+4. Other metrics for comparing
+clusterings
+The clustering literature contains quite a number of
+criteria for comparing clusterings: the Rand index
+(Rand, 1971), the Jaccard index (Ben-Hur et al.,
+2002), the Folwkes-Mallows index (Fowlkes & Mallows,
+1983), the Huber and Arabie indices (Hubert & Ara-
+bie, 1985), the Mirkin metric (Mirkin, 1996), the Van
+Dongen metric (van Dongen, 2000), as well as statisti-
+cally “adjusted” versions of some of the above (Hubert
+& Arabie, 1985).
+We shall start with two criteria, the Mirkin and Van
+Dongen metrics, for which we give an axiomatic char-
+acterization.
+The Mirkin metric is defined by (Mirkin, 1996)
+d0
+M (C, C0
+) =
+X
+k
+n2
+k +
+X
+k0
+n0
+k0
+2
+− 2
+X
+k
+X
+k0
+n2
+kk0 (6)
+This metric can also be rewritten (Ben-Hur et al.,
+2002) as
+d0
+M (C, C0
+) = 2Ndisagree(C, C0
+) (7)
+where Ndisagree is defined as the number of point pairs
+which are in the same cluster under C but in different
+clusters under C0
+or viceversa. The Rand index is de-
+Comparing Clusterings – An Axiomatic View
+fined as
+iR(C, C0
+) =
+n(n − 1) − 2Ndisagree(C, C0
+)
+n(n − 1)
+(8)
+Therefore the characterization of dM below will reflect
+immediately on the (unadjusted) Rand index. In what
+follows we shall use an rescaled form of the Mirkin
+metric which is n-invariant and bounded.
+dM (C, C0
+) =
+d0
+M (C, C0
+)
+n2
+(9)
+The Van Dongen criterion was also proved to be a
+metric (van Dongen, 2000)
+d0
+D(C, C0
+) = 2n −
+X
+k
+max
+k0
+nkk0 −
+X
+k0
+max
+k
+nkk0 (10)
+As with the Mirkin metric, we shall use its bounded
+n-invariant version
+dD(C, C0
+) =
+d0
+D(C, C0
+)
+2n
+(11)
+To proceed with our axiomatic study, we first compute
+the distances between 1̂ and CU
+K under the invariant
+Van Dongen and Mirkin metrics.
+dD(1̂, CU
+K) =
+1
+2
+
+1 −
+1
+K
+
+dM (1̂, CU
+K) = 1 −
+1
+K
+With respect to convex additivity, it is easy to prove
+(see also (Meilă, 2003)) that dD is convexely additive,
+while the Mirkin metric satisfies
+dM (C, C0
+) =
+K
+X
+k=1
+n2
+k
+n2
+dM (1̂nk
+, C0
+k) (12)
+whenever C0
+is a refinement of C and C0
+k represents the
+partitioning induced by C0
+on cluster Ck of C.
+We now can replace the scale axioms of dVI with ax-
+ioms corresponding to dD and dM respectively. We
+obtain a negative
+Theorem 2 There is no cluster comparison criterion
+that satisfies axioms A1–A4 and
+A5.D d(1̂, CU
+K) = 1 − 1/K
+Theorem 3 The unique cluster comparison criterion
+d that satisfies axioms A1, A3, A4, and
+A2.D d(1̂, C) =
+1
+2
+h
+1 −
+maxk nk
+n
+i
+is the invariant van Dongen metric dD.
+Theorem 4 The unique cluster comparison criterion
+d that satisfies axioms A1–A3, A5.D and
+A4.M Let C0
+be a refinement of C and denote by C0
+k the
+clustering induced by C0
+on Ck ∈ C. Then
+d(C, C0
+) =
+K
+X
+k=1
+n2
+k
+n2
+d(1̂nk
+, C0
+k)
+is the invariant Mirkin metric dM .
+Thus, the invariant Mirkin metric is also aligned with
+the lattice of partitions. The additivity axiom A4.M
+has several consequences. First, it shows that dM is lo-
+cal, i.e changes inside one cluster depend only on the
+relative size of that cluster and of the nature of the
+change, and are not affected by how the rest of the
+data set is partitioned. But the union of two or more
+datasets shrinks distances (because of the weighting
+with the squares of the proportions), a rather counter-
+intuitive behavior. It is worth recalling that all these
+properties of the Mirkin metric are readily translated
+into similar properties of the unadjusted Rand index.
+The “unnatural” behavior of the Rand index with in-
+creasing K has been noted early on and is the main
+reason why this index is used mostly in its adjusted
+form (Hubert & Arabie, 1985).
+The van Dongen metric is horizontally aligned with the
+lattice of partitions but not vertically, that is it satisfies
+axioms A1, A3, A4, A5.D. To uniquely characterize it,
+we introduced axiom A2.D, which implies A5.D but is
+significantly stronger4
+.
+How about other, more popular indices for comparing
+partitions? The space does not permit us to describe
+and compare all of them here (such comparisons can be
+found in (Ben-Hur et al., 2002; Hubert & Arabie, 1985;
+Meilă, 2003; Wallace, 1983) and others). One fact
+shown in (Meilă, 2003) is that the Jaccard, Fowlkes-
+Mallows, some of the Huber and Arabie and all the
+adjusted indices, including the widely used adjusted
+Rand index, are non-local (that is, a change inside a
+single cluster counts differently depending on how the
+rest of the data is clustered). Therefore they will rate
+worse on the scale of understandability and in par-
+ticular cannot satisfy the convex additivity property.
+Also, it is easy to show that most of the above in-
+dices are only asymptotically n-invariant, so their ax-
+iomatic description would be much more complicated
+(and consequently a much less illuminating exercise).
+4
+We have not proved that A2.D is the weakest possible
+axiom that uniquely deterimines dD. But we believe this
+as likely and will consider it in further research.
+Comparing Clusterings – An Axiomatic View
+Another very interesting criterion, the classification er-
+ror, is discussed in the next section.
+5. The classification error metric
+The classification error (CE) distance dCE is defined
+as
+dCE(C, C0
+) = 1 −
+1
+n
+max
+σ
+K
+X
+k=1
+nk,σ(k) (13)
+In the above, it is assumed w.l.o.g that K ≤ K0
+, σ is
+an injective mapping of {1, . . . K} into {1, . . . K0
+}, and
+the maximum is taken over all such mappings. In other
+words, for each σ we have a (partial) correspondence
+between the cluster labels in C and C0
+; now looking at
+clustering as a classification task with the fixed label
+correspondence, we compute the “classification error”
+of C0
+w.r.t C. The minimum possible “classification
+error” under all correspondences is dCE.
+From the computational point of view, it is not neces-
+sary to explicitly enumerate all correspondences (order
+K!). The maximum can be computed in polinomial
+time as the solution of a linear program identical to
+the maximum bipartite matching algorithm in graph
+theory (Golumbic, 1980). The CE distance is simple
+and intuitive, especially if the two clusterings are close
+together. The following lemma describes its properties
+from the point of view of the axioms considered in this
+paper.
+Lemma 5 The classification error distance dCE sat-
+isfies axioms A1 (symmetry), A4 (convex additivity),
+A5.D (scales like 1 − 1/K). It violates axioms A2 and
+A3, hence it is not aligned with the lattice of partitions.
+The proof is sufficiently simple and has been omitted.
+The above result shows similarities betweed dCE and
+especially the dD metric, and underscores its convex
+additivity, locality, and n-invariance, all of which con-
+tribute to making dCE a most intutitive criterion. The
+dissimilarity is of course the non-alignment with the
+lattice of partitions. We have not yet found a complete
+characterization of dCE, this is a matter of further re-
+search.
+6. An impossibility result for
+comparing partitions
+Theorem 2 prompts the question: what kind of scal-
+ings in A5 are compatible with A1–A4? To answer
+this question, we change A5 to the weaker A5.H:
+A5.H d(1̂, CU
+K) = h(K) where h is a non-decreasing
+function of K.
+Then, the result below shows that A5 is essentially
+superfluous.
+Theorem 6 Any clustering comparison criterion sat-
+isfying A1–A4 and A5.H is identical to dVI up to a
+multiplicative constant.
+In other words, the variation of information is the
+only “sensible” (that is symmetric, n-invariant, with
+d(1̂, CU
+K) non-decreasing) criterion that is convexely ad-
+ditive and aligned to the lattice of partitions.
+From theorem 6 the following impossibility result fol-
+lows immediately.
+Corrollary 7 There is no d symmetric, n-invariant,
+with d(1̂, CU
+K) non-decreasing, that satisfies simultane-
+ously the following three properties:
+• d is aligned to the lattice of partitions (axioms A2,
+A3)
+• d is convexly additive (axiom A4)
+• d is bounded
+Hence, there is no criterion for comparing clusterings
+that can satisfy all three of the above desirable prop-
+erties. The users of distances between clusterings will
+have to make choices. What are the tradeoffs?
+The first property gives geometric intuition in addition
+to the intuition one would get from having a metric.
+Preserving this property would be useful in designing
+search algorithms in the space of clusterings and prov-
+ing their properties.
+The second one is, in our opinion, the most important
+for the “understandability” of a distance, because it is
+a law of composition. It says that under unions of sets,
+the distances on the parts are weighted in proportion
+to the sizes of the parts and then summed.
+The argument for the third property is partly “his-
+torical”. The vast majority of criteria for comparing
+clusterings are bounded between 0 and 1. Moreover,
+in statistics, the tradition is to indicate identity be-
+tween two clusterings by a 1 (like in the Rand, Fowlkes-
+Mallows, Jaccard indices and their adjusted versions).
+Another very appealing reason to use a distance that
+is bounded (for instance between 0 and 1) is to inter-
+pret it as a probability. When can we do this? The
+aforementioned indices can all be interpreted as prob-
+abilities (see the original papers (Rand, 1971; Fowlkes
+& Mallows, 1983; Hubert & Arabie, 1985; Ben-Hur
+et al., 2002) for details), but their adjusted versions
+can not (Hubert & Arabie, 1985). In this respect, per-
+haps the most interpretable is the classification error
+dCE, which is indeed the optimal error probability if
+clustering was regarded as classification.
+Comparing Clusterings – An Axiomatic View
+Note however that a criterion that is bounded between
+0 and 1 carries the implicit assumption that cluster-
+ings can only get negligibly more diverse as the number
+of clusters increases. Thus, while using dCE may be
+the most natural and intuitive when K is small, this
+distance will loose its resolution power for large K.
+Whether a bounded or unbounded criterion for com-
+paring clusterings is better depends ultimately on the
+clustering application at hand. This paper’s aim in
+this respect is to underscore the possible choices and
+their consequences.
+7. Conclusion
+This is the first axiomatic approach to comparing clus-
+terings. What are the benfits of such an exercise?
+Characterizing distances between clusterings in terms
+of axioms highlights the essential properties of these
+distances, from which all others follow. For example,
+we have seen that being aligned to the lattice of par-
+titions is a very strong requirement: together with an
+additivity constraint (like A4 or A4.M), it completely
+determines the values of a distance on the lattice.
+An impossibility result is also important, because it re-
+veals an essential characteristic of the problem itself.
+In this case, very loosely speaking, we have shown that
+the lattice of partitions, which is the space where all
+possible clusterings lie, has too rich a structure to be
+packed inside a bounded ball without breaking some of
+the structure. For an analogy, one can say that the Eu-
+clidean n-dimensional space, another space with rich
+structure, cannot be folded into a sphere without los-
+ing some of its properties. Thus, presenting distances
+between clusterings in an axiomatic framework helps
+better understand their properties and their limita-
+tions. It is interesting to note that an impossibility
+result for clustering exists in (Kleinberg, 2002). The
+Kleinberg paper refers to clustering criteria (e.g single
+linkage, mean-squared error, etc) and shows that there
+is none that satisfies three desirable properties.
+We have given a prominent role to the lattice of par-
+titions, interpreting distances as functions on pairs of
+points in the lattice. We believe this view will also
+become useful in the future, whether one will use dis-
+tances aligned to the lattice like the dVI , or completely
+unaligned like dCE. Clustering is a hard problem and
+seeing clusterings as nodes in a graph opens the possi-
+bility of applying new techniques, based on graph and
+lattice theory, to this task.
+Acknowledgements
+Thanks to Nilesh Dalvi and Pavel Krivitsky who each
+gave a proof for lemma 8 and to the anonymous re-
+viewer who pointed me to the work of C. Rajski.
+This research was partly supported by NSF grant IIS-
+0313339.
+Proofs
+Proof of AR for the dVI distance. dVI can be ex-
+pressed as a sum of conditional entropies (Meilă, 2003)
+dVI (C, C0
+) = H(C|C0
+) + H(C0
+|C0
+) (14)
+The proof then follows from elementary properties of
+the conditional entropy (see (Cover & Thomas, 1991)
+for details): first, if C0
+is a refinement of C, then
+H(C|C0
+) = 0; then, one applies the chain rule for con-
+ditional entropy.
+Proof of Theorem 1 From A4 and A5 we have that
+d(0̂, C) =
+X
+k
+nk
+n
+d(1̂, CU
+nk
+) (15)
+=
+X
+k
+nk
+n
+log nk (16)
+=
+X
+k
+nk
+n
+(log
+nk
+n
++ log n) (17)
+= log n − H(C) (18)
+From A2 we get d(1̂, C) = log n − d(0̂, C) = H(C).
+For any two clusterings C, C0
+define by Ck the clustering
+induced by C0
+on Ck ∈ C.
+d(C, C × C0
+) =
+K
+X
+k=1
+nk
+n
+d(1̂, Ck) (19)
+=
+K
+X
+k=1
+nk
+n
+H(Ck) (20)
+= H(C|C0
+) (21)
+Therefore, by A2, d(C, C0
+) = H(C|C0
+)+H(C0
+|C), Q.E.D
+Proof of Theorem 2
+d(0̂, C) =
+X
+k
+nk
+n
+d(1̂, CU
+nk
+) (22)
+=
+X
+k
+nk
+n
+
+1 −
+1
+nk
+
+(23)
+= 1 −
+K
+n
+(24)
+Therefore d(1̂, C) = (1−1/n)−(1−K/n) = (K−1)/n
+if |C| = K. This contradicts A5 according to which
+d(1̂, CU
+K) = (K − 1)/K.
+Comparing Clusterings – An Axiomatic View
+Proof of Theorems 3 and 4 These proofs follow the
+same steps as the proof of Theorem 1 and are therefore
+omitted.
+Proof of Theorem 6 We have consecutively:
+d(1̂, 0̂) = h(n) by A5.H (25)
+d(1̂, C) = h(n) − d(0̂, C) by A2 (26)
+d(0̂, C) =
+X
+k
+nk
+n
+h(nk) by A4 (27)
+d(1̂, CU
+K) = h(n) − d(0̂, CU
+K) (28)
+= h(n) − K
+1
+K
+h(
+n
+K
+) (29)
+Since n/K = M is an integer, and recalling A5.H we
+can rewrite the last equality as
+h(K) = h(KM) − h(M)
+or equivalently
+h(KM) = h(K) + h(M) (30)
+for any positive integers K, M. By lemma 8 below,
+this implies that h(n) = C log n for all n = 1, 2, 3, . . ..
+It follows that A1-A4 together with A5.H imply essen-
+tially the original A5 (up to the multiplicative constant
+C) and therefore d cannot be but proportional to the
+VI.
+Lemma 8 Let h : {1, 2, . . .} → [0, ∞) be a non-
+decreasing function satisfying (30) for any positive in-
+tegers K, M. Then h(n) = C log n for any n.
+Proof Let h(2) = C. We prove that h(n) = C log n.
+Let a = log(nq
+) = q log n with q a large positive inte-
+ger. Then
+h(2bac
+) ≤ h(2a
+) = h(nk
+) ≤ h(2dae
+) (31)
+bacC ≤ qh(n); ≤ daeC (32)
+bac
+a
+≤ h(n)
+C log n ; ≤
+dae
+a
+(33)
+The middle term does not depend on q, while the left
+and right tend to 1 for q increasing to infinity, which
+implies h(n) = C log n.
+References
+Ben-Hur, A., Elisseeff, A., & Guyon, I. (2002). A
+stability based method for discovering structure in
+clustered data. Pacific Symposium on Biocomputing
+(pp. 6–17).
+Cover, T. M., & Thomas, J. A. (1991). Elements of
+information theory. Wiley.
+Fowlkes, E. B., & Mallows, C. L. (1983). A method for
+comparing two hierarchical clusterings. Journal of
+the American Statistical Association, 78, 553–569.
+Golumbic, M. (1980). Algorithmic graph theory and
+perfect graphs. Academic Press, New York.
+Hubert, L., & Arabie, P. (1985). Comparing partitions.
+Journal of Classification, 2, 193–218.
+Kleinberg, J. (2002). An impossibility theorem for
+clustering. Advances in Neural Information Process-
+ing Systems. Cambridge, MA: MIT Press.
+Meilă, M. (2003). Comparing clusterings by the varia-
+tion of information. Proceedings of the Sixteenth An-
+nual Conference ofn Computational Learning The-
+ory (COLT). Springer.
+Mirkin, B. (1996). Mathematical classification and
+clustering. Kluwer Academic Press.
+Rand, W. M. (1971). Objective criteria for the evalua-
+tion of clustering methods. Journal of the American
+Statistical Association, 66, 846–850.
+Rènyi, A. (1970). Probability theory. North-Holland.
+Stanley, R. P. (1997). Enumerative combinatorics.
+Cambridge Unversity Press.
+van Dongen, S. (2000). Performance criteria for graph
+clustering and Markov cluster experiments (Techni-
+cal Report INS-R0012). Centrum voor Wiskunde en
+Informatica.
+Wallace, D. L. (1983). Comment. Journal of the Amer-
+ican Statistical Association, 78, 569–576.
+

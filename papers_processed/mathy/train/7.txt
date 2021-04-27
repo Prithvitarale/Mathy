@@ -1,0 +1,2506 @@
+Gaussian Process Optimization in the Bandit Setting:
+No Regret and Experimental Design
+Niranjan Srinivas
+California Institute of Technology
+niranjan@caltech.edu
+Andreas Krause
+California Institute of Technology
+krausea@caltech.edu
+Sham M. Kakade
+University of Pennsylvania
+skakade@wharton.upenn.edu
+Matthias Seeger
+Saarland University
+mseeger@mmci.uni-saarland.de
+Abstract
+Many applications require optimizing an un-
+known, noisy function that is expensive to
+evaluate. We formalize this task as a multi-
+armed bandit problem, where the payoff function
+is either sampled from a Gaussian process (GP)
+or has low RKHS norm. We resolve the impor-
+tant open problem of deriving regret bounds for
+this setting, which imply novel convergence rates
+for GP optimization. We analyze GP-UCB, an
+intuitive upper-confidence based algorithm, and
+bound its cumulative regret in terms of maximal
+information gain, establishing a novel connection
+between GP optimization and experimental de-
+sign. Moreover, by bounding the latter in terms
+of operator spectra, we obtain explicit sublinear
+regret bounds for many commonly used covari-
+ance functions. In some important cases, our
+bounds have surprisingly weak dependence on
+the dimensionality. In our experiments on real
+sensor data, GP-UCB compares favorably with
+other heuristical GP optimization approaches.
+1. Introduction
+In most stochastic optimization settings, evaluating
+the unknown function is expensive, and sampling
+is to be minimized. Examples include choosing
+advertisements in sponsored search to maximize
+profit in a click-through model (Pandey & Olston,
+2007) or learning optimal control strategies for robots
+(Lizotte et al., 2007). Predominant approaches
+to this problem include the multi-armed bandit
+paradigm (Robbins, 1952), where the goal is to
+maximize cumulative reward by optimally balancing
+exploration and exploitation, and experimental design
+(Chaloner & Verdinelli, 1995), where the function
+is to be explored globally with as few evaluations
+as possible, for example by maximizing information
+1
+This is the longer version of our paper in ICML 2010;
+see Srinivas et al. (2010)
+gain. The challenge in both approaches is twofold: we
+have to estimate an unknown function f from noisy
+samples, and we must optimize our estimate over some
+high-dimensional input space. For the former, much
+progress has been made in machine learning through
+kernel methods and Gaussian process (GP) models
+(Rasmussen & Williams, 2006), where smoothness
+assumptions about f are encoded through the choice
+of kernel in a flexible nonparametric fashion. Beyond
+Euclidean spaces, kernels can be defined on diverse
+domains such as spaces of graphs, sets, or lists.
+We are concerned with GP optimization in the multi-
+armed bandit setting, where f is sampled from a GP
+distribution or has low “complexity” measured in
+terms of its RKHS norm under some kernel. We pro-
+vide the first sublinear regret bounds in this nonpara-
+metric setting, which imply convergence rates for GP
+optimization. In particular, we analyze the Gaussian
+Process Upper Confidence Bound (GP-UCB) algo-
+rithm, a simple and intuitive Bayesian method (Auer
+et al., 2002; Auer, 2002; Dani et al., 2008). While
+objectives are different in the multi-armed bandit
+and experimental design paradigm, our results draw
+a close technical connection between them: our regret
+bounds come in terms of an information gain quantity,
+measuring how fast f can be learned in an information
+theoretic sense. The submodularity of this function
+allows us to prove sharp regret bounds for particular
+covariance functions, which we demonstrate for com-
+monly used Squared Exponential and Matérn kernels.
+Related Work. Our work generalizes stochastic
+linear optimization in a bandit setting, where the
+unknown function comes from a finite-dimensional
+linear space. GPs are nonlinear random functions,
+which can be represented in an infinite-dimensional
+linear space. For the standard linear setting, Dani
+et al. (2008) provide a near-complete characterization
+1
+arXiv:0912.3995v4
+[cs.LG]
+9
+Jun
+2010
+(also see Auer 2002; Dani et al. 2007; Abernethy et al.
+2008; Rusmevichientong & Tsitsiklis 2008), explicitly
+dependent on the dimensionality. In the GP setting,
+the challenge is to characterize complexity in a differ-
+ent manner, through properties of the kernel function.
+Our technical contributions are twofold: first, we
+show how to analyze the nonlinear setting by focusing
+on the concept of information gain, and second, we
+explicitly bound this information gain measure using
+the concept of submodularity (Nemhauser et al.,
+1978) and knowledge about kernel operator spectra.
+Kleinberg et al. (2008) provide regret bounds un-
+der weaker and less configurable assumptions (only
+Lipschitz-continuity w.r.t. a metric is assumed;
+Bubeck et al. 2008 consider arbitrary topological
+spaces), which however degrade rapidly with the di-
+mensionality of the problem (Ω(T
+d+1
+d+2 )). In practice,
+linearity w.r.t. a fixed basis is often too stringent
+an assumption, while Lipschitz-continuity can be too
+coarse-grained, leading to poor rate bounds. Adopting
+GP assumptions, we can model levels of smoothness in
+a fine-grained way. For example, our rates for the fre-
+quently used Squared Exponential kernel, enforcing a
+high degree of smoothness, have weak dependence on
+the dimensionality: O(
+p
+T(log T)d+1) (see Fig. 1).
+There is a large literature on GP (response surface)
+optimization. Several heuristics for trading off explo-
+ration and exploitation in GP optimization have been
+proposed (such as Expected Improvement, Mockus
+et al. 1978, and Most Probable Improvement, Mockus
+1989) and successfully applied in practice (c.f., Lizotte
+et al. 2007). Brochu et al. (2009) provide a comprehen-
+sive review of and motivation for Bayesian optimiza-
+tion using GPs. The Efficient Global Optimization
+(EGO) algorithm for optimizing expensive black-box
+functions is proposed by Jones et al. (1998) and ex-
+tended to GPs by Huang et al. (2006). Little is known
+about theoretical performance of GP optimization.
+While convergence of EGO is established by Vazquez
+& Bect (2007), convergence rates have remained elu-
+sive. Grünewälder et al. (2010) consider the pure ex-
+ploration problem for GPs, where the goal is to find the
+optimal decision over T rounds, rather than maximize
+cumulative reward (with no exploration/exploitation
+dilemma). They provide sharp bounds for this explo-
+ration problem. Note that this methodology would not
+lead to bounds for minimizing the cumulative regret.
+Our cumulative regret bounds translate to the first
+performance guarantees (rates) for GP optimization.
+Summary. Our main contributions are:
+• We analyze GP-UCB, an intuitive algorithm for
+GP optimization, when the function is either sam-
+Kernel Linear
+kernel
+RBF Matérn
+kernel
+Regret RT
+�
+T(log T)d+1
+T
+ν+d(d+1)
+2ν+d(d+1)
+d
+√
+T
+Figure 1. Our regret bounds (up to polylog factors) for lin-
+ear, radial basis, and Matérn kernels — d is the dimension,
+T is the time horizon, and ν is a Matérn parameter.
+pled from a known GP, or has low RKHS norm.
+• We bound the cumulative regret for GP-UCB in
+terms of the information gain due to sampling,
+establishing a novel connection between experi-
+mental design and GP optimization.
+• By bounding the information gain for popular
+classes of kernels, we establish sublinear regret
+bounds for GP optimization for the first time.
+Our bounds depend on kernel choice and param-
+eters in a fine-grained fashion.
+• We evaluate GP-UCB on sensor network data,
+demonstrating that it compares favorably to ex-
+isting algorithms for GP optimization.
+2. Problem Statement and Background
+Consider the problem of sequentially optimizing an un-
+known reward function f : D → R: in each round t, we
+choose a point xt ∈ D and get to see the function value
+there, perturbed by noise: yt = f(xt)+t. Our goal is
+to maximize the sum of rewards
+PT
+t=1 f(xt), thus to
+perform essentially as well as x∗
+= argmaxx∈D f(x)
+(as rapidly as possible). For example, we might want
+to find locations of highest temperature in a building
+by sequentially activating sensors in a spatial network
+and regressing on their measurements. D consists of
+all sensor locations, f(x) is the temperature at x, and
+sensor accuracy is quantified by the noise variance.
+Each activation draws battery power, so we want to
+sample from as few sensors as possible.
+Regret. A natural performance metric in this con-
+text is cumulative regret, the loss in reward due to not
+knowing f’s maximum points beforehand. Suppose
+the unknown function is f, its maximum point1
+x∗
+= argmaxx∈D f(x). For our choice xt in round
+t, we incur instantaneous regret rt = f(x∗
+) − f(xt).
+The cumulative regret RT after T rounds is the sum
+of instantaneous regrets: RT =
+PT
+t=1 rt. A desirable
+asymptotic property of an algorithm is to be no-regret:
+limT →∞ RT /T = 0. Note that neither rt nor RT are
+ever revealed to the algorithm. Bounds on the average
+regret RT /T translate to convergence rates for GP
+optimization: the maximum maxt≤T f(xt) in the first
+T rounds is no further from f(x∗
+) than the average.
+1
+x∗
+need not be unique; only f(x∗
+) occurs in the regret.
+2.1. Gaussian Processes and RKHS’s
+Gaussian Processes. Some assumptions on f are
+required to guarantee no-regret. While rigid paramet-
+ric assumptions such as linearity may not hold in prac-
+tice, a certain degree of smoothness is often warranted.
+In our sensor network, temperature readings at closeby
+locations are highly correlated (see Figure 2(a)). We
+can enforce implicit properties like smoothness with-
+out relying on any parametric assumptions, modeling
+f as a sample from a Gaussian process (GP): a col-
+lection of dependent random variables, one for each
+x ∈ D, every finite subset of which is multivariate
+Gaussian distributed in an overall consistent way (Ras-
+mussen & Williams, 2006). A GP(µ(x), k(x, x0
+)) is
+specified by its mean function µ(x) = E[f(x)] and
+covariance (or kernel) function k(x, x0
+) = E[(f(x) −
+µ(x))(f(x0
+) − µ(x0
+))]. For GPs not conditioned on
+data, we assume2
+that µ ≡ 0. Moreover, we restrict
+k(x, x) ≤ 1, x ∈ D, i.e., we assume bounded variance.
+By fixing the correlation behavior, the covariance func-
+tion k encodes smoothness properties of sample func-
+tions f drawn from the GP. A range of commonly used
+kernel functions is given in Section 5.2.
+In this work, GPs play multiple roles. First, some of
+our results hold when the unknown target function is a
+sample from a known GP distribution GP(0, k(x, x0
+)).
+Second, the Bayesian algorithm we analyze generally
+uses GP(0, k(x, x0
+)) as prior distribution over f. A
+major advantage of working with GPs is the exis-
+tence of simple analytic formulae for mean and co-
+variance of the posterior distribution, which allows
+easy implementation of algorithms. For a noisy sam-
+ple yT = [y1 . . . yT ]T
+at points AT = {x1, . . . , xT },
+yt = f(xt)+t with t ∼ N(0, σ2
+) i.i.d. Gaussian noise,
+the posterior over f is a GP distribution again, with
+mean µT (x), covariance kT (x, x0
+) and variance σ2
+T (x):
+µT (x) = kT (x)T
+(KT + σ2
+I)−1
+yT , (1)
+kT (x, x0
+) = k(x, x0
+) − kT (x)T
+(KT + σ2
+I)−1
+kT (x0
+),
+σ2
+T (x) = kT (x, x), (2)
+where kT (x) = [k(x1, x) . . . k(xT , x)]T
+and KT is
+the positive definite kernel matrix [k(x, x0
+)]x,x0∈AT
+.
+RKHS. Instead of the Bayes case, where f is sam-
+pled from a GP prior, we also consider the more ag-
+nostic case where f has low “complexity” as measured
+under an RKHS norm (and distribution free assump-
+tions on the noise process). The notion of reproduc-
+ing kernel Hilbert spaces (RKHS, Wahba 1990) is in-
+timately related to GPs and their covariance func-
+tions k(x, x0
+). The RKHS Hk(D) is a complete sub-
+space of L2(D) of nicely behaved functions, with an
+2
+This is w.l.o.g. (Rasmussen & Williams, 2006).
+inner product h·, ·ik obeying the reproducing property:
+hf, k(x, ·)ik = f(x) for all f ∈ Hk(D). It is literally
+constructed by completing the set of mean functions
+µT for all possible T, {xt}, and yT . The induced
+RKHS norm kfkk =
+p
+hf, fik measures smoothness of
+f w.r.t. k: in much the same way as k1 would generate
+smoother samples than k2 as GP covariance functions,
+k·kk1 assigns larger penalties than k·kk2 . h·, ·ik can be
+extended to all of L2(D), in which case kfkk < ∞ iff
+f ∈ Hk(D). For most kernels discussed in Section 5.2,
+members of Hk(D) can uniformly approximate any
+continuous function on any compact subset of D.
+2.2. Information Gain & Experimental Design
+One approach to maximizing f is to first choose
+points xt so as to estimate the function globally
+well, then play the maximum point of our estimate.
+How can we learn about f as rapidly as possible?
+This question comes down to Bayesian Experimental
+Design (henceforth “ED”; see Chaloner & Verdinelli
+1995), where the informativeness of a set of sampling
+points A ⊂ D about f is measured by the information
+gain (c.f., Cover & Thomas 1991), which is the mutual
+information between f and observations yA = fA +A
+at these points:
+I(yA; f) = H(yA) − H(yA|f), (3)
+quantifying the reduction in uncertainty about f
+from revealing yA. Here, fA = [f(x)]x∈A and
+εA ∼ N(0, σ2
+I). For a Gaussian, H(N(µ, Σ)) =
+1
+2 log |2πeΣ|, so that in our setting I(yA; f) =
+I(yA; fA) = 1
+2 log |I + σ−2
+KA|, where KA =
+[k(x, x0
+)]x,x0∈A. While finding the information gain
+maximizer among A ⊂ D, |A| ≤ T is NP-hard (Ko
+et al., 1995), it can be approximated by an efficient
+greedy algorithm. If F(A) = I(yA; f), this algorithm
+picks xt = argmaxx∈D F(At−1∪{x}) in round t, which
+can be shown to be equivalent to
+xt = argmax
+x∈D
+σt−1(x), (4)
+where At−1 = {x1, . . . , xt−1}. Importantly, this
+simple algorithm is guaranteed to find a near-optimal
+solution: for the set AT obtained after T rounds, we
+have that
+F(AT ) ≥ (1 − 1/e) max
+|A|≤T
+F(A), (5)
+at least a constant fraction of the optimal infor-
+mation gain value. This is because F(A) satisfies
+a diminishing returns property called submodularity
+(Krause & Guestrin, 2005), and the greedy approxima-
+tion guarantee (5) holds for any submodular function
+(Nemhauser et al., 1978).
+While sequentially optimizing Eq. 4 is a provably good
+way to explore f globally, it is not well suited for func-
+tion optimization. For the latter, we only need to iden-
+tify points x where f(x) is large, in order to concen-
+trate sampling there as rapidly as possible, thus exploit
+our knowledge about maxima. In fact, the ED rule
+(4) does not even depend on observations yt obtained
+along the way. Nevertheless, the maximum informa-
+tion gain after T rounds will play a prominent role
+in our regret bounds, forging an important connection
+between GP optimization and experimental design.
+3. GP-UCB Algorithm
+For sequential optimization, the ED rule (4) can be
+wasteful: it aims at decreasing uncertainty globally,
+not just where maxima might be. Another idea is to
+pick points as xt = argmaxx∈D µt−1(x), maximizing
+the expected reward based on the posterior so far.
+However, this rule is too greedy too soon and tends
+to get stuck in shallow local optima. A combined
+strategy is to choose
+xt = argmax
+x∈D
+µt−1(x) + β
+1/2
+t σt−1(x), (6)
+where βt are appropriate constants. This latter objec-
+tive prefers both points x where f is uncertain (large
+σt−1(·)) and such where we expect to achieve high
+rewards (large µt−1(·)): it implicitly negotiates the
+exploration–exploitation tradeoff. A natural interpre-
+tation of this sampling rule is that it greedily selects
+points x such that f(x) should be a reasonable upper
+bound on f(x∗
+), since the argument in (6) is an upper
+quantile of the marginal posterior P(f(x)|yt−1). We
+call this choice the Gaussian process upper confidence
+bound rule (GP-UCB), where βt is specified depending
+on the context (see Section 4). Pseudocode for
+the GP-UCB algorithm is provided in Algorithm 1.
+Figure 2 illustrates two subsequent iterations, where
+GP-UCB both explores (Figure 2(b)) by sampling an
+input x with large σ2
+t−1(x) and exploits (Figure 2(c))
+by sampling x with large µt−1(x).
+The GP-UCB selection rule Eq. 6 is motivated by the
+UCB algorithm for the classical multi-armed bandit
+problem (Auer et al., 2002; Kocsis & Szepesvári,
+2006). Among competing criteria for GP optimization
+(see Section 1), a variant of the GP-UCB rule has
+been demonstrated to be effective for this application
+(Dorard et al., 2009). To our knowledge, strong
+theoretical results of the kind provided for GP-UCB in
+this paper have not been given for any of these search
+heuristics. In Section 6, we show that in practice
+GP-UCB compares favorably with these alternatives.
+If D is infinite, finding xt in (6) may be hard: the
+upper confidence index is multimodal in general.
+However, global search heuristics are very effective in
+practice (Brochu et al., 2009). It is generally assumed
+Algorithm 1 The GP-UCB algorithm.
+Input: Input space D; GP Prior µ0 = 0, σ0, k
+for t = 1, 2, . . . do
+Choose xt = argmax
+x∈D
+µt−1(x) +
+p
+βtσt−1(x)
+Sample yt = f(xt) + t
+Perform Bayesian update to obtain µt and σt
+end for
+that evaluating f is more costly than maximizing the
+UCB index.
+UCB algorithms (and GP optimization techniques
+in general) have been applied to a large number of
+problems in practice (Kocsis & Szepesvári, 2006;
+Pandey & Olston, 2007; Lizotte et al., 2007). Their
+performance is well characterized in both the finite
+arm setting and the linear optimization setting, but
+no convergence rates for GP optimization are known.
+4. Regret Bounds
+We now establish cumulative regret bounds for GP
+optimization, treating a number of different settings:
+f ∼ GP(0, k(x, x0
+)) for finite D, f ∼ GP(0, k(x, x0
+))
+for general compact D, and the agnostic case of arbi-
+trary f with bounded RKHS norm.
+GP optimization generalizes stochastic linear opti-
+mization, where a function f from a finite-dimensional
+linear space is optimized over. For the linear case, Dani
+et al. (2008) provide regret bounds that explicitly de-
+pend on the dimensionality3
+d. GPs can be seen as
+random functions in some infinite-dimensional linear
+space, so their results do not apply in this case. This
+problem is circumvented in our regret bounds. The
+quantity governing them is the maximum information
+gain γT after T rounds, defined as:
+γT := max
+A⊂D:|A|=T
+I(yA; fA), (7)
+where I(yA; fA) = I(yA; f) is defined in (3). Recall
+that I(yA; fA) = 1
+2 log |I + σ−2
+KA|, where KA =
+[k(x, x0
+)]x,x0∈A is the covariance matrix of fA =
+[f(x)]x∈A associated with the samples A. Our regret
+bounds are of the form O∗
+(
+√
+TβT γT ), where βT is the
+confidence parameter in Algorithm 1, while the bounds
+of Dani et al. (2008) are of the form O∗
+(
+√
+TβT d) (d
+the dimensionality of the linear function space). Here
+and below, the O∗
+notation is a variant of O, where
+log factors are suppressed. While our proofs – all pro-
+vided in the Appendix – use techniques similar to those
+of Dani et al. (2008), we face a number of additional
+3
+In general, d is the dimensionality of the input space
+D, which in the finite-dimensional linear case coincides
+with the feature space.
+0
+10
+20
+30
+40 0
+10
+20
+30
+40
+15
+20
+25
+Temperature
+(C)
+(a) Temperature data
+−6 −4 −2 0 2 4 6
+−5
+−4
+−3
+−2
+−1
+0
+1
+2
+3
+4
+5
+(b) Iteration t
+−6 −4 −2 0 2 4 6
+−5
+−4
+−3
+−2
+−1
+0
+1
+2
+3
+4
+5
+(c) Iteration t + 1
+Figure 2. (a) Example of temperature data collected by a network of 46 sensors at Intel Research Berkeley. (b,c) Two
+iterations of the GP-UCB algorithm. It samples points that are either uncertain (b) or have high posterior mean (c).
+significant technical challenges. Besides avoiding the
+finite-dimensional analysis, we must handle confidence
+issues, which are more delicate for nonlinear random
+functions.
+Importantly, note that the information gain is a prob-
+lem dependent quantity — properties of both the ker-
+nel and the input space will determine the growth of
+regret. In Section 5, we provide general methods for
+bounding γT , either by efficient auxiliary computa-
+tions or by direct expressions for specific kernels of
+interest. Our results match known lower bounds (up
+to log factors) in both the K-armed bandit and the
+d-dimensional linear optimization case.
+Bounds for a GP Prior. For finite D, we obtain
+the following bound.
+Theorem 1 Let δ ∈ (0, 1) and βt =
+2 log(|D|t2
+π2
+/6δ). Running GP-UCB with βt for
+a sample f of a GP with mean function zero and
+covariance function k(x, x0
+), we obtain a regret bound
+of O∗
+(
+p
+TγT log |D|) with high probability. Precisely,
+Pr
+n
+RT ≤
+p
+C1TβT γT ∀T ≥ 1
+o
+≥ 1 − δ.
+where C1 = 8/ log(1 + σ−2
+).
+The proof methodology follows Dani et al. (2007) in
+that we relate the regret to the growth of the log
+volume of the confidence ellipsoid — a novelty in our
+proof is showing how this growth is characterized by
+the information gain.
+This theorem shows that, with high probability over
+samples from the GP, the cumulative regret is bounded
+in terms of the maximum information gain, forging a
+novel connection between GP optimization and exper-
+imental design. This link is of fundamental technical
+importance, allowing us to generalize Theorem 1 to
+infinite decision spaces. Moreover, the submodularity
+of I(yA; fA) allows us to derive sharp a priori bounds,
+depending on choice and parameterization of k (see
+Section 5). In the following theorem, we generalize
+our result to any compact and convex D ⊂ Rd
+under
+mild assumptions on the kernel function k.
+Theorem 2 Let D ⊂ [0, r]d
+be compact and convex,
+d ∈ N, r > 0. Suppose that the kernel k(x, x0
+) satisfies
+the following high probability bound on the derivatives
+of GP sample paths f: for some constants a, b > 0,
+Pr {supx∈D |∂f/∂xj| > L} ≤ ae−(L/b)2
+, j = 1, . . . , d.
+Pick δ ∈ (0, 1), and define
+βt = 2 log(t2
+2π2
+/(3δ)) + 2d log
+
+t2
+dbr
+p
+log(4da/δ)
+
+.
+Running the GP-UCB with βt for a sample f of a
+GP with mean function zero and covariance function
+k(x, x0
+), we obtain a regret bound of O∗
+(
+√
+dTγT ) with
+high probability. Precisely, with C1 = 8/ log(1 + σ−2
+)
+we have
+Pr
+n
+RT ≤
+p
+C1TβT γT + 2 ∀T ≥ 1
+o
+≥ 1 − δ.
+The main challenge in our proof (provided in the Ap-
+pendix) is to lift the regret bound in terms of the
+confidence ellipsoid to general D. The smoothness
+assumption on k(x, x0
+) disqualifies GPs with highly
+erratic sample paths. It holds for stationary kernels
+k(x, x0
+) = k(x − x0
+) which are four times differen-
+tiable (Theorem 5 of Ghosal & Roy (2006)), such as the
+Squared Exponential and Matérn kernels with ν > 2
+(see Section 5.2), while it is violated for the Ornstein-
+Uhlenbeck kernel (Matérn with ν = 1/2; a stationary
+variant of the Wiener process). For the latter, sam-
+ple paths f are nondifferentiable almost everywhere
+with probability one and come with independent in-
+crements. We conjecture that a result of the form of
+Theorem 2 does not hold in this case.
+Bounds for Arbitrary f in the RKHS. Thus far,
+we have assumed that the target function f is sampled
+from a GP prior and that the noise is N(0, σ2
+) with
+known variance σ2
+. We now analyze GP-UCB in an
+agnostic setting, where f is an arbitrary function
+from the RKHS corresponding to kernel k(x, x0
+).
+Moreover, we allow the noise variables εt to be an ar-
+bitrary martingale difference sequence (meaning that
+E[εt | ε<t] = 0 for all t ∈ N), uniformly bounded by σ.
+Note that we still run the same GP-UCB algorithm,
+whose prior and noise model are misspecified in this
+case. Our following result shows that GP-UCB attains
+sublinear regret even in the agnostic setting.
+Theorem 3 Let δ ∈ (0, 1). Assume that the true
+underlying f lies in the RKHS Hk(D) corresponding
+to the kernel k(x, x0
+), and that the noise εt has zero
+mean conditioned on the history and is bounded by σ
+almost surely. In particular, assume kfk2
+k ≤ B and
+let βt = 2B + 300γt log3
+(t/δ). Running GP-UCB with
+βt, prior GP(0, k(x, x0
+)) and noise model N(0, σ2
+),
+we obtain a regret bound of O∗
+(
+√
+T(B
+√
+γT +γT )) with
+high probability (over the noise). Precisely,
+Pr
+n
+RT ≤
+p
+C1TβT γT ∀T ≥ 1
+o
+≥ 1 − δ,
+where C1 = 8/ log(1 + σ−2
+).
+Note that while our theorem implicitly assumes that
+GP-UCB has knowledge of an upper bound on kfkk,
+standard guess-and-doubling approaches suffice if no
+such bound is known a priori. Comparing Theorem 2
+and Theorem 3, the latter holds uniformly over all
+functions f with kfkk < ∞, while the former is a prob-
+abilistic statement requiring knowledge of the GP that
+f is sampled from. In contrast, if f ∼ GP(0, k(x, x0
+)),
+then kfkk = ∞ almost surely (Wahba, 1990): sample
+paths are rougher than RKHS functions. Neither
+Theorem 2 nor 3 encompasses the other.
+5. Bounding the Information Gain
+Since the bounds developed in Section 4 depend on the
+information gain, the key remaining question is how to
+bound the quantity γT for practical classes of kernels.
+5.1. Submodularity and Greedy Maximization
+In order to bound γT , we have to maximize the infor-
+mation gain F(A) = I(yA; f) over all subsets A ⊂ D of
+size T: a combinatorial problem in general. However,
+as noted in Section 2, F(A) is a submodular function,
+which implies the performance guarantee (5) for max-
+imizing F sequentially by the greedy ED rule (4). Di-
+viding both sides of (5) by 1−1/e, we can upper-bound
+γT by (1 − 1/e)−1
+I(yAT
+; f), where AT is constructed
+by the greedy procedure. Thus, somewhat counterin-
+tuitively, instead of using submodularity to prove that
+F(AT ) is near-optimal, we use it in order to show that
+γT is “near-greedy”. As noted in Section 2, the ED
+rule does not depend on observations yt and can be
+run without evaluating f.
+The importance of this greedy bound is twofold.
+First, it allows us to numerically compute highly
+problem-specific bounds on γT , which can be plugged
+into our results in Section 4 to obtain high-probability
+bounds on RT . This being a laborious procedure, one
+would prefer a priori bounds for γT in practice which
+are simple analytical expressions of T and parameters
+of k. In this section, we sketch a general procedure
+for obtaining such expressions, instantiating them for
+a number of commonly used covariance functions,
+once more relying crucially on the greedy ED rule
+upper bound. Suppose that D is finite for now, and
+let f = [f(x)]x∈D, KD = [k(x, x0
+)]x,x0∈D. Sampling
+f at xt, we obtain yt ∼ N(vT
+t f , σ2
+), where vt ∈ R|D|
+is the indicator vector associated with xt. We can
+upper-bound the greedy maximum once more, by
+relaxing this constraint to kvtk = 1 in round t of the
+sequential method. For this relaxed greedy procedure,
+all vt are leading eigenvectors of KD, since successive
+covariance matrices of P(f |yt−1) share their eigenba-
+sis with KD, while eigenvalues are damped according
+to how many times the corresponding eigenvector is
+selected. We can upper-bound the information gain
+by considering the worst-case allocation of T samples
+to the min{T, |D|} leading eigenvectors of KD:
+γT ≤
+1/2
+1 − e−1
+max
+(mt)
+X|D|
+t=1
+log(1 + σ−2
+mtλ̂t), (8)
+subject to
+P
+t mt = T, and spec(KD) = {λ̂1 ≥ λ̂2 ≥
+. . . }. We can split the sum into two parts in order
+to obtain a bound to leading order. The following
+Theorem captures this intuition:
+Theorem 4 For any T ∈ N and any T∗ = 1, . . . , T:
+γT ≤ O σ−2
+[B(T∗)T + T∗(log nT T)]
+
+,
+where nT =
+P|D|
+t=1 λ̂t and B(T∗) =
+P|D|
+t=T∗+1 λ̂t.
+Therefore, if for some T∗ = o(T) the first T∗ eigenval-
+ues carry most of the total mass nT , the information
+gain will be small. The more rapidly the spectrum
+of KD decays, the slower the growth of γT . Figure 3
+illustrates this intuition.
+5.2. Bounds for Common Kernels
+In this section we bound γT for a range of commonly
+used covariance functions: finite dimensional linear,
+Squared Exponential and Matérn kernels. Together
+with our results in Section 4, these imply sublinear
+regret bounds for GP-UCB in all cases.
+5 10 15 20
+0
+5
+10
+15
+Eigenvalue rank
+Eigenvalue
+Independent
+Matern (ν = 2.5)
+Squared exponential
+Linear (d=4)
+10 20 30 40 50
+0
+50
+100
+150
+200
+250
+T
+Bound
+on
+γ
+T
+Linear (d=4)
+Independent
+Matern
+Squared
+exponential
+Figure 3. Spectral decay (left) and information gain bound (right) for independent (diagonal), linear, squared exponential
+and Matérn kernels (ν = 2.5.) with equal trace.
+Finite dimensional linear kernels have the form
+k(x, x0
+) = xT
+x0
+. GPs with this kernel correspond to
+random linear functions f(x) = wT
+x, w ∼ N(0, I).
+The Squared Exponential kernel is k(x, x0
+) =
+exp(−(2l2
+)−1
+kx − x0
+k2
+), l a lengthscale parameter.
+Sample functions are differentiable to any order
+almost surely (Rasmussen & Williams, 2006).
+The Matérn kernel is given by k(x, x0
+) =
+(21−ν
+/Γ(ν))rν
+Bν(r), r = (
+√
+2ν/l)kx − x0
+k, where ν
+controls the smoothness of sample paths (the smaller,
+the rougher) and Bν is a modified Bessel function.
+Note that as ν → ∞, appropriately rescaled Matérn
+kernels converge to the Squared Exponential kernel.
+Figure 4 shows random functions drawn from GP dis-
+tributions with the above kernels.
+Theorem 5 Let D ⊂ Rd
+be compact and convex, d ∈
+N. Assume the kernel function satisfies k(x, x0
+) ≤ 1.
+1. Finite spectrum. For the d-dimensional Bayesian
+linear regression case: γT = O d log T
+
+.
+2. Exponential spectral decay. For the Squared
+Exponential kernel: γT = O (log T)d+1
+
+.
+3. Power law spectral decay. For Matérn kernels
+with ν > 1: γT = O Td(d+1)/(2ν+d(d+1))
+(log T)
+
+.
+A proof of Theorem 5 is given in the Appendix, , we
+only sketch the idea here. γT is bounded by Theo-
+rem 4 in terms the eigendecay of the kernel matrix
+KD. If D is infinite or very large, we can use the
+operator spectrum of k(x, x0
+), which likewise decays
+rapidly. For the kernels of interest here, asymptotic
+expressions for the operator eigenvalues are given
+in Seeger et al. (2008), who derived bounds on the
+information gain for fixed and random designs (in
+contrast to the worst-case information gain considered
+here, which is substantially more challenging to
+bound). The main challenge in the proof is to ensure
+the existence of discretizations DT ⊂ D, dense in the
+limit, for which tail sums B(T∗)/nT in Theorem 4 are
+close to corresponding operator spectra tail sums.
+Together with Theorems 2 and 3, this result guaran-
+tees sublinear regret of GP-UCB for any dimension
+(see Figure 1). For the Squared Exponential kernel,
+the dimension d appears as exponent of log T only, so
+that the regret grows at most as O∗
+(
+√
+T(log T)
+d+1
+2 )
+– the high degree of smoothness of the sample paths
+effectively combats the curse of dimensionality.
+6. Experiments
+We compare GP-UCB with heuristics such as the
+Expected Improvement (EI) and Most Probable
+Improvement (MPI), and with naive methods which
+choose points of maximum mean or variance only,
+both on synthetic and real sensor network data.
+For synthetic data, we sample random functions from a
+squared exponential kernel with lengthscale parameter
+0.2. The sampling noise variance σ2
+was set to 0.025 or
+5% of the signal variance. Our decision set D = [0, 1]
+is uniformly discretized into 1000 points. We run
+each algorithm for T = 1000 iterations with δ = 0.1,
+averaging over 30 trials (samples from the kernel).
+While the choice of βt as recommended by Theorem 1
+leads to competitive performance of GP-UCB, we
+find (using cross-validation) that the algorithm is
+improved by scaling βt down by a factor 5. Note that
+we did not optimize constants in our regret bounds.
+Next, we use temperature data collected from 46 sen-
+sors deployed at Intel Research Berkeley over 5 days at
+1 minute intervals, pertaining to the example in Sec-
+tion 2. We take the first two-thirds of the data set to
+compute the empirical covariance of the sensor read-
+ings, and use it as the kernel matrix. The functions f
+for optimization consist of one set of observations from
+all the sensors taken from the remaining third of the
+0 0.2 0.4 0.6 0.8 1
+−4
+−2
+0
+2
+4
+6
+(a) Bayesian Linear Regression
+0 0.2 0.4 0.6 0.8 1
+−2
+−1
+0
+1
+2
+(b) Squared Exponential
+0 0.2 0.4 0.6 0.8 1
+−2
+−1
+0
+1
+2
+(c) Matérn
+Figure 4. Sample functions drawn from a GP with linear, squared exponential and Matérn kernels (ν = 2.5.)
+0 20 40 60 80 100
+0
+0.2
+0.4
+0.6
+0.8
+1
+Iterations
+Mean
+Average
+Regret
+Var only
+Mean only
+MPI
+EI
+UCB
+(a) Squared exponential
+0 10 20 30 40
+0
+1
+2
+3
+4
+5
+Iterations
+Mean
+Average
+Regret
+Var only
+Mean only
+MPI
+EI
+UCB
+(b) Temperature data
+0 100 200 300
+0
+5
+10
+15
+20
+25
+30
+35
+Iterations
+Mean
+Average
+Regret
+EI
+MPI
+Var only
+Mean only
+UCB
+(c) Traffic data
+Figure 5. Comparison of performance: GP-UCB and various heuristics on synthetic (a), and sensor network data (b, c).
+data set, and the results (for T = 46, σ2
+= 0.5 or 5%
+noise, δ = 0.1) were averaged over 2000 possible
+choices of the objective function.
+Lastly, we take data from traffic sensors deployed along
+the highway I-880 South in California. The goal was to
+find the point of minimum speed in order to identify
+the most congested portion of the highway; we used
+traffic speed data for all working days from 6 AM to
+11 AM for one month, from 357 sensors. We again
+use the covariance matrix from two-thirds of the data
+set as kernel matrix, and test on the other third. The
+results (for T = 357, σ2
+= 4.78 or 5% noise, δ = 0.1)
+were averaged over 900 runs.
+Figure 5 compares the mean average regret incurred
+by the different heuristics and the GP-UCB algorithm
+on synthetic and real data. For temperature data,
+the GP-UCB algorithm and EI heuristic clearly
+outperform the others, and do not exhibit significant
+difference between each other. On synthetic and traf-
+fic data MPI does equally well. In summary, GP-UCB
+performs at least on par with the existing approaches
+which are not equipped with regret bounds.
+7. Conclusions
+We prove the first sublinear regret bounds for GP
+optimization with commonly used kernels (see Fig-
+ure 1), both for f sampled from a known GP and f of
+low RKHS norm. We analyze GP-UCB, an intuitive,
+Bayesian upper confidence bound based sampling rule.
+Our regret bounds crucially depend on the information
+gain due to sampling, establishing a novel connection
+between bandit optimization and experimental design.
+We bound the information gain in terms of the kernel
+spectrum, providing a general methodology for obtain-
+ing regret bounds with kernels of interest. Our exper-
+iments on real sensor network data indicate that GP-
+UCB performs at least on par with competing criteria
+for GP optimization, for which no regret bounds are
+known at present. Our results provide an interesting
+step towards understanding exploration–exploitation
+tradeoffs with complex utility functions.
+Acknowledgements
+We thank Marcus Hutter for insightful comments on
+an earlier version of this paper. This research was
+partially supported by ONR grant N00014-09-1-1044,
+NSF grant CNS-0932392, a gift from Microsoft Cor-
+poration and the Excellence Initiative of the German
+research foundation (DFG).
+References
+Abernethy, J., Hazan, E., and Rakhlin, A. An efficient
+algorithm for linear bandit optimization, 2008. COLT.
+Auer, P. Using confidence bounds for exploitation-
+exploration trade-offs. JMLR, 3:397–422, 2002.
+Auer, P., Cesa-Bianchi, N., and Fischer, P. Finite-time
+analysis of the multiarmed bandit problem. Mach.
+Learn., 47(2-3):235–256, 2002.
+Brochu, E., Cora, M., and de Freitas, N. A tutorial on
+Bayesian optimization of expensive cost functions, with
+application to active user modeling and hierarchical re-
+inforcement learning. In TR-2009-23, UBC, 2009.
+Bubeck, S., Munos, R., Stoltz, G., and Szepesvári, C. On-
+line optimization in X-armed bandits. In NIPS, 2008.
+Chaloner, K. and Verdinelli, I. Bayesian experimental de-
+sign: A review. Stat. Sci., 10(3):273–304, 1995.
+Cover, T. M. and Thomas, J. A. Elements of Information
+Theory. Wiley Interscience, 1991.
+Dani, V., Hayes, T. P., and Kakade, S. The price of bandit
+information for online optimization. In NIPS, 2007.
+Dani, V., Hayes, T. P., and Kakade, S. M. Stochastic linear
+optimization under bandit feedback. In COLT, 2008.
+Dorard, L., Glowacka, D., and Shawe-Taylor, J. Gaussian
+process modelling of dependencies in multi-armed bandit
+problems. In Int. Symp. Op. Res., 2009.
+Freedman, D. A. On tail probabilities for martingales. Ann.
+Prob., 3(1):100–118, 1975.
+Ghosal, S. and Roy, A. Posterior consistency of Gaussian
+process prior for nonparametric binary regression. Ann.
+Stat., 34(5):2413–2429, 2006.
+Grünewälder, S., Audibert, J-Y., Opper, M., and Shawe-
+Taylor, J. Regret bounds for gaussian process bandit
+problems. In AISTATS, 2010.
+Huang, D., Allen, T. T., Notz, W. I., and Zeng, N. Global
+optimization of stochastic black-box systems via sequen-
+tial kriging meta-models. J Glob. Opt., 34:441–466,
+2006.
+Jones, D. R., Schonlau, M., and Welch, W. J. Efficient
+global optimization of expensive black-box functions. J
+Glob. Opti., 13:455–492, 1998.
+Kleinberg, R., Slivkins, A., and Upfal, E. Multi-armed
+bandits in metric spaces. In STOC, pp. 681–690, 2008.
+Ko, C., Lee, J., and Queyranne, M. An exact algorithm
+for maximum entropy sampling. Ops Res, 43(4):684–691,
+1995.
+Kocsis, L. and Szepesvári, C. Bandit based monte-carlo
+planning. In ECML, 2006.
+Krause, A. and Guestrin, C. Near-optimal nonmyopic value
+of information in graphical models. In UAI, 2005.
+Lizotte, D., Wang, T., Bowling, M., and Schuurmans, D.
+Automatic gait optimization with Gaussian process re-
+gression. In IJCAI, pp. 944–949, 2007.
+McDiarmid, C. Concentration. In Probabilistiic Methods
+for Algorithmic Discrete Mathematics. Springer, 1998.
+Mockus, J. Bayesian Approach to Global Optimization.
+Kluwer Academic Publishers, 1989.
+Mockus, J., Tiesis, V., and Zilinskas, A. Toward Global
+Optimization, volume 2, chapter Bayesian Methods for
+Seeking the Extremum, pp. 117–128. 1978.
+Nemhauser, G., Wolsey, L., and Fisher, M. An analysis
+of the approximations for maximizing submodular set
+functions. Math. Prog., 14:265–294, 1978.
+Pandey, S. and Olston, C. Handling advertisements of un-
+known quality in search advertising. In NIPS. 2007.
+Rasmussen, C. E. and Williams, C. K. I. Gaussian Pro-
+cesses for Machine Learning. MIT Press, 2006.
+Robbins, H. Some aspects of the sequential design of ex-
+periments. Bul. Am. Math. Soc., 58:527–535, 1952.
+Rusmevichientong, P. and Tsitsiklis, J. N. Linearly param-
+eterized bandits. abs/0812.3465, 2008.
+Seeger, M. W., Kakade, S. M., and Foster, D. P. Infor-
+mation consistency of nonparametric Gaussian process
+methods. IEEE Tr. Inf. Theo., 54(5):2376–2382, 2008.
+Shawe-Taylor, J., Williams, C., Cristianini, N., and Kan-
+dola, J. On the eigenspectrum of the Gram matrix and
+the generalization error of kernel-PCA. IEEE Trans. Inf.
+Theo., 51(7):2510–2522, 2005.
+Srinivas, N., Krause, A., Kakade, S., and Seeger, M. Gaus-
+sian process optimization in the bandit setting: No re-
+gret and experimental design. In ICML, 2010.
+Stein, M. Interpolation of Spatial Data: Some Theory for
+Kriging. Springer, 1999.
+Vazquez, E. and Bect, J. Convergence properties of the
+expected improvement algorithm, 2007.
+Wahba, G. Spline Models for Observational Data. SIAM,
+1990.
+A. Regret Bounds for Target Function
+Sampled from GP
+In this section, we provide details for the proofs of
+Theorem 1 and Theorem 2. In both cases, the strategy
+is to show that |f(x) − µt−1(x)| ≤ β
+1/2
+t σt−1(x) for all
+t ∈ N and all x ∈ D, or in the infinite case, all x in
+a discretization of D which becomes dense as t gets
+large.
+A.1. Finite Decision Set
+We begin with the finite case, |D| < ∞.
+Lemma 5.1 Pick δ ∈ (0, 1) and set βt =
+2 log(|D|πt/δ), where
+P
+t≥1 π−1
+t = 1, πt > 0. Then,
+|f(x) − µt−1(x)| ≤ β
+1/2
+t σt−1(x) ∀x ∈ D ∀t ≥ 1
+holds with probability ≥ 1 − δ.
+Proof Fix t ≥ 1 and x ∈ D. Conditioned on yt−1 =
+(y1, . . . , yt−1), {x1, . . . , xt−1} are deterministic, and
+f(x) ∼ N(µt−1(x), σ2
+t−1(x)). Now, if r ∼ N(0, 1),
+then
+Pr{r > c} = e−c2
+/2
+(2π)−1/2
+Z
+e−(r−c)2
+/2−c(r−c)
+dr
+≤ e−c2
+/2
+Pr{r > 0} = (1/2)e−c2
+/2
+for c > 0, since e−c(r−c)
+≤ 1 for r ≥ c. Therefore,
+Pr{|f(x) − µt−1(x)| > β
+1/2
+t σt−1(x)} ≤ e−βt/2
+, using
+r = (f(x)−µt−1(x))/σt−1(x) and c = β
+1/2
+t . Applying
+the union bound,
+|f(x) − µt−1(x)| ≤ β
+1/2
+t σt−1(x) ∀x ∈ D
+holds with probability ≥ 1 − |D|e−βt/2
+. Choosing
+|D|e−βt/2
+= δ/πt and using the union bound for
+t ∈ N, the statement holds. For example, we can use
+πt = π2
+t2
+/6.
+Lemma 5.2 Fix t ≥ 1. If |f(x) − µt−1(x)| ≤
+β
+1/2
+t σt−1(x) for all x ∈ D, then the regret rt is
+bounded by 2β
+1/2
+t σt−1(xt).
+Proof By definition of xt: µt−1(xt)+β
+1/2
+t σt−1(xt) ≥
+µt−1(x∗
+) + β
+1/2
+t σt−1(x∗
+) ≥ f(x∗
+). Therefore,
+rt = f(x∗
+) − f(xt) ≤ β
+1/2
+t σt−1(xt) + µt−1(xt) − f(xt)
+≤ 2β
+1/2
+t σt−1(xt).
+Lemma 5.3 The information gain for the points se-
+lected can be expressed in terms of the predictive vari-
+ances. If fT = (f(xt)) ∈ RT
+:
+I(yT ; fT ) =
+1
+2
+XT
+t=1
+log 1 + σ−2
+σ2
+t−1(xt)
+
+.
+Proof Recall that I(yT ; fT ) = H(yT ) −
+(1/2) log |2πeσ2
+I|. Now, H(yT ) = H(yT −1) +
+H(yT |yT −1) = H(yT −1) + log(2πe(σ2
++ σ2
+t−1(xT )))/2.
+Here, we use that x1, . . . , xT are deterministic con-
+ditioned on yT −1, and that the conditional variance
+σ2
+T −1(xT ) does not depend on yT −1. The result fol-
+lows by induction.
+Lemma 5.4 Pick δ ∈ (0, 1) and let βt be defined as in
+Lemma 5.1. Then, the following holds with probability
+≥ 1 − δ:
+XT
+t=1
+r2
+t ≤ βT C1I(yT ; fT ) ≤ C1βT γT ∀T ≥ 1,
+where C1 := 8/ log(1 + σ−2
+) ≥ 8σ2
+.
+Proof By Lemma 5.1 and Lemma 5.2, we have that
+{r2
+t ≤ 4βtσ2
+t−1(xt) ∀t ≥ 1} with probability ≥ 1 − δ.
+Now, βt is nondecreasing, so that
+4βtσ2
+t−1(xt) ≤ 4βT σ2
+(σ−2
+σ2
+t−1(xt))
+≤ 4βT σ2
+C2 log(1 + σ−2
+σ2
+t−1(xt))
+with C2 = σ−2
+/ log(1 + σ−2
+) ≥ 1, since
+s2
+≤ C2 log(1 + s2
+) for s ∈ [0, σ−2
+], and
+σ−2
+σ2
+t−1(xt) ≤ σ−2
+k(xt, xt) ≤ σ−2
+. Noting that
+C1 = 8σ2
+C2, the result follows by plugging in the
+representation of Lemma 5.3.
+Finally, Theorem 1 is a simple consequence of
+Lemma 5.4, since R2
+T ≤ T
+PT
+t=1 r2
+t by the Cauchy-
+Schwarz inequality.
+A.2. General Decision Set
+Theorem 2 extends the statement of Theorem 1 to
+the general case of D ⊂ Rd
+compact. We cannot
+expect this generalization to work without any as-
+sumptions on the kernel k(x, x0
+). For example, if
+k(x, x0
+) = e−kx−x0
+k
+(Ornstein-Uhlenbeck), while sam-
+ple paths f are a.s. continuous, they are still very er-
+ratic: f is a.s. nondifferentiable almost everywhere,
+and the process comes with independent increments, a
+stationary variant of Brownian motion. The additional
+assumption on k in Theorem 2 is rather mild and is
+satisfied by several common kernels, as discussed in
+Section 4.
+Recall that the finite case proof is based on Lemma 5.1
+paving the way for Lemma 5.2. However, Lemma 5.1
+does not hold for infinite D. First, let us observe that
+we have confidence on all decisions actually chosen.
+Lemma 5.5 Pick δ ∈ (0, 1) and set βt = 2 log(πt/δ),
+where
+P
+t≥1 π−1
+t = 1, πt > 0. Then,
+|f(xt) − µt−1(xt)| ≤ β
+1/2
+t σt−1(xt) ∀t ≥ 1
+holds with probability ≥ 1 − δ.
+Proof Fix t ≥ 1 and x ∈ D. Conditioned on
+yt−1 = (y1, . . . , yt−1), {x1, . . . , xt−1} are determin-
+istic, and f(x) ∼ N(µt−1(x), σ2
+t−1(x)). As before,
+Pr{|f(xt) − µt−1(xt)| > β
+1/2
+t σt−1(xt)} ≤ e−βt/2
+.
+Since e−βt/2
+= δ/πt and using the union bound for
+t ∈ N, the statement holds.
+Purely for the sake of analysis, we use a set of dis-
+cretizations Dt ⊂ D, where Dt will be used at time
+t in the analysis. Essentially, we use this to obtain a
+valid confidence interval on x∗
+. The following lemma
+provides a confidence bound for these subsets.
+Lemma 5.6 Pick δ ∈ (0, 1) and set βt =
+2 log(|Dt|πt/δ), where
+P
+t≥1 π−1
+t = 1, πt > 0. Then,
+|f(x) − µt−1(x)| ≤ β
+1/2
+t σt−1(x) ∀x ∈ Dt, ∀t ≥ 1
+holds with probability ≥ 1 − δ.
+Proof The proof is identical to that in Lemma 5.1,
+except now we use Dt at each timestep.
+Now by assumption and the union bound, we have that
+Pr {∀j, ∀x ∈ D, |∂f/(∂xj)| < L} ≥ 1 − dae−L2
+/b2
+.
+which implies that, with probability greater than 1 −
+dae−L2
+/b2
+, we have that
+∀x ∈ D, |f(x) − f(x0
+)| ≤ Lkx − x0
+k1 . (9)
+This allows us to obtain confidence on x?
+as follows.
+Now let us choose a discretization Dt of size (τt)d
+so
+that for all x ∈ Dt
+kx − [x]tk1 ≤ rd/τt
+where [x]t denotes the closest point in Dt to x. A suf-
+ficient discretization has each coordinate with τt uni-
+formly spaced points.
+Lemma 5.7 Pick δ ∈ (0, 1) and set βt =
+2 log(2πt/δ) + 4d log(dtbr
+p
+log(2da/δ)), where
+P
+t≥1 π−1
+t = 1, πt > 0. Let τt = dt2
+br
+p
+log(2da/δ)
+Let [x∗
+]t denotes the closest point in Dt to x∗
+. Hence,
+Then,
+|f(x∗
+) − µt−1([x∗
+]t)| ≤ β
+1/2
+t σt−1([x∗
+]t) +
+1
+t2
+∀t ≥ 1
+holds with probability ≥ 1 − δ.
+Proof Using (9), we have that with probability
+greater than 1 − δ/2,
+∀x ∈ D, |f(x) − f(x0
+)| ≤ b
+p
+log(2da/δ)kx − x0
+k1 .
+Hence,
+∀x ∈ Dt, |f(x) − f([x]t)| ≤ rdb
+p
+log(2da/δ)/τt .
+Now by choosing τt = dt2
+br
+p
+log(2da/δ), we have that
+∀x ∈ Dt, |f(x) − f([x]t)| ≤
+1
+t2
+This implies that |Dt| = (dt2
+br
+p
+log(2da/δ))d
+. Using
+δ/2 in Lemma 5.6, we can apply the confidence bound
+to [x∗
+]t (as this lives in Dt) to obtain the result.
+Now we are able to bound the regret.
+Lemma 5.8 Pick δ ∈ (0, 1) and set βt =
+2 log(4πt/δ) + 4d log(dtbr
+p
+log(4da/δ)), where
+P
+t≥1 π−1
+t = 1, πt > 0. Then, with probability greater
+than 1 − δ, for all t ∈ N, the regret is bounded as
+follows:
+rt ≤ 2β
+1/2
+t σt−1(xt) +
+1
+t2
+.
+Proof We use δ/2 in both Lemma 5.5 and Lemma 5.7,
+so that these events hold with probability greater
+than 1 − δ. Note that the specification of βt in the
+above lemma is greater than the specification used in
+Lemma 5.5 (with δ/2), so this choice is valid.
+By definition of xt: µt−1(xt) + β
+1/2
+t σt−1(xt) ≥
+µt−1([x∗
+]t)+β
+1/2
+t σt−1([x∗
+]t). Also, by Lemma 5.7, we
+have that µt−1([x∗
+]t)+β
+1/2
+t σt−1([x∗
+]t)+1/t2
+≥ f(x∗
+),
+which implies µt−1(xt)+β
+1/2
+t σt−1(xt) ≥ f(x∗
+)−1/t2
+.
+Therefore,
+rt = f(x∗
+) − f(xt)
+≤ β
+1/2
+t σt−1(xt) + 1/t2
++ µt−1(xt) − f(xt)
+≤ 2β
+1/2
+t σt−1(xt) + 1/t2
+.
+which completes the proof.
+Now we are ready to complete the proof of Theorem 2.
+As shown in the proof of Lemma 5.4, we have that with
+probability greater than 1 − δ,
+XT
+t=1
+4βtσ2
+t−1(xt) ≤ C1βT γT ∀T ≥ 1,
+so that by Cauchy-Schwarz:
+XT
+t=1
+2β
+1/2
+t σt−1(xt) ≤
+p
+C1TβT γT ∀T ≥ 1,
+Hence,
+XT
+t=1
+rt ≤
+p
+C1TβT γT + π2
+/6 ∀T ≥ 1,
+(since
+P
+1/t2
+= π2
+/6). Theorem 2 now follows.
+Finally, we now discuss the additional assumption on
+k in Theorem 2. For samples f of the GP, consider
+partial derivatives ∂f/(∂xj) of this sample path for
+j = 1, . . . , d. Theorem 5 of Ghosal & Roy (2006)
+states that if derivatives up to fourth order exists
+for (x, x0
+) 7→ k(x, x0
+), then f is almost surely con-
+tinuously differentiable, with ∂f/(∂xj) distributed as
+Gaussian processes again. Moreover, there are con-
+stants a, bj > 0 such that
+Pr
+
+sup
+x∈D
+|∂f/(∂xj)| > L
+
+≤ ae−bj L2
+. (10)
+Picking L = [log(da2/δ)/ minj bj]1/2
+, we have that
+ae−bj L2
+≤ δ/(2d) for all j = 1, . . . , d, so that for
+K1 = d1/2
+L, by the mean value theorem, we have
+Pr{|f(x)−f(x0
+)| ≤ K1kx−x0
+k ∀ x, x0
+∈ D} ≥ 1−δ/2.
+Also, note that K1 = O((log δ−1
+)1/2
+).
+This statement is about the joint distribution of f(·)
+and its partial derivatives w.r.t. each component. For
+a certain event in this sample space, all ∂f/(∂xj) ex-
+ist, are continuous, and the complement of (10) holds
+for all j. Theorem 5 of Ghosal & Roy (2006), together
+with the union bound, implies that this event has prob-
+ability ≥ 1 − δ/2. Derivatives up to fourth order exist
+for the Gaussian covariance function, and for Matérn
+kernels with ν > 2 (Stein, 1999).
+B. Regret Bound for Target Function
+in RKHS
+In this section, we detail a proof of Theorem 3. Recall
+that in this setting, we do not know the generator of
+the target function f, but only a bound on its RKHS
+norm kfkk.
+Recall the posterior mean function µT (·) and posterior
+covariance function kT (·, ·) from Section 2, conditioned
+on data (xt, yt), t = 1, . . . , T. It is easy to see that the
+RKHS norm corresponding to kT is given by
+kfk2
+kT
+= kfk2
+k + σ−2
+XT
+t=1
+f(xt)2
+.
+This implies that Hk(D) = HkT
+(D) for any T, while
+the RKHS inner products are different: kfkkT
+≥ kfkk.
+Since hf(·), kT (·, x)ikT
+= f(x) for any f ∈ HkT
+(D) by
+the reproducing property, then
+|µt(x) − f(x)| ≤ kT (x, x)1/2
+kµt − fkkT
+= σT (x)kµt − fkkT
+(11)
+by the Cauchy-Schwarz inequality.
+Compared to our other results, Theorem 3 is an agnos-
+tic statement, in that the assumptions the Bayesian
+UCB algorithm bases its predictions on differ from
+how f and data yt are generated. First, f is not
+drawn from a GP, but can be an arbitrary function
+from Hk(D). Second, while the UCB method assumes
+that the noise εt = yt − f(xt) is drawn independently
+from N(0, σ2
+), the true sequence of noise variables εt
+can be a uniformly bounded martingale difference se-
+quence: εt ≤ σ for all t ∈ N. All we have to do in order
+to lift the proof of Theorem 1 to the agnostic setting
+is to establish an analogue to Lemma 5.1, by way of
+the following concentration result.
+Theorem 6 Let δ ∈ (0, 1). Assume the noise vari-
+ables εt are uniformly bounded by σ. Define:
+βt = 2kfk2
+k + 300γt ln3
+(t/δ),
+Then
+Pr
+n
+∀T, ∀x ∈ D, |µT (x) − f(x)| ≤ β
+1/2
+T +1σT (x)
+o
+≥ 1−δ.
+B.1. Concentration of Martingales
+In our analysis, we use the following Bernstein-type
+concentration inequality for martingale differences,
+due to Freedman (1975) (see also Theorem 3.15 of Mc-
+Diarmid 1998).
+Theorem 7 (Freedman) Suppose X1, . . . , XT is a
+martingale difference sequence, and b is an uniform
+upper bound on the steps Xi. Let V denote the sum of
+conditional variances,
+V =
+Xn
+i=1
+Var (Xi | X1, . . . , Xi−1).
+Then, for every a, v > 0,
+Pr
+nX
+Xi ≥ a and V ≤ v
+o
+≤ exp
+
+−a2
+2v + 2ab/3
+
+.
+B.2. Proof of Theorem 6
+We will show that:
+Pr
+
+∀T, kµT − fk2
+kT
+≤ βT +1 ≥ 1 − δ.
+Theorem 6 then follows from (11). Recall that εt =
+yt − f(xt). We will analyze the quantity ZT =
+kµT − fk2
+kT
+, measuring the error of µT as approxi-
+mation to f under the RKHS norm of HkT
+(D). The
+following lemma provides the connection with the in-
+formation gain. This lemma is important since our
+concentration argument is an inductive argument —
+roughly speaking, we condition on getting concentra-
+tion in the past, in order to achieve good concentration
+in the future.
+Lemma 7.1 We have that
+XT
+t=1
+min{σ−2
+σ2
+t−1(xt), α} ≤
+2α
+log(1 + α)
+γT , α > 0.
+Proof We have that min{r, α} ≤ (α/ log(1 +
+α)) log(1+r). The statement follows from Lemma 5.3.
+The next lemma bounds the growth of ZT . It is for-
+mulated in terms of normalized quantities: e
+εt = εt/σ,
+e
+f = f/σ, e
+µt = µt/σ, e
+σt = σt/σ. Also, to ease nota-
+tion, we will use µt−1, σt−1 as shorthand for µt−1(xt),
+σt−1(xt).
+Lemma 7.2 For all T ∈ N,
+ZT ≤ kfk2
+k + 2
+XT
+t=1
+e
+εt
+e
+µt−1 − e
+f(xt)
+1 + e
+σ2
+t−1
++
+XT
+t=1
+e
+ε2
+t
+e
+σ2
+t−1
+1 + e
+σ2
+t−1
+.
+Proof If αt = (Kt + σ2
+I)−1
+yt, then µt(x) =
+αT
+t kt(x). Then, hµT , fik = fT
+T αT , kµT k2
+k =
+yT
+T αT − σ2
+kαT k2
+. Moreover, for t ≤ T, µT (xt) =
+δT
+t KT (KT + σ2
+I)−1
+yT = yt − σ2
+αt. Since ZT =
+kµT −fkk +σ−2
+P
+t≤T (µT (xt)−f(xt))2
+, we have that
+ZT = kfk2
+k − 2fT
+T αT + yT
+T αT − σ2
+kαT k2
++ σ−2
+XT
+t=1
+(εt − σ2
+αt)2
+= kfk2
+k
+− yT
+T (KT + σ2
+I)−1
+yT + σ−2
+kεT k2
+.
+Now, −yT
+T (KT +σ2
+I)−1
+yT
+.
+= 2 log P(yT ), where “
+.
+=”
+means that we drop determinant terms, thus con-
+centrate on quadratic functions. Since log P(yT ) =
+P
+t log P(yt|y<t) =
+P
+t log N(yt|µt−1(xt), σ2
+t−1(xt) +
+σ2
+), we have that
+− yT
+T (KT + σ2
+I)−1
+yT = −
+X
+t
+(yt − µt−1)2
+σ2 + σ2
+t−1
+= 2
+X
+t
+εt
+µt−1 − f(xt)
+σ2 + σ2
+t−1
+−
+X
+t
+ε2
+t e
+σ2
+t−1
+σ2 + σ2
+t−1
+− R
+with R =
+P
+t(µt−1 − f(xt))2
+/(σ2
++ σ2
+t−1) ≥ 0.
+Dropping −R and changing to normalized quantities
+concludes the proof.
+We now define a useful martingale difference sequence.
+First, it is convenient to define an “escape event” ET
+as:
+ET = I{Zt ≤ βt+1 for all t ≤ T}
+where I{·} is the indicator function. Define the random
+variables Mt by
+Mt = 2e
+εtEt−1
+e
+µt−1 − e
+f(xt)
+1 + e
+σ2
+t−1
+.
+Now, since e
+εt is a martingale difference sequence with
+respect to the histories H<t and Mt/e
+εt is determinis-
+tic given H<t, Mt is a martingale difference sequence
+as well. Next, we show that with high probability,
+the associated martingale
+PT
+t=1 Mt does not grow too
+large.
+Lemma 7.3 Given δ ∈ (0, 1) and βt as defined in in
+Theorem 6, we have that
+Pr
+(
+∀T,
+T
+X
+t=1
+Mt ≤ βT +1/2
+)
+≥ 1 − δ,
+The proof is given below in Section B.3. Equipped
+with this lemma, we can prove Theorem 6.
+Proof [of Theorem 6] It suffices to show that the high-
+probability event described in Lemma 7.3 is contained
+in the support of ET for every T. We prove the latter
+by induction on T.
+By Lemma 7.2 and the definition of β1, we know that
+Z0 ≤ kfkk ≤ β1. Hence E0 = 1 always. Now suppose
+the high-probability event of Lemma 7.3 holds, in par-
+ticular
+PT
+t=1 Mt ≤ βT +1/2. For the inductive hypoth-
+esis, assume ET −1 = 1. Using this and Lemma 7.2:
+ZT ≤ kfk2
+k + 2
+T
+X
+t=1
+e
+εt(e
+µt−1 − e
+f(xt))
+1 + e
+σ2
+t−1
++
+T
+X
+t=1
+e
+ε2
+t e
+σ2
+t−1
+1 + e
+σ2
+t−1
+= kfk2
+k +
+T
+X
+t=1
+Mt +
+T
+X
+t=1
+e
+ε2
+t
+e
+σ2
+t−1
+1 + e
+σ2
+t−1
+≤ kfk2
+k + βT +1/2 +
+T
+X
+t=1
+min{e
+σ2
+t−1, 1}
+≤ kfk2
+k + βT +1/2 + (2/ log 2)γT ≤ βT +1.
+The equality in the second step uses the inductive
+hypothesis. Thus we have shown ET = 1, completing
+the induction.
+B.3. Concentration
+What remains to be shown is Lemma 7.3. While the
+step sizes |Mt| are uniformly bounded, a standard ap-
+plication of the Hoeffding-Azuma inequality leads to
+a bound of T3/4
+, too large for our purpose. We use
+the more specific Theorem 7 instead, which requires
+to control the conditional variances rather than the
+marginal variances which can be much larger.
+Proof [of Lemma 7.3] Let us first obtain upper bounds
+on the step sizes of our martingale.
+|Mt| = 2|e
+εt|Et−1
+|e
+µt−1 − e
+f(xt)|
+1 + e
+σ2
+t−1
+≤ 2|e
+εt|Et−1
+β
+1/2
+t e
+σt−1
+1 + e
+σ2
+t−1
+≤ 2|e
+εt|Et−1β
+1/2
+t min{e
+σt−1, 1/2}, (12)
+where the first inequality follows from the definition
+of Et. Moreover, r/(1 + r2
+) ≤ min{r, 1/2} for r ≥ 0.
+Therefore, |Mt| ≤ β
+1/2
+T , since |e
+εt| ≤ 1 and βt in nonde-
+creasing. Next, we bound the sum of the conditional
+variances of the martingale:
+VT :=
+XT
+t=1
+Var (Mt | M1 . . . Mt−1)
+≤
+XT
+t=1
+4|e
+εt|2
+Et−1βt min{e
+σ2
+t−1, 1/4}
+≤ 4βT
+XT
+t=1
+Et−1 min{e
+σ2
+t−1, 1/4} |e
+εt| ≤ 1
+≤ 9βT γT .
+In the last line, we used Lemma 7.1 with α = 1/4, not-
+ing that 8α/ log(1 + α) ≤ 9. Since we have established
+that the sum of conditional variances, VT , is always
+bounded by 9βT γT , we can apply Theorem 7 with pa-
+rameters a = βT +1/2, b = β
+1/2
+T +1 and v = 9βT γT to
+get
+Pr
+XT
+t=1
+Mt ≥ βT +1/2
+
+= Pr
+XT
+t=1
+Mt ≥ βT +1/2 and VT ≤ 9βT γT
+
+≤ exp
+−(βT +1/2)2
+2(9βT γT ) + 2
+3 (βT +1/2)β
+1/2
+T +1
+!
+= exp
+−βT +1
+72γT + 4
+3 β
+1/2
+T +1
+!
+≤ max
+(
+exp
+
+−βT +1
+144γT
+
+, exp
+−3β
+1/2
+T +1
+8
+!)
+.
+Note that our choice of βT +1 satisfies:
+max
+n
+144γT log(T2
+/δ), (8/3) log(T2
+/δ)
+2
+o
+≤ βT +1.
+Therefore, the previous probability is bounded by
+δ/T2
+, whereas the last inequality follows from the def-
+inition of βT +1. With a final application of the union
+bound:
+Pr
+XT
+t=1
+Mt ≥ βT +1/2 for some T
+
+≤
+X
+T ≥1
+Pr
+XT
+t=1
+Mt ≥ βT +1/2
+
+≤
+X
+T ≥2
+δ/T2
+≤ δ(π2
+/6 − 1) ≤ δ,
+completing the proof of Lemma 7.3.
+C. Bounds on Information Gain
+In this section, we show how to bound γT , the max-
+imum information gain after T rounds, for compact
+D ⊂ Rd
+(assumptions of Theorem 2) and several com-
+monly used covariance functions. In this section, we
+assume4
+that k(x, x) = 1 for all x ∈ D.
+The plan of attack is as follows. First, we note that the
+argument of γT , I(yA; fA) is a submodular function,
+so γT can be bounded by the value obtained by greedy
+maximization. Next, we use a discretization DT ⊂ D
+with nT = |DT | = Tτ
+with nearest neighbour distance
+o(1), consider the kernel matrix KDT
+∈ RnT ×nT
+, and
+bound γT by an expression involving the eigenvalues
+{λ̂t} of this matrix, which is done by a further re-
+laxation of the greedy procedure. Finally, we bound
+this empirical expression in terms of the kernel opera-
+tor eigenvalues of k w.r.t. the uniform distribution on
+D. Asymptotic expressions for the latter are reviewed
+in Seeger et al. (2008), which we plug in to obtain
+our results. A key step in this argument is to ensure
+the existence of a discretization DT , for which tails
+of the empirical spectrum can be bounded by tails of
+the process spectrum. We will invoke the probabilistic
+method for that.
+C.1. Greedy Maximization and Discretization
+In this section, we fix T ∈ N and assume the existence
+of a discretization DT ⊂ D, nT = |DT | on the order
+of Tτ
+, such that:
+∀x ∈ D ∃[x]T ∈ DT : kx − [x]T k = O(T−τ/d
+). (13)
+We come back to the choice of DT below. We restrict
+the information gain to subsets A ⊂ DT :
+γ̃T = max
+A⊂DT ,|A|=T
+I(yA; fA).
+Of course, γ̃T ≤ γT , but we can bound the slack.
+4
+Without loss in generality. We use this assumption
+below to ensure that n−1
+T trKDT =
+R
+k(x, x) dx. If k(x, x)
+is not constant, this is approximately true by the law of
+large numbers, and our result below remains valid.
+Lemma 7.4 Under the assumptions of Theorem 2,
+the information gain FT ({xt}) = (1/2) log |I +
+σ−2
+K{xt}| is uniformly Lipschitz-continuous in each
+component xt ∈ D.
+Proof The assumptions of Theorem 2 imply that
+the kernel K(x, x0
+) is continuously differentiable.
+The result follows from the fact that FT ({xt}) is
+continuously differentiable in the kernel matrix K{xt}.
+Lemma 7.5 Let DT be a discretization of D such that
+(13) holds. Under the assumptions of Theorem 2, we
+have that
+0 ≤ γT − γ̃T = O(T1−τ/d
+).
+Proof Fix T ∈ N, and let A = {x1, . . . , xT } be a
+maximizer for γT . Consider neighbours [xt]T ∈ DT
+according to (13), [A]T = {[xt]T }. Then,
+0 ≤ γT −γ̃T ≤ γT −I(y[A]T
+; f[A]T
+) = FT (A)−FT ([A]T ),
+where FT ({xt}) = (1/2) log |I + σ−2
+K{xt}|. By
+Lemma 7.4, FT is uniformly Lipschitz-continuous
+in each component, so that |γT − I(y[A]T
+; f[A]T
+)| =
+O(T maxt kxt − [xt]T k) = O(T1−τ/d
+) by (13) and the
+mean value theorem.
+We concentrate on γ̃T in the sequel. Let KDT
+=
+[k(x, x0
+)]x,x0∈DT
+be the kernel matrix over the en-
+tire DT , and KDT
+= U Λ̂UT
+its eigendecomposi-
+tion, with λ̂1 ≥ λ̂2 ≥ · · · ≥ 0 and U = [u1 u2 . . . ]
+orthonormal. Here, if T > nT , define λ̂t = 0 for
+t = nT + 1, . . . , T. Information gain maximization
+over a finite DT can be described in terms of a sim-
+ple linear-Gaussian model over the unknown f ∈ RnT
+,
+with prior P(f ) = N(0, KDT
+) and likelihood poten-
+tials P(yt|f ) = N(vT
+t f , σ2
+) with unit-norm features,
+kvtk = 1. With the following lemma, we upper-bound
+γ̃T by way of two relaxations.
+Lemma 7.6 For any T ≥ 1, we have that
+γ̃T ≤
+1/2
+1 − e−1
+max
+m1,...,mT
+XT
+t=1
+log(1 + σ−2
+mtλ̂t),
+subject to mt ∈ N,
+P
+t mT = T, where λ̂1 ≥ λ̂2 ≥ . . .
+is the spectrum of the kernel matrix KDT
+. Here, if
+T > nT , then mt = 0 for t > nT .
+Proof As shown by Krause & Guestrin (2005),
+the function F(A) = I(yA; f ) is submodular. In
+the particular case considered here, this can be seen
+as follows: F(A) = H(yA) − H(yA | f ), where
+the entropy H(yA) is a (not-necessarily monotonic)
+submodular function in A, and since the noise is
+conditionally independent given f , H(yA | f ) is
+an additive (modular) function in A. Subtracting
+a modular function preserves submodularity, thus
+F(A) is submodular. Furthermore, the information
+gain is monotonic in A (i.e., F(A) ≤ F(B) whenever
+A ⊆ B) (Cover & Thomas, 1991). Thus, we can
+apply the result of Nemhauser et al. (1978)5
+which
+guarantees that γ̃T is upper-bounded by 1/(1 − 1/e)
+times the value the greedy maximization algorithm
+attains. The latter chooses features of the form
+vt = δxt = [I{x=xt}] in each round, xt ∈ DT . We
+upper-bound the greedy maximum once more by
+relaxing these constraints to kvtk = 1 only. In the
+remainder of the proof, we concentrate on this relaxed
+greedy procedure. Suppose that up to round t, it chose
+v1, . . . , vt−1. The posterior P(f |yt−1) has inverse
+covariance matrix Σ−1
+t−1 = K−1
+DT
++ σ−2
+V t−1V T
+t−1,
+V t−1 = [v1 . . . vt−1], and the greedy procedure
+selects v so to maximize the variance vT
+Σt−1v: the
+eigenvector corresponding to Σt−1’s largest eigenvalue
+(by the Rayleigh-Ritz theorem). Since Σ0 = KDT
+,
+then v1 = u1. Moreover, if all vt0 , t0
+< t, have
+been chosen among U ’s columns, then by the inverse
+covariance expression just given, KDT
+and Σt−1 have
+the same eigenvectors, so that vt is a column of U as
+well. For example, if vt = uj, then comparing Σt−1
+and Σt, all eigenvalues other than the j-th remain
+the same, while the latter is shrunk. Therefore,
+after T rounds of the relaxed greedy procedure:
+vt ∈ {u1, . . . , umin{T,nT }}, t = 1, . . . , T: at most the
+leading T eigenvectors of KDT
+can have been selected
+(possibly multiple times). If mt denotes the number
+that the t-th column of U has been selected, we ob-
+tain the theorem statement by a final bounding step.
+C.2. From Empirical to Process Eigenvalues
+The final step will be to relate the empirical spec-
+trum {λ̂t} to the kernel operator spectrum. Since
+log(1 + σ−2
+mtλ̂t) ≤ σ−2
+mtλ̂t in Theorem 7.6, we will
+mainly be interested in relating the tail sums of the
+spectra. Let µ(x) = V(D)−1
+I{x∈D} be the uniform
+distribution on D, V(D) =
+R
+x∈D
+dx, and assume that
+k is continuous. Note that
+R
+k(x, x)µ(x) dx = 1 by
+our assumption k(x, x) = 1, so that k is Hilbert-
+5
+While the result of Nemhauser et al. (1978) is stated
+in terms of finite sets, it extends to infinite sets as long as
+the greedy selection can be implemented efficiently.
+Schmidt on L2(µ). Then, Mercer’s theorem (Wahba,
+1990) states that the corresponding kernel operator
+has a discrete eigenspectrum {(λs, φs(·))}, and
+k(x, x0
+) =
+X
+s≥1
+λsφs(x)φs(x0
+),
+where λ1 ≥ λ2 ≥ · · · ≥ 0, and Eµ[φs(x)φt(x)] =
+δs,t. Moreover,
+P
+s≥1 λ2
+s < ∞, and the expan-
+sion of k converges absolutely and uniformly on D ×
+D. Note that
+P
+s≥1 λs =
+P
+s≥1 λs Eµ[φs(x)2
+] =
+R
+K(x, x)µ(x) dx = 1. In order to proceed from The-
+orem 7.6, we have to pick a discretization DT for which
+(13) holds, and for which
+P
+t>T∗
+λ̂t is not much larger
+than
+P
+t>T∗
+λt. With the following lemma, we deter-
+mine sizes nT for which such discretizations exist.
+Lemma 7.7 Fix T ∈ N, δ > 0 and ε > 0. There
+exists a discretization DT ⊂ D of size
+nT = V(D)(ε/
+√
+d)−d
+[log(1/δ)+d log(
+√
+d/ε)+log V(D)]
+which fulfils the following requirements:
+• ε-denseness: For any x ∈ D, there exists [x]T ∈
+DT such that kx − [x]T k ≤ ε.
+• If spec(KDT
+) = {λ̂1 ≥ λ̂2 ≥ . . . }, then for any
+T∗ = 1, . . . , nT :
+n−1
+T
+XT∗
+t=1
+λ̂t ≥
+XT∗
+t=1
+λt − δ.
+Proof First, if we draw nT samples x̃j ∼ µ(x) in-
+dependently at random, then DT = {x̃j} is ε-dense
+with probability ≥ 1 − δ. Namely, cover D with
+N = V(D)(ε/
+√
+d)−d
+hypercubes of sidelength ε/
+√
+d,
+within which the maximum Euclidean distance is ε.
+The probability of not hitting at least one cell is upper-
+bounded by N(1 − 1/N)nT
+. Since log(1 − 1/N) ≤
+−1/N, this is upper-bounded by δ if nT ≥ N log(N/δ).
+Now, let S = n−1
+T
+PT∗
+t=1 λ̂t. Shawe-Taylor et al.
+(2005) show that E[S] ≥
+PT∗
+t=1 λt. If C is the
+event {DT is ε−dense }, then Pr(C) ≥ 1 − δ. Since
+S ≤ n−1
+T trKDT
+= 1 in any case, we have that
+E[S|C] ≥ E[S] − Pr(Cc
+) ≥
+PT∗
+t=1 λt − δ. By the
+probabilistic method, there must exist some DT for
+which C and the latter inequality holds.
+The following lemma, the equivalent of Theorem 4 in
+the context here, is a direct consequence of Lemma 7.6.
+Lemma 7.8 Let DT be some discretization of D,
+nT = |DT |. Then, for any T∗ = 1, . . . , min{T, nT }:
+γ̃T ≤
+1/2
+1 − e−1
+max
+r=1,...,T
+
+T∗ log(rnT /σ2
+)
++ (T − r)σ−2
+XnT
+t=T∗+1
+λ̂t
+
+.
+Proof We split the right hand side in Lemma 7.6
+at t = T∗. Let r =
+P
+t≤T∗
+mt. For t ≤ T∗:
+log(1 + mtλ̂t/σ2
+) ≤ log(rnT /σ2
+), since λ̂t ≤ nT . For
+t > T∗: log(1+mtλ̂t/σ2
+) ≤ mtλ̂t/σ2
+≤ (T−r)λ̂t/σ2
+.
+The following theorem describes our “recipe” for ob-
+taining bounds on γT for a particular kernel k, given
+that tail bounds on Bk(T∗) =
+P
+s>T∗
+λs are known.
+Theorem 8 Suppose that D ⊂ Rd
+is compact, and
+k(x, x0
+) is a covariance function for which the ad-
+ditional assumption of Theorem 2 holds. Moreover,
+let Bk(T∗) =
+P
+s>T∗
+λs, where {λs} is the operator
+spectrum of k with respect to the uniform distribution
+over D. Pick τ > 0, and let nT = C4Tτ
+(log T) with
+C4 = 2V(D)(2τ + 1). Then, the following bound holds
+true:
+γT ≤
+1/2
+1 − e−1
+max
+r=1,...,T
+
+T∗ log(rnT /σ2
+)
++ C4σ−2
+(1 − r/T)(log T) Tτ+1
+Bk(T∗) + 1
+
++ O(T1−τ/d
+)
+for any T∗ ∈ {1, . . . , nT }.
+Proof Let ε = d1/2
+T−τ/d
+and δ = T−(τ+1)
+.
+Lemma 7.7 provides the existence of a dis-
+cretization DT of size nT which is ε-dense,
+and for which n−1
+T
+PT∗
+t=1 λ̂t ≥
+PT∗
+t=1 λt − δ.
+Since n−1
+T
+PnT
+t=1 λ̂t = 1 =
+P
+t≥1 λt, then
+P
+t>T∗
+λ̂t ≤ Bk(T∗) + δ. The statement follows
+by using Lemma 7.8 with these bounds, and finally
+employing Lemma 7.5.
+C.3. Proof of Theorem 5
+In this section, we instantiate Theorem 8 in order to
+obtain bounds on γT for Squared Exponential and
+Matérn kernels, results which are summarized in The-
+orem 5.
+Squared Exponential Kernel
+For the Squared Exponential kernel k, Bk(T∗) is given
+by Seeger et al. (2008). While µ(x) was Gaussian
+there, the same decay rate holds for λs w.r.t. uniform
+µ(x), while constants might change. In hindsight, it
+turns out that τ = d is the optimal choice for the
+discretization size, rendering the second term in The-
+orem 5 to be O(1), which is subdominant and will be
+neglected in the sequel. We have that λs ≤ cBs1/d
+with B < 1. Following their analysis,
+Bk(T∗) ≤ c(d!)α−d
+e−β
+Xd−1
+j=0
+(j!)−1
+βj
+,
+where α = − log B, β = αT
+1/d
+∗ . Therefore, Bk(T∗) =
+O(e−β
+βd−1
+), β = αT
+1/d
+∗ .
+We have to pick T∗ such that e−β
+is not much larger
+than (TnT )−1
+. Suppose that T∗ = [log(TnT )/α]d
+, so
+that e−β
+= (TnT )−1
+, β = log(TnT ). The bound be-
+comes
+max
+r=1,...,T
+
+T∗ log(rnT /σ2
+)
++ σ−2
+(1 − r/T)(C5βd−1
++ C4(log T))
+
+with nT = C4Td
+(log T). The first part dominates,
+so that r = T and γT = O([log(Td+1
+(log T))]d+1
+) =
+O((log T)d+1
+). This should be compared with
+E[I(yT ; fT )] = O((log T)d+1
+) given by Seeger et al.
+(2008), where the xt are drawn independently from
+a Gaussian base distribution. At least restricted to
+a compact set D, we obtain the same expression to
+leading order for max{xt} I(yT ; fT ).
+Matérn Kernels
+For Matérn kernels k with roughness parameter ν,
+Bk(T∗) is given by Seeger et al. (2008) for the uni-
+form base distribution µ(x) on D. Namely, λs ≤
+cs−(2ν+d)/d
+for almost all s ∈ N, and Bk(T∗) =
+O(T
+1−(2ν+d)/d
+∗ ). To match terms in the γ̃T bound,
+we choose T∗ = (TnT )d/(2ν+d)
+(log(TnT ))κ
+(κ chosen
+below), so that the bound becomes
+max
+r=1,...,T
+
+T∗ log(rnT /σ2
+) + σ−2
+(1 − r/T)
+× (C5T∗(log(TnT ))−κ(2ν+d)/d
++ C4(log T))
+
++ O(T1−τ/d
+)
+with nT = C4Tτ
+(log T). For κ = −d/(2ν + d), we ob-
+tain that the maximum over r is O(T∗ log(TnT )) =
+O(T(τ+1)d/(2ν+d)
+(log T)). Finally, we choose τ =
+2νd/(2ν+d(d+1)) to match this term with O(T1−τ/d
+).
+Plugging this in, we have γT = O(T1−2η
+(log T)),
+η = ν
+2ν+d(d+1) . Together with Theorem 2 (for ν > 2),
+we have that RT = O∗
+(T1−η
+) (suppressing log fac-
+tors): for any ν > 2 and any dimension d, the GP-
+UCB algorithm is guaranteed to be no-regret in this
+case with arbitrarily high probability.
+How does this bound compare to the bound on
+E[I(yT ; fT )] given by Seeger et al. (2008)? Here, γT =
+O(Td(d+1)/(2ν+d(d+1))
+(log T)), while E[I(yT ; fT )] =
+O(Td/(2ν+d)
+(log T)2ν/(2ν+d)
+).
+Linear Kernel
+For linear kernels k(x, x0
+) = xT
+x0
+, x ∈ Rd
+with kxk ≤
+1, we can bound γT directly. Let XT = [x1 . . . , xT ] ∈
+Rd×T
+with all kxtk ≤ 1. Now,
+log |I + σ−2
+XT
+T XT | = log |I + σ−2
+XT XT
+T |
+≤ log |I + σ−2
+D|
+with D = diag diag−1
+(XT XT
+T ), by Hadamard’s in-
+equality. The largest eigenvalue λ̂1 of XT XT
+T is O(T),
+so that
+log |I + σ−2
+XT
+T XT | ≤ d log(1 + σ−2
+λ̂1),
+and γT = O(d log T).
+
