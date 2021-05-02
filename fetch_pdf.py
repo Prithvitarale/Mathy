@@ -27,3 +27,4 @@ load_data(args.url_file, args.out_dir)
 # conda env create -f environment.yml
 # conda create -n control
 # conda activate control
+# conda env update --prefix ./env --file environment.yml  --prune
