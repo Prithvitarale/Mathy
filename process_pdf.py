@@ -16,13 +16,8 @@ def process_pdf(input_dir, output_dir):
         pdf.close()
         pdfintext = ""
         for page in text:
-            # print((" ").join(page))
-            # print(page)
             pdfintext += page
-        # print("\n\n".join(text))
-        # print(pdfintext)
         files.append(pdfintext)
-        # exit()
     x_train, x_test = train_test_split(files, test_size=0.20)
     write_to_disk("train", output_dir, x_train)
     write_to_disk("test", output_dir, x_test)

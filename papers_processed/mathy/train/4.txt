@@ -1,1015 +1,1 @@
-Comparing Clusterings – An Axiomatic View
-Marina Meilă mmp@stat.washington.edu
-University of Washington, Box 354322, Seattle, WA 98195-4322
-Abstract
-This paper views clusterings as elements of
-a lattice. Distances between clusterings are
-analyzed in their relationship to the lattice.
-From this vantage point, we first give an ax-
-iomatic characterization of some criteria for
-comparing clusterings, including the varia-
-tion of information and the unadjusted Rand
-index. Then we study other distances be-
-tween partitions w.r.t these axioms and prove
-an impossibility result: there is no “sensi-
-ble” criterion for comparing clusterings that
-is simultaneously (1) aligned with the lattice
-of partitions, (2) convexely additive, and (3)
-bounded.
-1. Introduction
-This paper views clusterings as elements of a lattice,
-the natural algebraic structure for the partitions of
-a set. A criterion for comparing clusterings is thus
-seen as a function of pairs of elements in the lattice.
-The goal in doing this is to contribute to the better
-understanding of the space of all clusterings of a set
-and of the problem of comparing clusterings.
-This task is is an important component in the evalua-
-tion of clustering algorithms. A clustering, or a clus-
-tering algorithm, can be evaluated by internal crite-
-ria, e.g distortion, likelihood, that are generally prob-
-lem and algorithm dependent. There is another kind
-of evaluation, called external evaluation, that simply
-measures how close is the obtained clustering to a gold
-standard clustering. The comparison criteria studied
-here are all external. As such, they are independent
-of the algorithm or of the way the clusterings were
-obtained.
-There are many competing criteria for comparing clus-
-terings, with no clear best choice. In fact, as this paper
-Appearing in Proceedings of the 22 nd
-International Confer-
-ence on Machine Learning, Bonn, Germany, 2005. Copy-
-right 2005 by the author(s)/owner(s).
-will underscore, it is probably meaningless to search
-for a best criterion for comparing clusterings, just as
-it is meaningless to search for the best clustering al-
-gorithm. Algorithms are “good” in as much as they
-match the task at hand. With respect to distances
-between clusterings, our goal is to better understand
-their properties, their limitations, and the implied as-
-sumptions underlying them. This paper does so via
-an axiomatic study of several distances.
-We first discuss some desirable properties of distances
-between clusterings that amount to decomposing them
-additively over elementary operations on clusterings
-like splitting a cluster, merging two data sets, etc.
-Then we give an axiomatic characterization for one
-criterion, the variation of information. The choice is
-not incidental: this criterion is closely matched to the
-lattice of partitions, as it will be shown. It will turn
-out that the resulting axioms have each an intuitive
-interpretation.
-The axiomatic framework introduced is extended to
-characterize other distances between clusterings (the
-Mirkin metric, the Rand index and the van Dongen
-metric). We also discuss the “classification error” clus-
-tering distance. Finally, we derive an impossibility
-result for comparing clusterings: we show that no dis-
-tance on the space of partitions can simultaneously
-satisfy three desirable properties, each of which makes
-the distance intuitive in some sense.
-2. Additive properties for distances and
-the lattice of partitions
-This section introduces the basic notation, then in-
-troduces the lattice of partitions and and lists some
-properties related to the lattice representation which
-will be relevant in the rest of the paper.
-A clustering C is a partition of a data set D into sets
-C1, C2, . . . CK called clusters such that
-Ck ∩ Cl = ∅ and
-K
-[
-k=1
-Ck = D.
-Comparing Clusterings – An Axiomatic View
-Let the number of data points in D and in cluster Ck
-be n and nk respectively. We have, of course, that
-n =
-PK
-k=1 nk. We also assume that nk ≥ 1; in other
-words, that K represents the number of non-empty
-clusters.
-Let a second clustering of the same data set D be
-C0
-= {C0
-1, C0
-2, . . . C0
-K0 }, with cluster sizes n0
-k0 . The
-two clusterings may have different numbers of clusters.
-To compare C and C0
-is to define a symmetric, non-
-negative function d(C, C0
-) that measures how different
-are the two clusterings. If C = C0
-then d(C, C0
-) = 0.
-We shall call the function d a distance although in
-general it may not satisfy the triangle inequality. If
-the triangle inequality is satisfied, then d is called a
-metric.
-It should also be noted that this definition is not
-aligned to the majority of clustering comparison cri-
-teria, like the Rand (Rand, 1971), Fowlkes-Mallows
-(Fowlkes & Mallows, 1983) and other indices. These
-are taking values in [0, 1], with larger values as the
-clusterings become more similar (and being 1 when
-C = C0
-). This will not preclude us to consider these
-indices, as one can turn any index i(C, C0
-) into a dis-
-tance by simply setting d(C, C0
-) = 1 − i(C, C0
-).
-The number of points in the intersection of clusters Ck
-of C and C0
-k0 of C0
-is denoted nkk0 .
-nkk0 = |Ck ∩ C0
-k0 |
-A distance d between that depends only on the relative
-values nkk0 /n and does not directly depend on n is said
-to be n-invariant.
-The lattice of partitions One can represent all clus-
-terings of a finite set D as the nodes of a graph, as
-illustrated by figure 1; in this graph an edge between
-C, C0
-will be present if C0
-is obtained by splitting a clus-
-ter of C into two parts. The set of all clusterings of a
-dataset D forms a lattice called the lattice of partitions
-(Stanley, 1997). The graph just described is known as
-the Hasse diagram1
-of this lattice. At the top of the
-diagram is the clustering with just one cluster, denoted
-by 1̂ = {D}. At the bottom is 0̂ = {{1}, {2}, . . . {n}}
-the clustering with n clusters each containing a sin-
-gle point. For all but the smallest n, the space of all
-clusterings, although finite, is huge (superexponential
-in n (Stanley, 1997)); a graphical representation like
-the Hasse diagram can aid the understanding of the
-complex relationships between and thus guide us in
-choosing or designing the most relevant distances on
-this space. In particular, we may ask if there are dis-
-1
-The emphasized terms in this section represent stan-
-dard lattice terminology. Their precise definitions can be
-found in e.g (Stanley, 1997).
-tances between clusterings that are “aligned” with the
-lattice, in the sense that d(C, C0
-) can be expressed as
-a sum of distances along edges of the lattice?
-In the following we give a formal definition of three
-additivity properties, all related to the lattice of parti-
-tions, and we explain why they are desirable.
-Additivity w.r.t refinement (AR) If C0
-is obtained
-from C by splitting one or more clusters, then we say
-that C0
-is a refinement of C. A distance d is additive
-w.r.t refinement iff for any clusterings C, C0
-, C00
-such
-that C0
-is a refinement of C and C00
-a refinement of C0
-we have
-d(C, C00
-) = d(C, C0
-) + d(C0
-, C00
-) (1)
-For instance, C00
-= {{a}, {b}, {c}, {d}} is a refinement
-of C0
-= {{a}, {b}, {c, d}}, which in turn is a refinement
-of C = {{a, b}, {c, d}}. The AR property says that the
-distance d(C, C00
-) is a sum of the distances correspond-
-ing to the two succesive refinements that transform C
-into C00
-. Cluster splitting corresponds to taking down-
-ward steps in the Hasse diagram.
-Additivity w.r.t the join (AJ). The join of clus-
-terings C and C0
-is defined as
-C × C0
-= {Ck ∩ C0
-k0 | Ck ∈ C, C0
-k0 ∈ C0
-, Ck ∩ C0
-k0 6= ∅}
-(2)
-Hence, the join of two clusterings is the clustering
-formed from all the nonempty intersections of clusters
-from C with clusters from C0
-. A distance d is additive
-w.r.t to the join iff for any clusterings C, C0
-d(C, C0
-) = d(C, C × C0
-) + d(C0
-, C × C0
-) (3)
-This property is relevant for clusterings C, C0
-which are
-not a refinement of each other. One can think of ob-
-taining such a C0
-from C by a series of cluster splits
-(downward steps along the lattice edges) followed by a
-set of cluster mergers (upward steps in the lattice). A
-distance d is AJ if it can be expressed as a sum of dis-
-tances along such a path. Note that usually there are
-several possible paths between two clusterings (see for
-instance {{a}, {b, c, d}} and {{a, c}, {b}, {d}} in figure
-1); the sum is the same no matter what path is taken.
-From a practical point of view, AJ also means that for
-any two clusterings C, C0
-there is a clustering C × C
-(and usually others) which has more clusters than
-both C and C0
-but is closer to both of them than
-d(C, C0
-). In a geometric sense, the join C, C0
-is “on
-the line segment” between C, C0
-. If in an applica-
-tion two clusterings should be close only if the num-
-ber of clusters K, K0
-are nearly equal, then the dis-
-tance d should not be AJ. However, there are other
-Comparing Clusterings – An Axiomatic View
-{a,b,c,d}
-{a}{b,c,d} {b}{a,c,d} {c}{a,b,d} {d}{a,b,c} {a,b}{c,d} {a,c}{b,d} {a,d}{b,c}
-{a},{b}{c,d} {a},{c}{b,d} {a},{d}{b,c} {a,b}{c},{d} {a,c}{b},{d} {a,d}{b},{c}
-{a},{b}{c},{d}
-Figure 1. The lattice of partitions of D ={a,b,c,d}. Note that 1̂ ={{a,b,c,d}}, 0̂ ={{a},{b},{c},{d}}; the clusterings
-1̂, {{a},{b, c, d}}, {{a},{b},{c, d}}, 0̂ are collinear according to A3; the clusterings {{a},{b, c, d}}, {{a},{b},{c, d}},
-{{a,b},{c, d}} are collinear according to A4; the clusterings {{a},{b, c, d}}, {{a},{b},{c, d}}, {{b},{a, c, d}} and 1̂ are
-on a closed straight line; and there are 3 straight lines from {{d},{a, b, c}} to 0̂.
-applications, image segmentation being a prime ex-
-ample, where breaking off a set b of pixels from
-a segment {a, b} is less of a mistake than break-
-ing them off and attaching them to another seg-
-ment c (i.e we want d({{a, b}, {c}}, {{a}, {b}, {c}}) <
-d({{a, b}, {c}}, {{a}, {b, c}})). In such applications,
-the number of segments is less meaningful than the
-grouping of the pixels; therefore AJ is reasonable as
-it represents the total error as as sum of two kinds of
-error.
-Convex additivity (CA). Let C = {C1, . . . CK} be a
-clustering and C0
-, C00
-be two refinements of C. Denote
-by C0
-k (C00
-k ) the partitioning induced by C0
-(respectively
-C00
-) on Ck. Let P(k) represent the proportion of data
-points that belong to cluster Ck. Then
-d(C0
-, C00
-) =
-K
-X
-k=1
-P(k)d(C0
-k, C00
-k ) (4)
-This property expresses additivity of d over the sub-
-lattices corresponding to the individual clusters Ck. In
-particular, CA implies that if only some cluster(s) of
-C are changed to obtain C0
-, then then d(C, C0
-) depends
-only on the affected clusters, and is independent on
-how the unaffected part of D is partitioned. For an
-example, consider the pairs C = {{a, b}, {c, d}}, C0
-=
-C = {{a}, {b}, {c, d}} and ˜
-C = {{a, b}, {c}, {d}}, ˜
-C =
-{{a}, {b}, {c}, {d}}. In both cases the first cluster is
-split while the remaining cluster(s) are left unchanged.
-Therefore, if d is CA then d(C, C0
-) = d( ˜
-C, ˜
-C0
-).
-Properties AJ and CA were described in (Meilă, 2003),
-where several distances were discussed w.r.t satisfying
-them. In this section we extend and deepen the geo-
-metric view suggested there. The remainder of the pa-
-per addresses the reverse question: instead of checking
-whether a given distance satisfies a certain property,
-we will ask what properties uniquely define a certain
-distance. The focus will be on the additive properties
-discussed above. Hence the complementary question:
-how can one characterize all the distances that satisfy
-them?
-The reason we pay special attention to the properties
-AV, CA and AJ in this paper, is because splitting a
-cluster, forming a clustering by taking the union of two
-clusterings on two subsets of the data, and merging two
-clusters are (sequences of) elementary and intuitive
-operations that one can do on clusterings. It is easy
-and natural to think of changing a clustering C into
-C0
-by appying these operations one after the other. If
-the distance d satisfies AV, CA and AJ, then d will
-measure the change between C and C0
-as a sum of
-elementary changes, each corresponding to one step.
-Finally, if d is also a metric, some additional geometric
-insights are possible. One can extend the notion of a
-straight line from Euclidean space to a metric space: 3
-points in a metric space for which triangle inequality is
-satisfied with equality are said to lie on a straight line,
-in other words to be collinear. Additivity w.r.t refine-
-ment implies that the clusterings along a vertical chain
-of lattice edges are collinear. As all “vertical” straight
-lines meet both at 1̂ and 0̂, this space is clearly non-
-Euclidean. In general, if C0
-is a refinement of C, then
-each of the possible ways of subdividing C to obtain
-C0
-generates a straight line in the lattice. Unless C, C0
-are connected by a single edge, there will be multiple
-“straight lines” between the two clusterings. Figure 1
-illustrates these properties on a simple example. An
-even more interesting picture is implied by the “hor-
-izontal” straight lines that exist because of the addi-
-tivity w.r.t the joint. These lines are composed of the
-vertical “descending” segment C, C × C0
-, continued by
-Comparing Clusterings – An Axiomatic View
-the “ascending” segment C × C0
-, C0
-. Figure 1 shows an
-example of such a straight line. Moreover, using both
-properties, one can derive that the union of any two
-chains that have the same endpoints forms a “closed”
-straight line according to such a metric.
-3. The axioms of the variation of
-information
-The variation of information (dVI ), introduced in
-(Meilă, 2003), measures the distance between two clus-
-terings in terms of the information difference between
-them.
-dVI (C, C0
-) = H(C) + H(C0
-) − 2I(C, C0
-) (5)
-where H and I represent respectively the entropies2
-of
-and the mutual information3
-between the two cluster-
-ings.
-In (Meilă, 2003) the variation of information was
-shown to satisfy AJ and AC and that it is a metric,
-among several other properties. It is also easy to show
-that it satisfies additivity w.r.t refinement (see the ap-
-pendix).
-Now we show that a subset of these properties uniquely
-defines dVI .
-Theorem 1 The variation of information is the
-unique cluster comparison criterion d that satisfies the
-axioms:
-A1 Symmetry For any two clusterings C, C0
-d(C, C0
-) = d(C0
-, C)
-A2 Additivity w.r.t refinement Denote by 0̂ and
-1̂ the unique clusterings having K = n respectively
-K = 1 clusters. For any clustering C
-d(0̂, C) + d(C, 1̂) = d(0̂, 1̂)
-A3 Additivity w.r.t the join For any two cluster-
-ings C, C0
-d(C, C0
-) = d(C, C × C0
-) + d(C0
-, C × C0
-)
-A4 Convex additivity Let C = {C1, . . . CK} be a
-clustering and C0
-be a refinement of C. Denote by
-C0
-k the partitioning induced by C0
-on Ck. Then
-d(C, C0
-) =
-K
-X
-k=1
-nk
-n
-d(1̂nk
-, C0
-k)
-2
-H(C) = −
-PK
-k=1
-nk
-n
-log nk
-n
-3
-I(C, C0
-) =
-PK
-k=1
-PK0
-k0=1
-nk,k0
-n
-log
-nk,k0
-n
-nk
-n
-n0
-k0
-n
-A5 Scale Denote by CU
-K the “uniform” clustering, i.e
-the clustering with K equal clusters. If CU
-K exists,
-then
-d(1̂, CU
-K) = log K
-In the above, 1̂nk
-is the 1̂ clustering of the dataset
-Ck containing nk points. The proof of the theorem is
-constructive and is given in the appendix. Note that
-the axioms do not require d to be a metric; this follows
-implicitly.
-Intuitively, axioms A2 and A3 describe the geomet-
-ric properties of dVI , i.e that it is aligned with the
-lattice of partitions. Axiom A2 is a weak version of
-the AR property defined in the previous section. Ax-
-ioms A4 and A5 set the scale of d and in particular its
-logarithmic growth rate. They are reminiscent of the
-postulates III and IV of entropy as given in (Rènyi,
-1970).
-It is interesting to see what happens if the last two
-axioms are changed. In other words, if one maintains
-that the distance has to be aligned with the lattice of
-partitions, but allows the scale to differ. This is what
-we are going to do in the next section.
-4. Other metrics for comparing
-clusterings
-The clustering literature contains quite a number of
-criteria for comparing clusterings: the Rand index
-(Rand, 1971), the Jaccard index (Ben-Hur et al.,
-2002), the Folwkes-Mallows index (Fowlkes & Mallows,
-1983), the Huber and Arabie indices (Hubert & Ara-
-bie, 1985), the Mirkin metric (Mirkin, 1996), the Van
-Dongen metric (van Dongen, 2000), as well as statisti-
-cally “adjusted” versions of some of the above (Hubert
-& Arabie, 1985).
-We shall start with two criteria, the Mirkin and Van
-Dongen metrics, for which we give an axiomatic char-
-acterization.
-The Mirkin metric is defined by (Mirkin, 1996)
-d0
-M (C, C0
-) =
-X
-k
-n2
-k +
-X
-k0
-n0
-k0
-2
-− 2
-X
-k
-X
-k0
-n2
-kk0 (6)
-This metric can also be rewritten (Ben-Hur et al.,
-2002) as
-d0
-M (C, C0
-) = 2Ndisagree(C, C0
-) (7)
-where Ndisagree is defined as the number of point pairs
-which are in the same cluster under C but in different
-clusters under C0
-or viceversa. The Rand index is de-
-Comparing Clusterings – An Axiomatic View
-fined as
-iR(C, C0
-) =
-n(n − 1) − 2Ndisagree(C, C0
-)
-n(n − 1)
-(8)
-Therefore the characterization of dM below will reflect
-immediately on the (unadjusted) Rand index. In what
-follows we shall use an rescaled form of the Mirkin
-metric which is n-invariant and bounded.
-dM (C, C0
-) =
-d0
-M (C, C0
-)
-n2
-(9)
-The Van Dongen criterion was also proved to be a
-metric (van Dongen, 2000)
-d0
-D(C, C0
-) = 2n −
-X
-k
-max
-k0
-nkk0 −
-X
-k0
-max
-k
-nkk0 (10)
-As with the Mirkin metric, we shall use its bounded
-n-invariant version
-dD(C, C0
-) =
-d0
-D(C, C0
-)
-2n
-(11)
-To proceed with our axiomatic study, we first compute
-the distances between 1̂ and CU
-K under the invariant
-Van Dongen and Mirkin metrics.
-dD(1̂, CU
-K) =
-1
-2
-
-1 −
-1
-K
-
-dM (1̂, CU
-K) = 1 −
-1
-K
-With respect to convex additivity, it is easy to prove
-(see also (Meilă, 2003)) that dD is convexely additive,
-while the Mirkin metric satisfies
-dM (C, C0
-) =
-K
-X
-k=1
-n2
-k
-n2
-dM (1̂nk
-, C0
-k) (12)
-whenever C0
-is a refinement of C and C0
-k represents the
-partitioning induced by C0
-on cluster Ck of C.
-We now can replace the scale axioms of dVI with ax-
-ioms corresponding to dD and dM respectively. We
-obtain a negative
-Theorem 2 There is no cluster comparison criterion
-that satisfies axioms A1–A4 and
-A5.D d(1̂, CU
-K) = 1 − 1/K
-Theorem 3 The unique cluster comparison criterion
-d that satisfies axioms A1, A3, A4, and
-A2.D d(1̂, C) =
-1
-2
-h
-1 −
-maxk nk
-n
-i
-is the invariant van Dongen metric dD.
-Theorem 4 The unique cluster comparison criterion
-d that satisfies axioms A1–A3, A5.D and
-A4.M Let C0
-be a refinement of C and denote by C0
-k the
-clustering induced by C0
-on Ck ∈ C. Then
-d(C, C0
-) =
-K
-X
-k=1
-n2
-k
-n2
-d(1̂nk
-, C0
-k)
-is the invariant Mirkin metric dM .
-Thus, the invariant Mirkin metric is also aligned with
-the lattice of partitions. The additivity axiom A4.M
-has several consequences. First, it shows that dM is lo-
-cal, i.e changes inside one cluster depend only on the
-relative size of that cluster and of the nature of the
-change, and are not affected by how the rest of the
-data set is partitioned. But the union of two or more
-datasets shrinks distances (because of the weighting
-with the squares of the proportions), a rather counter-
-intuitive behavior. It is worth recalling that all these
-properties of the Mirkin metric are readily translated
-into similar properties of the unadjusted Rand index.
-The “unnatural” behavior of the Rand index with in-
-creasing K has been noted early on and is the main
-reason why this index is used mostly in its adjusted
-form (Hubert & Arabie, 1985).
-The van Dongen metric is horizontally aligned with the
-lattice of partitions but not vertically, that is it satisfies
-axioms A1, A3, A4, A5.D. To uniquely characterize it,
-we introduced axiom A2.D, which implies A5.D but is
-significantly stronger4
-.
-How about other, more popular indices for comparing
-partitions? The space does not permit us to describe
-and compare all of them here (such comparisons can be
-found in (Ben-Hur et al., 2002; Hubert & Arabie, 1985;
-Meilă, 2003; Wallace, 1983) and others). One fact
-shown in (Meilă, 2003) is that the Jaccard, Fowlkes-
-Mallows, some of the Huber and Arabie and all the
-adjusted indices, including the widely used adjusted
-Rand index, are non-local (that is, a change inside a
-single cluster counts differently depending on how the
-rest of the data is clustered). Therefore they will rate
-worse on the scale of understandability and in par-
-ticular cannot satisfy the convex additivity property.
-Also, it is easy to show that most of the above in-
-dices are only asymptotically n-invariant, so their ax-
-iomatic description would be much more complicated
-(and consequently a much less illuminating exercise).
-4
-We have not proved that A2.D is the weakest possible
-axiom that uniquely deterimines dD. But we believe this
-as likely and will consider it in further research.
-Comparing Clusterings – An Axiomatic View
-Another very interesting criterion, the classification er-
-ror, is discussed in the next section.
-5. The classification error metric
-The classification error (CE) distance dCE is defined
-as
-dCE(C, C0
-) = 1 −
-1
-n
-max
-σ
-K
-X
-k=1
-nk,σ(k) (13)
-In the above, it is assumed w.l.o.g that K ≤ K0
-, σ is
-an injective mapping of {1, . . . K} into {1, . . . K0
-}, and
-the maximum is taken over all such mappings. In other
-words, for each σ we have a (partial) correspondence
-between the cluster labels in C and C0
-; now looking at
-clustering as a classification task with the fixed label
-correspondence, we compute the “classification error”
-of C0
-w.r.t C. The minimum possible “classification
-error” under all correspondences is dCE.
-From the computational point of view, it is not neces-
-sary to explicitly enumerate all correspondences (order
-K!). The maximum can be computed in polinomial
-time as the solution of a linear program identical to
-the maximum bipartite matching algorithm in graph
-theory (Golumbic, 1980). The CE distance is simple
-and intuitive, especially if the two clusterings are close
-together. The following lemma describes its properties
-from the point of view of the axioms considered in this
-paper.
-Lemma 5 The classification error distance dCE sat-
-isfies axioms A1 (symmetry), A4 (convex additivity),
-A5.D (scales like 1 − 1/K). It violates axioms A2 and
-A3, hence it is not aligned with the lattice of partitions.
-The proof is sufficiently simple and has been omitted.
-The above result shows similarities betweed dCE and
-especially the dD metric, and underscores its convex
-additivity, locality, and n-invariance, all of which con-
-tribute to making dCE a most intutitive criterion. The
-dissimilarity is of course the non-alignment with the
-lattice of partitions. We have not yet found a complete
-characterization of dCE, this is a matter of further re-
-search.
-6. An impossibility result for
-comparing partitions
-Theorem 2 prompts the question: what kind of scal-
-ings in A5 are compatible with A1–A4? To answer
-this question, we change A5 to the weaker A5.H:
-A5.H d(1̂, CU
-K) = h(K) where h is a non-decreasing
-function of K.
-Then, the result below shows that A5 is essentially
-superfluous.
-Theorem 6 Any clustering comparison criterion sat-
-isfying A1–A4 and A5.H is identical to dVI up to a
-multiplicative constant.
-In other words, the variation of information is the
-only “sensible” (that is symmetric, n-invariant, with
-d(1̂, CU
-K) non-decreasing) criterion that is convexely ad-
-ditive and aligned to the lattice of partitions.
-From theorem 6 the following impossibility result fol-
-lows immediately.
-Corrollary 7 There is no d symmetric, n-invariant,
-with d(1̂, CU
-K) non-decreasing, that satisfies simultane-
-ously the following three properties:
-• d is aligned to the lattice of partitions (axioms A2,
-A3)
-• d is convexly additive (axiom A4)
-• d is bounded
-Hence, there is no criterion for comparing clusterings
-that can satisfy all three of the above desirable prop-
-erties. The users of distances between clusterings will
-have to make choices. What are the tradeoffs?
-The first property gives geometric intuition in addition
-to the intuition one would get from having a metric.
-Preserving this property would be useful in designing
-search algorithms in the space of clusterings and prov-
-ing their properties.
-The second one is, in our opinion, the most important
-for the “understandability” of a distance, because it is
-a law of composition. It says that under unions of sets,
-the distances on the parts are weighted in proportion
-to the sizes of the parts and then summed.
-The argument for the third property is partly “his-
-torical”. The vast majority of criteria for comparing
-clusterings are bounded between 0 and 1. Moreover,
-in statistics, the tradition is to indicate identity be-
-tween two clusterings by a 1 (like in the Rand, Fowlkes-
-Mallows, Jaccard indices and their adjusted versions).
-Another very appealing reason to use a distance that
-is bounded (for instance between 0 and 1) is to inter-
-pret it as a probability. When can we do this? The
-aforementioned indices can all be interpreted as prob-
-abilities (see the original papers (Rand, 1971; Fowlkes
-& Mallows, 1983; Hubert & Arabie, 1985; Ben-Hur
-et al., 2002) for details), but their adjusted versions
-can not (Hubert & Arabie, 1985). In this respect, per-
-haps the most interpretable is the classification error
-dCE, which is indeed the optimal error probability if
-clustering was regarded as classification.
-Comparing Clusterings – An Axiomatic View
-Note however that a criterion that is bounded between
-0 and 1 carries the implicit assumption that cluster-
-ings can only get negligibly more diverse as the number
-of clusters increases. Thus, while using dCE may be
-the most natural and intuitive when K is small, this
-distance will loose its resolution power for large K.
-Whether a bounded or unbounded criterion for com-
-paring clusterings is better depends ultimately on the
-clustering application at hand. This paper’s aim in
-this respect is to underscore the possible choices and
-their consequences.
-7. Conclusion
-This is the first axiomatic approach to comparing clus-
-terings. What are the benfits of such an exercise?
-Characterizing distances between clusterings in terms
-of axioms highlights the essential properties of these
-distances, from which all others follow. For example,
-we have seen that being aligned to the lattice of par-
-titions is a very strong requirement: together with an
-additivity constraint (like A4 or A4.M), it completely
-determines the values of a distance on the lattice.
-An impossibility result is also important, because it re-
-veals an essential characteristic of the problem itself.
-In this case, very loosely speaking, we have shown that
-the lattice of partitions, which is the space where all
-possible clusterings lie, has too rich a structure to be
-packed inside a bounded ball without breaking some of
-the structure. For an analogy, one can say that the Eu-
-clidean n-dimensional space, another space with rich
-structure, cannot be folded into a sphere without los-
-ing some of its properties. Thus, presenting distances
-between clusterings in an axiomatic framework helps
-better understand their properties and their limita-
-tions. It is interesting to note that an impossibility
-result for clustering exists in (Kleinberg, 2002). The
-Kleinberg paper refers to clustering criteria (e.g single
-linkage, mean-squared error, etc) and shows that there
-is none that satisfies three desirable properties.
-We have given a prominent role to the lattice of par-
-titions, interpreting distances as functions on pairs of
-points in the lattice. We believe this view will also
-become useful in the future, whether one will use dis-
-tances aligned to the lattice like the dVI , or completely
-unaligned like dCE. Clustering is a hard problem and
-seeing clusterings as nodes in a graph opens the possi-
-bility of applying new techniques, based on graph and
-lattice theory, to this task.
-Acknowledgements
-Thanks to Nilesh Dalvi and Pavel Krivitsky who each
-gave a proof for lemma 8 and to the anonymous re-
-viewer who pointed me to the work of C. Rajski.
-This research was partly supported by NSF grant IIS-
-0313339.
-Proofs
-Proof of AR for the dVI distance. dVI can be ex-
-pressed as a sum of conditional entropies (Meilă, 2003)
-dVI (C, C0
-) = H(C|C0
-) + H(C0
-|C0
-) (14)
-The proof then follows from elementary properties of
-the conditional entropy (see (Cover & Thomas, 1991)
-for details): first, if C0
-is a refinement of C, then
-H(C|C0
-) = 0; then, one applies the chain rule for con-
-ditional entropy.
-Proof of Theorem 1 From A4 and A5 we have that
-d(0̂, C) =
-X
-k
-nk
-n
-d(1̂, CU
-nk
-) (15)
-=
-X
-k
-nk
-n
-log nk (16)
-=
-X
-k
-nk
-n
-(log
-nk
-n
-+ log n) (17)
-= log n − H(C) (18)
-From A2 we get d(1̂, C) = log n − d(0̂, C) = H(C).
-For any two clusterings C, C0
-define by Ck the clustering
-induced by C0
-on Ck ∈ C.
-d(C, C × C0
-) =
-K
-X
-k=1
-nk
-n
-d(1̂, Ck) (19)
-=
-K
-X
-k=1
-nk
-n
-H(Ck) (20)
-= H(C|C0
-) (21)
-Therefore, by A2, d(C, C0
-) = H(C|C0
-)+H(C0
-|C), Q.E.D
-Proof of Theorem 2
-d(0̂, C) =
-X
-k
-nk
-n
-d(1̂, CU
-nk
-) (22)
-=
-X
-k
-nk
-n
-
-1 −
-1
-nk
-
-(23)
-= 1 −
-K
-n
-(24)
-Therefore d(1̂, C) = (1−1/n)−(1−K/n) = (K−1)/n
-if |C| = K. This contradicts A5 according to which
-d(1̂, CU
-K) = (K − 1)/K.
-Comparing Clusterings – An Axiomatic View
-Proof of Theorems 3 and 4 These proofs follow the
-same steps as the proof of Theorem 1 and are therefore
-omitted.
-Proof of Theorem 6 We have consecutively:
-d(1̂, 0̂) = h(n) by A5.H (25)
-d(1̂, C) = h(n) − d(0̂, C) by A2 (26)
-d(0̂, C) =
-X
-k
-nk
-n
-h(nk) by A4 (27)
-d(1̂, CU
-K) = h(n) − d(0̂, CU
-K) (28)
-= h(n) − K
-1
-K
-h(
-n
-K
-) (29)
-Since n/K = M is an integer, and recalling A5.H we
-can rewrite the last equality as
-h(K) = h(KM) − h(M)
-or equivalently
-h(KM) = h(K) + h(M) (30)
-for any positive integers K, M. By lemma 8 below,
-this implies that h(n) = C log n for all n = 1, 2, 3, . . ..
-It follows that A1-A4 together with A5.H imply essen-
-tially the original A5 (up to the multiplicative constant
-C) and therefore d cannot be but proportional to the
-VI.
-Lemma 8 Let h : {1, 2, . . .} → [0, ∞) be a non-
-decreasing function satisfying (30) for any positive in-
-tegers K, M. Then h(n) = C log n for any n.
-Proof Let h(2) = C. We prove that h(n) = C log n.
-Let a = log(nq
-) = q log n with q a large positive inte-
-ger. Then
-h(2bac
-) ≤ h(2a
-) = h(nk
-) ≤ h(2dae
-) (31)
-bacC ≤ qh(n); ≤ daeC (32)
-bac
-a
-≤ h(n)
-C log n ; ≤
-dae
-a
-(33)
-The middle term does not depend on q, while the left
-and right tend to 1 for q increasing to infinity, which
-implies h(n) = C log n.
-References
-Ben-Hur, A., Elisseeff, A., & Guyon, I. (2002). A
-stability based method for discovering structure in
-clustered data. Pacific Symposium on Biocomputing
-(pp. 6–17).
-Cover, T. M., & Thomas, J. A. (1991). Elements of
-information theory. Wiley.
-Fowlkes, E. B., & Mallows, C. L. (1983). A method for
-comparing two hierarchical clusterings. Journal of
-the American Statistical Association, 78, 553–569.
-Golumbic, M. (1980). Algorithmic graph theory and
-perfect graphs. Academic Press, New York.
-Hubert, L., & Arabie, P. (1985). Comparing partitions.
-Journal of Classification, 2, 193–218.
-Kleinberg, J. (2002). An impossibility theorem for
-clustering. Advances in Neural Information Process-
-ing Systems. Cambridge, MA: MIT Press.
-Meilă, M. (2003). Comparing clusterings by the varia-
-tion of information. Proceedings of the Sixteenth An-
-nual Conference ofn Computational Learning The-
-ory (COLT). Springer.
-Mirkin, B. (1996). Mathematical classification and
-clustering. Kluwer Academic Press.
-Rand, W. M. (1971). Objective criteria for the evalua-
-tion of clustering methods. Journal of the American
-Statistical Association, 66, 846–850.
-Rènyi, A. (1970). Probability theory. North-Holland.
-Stanley, R. P. (1997). Enumerative combinatorics.
-Cambridge Unversity Press.
-van Dongen, S. (2000). Performance criteria for graph
-clustering and Markov cluster experiments (Techni-
-cal Report INS-R0012). Centrum voor Wiskunde en
-Informatica.
-Wallace, D. L. (1983). Comment. Journal of the Amer-
-ican Statistical Association, 78, 569–576.
-
+SpectralAnalysisofDataYossiAzarAmosFiatAnnaR.KarlinFrankMcSherryJaredSaia!"#$%&"'(")+*#),-./"0.21*'234'"05236879#:;"34*+35""9+0<3"0<.36"277.+%=>@?8ABDC5EFEHGDI"JLK*.23NM4O=4P5PQRST"'$UN"9V!"WYXZ"':T5"5";"L=>Z[F"\#]_^EHI2BD]0`'I2ab'J6c*#_de+9%V,Yf48gV+"9%9QABSTRACTh6iLjlkmn+o_kp9qrstku9nvtkpxwWkVyzx{0{k"yqy4q2|}rq8yjlkw.q2m2rstq2k"w|tptn~9zxk"y4rmku0rs+zxr0ts+ke;m&rSnvtk_m2rpx{k_Vr0jtjtsnwrqn+0p}yWjxr0mqnrssn;yq&yzxw|er0jxjLsn;wWrqn+pxy6n+p}wszxvtkYn;4ykor0p9qnwSr0pxrstynyvt'wWzto_kp9qyzxyk"vq2_wszxyq2kmvt'wWzto_kp9qy8np9q2_rmk"ryV04n+p9q2kmk"yq"nnSwWss;rt0m2rqn+u#kVxsq2kmn+px{(q2|tkVmk"wWpxyq2mz}w.qn+0p/oenyyn+px{vtrqr(nq2koyWrp}vnnn;vtk.q2kmoen+ptn+px{eq2|tk&mk.s;rqn+u#k&n+o_jl0mqr0p}w.k&vt'wWzto_kp9qyxryk"vpw.nqrqn+0plsn+pxyq2mz}wq2zxmkHp'q2zLnqnukrm{zto_kp9qyewr0pk.itjLsrn+py0o_k(0Nq2|xk(jt|xkpto_kpxrYq2|xrqV|xry-lkkp/xykmu#k"v/xzLqsnqqs+kq2|tkmkWqnwrsTyq2z}vL|}r0ylkkpvLpxk0pq2|Lnyj}rjlkm8kjtmk"ykp9qro_'vtkWs0m&;m2r0oen+px{vtrqroen+ptn+px{qryLyTrp}v¡rztptnxk"vr0jtjxm#r0w|q2&y0s+u9n+px{q2|xk)mk"yztsqn+px{Tvxrqr&oen+ptn+pt{YjxmLs+koyzxyn+px{yjlkw.q2m2rs8r0pxrstyn;yW_¢-|xk"ykemkyztsqy({0n+u#k_yq2m0px{T£z}yqn}wrqn+0pq2¤q2|xk¥zxyk¥0&yjlk"w.q2m2rs$q2k"w2|xpLn~'ztk"y0m/srq2kp9q¦ykWor0p9qnwn+pxvtkWi'n+px{L}wWss;rlm2rqnuk&ts+q2kWmnpt{txr0pxv/-kW¥ynq2kYm2r0px9n+px{L1.INTRODUCTION§jlk"w.q2m2rsxq2k"w2|xpLn;~9ztk"y|xr"u#kSjxmu#kp'rqs+k"ryq8ko_jtn+mnwrs+s99zxykW;zts6n+pr/urmnk.q0Svxrqr/oen+ptn+px{r0jtjtsnwrqn+pxy¨©L8ª"«'8ª0ªW¬­_¢NrjxjLs+q2|xk"ykYq2k"w2|xpLn~'ztk"yWxq2|tk&vxrqrenySqLjtnwrs+s¦mkjxmk"ykWp'q2kv¥ryrykWq80Nu#k"w.q20m2yn+p/rY|tn+{|Lv'n+o_kp}yn+pxrs}yj}rw.k6®}mkWitr0o_jLsk0#nq2|tk&vxrqr_yk.qny)r_wWmjtz}yV0vt'w.zxo_kp9qyWLq2|xkpkrw2|vt'wWzto_kp9qwWr0plkTmkWjxmk"ykp9q2k"v¥r0y$rr_u#k"w.q20m$q2kWmoy¯°}V|tkmkq2|xkYn5q2|w.o_jlptkp9q(8q2|xkTu#k"w.q20m°'±²nyTªTn+q2|xk&n5q2|¥q2kmo³'wwWztm2y$np"´k"ykr0m2w2|µyzxjtjlmq2k"vn+pjxr0mq/9¶§®·hV¸0¹#º»#º©»r0p}vr{0m2r0p9qm0o¼q2|xk½§5ym2rkWs/¾8n+p}rqn+0p}rs§w.n+kpxwWkµ®}0zxp}vtrqn+p%¾§®.2¿kjtq"6À8o_jtztq2km§w.n+kp}wWk0l¢kWsu9n+u½$pLnukm2ynq9t¢kWsHu9n+uÁ¸¸º0¹L}ym2r0k.s2¿kjtq"e0)À80o_jxztq2kWm§w.n+kpxwWk½ptn+u#km2ynqH-Â¡r0y|tn+px{q2p¡rq§k"rqqs+kPermissiontomakedigitalorhardcopiesofallorpartofthisworkforpersonalorclassroomuseisgrantedwithoutfeeprovidedthatcopiesarenotmadeordistributedforprofitorcommercialadvantageandthatcopiesbearthisnoticeandthefullcitationonthefirstpage.Tocopyotherwise,torepublish,topostonserversortoredistributetolists,requirespriorspecificpermissionand/orafee.STOC’01July6-8,2001,Hersonissos,Crete,Greece.Copyright2001ACM1-58113-349-9/01/0007...Ã5.00.q2|xkvt'wWzto_kp9q(rp}v¥nyY»/q2|xkmSnykTÂnq2|¤yzxw|ÄrmkWjxmk"ykp9qrqn+pq2|tkkWp'qn+mkwWmjtz}yTwr0plk/u'n+kW8k"vryTrÄorq2mn+i²yrÅk"r0w|V|xyk&wW0s+zxo_pxy-mkjxmkykp9q$rvt'wWzto_kp9q"¢-|xkYorq2mnimkWjxmk"ykp9qrqn0pwr0p¦lkYz}yk"v;m)0q2|tkmSqLjlk"yS0vxrqrykWqyV|xkmkYw.0s+zxo_pxyn+p}vtk.i_L£k"wqySn+pq2|xk$vxrqr&ykWq"tm")yn+p}vLkWi¥rqq2mntztq2k"yV06q2|t#yk&L£k"w.qyWrp}v¦q2|tk¨ÆÇHÈ0¬4kp9q2m¦06q2|xkorq2mni/mkjtmk"ykp9qy-q2|xk(u0rs+zxkYq2|xk$Æ­­q2|¦rqq2mn+xzLq2k(np/q2|xk)È0­q2|L£kw.q"§o_k$kWitr0o_jts+k"y-n+p9q2kmk"yqr0mk(V|tkmk(l0q2|¦m)yVrp}vwWszto_p}y8mk.km-q2&-kynq2k"ySr0pxvq2|tke¨ÆÇHÈ0¬NkWp'q2m_n+pxvLnwrq2ky8q2|}rqynq2k_ÆV|}ryYr/s+n+ptq2¦ynq2kÈtÉr0pt0q2|xkWm(n;y$q2|xrq&wWs+zxo_p}y(mk.km(q2n+p}v'nu9nvtzxrsyWLm")yVmk.kmSq2&jxm'vtzxw.qyWtr0pxv/q2|xk¨Æ2ÇHÈ0¬kp9q2m_n+p}v'nwrq2k"yVyo_kWq2|Lnpt{rlzLqV|x"Êozxw|_n+p}v'nu9nvtzxrstÈsn+#k"y-jxm'vLz}w.qÆpq2|tny4j}rjlkm8kSwW0p}ynvtkm4q2|tkSr0jtjtsnwrqn+p_²yjlk"w.q2m2rstq2kw|Lptn~9zxkyVq2/reu0r0mn+kWq¦0vxrqr_oenpLn+px{qr0ytyWVÂ¤k&lkW{0n+p'jxmk.ykp9qn+px{Är{kWpxkm2rsVo_'vtkWsq2|}rq&-k/lkWsn+ku#k/wrjtq2zxmkyTor0p90q2|xk_kyykp9qn;rs8;k"rq2ztmk"y&Sn+o_jlmqr0p9q&vtrqr¦oen+ptn+pt{qryLyW/Âkq2|xkWpËjtmk"ykp9q_rykWqe0$wWpxvLnqn+p}yTzxp}vLkmV|tnw|vxrqr¥oenpLn+px{jxm0ts+koynpÊq2|tny;m2r0o_kW8mwrpÌlky0s+u#k"vÊz}yn+pt{yjlk"w.q2m2rsq2k"w2|xpLn;~9ztk"yWtr0p}vz}ykq2|xk"yk(mkyztsqy8q2Tq2|tkmkWqnwrss+T£zxyqn;q2|xkjxmn+0m)kWo_jtn+mnwrsNyz}wWwWk"yyS0q2|tk"yk$q2k"w2|xpLn~'ztk"y80mSqryLySyz}w2|r0yL£kw.qw.sryyn}wrqn+p¤r0pxv¥8kÄynq2kTm2rpx9n+px{tÂk&rsyz}yk&zxmq2|xkWmkWqnwrst;m2r0o_kW8mry4rV0zxp}vtrqn+p&0m6vtku#k.s0jtn+px{pxkW¡rs{0mnq2|xoy0m6wW0ssr0l0m2rqn+u#kSxsq2kmn+pt{tÍ$ztm4vxrqroen+ptn+px{)o_'vtk.s;yrss+"Îl0q2|kmm0pxk0z}y(rp}v¥oenyynpt{/vxrqr'Nr0p}vy|tÏ|x"Îrp}vV|xkWp¥yjlk"w.q2m2rsNq2k"w2|xpLn~'ztk"ySwrpu#km2wW0o_k(l0q2|¢-|xkvxrqroenpLn+px{¤o_'vLkWsV-k¦n+p9q2m'vtzxwWkryyzto_k"yq2|}rq_q2|xkvxrqr¥0Vn+p'q2kWmk"yq_wrplk/mkWjxmk"ykp9q2k"vr0yr0p¡0t£Hk"w.q.rqq2mn+xzLq2korq2mni²¢-|xko_'vtk.s(ny¦vtkWjtnw.q2k"vn+pÊ®n+{zxmkªV|tnw2|Ìy|t")y|x"Ðq2|xmkke;zxpxvxr0o_kWp'qrsjx|xkWpxo_kWp}rwW0oLnptkq2¥{u#kWmp¤q2|xkjxm'w.k"yy)9_V|Ln;w2|¥revtrqreyk.q)nyVwWmk"rq2k"vÑªSÒÔÓÕ"Öl×Ø}×ÙÚÙÛÜ"Ù;Ý¦ÞÖßàLÚÖ}áßØxÜØâ·ã6Â¤kSryyzto_k-q2|}rqq2|xkmkTkWi'n;yqy$r0pÄzxp}vLkms'npt{/ykWqY0jxm0}rtnsn+qHÄvLnyq2mn+xzLqn0p}y4q2|}rq8{0ukmpek"r0w|_0t£Hk"w.q"äy-rqq2mn+tztq2kSu0rs+zxk"yVn+peq2|xkvtk{0kpxkm2rq2k¤wWrykq2|xk"ykÄurs+zxk"ywWzLs;vµlkÄvtk.q2kmoen+ptnyqnwrss/w|t#ykp}.6¢-|xkyk$jxm0}rtnsn+qHvLnyq2mn+xzLqn+p}yr0mk$wr0jLq2zxmk"v(9$q2|tkjtmxr0tnsnyqnwo_'vtk.sLâZn+pq2|tk4}{ztmkV|xkmkq2|xkSm2r0pxvt0o·urmn;rts+k)vtk"yw.mnLn+px{(q2|xkSÆ%q2|_rqq2mn+xztq2kSlq2|xkÈ05q2|ÄL£kw.qn;yYvLkpxq2k"vâ±­åæ_¢-|tk_rwq2z}rsu0rs+zxk08q2|Lnyrqq2mn+xzLq2ken;yq2|xkp¤tqrn+pxk"v¤9¤yr0o_jLs+n+pt{mo@q2|tkv'nyq2mntztqn+pâ±%åæÉL-k(vtkpt0q2k$q2|tk$mk"yzLs+qn+pt{eurs+zxk$ç±æ4Âkryyzxo_kq2|}rqVq2|tkâ±æäyVr0mk(n+p}vLkjlkp}vLkp9q"«'SÒ¦èÎàtÕÕ"ÖlÕÓÕ"ÖÝàLÛ"ÛéYã¥Â¤kr0yyzxo_kq2|xrqTq2|xkvtrqr¥nypx0ny¦r0pxvkmm0mHmnvtvtkp8¢-|tkYkmmm)jxm'w.k"yy)éÏvtk"yw.mnlkyq2|xk_or0ptpxkm9V|tnw2|q2|xk_kmm0m&ny{kptkm2rq2k"v²Âkr0yyzxo_k(q2|}rqq2|tk&vxrqr_u0rs+zxkç±ænywWi,jMGenerativeDataModelmijErrorProcessmij+zijZPProbabilisticOmissionmij+zij?withprob.1-pijwithprob.pijA*VÙÕ"à}ãNà/ØxÜØ/àtèNàLÕ"ØxÜ"Ù;ÖlèÏÖßàLÚVÒèËÖ²Þ¤Ù;Û"Û"Ù;Ö²èÓÕ"ÖÝàLÛ"Ûã§o_k0q2|tkYvxrqrTorpxqlk_r"u0rnsr0ts+kq2/q2|xkvxrqr/oen+pxkm&pÄztm(o_'vtk.s5-keryyzxo_kq2|}rqeq2|xkWmkny_rÄjtmxr0tnsnqËv'n;yq2mn+tztqn+p{u9kmpLnpt{q2|tkjxm'w.k"yy(9V|tnw2|vxrqrny(0oen+qq2kvÄ0mYorvtkr"urns;rts+k6Hpej}rmqn;w.ztsr0m9q2|tkSursztkSç±æê±ænyr"urn+srts+kq2Tq2|tkYvxrqrToen+pxkWmSnq2|¦jtm}rtnsnq±ætr0pxvnySoenqq2k"vm0oq2|xkvxrqrTyk.qYV|tnw2|8k$mkjtmk"ykp9qS9q2|tk$jtmk"ykp}w.k0-r#¤Snq2|jtm}rtnsnq¡ª±æÂkTvtkpt0q2kT'¥Åq2|xk)mk"yzLs+qn+pt{evxrqrTyk.qYV|tnw2|ny8q2|tkp_nptjxzLqq2q2|xk$vxrqroen+ptn+px{rs+{0mnq2|xo/.Nà}Ö}ØxÚYÖ}áTÜNàßNØxÜØÊÞÙ%èÙ%èÊØxÚ}ÖlÕÙ;ÜÞËã/{0n+u#kp¡Åryn+ptjxztq(­r0p}v/pxTLpt"Sskvt{k$0â!m)é).x0tqrn+po_k"r0pLnpt{0;ztsn+pLmorqn+prlzLqâ·ËpËj}rmqnwWztsr0m8-k¥rmkn+p9q2kmk"yq2k"vnp0tqrnpLn+px{en+pt;morqn+0pr0lzLqVq2|xkYorq2mni#"T5â.xV|t#yk%ÆÇ5È9kWp'q2mny-q2|xkYkWiLjlk"wqrqn+p04q2|xk$m2r0p}vLoÔu0r0mnr0Ls+k&â±æ1.1ContributionsofthisPaperÀs+k"rms9#Snq2|xzLqr0p9&ryyzto_jtqn+pxyrlzLq-â'éËr0pxv$nq4ny|tjlkWs+k"yySq2rw2|tn+kuk(q2|xkvxrqroen+ptn+px{T{rsl£Hz}yqVsrnvzLq"-¢-|tkxm2yqwW0p'q2mn+tztqn+pË0)q2|tnyjxr0jlkmnyq2Äjxmk"ykWp'qer{0kpxkm2rsykWqNwWpxvLnqn+p}y6zxpxvtkm4V|Ln;w2|enqnyjl#yyn+ts+kVq2Yk&%w.n+kp9qsemkWq2mn+kuko_kr0ptn+pt{0zLstn+pLmorqn+p_rlztq'"&5âÌ.pkyykp}wWk09ztm4mk"yztsqyy|t"q2|xrq4n}q2|xkSztp}vLkmsLn+pt{(vxrqr$o_'vtk.sLny6yz!%_w.n+kp9qs+yq2mzxw.q2ztmk"v('}q2|xkWpq2|xkm2r0pxvto_ptk"yyV0rejxm0}r0Lns+nyqnwTjtm'wWk"yyWlq2|tkr0vxv'n+qn+0p¤0-kmmmrp}v¥q2|xkTrw.qq2|xrqryn{0ptnlwWr0p9qYm2r0w.qn+pq2|tkvtrqror"lk¦oenyyn+px{Sn+sspxq_jxmkukp9qq2|xkvxrqroen+pxkWm;momk"wWu#kmn+pt{Ëo_kr0ptn+pt{0zLs$n+pt;morqn0pr0lzLqq2|tk)q2mzxk*vtrqr'+0mkYmorss+9L-kYjtmu#k$q2|xk0ss+"Sn+px{{kptkm2rsNq2|xk0mkoÑ,-.!/102.43ª065(78984:<;&=>?!@<>A>?(=@<BC@CDFEG@9H&DFEDI>FJLKM@C>FNODQPRDI;SCT:<UT>V:)>?(=W9@<>V@K$DTDTYX@<EX:<NOD>?YK$Z[@TWDI>F;=T>FNDV=O;@CN\=H\:<7TW]=^WL@CU_@CJ`ONa:<Kcbed)fT@9W9W<D>FDg:TZh;\78984:<;&=[>?!@<>i"T5â#DI;@jNa@T4SkKM@<>FNDQPl#UmDI>?AnoMprqtsuNOZv@TWj>?!=w9xT:<NOKy:z`>?(==ONN^:CNK@<>FNDQPTé{D;_|LFnoOZmU}?(=ON^=vnoD;>?(=kxg>?[;\DT]X74EG@<N6BC@eE7(=:z`~"T5âd1?(=T>?!=ON\=DI;@$84:eEJT:<K$DF@eE}>FDIK=M@eEX:CNODI>?]K$Z4q2|}rqqr#k"y(r0y$n+pxjxzLq(0ptsrp}vÄÅZ>?!@<>vDI;X7!@<N^@T>t=\=^W>V:jN\=^\:Tx;\>FN7!&>-ª|tª":a`6>?(==T>FNDV=O;h:a`"&5âÌ6>V:UmDI>?]DT@T@9W9WCDI>FDIB<=|Lª=ONONa:<N*dJustificationofAssumptions¢-|tk;zxp}vtr0o_kp9qrs)ryyzxo_jLqn+plkWn+px{ÄorvLk/n+pq2|tnyj}rjlkmnyq2|xrq"5âny(-kWss8r0jxjtm"iLn+orq2k"v9Ärs+"Ðm2r0pxorq2mn+i²pxrq2ztm2rs~9zxk"yqn+pËq2¤r0y¡n;yV|tkWq2|xkWmyz}w2|rpr0yyzxo_jtqn+0pËny£Hz}yqn}kvn+p¦q2|xkYw.p9q2kWi'qV06vtrqroen+pLnpt{erjxjtsnwrqn0p}yWl§n+oens;rm8mk"yzLsqy|xsv_n"T5â6ny8kWssrjxjtmi'n+orq2kv9erYs+"m2rpxlxyr"m2r0ptktorq2mni²p%r0w.q"q2|tnyY~9zxk"yqn+pny$ztp}vxro_kp9qrsszLqyn;vLkq2|xkywWjlk06q2|Ln;yVj}rjlkmltztq)np9q2zLn+qn+u#krm{zto_kp9qyrlzxpxvVHp¥wWo_o_0pq2Trss²q2|xkr0jxjLsn;wWrqn+pxyS8k(wW0p}ynvtkWm-ptk(wrp¦rm{zxk$jx|tns+#y0jx|Lnwrss¤q2|xrq&jlk0jts+k4jtm'vtz}wqyW6vt'wWzto_kp9qyWq2kmoy$n+p¡ws;r0yynwrsmkkl48k¡ynq2k"yW6kWqw0rmkrss-n+px|xkWmkp9qs+vLkWq2kmoen+pxk"v'Ä0mryy'wn;rq2k"vÄSnq2|ryorss6pLztolkmV;zxp}vtr0o_kp9qrs4jxm0jlkmqn+k"yWV|xkWmkk"r0w|Yn+p}v'n+u'nvLz}rs#jlkm2yp0jtm'vtzxw.q""-0m2vkWqw00wr0plkvtk.ywWmn+lk"v_9er$8kWn+{|9q2k"v_u#k"wq2m0²q2|xk"yk)}r0ykVjxmjlkWmqnkyW¢-|LzxyWq2|xk$£z}yqn}wrqn+pÄq2|}rq"T5â$lke0s"Ðm2r0ptl_¢-|xkkWitr0o_jts+k"yr0lu#kT08rvL'wWzxo_kWp'q$wW0mjxz}yW²jlkWm2yp}rsjxmkW;kmkp}w.k"y(r0pxv-ksn+pxLy6wr0p_rss}lkSjtsr0wWk"vTn+pTq2|Lny4;m2r0o_kW8mlÍlw.zxm2yk0#q2|xkSmk"rs£zxyqnlwrqn0pnyVkWo_jtn+mnwrs­1.2Applications¢-|xkTyk"wW0p}vwW0p'q2mn+tztqn+p0q2|tny)j}r0jlkWmnyn+pÄy|x"Sn+px{q2|}rqq2|xkTvxrqr/oen+pLnpt{o_'vtkWs8k|xrukvLk"ywWmn+lk"vÄwr0jLq2zxmk"y(rp'zxoelkme(l0p}r¥lvtk/n+o_jlmqr0p9qevxrqroen+ptn+px{Äjxm0ts+koyW8r0pxvn+pjxmkykp9qnpt{r_zxptnxk"vr0jtjxmrw2|q2eq2|xkWn+my0s+ztqn+pzxynpt{¢-|xkmkoª0Hpq2|Ln;y-mkyjlk"w.q"}0zxmVor£mVmk"yzLsqy)rmk(q2|xk$;0ss+"Snpt{tÑAnalysisofLSIasaninformationretrievaltool@<>t=T>;&=OKM@T>FDg~DTW]=^P<DTYXF§nyVryzxwwWk"yy;ztsq2k"w2|xptn~9zxk)0mn+pt;morqn+0pÌmkWq2mn+ku0rse%´_;movL'wWzxo_kWp'qyWÐ5qny¦ko_jLn+mn+wrs+sk&²k"w.qn+u#k)rqu#km2wW0oen+px{;\JT:TJCK$J(­wr0mutyW4r0ztq20o_Ln+s+kr0pxv84:<EJ<;&=OK$JÂÂÂyjtnvtkWmeuLyWkWn+{|9q­skW{{kvyjtnvLkm.Ëpr0pn+o_jl0mqr0p9qV}m2yqyq2kjq2"Srm2vxyVjxmu9n;v'n+px{rq2|xkWmkWqnwrsl£zxyqnlwrqn+p;m_q2|xk¥ko_jLn+mn;wWrsyz}ww.k"yy/~§.'6r0jxrv'noenq2mn+z´r0{|xr"urpN9¢r0or09ntr0pxvko_j}rsr¨ª©¬}jxmkykp9q2k"vr$jtmxr0tnsnyqnwo_'vLkWsLvtk"yw.mnLn+px{q2|tk{0kpxkWm2rqn+pe}rwWmjtz}ylvL'wWzxo_kp9qyprYyk.q-0lq20jtnwyr0p}v_y|t"-k"vq2|xrq"#;mvt'wWzto_kp9qy6{0kpxkWm2rq2k"vrwWwWm2v'npt{q2¤q2|tny_o_'vtk.s58q2|xkkHvLn+o_kp}yn+0p}rs$yzxxyj}r0wWk¥jxmvtzxwWk"v9[§-'n+kWsvxyWlSnq2|Ä|tn+{|¥jtm}rtnsnq9y|}rmjtsvLkW}ptk"vw.s+z}yq2kWm2y8r0o_0px{&vt'w.zxo_kp9qy4pk"r0w|eq20jtnwVSnq2|mk"yjlk"wq8q2Yq2|xkwWynptk¦o_k"r0yzxmk0¢8-Äs+n+oenqrqn+0p}yq2|tkWn+mo_'vtk.sVr0mk/q2|}rqvt'w.zxo_kp9qy-rmkryyzxo_kv/q2elk(ptk"r0ms2jtzxmkq2|xkYyztt£Hk"w.q)0rYyn+px{skSq20jtnw"6r0p}v&q2kmoy4ryy'w.nrq2k"vSnq2|_v'nG²kmkp9q6q2jtnwyr0mkryyzto_k"vÄq2lk_vLny£H0n+p9q"6r0pxv|xkWp}wWkq2|tkmkny(px¦jl0stykoT¥n+pq2|xk.nmo_'vtk.s54pe0jlkp_jxm0ts+ko·m0oÎq2|tkWn+mjxr0jlkm6nyq2YkWi'q2kpxvq2|xk.nm4£Hz}yqnlwWrqn+p¥§-ryVrp¦´q29sq2o_0mk({kWpxkm2rs4vt'wzxo_kWp'q{0kpxkm2rqn+po_'vtkWsyW9kyjlk"w.nrssptk"yV|Ln;w2|en+p}wW0mjlm2rq2kjl0styko&9ÂkÄwrpÊvtk"yw.mnlk¥q2|Ln;y/jlkpµjtmLskWor0y/q2|tkDT`*:<NKM@C>FDg:TN\=O>FNDIBC@eE!8N^:9H*EQ=OKT}V|tnw2|¦nyr_yjlkw.nrs6wr0yk06ztm{0kpxkWm2rs4vtrqroen+ptn+px{So_'vLkWs­ÑNÂ¤kryyzxo_k6q2|}rqNq2|tkjtmk"ykpxwWktq2kWmoÌÆxn+p&vt'wzxo_kWp'q²È%0m6q2|tk-u0rs+zxkS²rqq2mn+xzLq2kSÆ;mL£k"wq4È9ny6r$m2r0pxvtou0r0mnr0LskSn+q2|o_k"r0p#"T5â±æ.¢-|LzxyWtvt'wWzto_kp9qy0yn+oen+srmyk.V|Lnw|_o_k"r0yzxmk"y4q2|xkVv'nyqr0p}w.k)lk.q-kWkpvt'wWzto_kp9qy4ry4q2|xk)wWyn+pxkY4q2|xkYrpx{0s+korp9qn;wwWo_jlyn+qn+0p¡r0mk{kWpxkm2rq2k"vm0oyn+oen+srmTjtm}rtnsnqv'nyq2mntztqn+pxyW}|t8ku#kmSq2|Ln;yVyn+oensr0mnqn;yS|Ln;vtvtkpmoÔq2|tk$n+pt;morqn0pemkWq2mn+ku0rsxrs+{0mnq2|xoÎ9Yq2|xk-jtm}rtnsnyqn;wS{0kpxkm2rqn+u#kjtm'wWk"yyW6Âk)ztmq2|xkmSr0yyzxo_k)q2|}rq8q2|xk(w.mjxzxynySwWmmztjtq2k"v9rpr0vxv'n+qn+u#kkmmm_jtm'wWk"yyé(¢-|xk¦{0#rs$$q2|xkn+pt;morqn+0pmk.q2mnkWursYrs+{0mnq2|xonyq2skr0mpo_k"rptn+px{zLs(vtrqrrlztqq2|tkorq2mni"T5â.-yzxw|ry&q2|xkrpx{skyelkWq8kkp¡q2|xk¦wW0s+zxo_pxyT"&5âÌ.t{0n+u#kWppLs+q2|tkYorq2mni/Åry-n+pxjtztq"6rj}r0vLn+oenq2mn0zDäymkyztsqk"yykp9qnrssy|x")y4q2|}rq'§nywWr0j}rts+ke-wW0o_jxzLqnpt{o_k"r0pLnpt{0;ztsn+pt;morqn0p¤rlzLqh"T5âV|tkpnqTny&rj}rmqn;w.ztsr0mqLjlk_0Ss+"m2rpxÄorq2mni²4p}ro_kWsrysn+{|9qs/jlkmq2zxmlkvLs+'w_orq2mn+i²Â¤k{0kpxkWm2rsnk(q2|tnyq2Ty|x"q2|xrq'§ysuk"yq2|xk-n+pt;morqn+0pemkWq2mn+ku0rstjxmLs+koV|xkpeânyrpermtnq2m2r0morq2mn+i&yzxw|q2|}rqm"T5âny-k.s+sxr0jtjxm"i'n+orq2k"vY9r(s+"m2rpx&orq2mni²Âk)rsy&rss+"Êr0pr0vxv'n+qn+0p}rs}kmmmorq2mniérp9kWmmmorq2mni08npxvtkjlkWp}vtkWp'q(m2r0p}vLou0rs+ztk"y(Sn+q2|o_kr0pe»r0pxvwW0p}yqr0p9qvLku9n;rqn+pN4¢-|LzxyW#0zxm4mk"yzLs+qyjtmu#k8q2|}rq§4-0mLyn+p_Sn;vLkm-u0r0mn+kWqH_0NykWqqn+px{yq2|}rp_q2|x#ykwW0p}ynvtkmkv9¨DªW©0¬­r0pxv¤np¡jxr0mqnwWzLs;rmjtmu9nvtkyq2|tkmkWqnwrs6£zxyqn+}wrqn+0p;mq2|xk-%r0w.qq2|}rq§4wrpeu#km2wW0o_kVq2|tkSjxm0ts+koÎ0²jls+tyko&9CollaborativeFilteringztp}vxro_kp9qrsjtmts+konm2rpxkorq2mnwWkyâ6ÅooenpLn+oenWk"y(q2|xk_kmm0mÅâprw.q"nq(ny$q2|xkTwrykTq2|}rqÅÅopnolV|tnw|s+k"rvty(z}yq2q2|tkewW0p}w.s+zxyn0pÄq2|xrq~n±n±lmkjxmk"ykWp'qy)q2|xkno_jl0mqr0pxwWkn+pxwWmjl0m2rqn+px{/q2|xkÆ/,1yn+px{0ztsr0m(uk"w.q2mj}rnm)n+p'q20zxm(rjxjtmi'norqn+pN§kk¨º"¬}0m-r(o_mk)wWf`6DI>'DI;6>?!=\@<;&=>?!@<>±vuÅ±@TWx±*u|L±>?!=TDI>'DI;6>?!=\@<;&=>?!@<>±J±u|L±@TWÅ±oaÅ±ovu|tÅ±op0(/1/^qe0VÂk4SnssLr0jxjLsYÀ80m0ssr0mr0pxv(wWpxw.s+z}vLkq2|xrq8$kp$oJ$$o|xryepx0mo|Lª.´k"wrss)q2|xrq_8k¥ryyzto_kq2|}rq±uÅ±Sr0pxvx±*u|L±.±J±p±J$oÅ±p±J$oÅ±J$o±p±$oJ$kÅ±Jx±pJ$kÅ±Jx±$kÅ±x±u|L±¢-|tk8ykwWpxv(mk"yztsqny0xrSynoensr0mp}rq2ztmkxzLq|}ryptkjxr0mqnw.zLsr0mrvtu0r0p9qr{kSu#km4q2|xk8mkWsrqn+p_lkWqH-kkWp±rp}v±4¶(ro_kWs98kr0mkr0w.q2z}rs+sr0Ls+k(q2ewW0o_jxztq2kfÅ±o;moÅLV|tkmk"r0ywW0oejtztqrqn0p¥0J±mk~'zLn+mk"y)'ptSs+k"vL{k&06q2|xkYorq2mniJxV|tnw|ny/zxpt;mq2ztp}rq2k.s+zxpxr"urn+srts+kÄ;mq2|xkjxztmjl#yk"y0&0zxmvxrqroen+pLnpt{erjxjtsnwrqn0p}yWÅ±oaÅ±opo±o±po±oJk±po±oJ±+k±o,±J±k±±J±lk±u|L±u|LÅ±o¢-|tkmkWoÔ©e{kptkm2rsnk"y)mk"yztsqy-m0o¨DªW©tNª"»¬m0oÔq2|xkYwr0ykV|tkmkeÅony(rts+'w2vLnr0{0pxrsorq2mniwW0p}ynyqn+px{0kLs'w2Lyq2Tq2|xkYwr0ykYV|xkmkÅonyrprmtnq2m2r0mm2r0ptkorq2mni²Vsq2|xzt{|q2|tk-q2|xk0mko·nyjtmk"ykp9q2k"vTn+pq2kmoy4w.0s+zxo_pxyWnqrjxjLs+n+k"yVk"~9z}rss+8kWssn+p¦q2|xkq2|xkYwW0p9q2kWi'qV06m")yS0ÅÏrp}vÅ&Â¤k&Snss6lk&j}r0mqnwWzLsr0msn+p9q2kmk"yq2k"vn+pÄr0px{s+k"y$lkWqH-kkpu#kw.q20m2yW'kWq$Çxvtkpt0q2k$q2|tkYr0pt{0s+kYlkWq8kkpu#k"w.q20m2yr0pxvlËyn+o_jts+k8k.iLq2kWp}yn+p&0²yjxrqnrsLjtmi'n+oenq(q2r0pt{zLs;rm4jxm"i'n+oen+qHwWr0plkYzxyk"v/q2e0tqrnpq2|xk$;0ss+Sn+pt{w.m0ssr0m9\/10(/r]V]_+10V`9i=O>±@TW"æH=8Na:=^&>t=^WM\:eE7YKT;v:z`8Ådf`H\:<>?±@TW&æ;&@C>FDI;`OJj>?(=\:TW<DI>FDg:T;DT1?(=^:<N^=OK!Z>?!=TD>_DI;i>?(=$\@<;&=h>?!@C>4]d$,±Çæ$±Çæ*u|Lªw4d$­Å±oÇ2Åæo$vÅ±oÇrÅæAou|Lªprw.q"tptkYmVl0q2|wWzLs;v/lkYjxm£k"wq2k"v¦m")y)&4.STABILITYUNDERRANDOMPERTUR-BATION®}0m(q2|xkevtrqr/oenpLn+px{r0jxjLsn;wWrqn+pxyY8kq2|xkTyq2mz}wq2zxmk&0SÅ(¶0q2kTq2|xrqq2|xk"yk&u#k"w.q20m2y-0ztsvlkjl9ms¤r0jtjxm"i'norq2k"vÄn+p¤ÅokukpSnq2|x0ztqm2rp}vt0o@kmmmS¢-|xk&yk"wW0p}v¥wW0p}vLnqn+pxq2|xrqFx±u|t±.xny$rso_yqrs-r"tyYq2mzxk;mYq2|xyk±Muqª.¥§kkMko_or¥ª"»/npq2|xk(jxjlkWp}vLni_;mrjxmk"wn;ykYukm2yn+p4q2|tnySyqrq2ko_kWp'q"«9-Âµ|tkp¡-krjxjLs+¡wWms+srmÁ-k¦rw.q2zxrssryyzxo_kq2|}rqnonoIluq$sçuN.eÍ$zxmjxzxmjlykn+p¤y¦vtnpt{nyq2jxmk"ykWp'qq2|xkSq2|xkWmkoy4n+pr(;moq2|xrq8rss+")y8q2|xkvxrqroen+pxkmVq2_u#kmnq2|}rqq2|tk&jtmk"wW0p}vLnqn+pxyq2|tk&q2|tkmkWo|xsvnonoluqsçuN&s+s+")y'}ykWmu'n+pt{q2|}rq$;mYrp'¦Æn±n±r0pxveuNesçu.¢-|'z}yWno)noIluq$sçuN.-nrp}vËptsnnonoIluqsçuN.5.DATAMININGÂ¤k$ptkWi'qVy|x"Ê|x"ÏÀ8mss;rmÁwr0plk(z}ykvq2y0s+u#kYy0o_k4q2|xkYvtrqroen+pLnpt{e~9zxkyqn0p}yVvtkywWmn+lk"vn+pq2|tk$n+p'q2m'vLz}w.qn+0pN5.1InformationRetrievalÂ¤klkW{0n+p'(wWpxynvtkmn+px{)q2|xk4n+pt;morqn+0pTmkWq2mn+ku0rs'jtmLskWov'nywWz}yyk"v¦n+p§k"w.qn+pª0«9Vp¦q2|LnywW0p9q2kWi'q)qr#k&Åp"&5âÌ.}rorq2mni/V|t#yk¨ÆÇ5È0¬kWp'q2m_ny-q2|xkkWiLjlk"w.qrqn0p06â±æ'q2|xk(m2rptvLoÔu0r0mnr0Ls+kYz}yk"vq2{kptkm2rq2k(q2|tk_%Æ2Ç­È9Hq2|kp9q2m04q2|tk(jxztmko_'vLkWstorq2mni²}k.qjÅlk-q2|xkSorq2mniV|xyk&¨ÆÇHÈ0¬wW90m2vLn+p}rq2kw.p9qrn+p}y)reyro_jts+k(0q2|xkYm2r0pxvt0ourmnr0ts+kxp}ro_kWsç±æÍ$ztm)xm2yq){#rs4ny)q2vtk.q2kmoen+pxk(n+pt;morqn+0prlzLqq2|tk&orq2mniÅ8{n+u#kp¡q2|xk/orq2mniÅY¢-|tnyTqHLjtnwrss¡ny0)q2|xk0mo$n+pt;morqn0pkWi'q2m2r0w.qn+pÏ­r0w.q2z}rs)kp9q2mnkyTn+pÅ$Tmyn+oensr0mnqH¤q2|tkr0px{s+k"ylkWqH-kkWpm")y)0m$wWs+zxo_p}ySÅ(.-À8m0ssr0mÁn+o_jLs0mk"y6z}y4q2(qr0#kSq2|xk-;0ss+"Snpt{erjxjxmrw2|eq2(q2|tny6jxmLs+koÑª0¿kWq2kWmoenptk$q2|xks;rm{k"yqkyzxw|/q2|}rqnoIlnopqsçuN«9)À8o_jtztq2kÅoq2|tkYjtqn+orsNm2rpxkrjxjtmi'n+orqn+0pq2ÅS®}0mYr0p9Ävtkynmkvn+pt;morqn0p¤rlzLq&Å&²z}yk&q2|xkr0p}y8kmLqrn+pxkv¦9¦w.p}ynvLkmn+px{Åon+p}yq2k"r0v¢-|tk$w.pt}vtkpxwWkV-k$|xr"u#k)n+p_q2|xkVn+pt;morqn+0p/0ztq2jtztq'q2|tnyjtm'wWk"yySnyV{n+u#kp¦n+pq2|tk(s+s+"Sn+px{_q2|xkWmko,-.!/102.43º9i=O>}âZtÅ@TWÅH=vW9=[hT=^Wh@<;@9H\:<B<=OZ}@TW6EQ=O>>?!=T:C>FDg:T:a`@X::W\:eE7YKT:<N_N^:<UHO=W]=[hT=^Wh@<;_DT:<N^:eEEG@<NOJdt;;\7YK=>?!@<>~>?(=#Na@TW9:CKBC@<NDg@9H*EQ=O;DTâ?!@<B<=#:T;\>V@T>;\>V@TW9@<NaWW9=OBDg@<>FDg:T@TWi>?!=;&=t84@<Na@<>FDg:TnonoIl:a`m>?(=_KM@<>FNDQPÅDI;qsçuNd1?!=TUmDI>?68N^:9H\@9H&DIEDI>FJªM|LªOZ9`*:<Ni@eEIEX::W\:eE7YKT;È!ZÅæo¨¬(ÅæAo¨.¬u|Lª`&:<Nh@eEIEH&7Y>|L%ç¥6BC@eE7(rssNq2|tk$kp9q2mn+k"y8n+prp}vlxrp}v|xkpxwWk$q2|tkq2mzxkno_jl0mqr0pxwWk$8k¥ynq2k"yW5.2CollaborativeFilteringÂ¤k¦ptkWi'qwWpxynvtkmq2|tk¦jtmts+ko0(oen+pLnpt{¤rpËn+pxwWo_jLsk.q2kvtrqr&ykWq"try;m-k.ixro_jts+kV-k8zLs;vpxkWk"veq2vL;m-q2|tk$wWss;rt0m2rqn+u#kYxsq2kmn+pt{ejxm0ts+koAModelforCollaborativeFilteringÂ¤kYo_'vtkWs²q2|tkYwW0ssr0l0m2rqn+u#kxsq2kmn+px{jxmLs+kory-ss")yWk.qÅËmkjtmk"ykp9qr$w.o_jts+kWq2k-vxrqrykWqV­r0pTç'vueorq2mnix.Í$oenq&kp9q2m¤ÅT¨Æ2ÇHÈ0¬Snq2|¡jxmxr0Ln+snq[±æSV|tkmkoenyyn+pxy)rmk(n+p}vtkWjlkp}vLkp9qS040pxkrpx0q2|tkm.4Âk(vtkpt0q2k$q2|tkmk"yzLs+qn+pt{_yLol0snw(orq2mni/Åxy8kY|}r"u#kÑÅ¨ÆÇ5È0¬1pÅ¨ÆÇ5È0¬Yj±æYjVªv#±æV|xkWmk#Ony)rTjtsrwWkW|x0svLkm)n+pxvLnwrqn+pt{eoenqq2k"vvxrqr'´kWq2mn+ku#k$o_kr0ptn+pt{0zLs²npL0morqn+p¦r0lzLqVÅ&tyzxw|ry8q2|tku0rs+zxk"ySq2|xk"yWACollaborativeFilteringAlgorithmÂ¤kjtmjlyk$q2|xkVs+s+"Sn+px{_rs+{mnq2|toLwrss+k"v;9;m-mkwWu#kmn+pt{q2|tkäyryyztoenpt{eq2|}rqq2|tk&0oenyyn0pjxmxr0Ln+snqn+k"y_±ærmk'ptVpÂkSn+ssLsrq2kmvtkywWmn+lkVrq2k"w2|xptn~9zxk0mk"yqn+orqnpt{q2|tk±æursztk"yWª0¿kWxpxk$q2|tk(kWp'q2mn+k"y_Târ0mkr0yyzxo_k"vq2lk{0kpxkm2rq2k"vn+p}vLkjlkpxvtkp9qs9´ko_u9n+px{q2|Lny(mk"yq2mnw.qn+pnyr0p¤n+o_jlmqrp9q&vLn+mk"w.qn+pmY;ztq2ztmkYmk"yk"rm2w|6.REFERENCESQ?"AGJQBDI2GDBD]#CbBJ]?Q^BQBD]#BD]?8CHCFaBWEHBDF"]GDI2CI2EII2]^I2EHCFEHIC6BD]A"IWE`!CI2CQ"]$#5=H,-*&%(')'*,+-/.100P(23.fg4-".,.5.'J55Q"67)8:9;6<J=(=(>Q6,?Q@CJ"AQABDAHC\B]DCQ?F"\#I2]QI2a2F&I]!WEBDF"]C?GCCHBE9aWEBDF"]GF3HCHBD]Y^F0a2BG/]?F"]EHI2]E9@CII]F"AWEHBDF"]BD]I2a2F&I]!WEBDF"]Q]$#5.!"0<"$H,+++PJ=(=(JQ>K¦QI2AHALJ"MQ!AaJ]NQ[I2CC5Q"WEHABDa2I2C.JPOI2aEHF"AS^5a2I2C]];F"AWEBDF"]IEHABDIQ(GQ]00P;+R.K.W.UTSL:(RUV%.3RS0YXWJ55Q>(>)Y9>(<6J=(=(=QZ¦QI2AHALJ'^QBDCJ]\[Q"]_^AHBDI]QHCHBD]$GDBD]I:A`Ga"I2`#AF"ABD]EHIGDGDBa"I2]EBD];F"AWEBDF"]&AIEHABDIQ(GQ]00P;+R.K.W.Ub*Pc)deU(fJ55QY8>:gY=)YJ=(=)YQY:QQF55]QNNBa"I2])Q(GI2CR]
