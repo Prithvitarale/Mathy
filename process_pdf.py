@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 def process_pdf(input_dir, output_dir):
     files = []
     for i, pdf_file in enumerate(glob.glob(input_dir)):
+        print(str(pdf_file))
         pdf = open(pdf_file, "rb")
         text = pdftotext.PDF(pdf, raw=True)
         pdf.close()

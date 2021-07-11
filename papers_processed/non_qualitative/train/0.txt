@@ -1,0 +1,1215 @@
+Multiple Organ Failure Prediction with Classifier-Guided
+Generative Adversarial Imputation Networks
+Xinlu Zhang*
+Department of Computer Science, University of California,
+Santa Barbara
+Santa Barbara, USA
+xinluzhang@cs.ucsb.edu
+Yun Zhao*
+Department of Computer Science, University of California,
+Santa Barbara
+Santa Barbara, USA
+yunzhao@cs.ucsb.edu
+Rachael Callcut
+UC, Davis Health
+Davis, USA
+racallcut@ucdavis.edu
+Linda Petzold
+Department of Computer Science, University of California,
+Santa Barbara
+Santa Barbara, USA
+petzold@cs.ucsb.edu
+ABSTRACT
+Multiple organ failure (MOF) is a severe syndrome with a high
+mortality rate among Intensive Care Unit (ICU) patients. Early and
+precise detection is critical for clinicians to make timely decisions.
+An essential challenge in applying machine learning models to
+electronic health records (EHRs) is the pervasiveness of missing
+values. Most existing imputation methods are involved in the data
+preprocessing phase, failing to capture the relationship between
+data and outcome for downstream predictions. In this paper, we pro-
+pose classifier-guided generative adversarial imputation networks
+(Classifier-GAIN) for MOF prediction to bridge this gap, by incor-
+porating both observed data and label information. Specifically,
+the classifier takes imputed values from the generator(imputer) to
+predict task outcomes and provides additional supervision signals
+to the generator by joint training. The classifier-guide generator
+imputes missing values with label-awareness during training, im-
+proving the classifier’s performance during inference. We conduct
+extensive experiments showing that our approach consistently out-
+performs classical and state-of-art neural baselines across a range
+of missing data scenarios and evaluation metrics.
+CCS CONCEPTS
+• Applied computing → Health care information systems;
+• Information systems → Data mining.
+KEYWORDS
+Multiple organ failure; Missing value imputation; GAN;
+ACM Reference Format:
+Xinlu Zhang*, Yun Zhao*, Rachael Callcut, and Linda Petzold. 2021. Multiple
+Organ Failure Prediction with Classifier-Guided Generative Adversarial
+*Equal Contributors.
+Permission to make digital or hard copies of all or part of this work for personal or
+classroom use is granted without fee provided that copies are not made or distributed
+for profit or commercial advantage and that copies bear this notice and the full citation
+on the first page. Copyrights for components of this work owned by others than ACM
+must be honored. Abstracting with credit is permitted. To copy otherwise, or republish,
+to post on servers or to redistribute to lists, requires prior specific permission and/or a
+fee. Request permissions from permissions@acm.org.
+BIOKDD’21, August 15,2021, Virtual Event, Singapore
+© 2021 Association for Computing Machinery.
+Imputation Networks. In Singapore ’21: 20th International Workshop on Data
+Mining in Bioinformatics, August 15, 2021, Singapore. ACM, New York, NY,
+USA, 10 pages.
+1 INTRODUCTION
+Multiple organ failure (MOF) is a life-threatening syndrome with
+variable causes, including sepsis [26], pathogens [10], and compli-
+cated pathogenesis [28]. It is a major cause of death in the surgical
+intensive care unit (ICU) [7]. Care in the first few hours after ad-
+mission is critical to patient outcomes. This period is also more
+prone to medical decision errors in ICUs than later times [19]. Thus,
+an effective and real-time prediction is essential for clinicians to
+provide appropriate treatment and increase the survival rates for
+MOF patients.
+With the rapid growth of electronic health record (EHR) data
+availability, machine learning models have drawn increasing atten-
+tion for MOF prediction. Missing values are a pervasive and serious
+medical data issue, which could be caused by various reasons such
+as lost records or inability to collect the data during some time pe-
+riods [34]. There exist many imputation algorithms, such as mean
+value imputation [1], multivariate imputation by chained equations
+(MICE) [5] and generative adversarial imputation nets (GAIN) [31]
+which impute missing components by adapting generative adver-
+sarial networks (GANs). However, these methods focus only on
+constructing the distribution between the unobserved components
+and the observed ones, without considering the underlying connec-
+tions with specific downstream tasks, as is shown in the Figure 1.
+Recently, GANs [8] have made significant progress on data gen-
+eration. Labels can be incorporated in the GAN framework, e.g.
+CGAN [16] and AC-GAN [18], to generate label-aware outputs.
+Semi-supervised GAN [17] introduces a classifying discriminator
+to output either the validity of data or its class. Triple-GAN [14]
+is further proposed by adding an additional classifier to separate
+the role of the discriminator in Semi-supervised GAN. These works
+leverage label information to improve data generation and their
+generators have to take ground truth labels to generate label-aware
+data, which is not applicable in classification problems during in-
+ference.
+arXiv:2106.11878v1
+[cs.LG]
+22
+Jun
+2021
+BIOKDD’21, August 15,2021, Virtual Event, Singapore Xinlu Zhang, Yun Zhao, Rachael Callcut and Linda Petzold
+Imputer
+Original Data with
+missing elements
+Models Input information Estimated outcome
+Unsupervised Imputation Classifier-Guided Imputation
+Imputed data
+Predicted outcome
+Classifier
+Original Data with
+missing elements
+Imputer
+Imputed
+data
+Predicted
+outcome
+Classifier
+Figure 1: Workflow comparison of unsupervised imputers
+(left) and Classifier-GAIN (right). Classifier-guided imput-
+ers learn from the classifier during training and improve
+classification during inference, while unsupervised imput-
+ers learn only from the partially observed data in the data-
+prepossessing phase. The solid lines represent processes
+that occur during both the training and inference phase,
+while the dashed line represents the step that only occurs
+during training. Note that our final goal is to improve the
+classifier’s performance utilizing imputed data.
+In this paper, we propose a classifier-guided missing value im-
+putation framework for MOF prediction with early-stage measure-
+ments after admission. The generator uses observed data and ran-
+dom noise to impute missing components and obtains imputed
+data; the classifier takes the generator’s outcomes, models the re-
+lationship between imputed data and labels by joint training with
+the generator, and outputs estimated labels. The discriminator at-
+tempts to identify which component is observed by taking imputed
+data from the generator and predicted label information from the
+classifier.
+The key contributions of this paper include:
+1) We propose a classifier-guided missing value imputation deep
+learning framework for MOF prediction, which incorporates both
+observed data and label for modeling label-aware imputation during
+training to help classification during inference. To the best of our
+knowledge, this is the first GAN-based end-to-end deep learning
+architecture for MOF prediction with missing values.
+2) Experimental results on both synthetic and real-world MOF
+datasets show that our Classifier-GAIN outperforms GAIN and
+MICE consistently in different missing ratio scenarios and evalua-
+tion metrics.
+3) Visualization of the values imputed by our approach further
+validates the effectiveness of Classifier-GAIN compared to various
+baselines.
+The remainder of our paper is organized as follows. Preliminaries
+are introduced in Section 2, followed by the details of our proposed
+approach in Section 3. Experimental results are reported in Section 4.
+In Section 5, we review the existing related work, and conclusions
+are given in Section 6.
+2 PRELIMINARIES
+We formulate the MOF prediction as a binary classification problem
+with missing components in multiple features. In this section, we
+describe the problem definition in Section 2.1 and review the GAIN
+imputation algorithm in Section 2.2. The related notations are sum-
+marized in Table 1. Specifically, throughout this paper, we utilize
+lower-case letters, e.g. x, to denote the data vector. 𝑝(x) is the prob-
+ability distribution function of x. 1 denotes a d-dimensional vector
+of 1s, and letters with hats such as x̂ denote estimated vectors.
+Table 1: Notation definitions
+Notations Description
+𝑖 index of observations
+𝑗 index of observed features
+𝑑 ∈ N number of observed features
+𝑁 ∈ N total number of observations
+𝑛 ∈ N size of minibatch
+x data vector
+𝑦 outcome indicator
+m mask vector
+z noise vector
+h hint vector
+b binary vector for calculating hint
+x̃ combination of partially observed data and NAs
+¥
+x combination of partially observed data and noise
+𝐺 generator
+𝐶 classifier
+𝐷 discriminator
+g reconstructed vector, the output of G
+x̂ imputed data vector
+m̂ estimated mask, the output of D
+ˆ
+𝑦 estimated label, the output of C
+2.1 Problem definition
+Let X𝑑 be a 𝑑-dimensional space and x a data vector, taking values
+in X𝑑 following distribution 𝑝(x). We denote 𝑥𝑗 as the 𝑗-th feature
+in x. Binary mask vector m ∈ {0, 1}𝑑 indicates if the corresponding
+element in x is missing or not, where 𝑥𝑗 is observed if𝑚𝑗 = 1, other-
+wise 𝑥𝑗 is missing. To clarify the observed and missing components,
+we define a new vector x̃ = ( ˜
+𝑥1, · · · , ˜
+𝑥𝑑) as follows:
+˜
+𝑥𝑗 ∈{1,2,...,𝑑 } =
+(
+𝑥𝑗, if 𝑚𝑗 = 1,
+NA, if 𝑚𝑗 = 0.
+Supposing that 𝑦 ∈ {0, 1} is the binary outcome indicator for each
+sample, we can represent the dataset as a collection of 𝑁 i.i.d. sam-
+ples {(x̃𝑖, m𝑖),𝑦𝑖 }𝑁
+𝑖=1.
+We aim to impute the missing components in every x̃, and predict
+the outcome𝑦 for all samples by leveraging the imputed data vector.
+Multiple Organ Failure Prediction with Classifier-Guided Generative Adversarial Imputation Networks BIOKDD’21, August 15,2021, Virtual Event, Singapore
+Formally, we seek to model 𝑝(𝑦|x̃): the conditional distribution of
+the task outcome given a partially observed data vector.
+2.2 Generative adversarial imputation
+networks (GAIN)
+GAIN [31] was proposed to impute missing components with a
+GAN framework. In GAIN, the generator takes the observed compo-
+nents in x̃, mask vector m and a noise vector z as inputs, and outputs
+a completed data vector. The discriminator tries to distinguish the
+observed components and the missing ones. Furthermore, a hint
+vector h is introduced to provide additional missing information
+for alleviating the diversity of the imputation result.
+The generator, G, takes
+¥
+x = m ⊙ x̃ + (1 − m) ⊙ z,
+a combination of x̃ and z by element-wise multiplication with m,
+as input, and outputs g, the reconstructed vector,
+g = 𝐺(¥
+x).
+Note that g is an output vector for every component, even if values
+are not missing in the data vector.
+Thus, another element-wise multiplication is performed to cal-
+culate the imputed data vector via
+x̂ = m ⊙ x̃ + (1 − m) ⊙ g,
+where x̂ is obtained by taking the observed part in x̃ and replacing
+each NA by the corresponding value in g.
+The discriminator serves as an adversarial character to train
+G by taking in the imputed data vector x̂ and the hint vector h,
+following the distribution 𝑝(h|m). The output of the discriminator
+is a distribution to identify which components in x̂ are observed.
+To help the discriminator distinguish imputations and observations,
+h provides certain information about m and its amount can be
+controlled by adjusting h in different settings. Specifically, a binary
+random variable b ∈ {0, 1}𝑑 is randomly drawn with 𝑃(𝑏𝑗 = 1) = 𝑝.
+Then, h|m is calculated by
+h = m ⊙ b + 0.5(1 − b),
+such that the discriminator will get mask information by ℎ𝑗 = 𝑚𝑗
+if 𝑏𝑗 = 1, otherwise, no information provided.
+3 METHODOLOGY
+Notably, conditional information such as labels can improve the
+performance of the generator [16, 18], and the completed data vec-
+tor can enhance its task prediction result. However, state-of-art
+imputation methods, e.g. GAIN, do not make use of the relationship
+between observations and outcome labels, which could provide ad-
+ditional information to help downstream classification tasks. There-
+fore, we propose Classifier-GAIN to bridge this gap. Figure 2 depicts
+the overall architecture. We explain each of the components and
+the training process of Classifier-GAIN in detail in Section 3.1∼ 3.2.
+Original data
+Observed data
+0 0 "!" 0
+0 "## 0 "#$
+0 0 0 ""$
+Noise
+1 1 0 1
+1 0 1 0
+1 1 1 0
+Mask
+Generator
+Classifier
+$
+%!
+$
+%#
+$
+%"
+Imputed data Hint
+1 0.5 0 1
+1 0.5 1 0
+0.5 1 1 0.5
+Discriminator
+(!! (!# (!" (!$
+(#! (## (#" (#$
+("! ("# ("" ("$
+Estimated mask
+Estimated label
+%!
+%#
+%"
+Ground truth label
+Label prediction loss
+Reconstruction loss
+Mask prediction loss
+Backward propagation
+Backward
+propagation
+Backward propagation
+)!! )!# *!" )!$
+)#! *## )#" *#$
+)"! )"# )"" *"$
+)!! )!# 0 )!$
+)#! 0 )#" 0
+)"! )"# )"" 0
+)!! )!# NA )!$
+)#! NA )#" NA
+)"! )"# )"" NA
+Figure 2: The overall architecture of Classifier-GAIN with
+three samples (adapted from GAIN [31]). Each row in the
+matrices and vectors corresponds to a sample. The input of
+our network is the original data vector with missing compo-
+nents. The generator takes partial observation data, a noise
+matrix filling missing components and mask, and outputs
+imputed data, which is then fed into the classifier to obtain
+the estimated labels. The imputed data and the estimated la-
+bels along with a hint matrix are fed into the discriminator
+to estimate the mask. Dashed lines represent information
+flows for loss calculation. Green solid lines represent back-
+ward propagation for the generator and the classifier train-
+ing, and the red solid line represents the backward propaga-
+tion for the discriminator training.
+3.1 Classifier-guided generative adversarial
+imputation nets
+In an imputation setting, we propose to fill in the missing com-
+ponents NAs in x̃, using the distribution of data obtained by the
+generator, G. To guide the data imputation and predict the final
+task outcome, the classifier, C, takes imputed data and is trained
+together with G. The discriminator D plays an adversarial role to
+train G, with additional label prediction information from C.
+Generator and Classifier. Similar to the structure of GAIN, G
+takes x̃ as input and outputs x̂, trying to model 𝑝(x|x̃), the condi-
+tional distribution of a data vector given the partial observations.
+The classifier C is a supervised learning model to predict the task
+outcome, ˆ
+𝑦, by taking x̂ from G, which obtains the conditional
+distribution 𝑃(𝑦|x) = 𝑃(𝑦|x̂). We define the estimated outcome ˆ
+𝑦
+BIOKDD’21, August 15,2021, Virtual Event, Singapore Xinlu Zhang, Yun Zhao, Rachael Callcut and Linda Petzold
+by
+ˆ
+𝑦 = 𝐶(x̂).
+Then G and C are jointly trained to obtain the distribution 𝑝(𝑦, x|x̃),
+making G label-aware during imputation, which is ignored by
+GAIN.
+Discriminator. In our architecture, the discriminator D serves as
+an adversarial character to train G by receiving the predicted label
+information from C. We input x̂, ˆ
+𝑦 and h into D to obtain the prob-
+ability that each component in x̂ is observed. Here, x̂ and ˆ
+𝑦 jointly
+provide information to enhance D by learning the relationship be-
+tween data and task outcomes, which can further strengthen G and
+C. We define the estimated mask variable, m̂ ∈ [0, 1]𝑑, by
+m̂ = 𝐷(x̂, ˆ
+𝑦, h),
+with the 𝑗-th item in m̂ corresponding to the probability that the
+𝑗-th item in x̂ is not NA in x̃.
+3.2 Classifier-GAIN training
+G, C and D are trained as a min-max game by
+min
+𝐺,𝐶
+max
+𝐷
+𝑉 (𝐺,𝐶, 𝐷) = E¥
+x,m,h
+"
+m log
+
+𝐷 𝐺(¥
+x),𝐶(𝐺(¥
+x)), h
+
++ (1 − m) log
+
+1 − 𝐷 𝐺(¥
+x),𝐶(𝐺(¥
+x)), h
+
+#
+, (1)
+where log is an element-wise logarithm. Specifically, We train G
+and C together to minimize the probability of D identifying m,
+maximize the probability of correctly predicting 𝑦 and minimize
+the reconstruction loss of observed components. We train D to
+maximize the probability of correctly predicting m.
+On each iteration, G and C are updated 𝑘 times with objective
+function, L𝐶&𝐺 , which is a weighted sum of three losses
+L𝐶&𝐺 = L𝐺 (m, m̂) + 𝛼L𝑅 (x, x̂) + 𝛽L𝐶 (𝑦, ˆ
+𝑦), (2)
+where 𝛼 and 𝛽 are hyper-parameters.
+The first loss, L𝐺 , is an adversarial loss, which applies to missing
+components (𝑚𝑗 = 0) by
+L𝐺 (m, m̂) = −
+𝑑
+∑︁
+𝑗=1
+h
+(1 − 𝑚𝑗 ) log( ˆ
+𝑚𝑗 )
+i
+. (3)
+The second loss, L𝑅, is a reconstruction loss, which applies to
+observed components (𝑚𝑗 = 1) by
+L𝑅 (x, x̂) =
+𝑑
+∑︁
+𝑗=1
+𝑚𝑗𝐿𝑅 (𝑥𝑗, ˆ
+𝑥𝑗 ), (4)
+where
+𝐿𝑅 (𝑥𝑗, ˆ
+𝑥𝑗 ) =
+(
+(𝑥𝑗 − ˆ
+𝑥𝑗 )2, for numerical variables,
+−𝑥𝑗 log( ˆ
+𝑥𝑗 ), for binary variables.
+The third loss, L𝐶, is a binary cross entropy loss for task predic-
+tion given by
+L𝐶 (𝑦, ˆ
+𝑦) = −
+
+𝑦 log ( ˆ
+𝑦) + (1 − 𝑦) log(1 − ˆ
+𝑦)
+
+. (5)
+Note that as G and C are updated together via Eq. 2, C ’s perfor-
+mance will influence G’s parameters to guide the missing compo-
+nent imputation.
+D updates once at each iteration with objective function
+L𝐷 (m, m̂) = −
+𝑑
+∑︁
+𝑗=1
+h
+𝑚𝑗 log( ˆ
+𝑚𝑗 ) + (1 − 𝑚𝑗 ) log(1 − ˆ
+𝑚𝑗 )
+i
+. (6)
+The detailed training process is shown in Algorithm 1.
+Algorithm 1 Minibatch Classifier-GAIN training
+1: Input: Original data vector with missing component x̃, mask
+vector m, ground truth label 𝑦, the probability for drawing the
+hint vector p. hyper-parameters 𝛼 and 𝛽.
+2: repeat
+3: Generator and Classifier
+4: Sample a batch of n binary vector {b𝑖 }𝑛
+𝑖=1 ∼ Bern(𝑝)𝑑
+5: for k steps do
+6: Sample a batch of n noises {z𝑖 }𝑛
+𝑖=1 ∼ 𝑈 (0, 1]𝑑
+7: for 𝑖 ← 1 to 𝑛 do
+8: h𝑖 ← m𝑖 ⊙ b𝑖 + 0.5(1 − b𝑖)
+9: ¥
+x𝑖 ← m𝑖 ⊙ x̃𝑖 + (1 − m𝑖) ⊙ z𝑖
+10: Imputed data g𝑖 ← 𝐺(¥
+x𝑖)
+11: x̂𝑖 ← m𝑖 ⊙ x̃𝑖 + (1 − m𝑖) ⊙ g𝑖
+12: Obtain ˆ
+𝑦𝑖 ← 𝐶(x̂𝑖)
+13: Obtain m̂𝑖 ← 𝐷(x̂𝑖, ˆ
+𝑦𝑖, h𝑖)
+14: end for
+15: Update generator 𝐺 and classifier 𝐶 together via sto-
+chastic gradient descent (SGD):
+16: ▽𝐺
+1
+𝑛
+Í𝑛
+𝑖=1 L𝐺 (m𝑖, m̂𝑖) + 𝛼L𝑅 (x𝑖, x̂𝑖) + 𝛽L𝐶 (𝑦𝑖, ˆ
+𝑦𝑖)
+17: end for
+18:
+19: Discriminator
+20: Sample a batch of n binary vector {b𝑖 }𝑛
+𝑖=1 ∼ Bern(𝑝)𝑑
+21: for 𝑖 ← 1 to 𝑛 do
+22: h𝑖 ← m𝑖 ⊙ b𝑖 + 0.5(1 − b𝑖)
+23: Obtain m̂𝑖 ← 𝐷(x̂𝑖, ˆ
+𝑦𝑖, h𝑖)
+24: end for
+25: Update discriminator with fixed G and C via SGD
+26: ▽𝐷
+1
+𝑛
+Í𝑛
+𝑖=1 L𝐷 (m𝑖, m̂𝑖)
+27: until Classifier-GAIN converges
+4 EXPERIMENTS
+In this section, we conduct experiments on two datasets: the Phys-
+ioNet sepsis synthetic dataset and the UCSF real-world EHR dataset,
+introduced in Section 4.1, to evaluate Classifier-GAIN’s perfor-
+mance. Particularly, we investigate
+Q1. Does the classifier-guided imputation help the downstream
+MOF prediction?
+Q2. How does the proposed algorithm perform across different
+missing ratio scenarios?
+We explain the experimental settings in Section 4.2. The perfor-
+mance comparisons of Classifier-GAIN against other imputation
+algorithms for MOF prediction are shown in Section 4.3, followed
+Multiple Organ Failure Prediction with Classifier-Guided Generative Adversarial Imputation Networks BIOKDD’21, August 15,2021, Virtual Event, Singapore
+by the visualizations of the imputed missing values of the UCSF
+MOF dataset in Section 4.4.
+4.1 Dataset
+For the PhysioNet sepsis dataset, 10,587 patients and 40 features are
+contained. We randomly select 80% of the instances as the training
+set, 10% as the development set, and 10% as the testing set. For the
+UCSF MOF dataset, 2,160 patients and 29 features are contained.
+we perform a 5-fold cross validation, considering the dataset’s size
+and models’ training time. The detailed description of datasets as
+follows:
+PhysioNet sepsis synthetic dataset. Sepsis is a severe critical
+illness syndrome that can result in MOF [26]. Since MOF is the fatal
+end of sepsis progression[3], early detection of sepsis and antibi-
+otic prescription are critical for improving MOF patient outcomes.
+We built a synthetic dataset based on the physiological data [25]
+provided by PhysioNet, sourced from ICU patients. Each patient
+contains 40 hourly measurements in three categories (vital signs,
+laboratory values and demographics) and the sepsis outcome in
+each hour. To obtain the sepsis outcome in the early stages, we
+focus on the first 6 hours’ records of each feature. We take the first-
+appearance measurement of each feature in the first six hours after
+admission. If the value of a feature was not recorded in the first six
+hours, we assume that value was missing. We exclude the patients
+whose features were entirely missing in the first six hours. We label
+a patient with sepsis as 1, otherwise as 0. To obtain a completed
+synthetic dataset for further experiments, we apply KNN (with
+𝐾 = 5) to impute the original missing components and SMOTE
+to balance the data. After data preprocessing, we obtained 10,587
+patients, among which 5,808 patients are with sepsis and 4,779
+without sepsis.
+UCSF MOF real-world dataset. Our UCSF MOF dataset, col-
+lected from the UCSF/San Francisco General Hospital and Trauma
+Center, contains 2,190 patients admitted to a Level I trauma center.
+Both demographic information, such as gender, age, BMI (body
+mass index), and injury measurements, e.g. injury severity score
+(ISS), traumatic brain injury, and Glasgow Coma Scale (GCS), were
+measured at the admission time of each patient. Laboratory results
+(D-Dimer, creatinine, white blood cell etc.) and physical vital signs
+(for example heart rate, respiratory rate, systolic blood pressure
+etc.) were recorded at different hours. Unique ICU treatments such
+as blood transfusion units, fresh frozen plasma transfusion and
+crystalloids for fluid resuscitation were slotted into time intervals
+such as 0 to 24 hours. Medical treatments (vasopressor, Heparin
+and Factor VII et al.) were reported daily after admission.
+To analyze the MOF states associated with patients’ early-stage
+status, we select either the first day or the initial hour records man-
+ually. We extract features with importance scores higher than 2%
+using forests of trees in Scikit-learn [22], and remove the patients
+whose data were utterly missing in the early stage or whose MOF
+outcome was not recorded. After data preprocessing and removal
+of abnormal values, we are left with 2,160 patients and 29 mea-
+surements. Selected features are categorized by types, and detailed
+statistics are shown in Appendix A. Two blood test features, D-
+Dimer and Factor VII, had a missing rate higher than 40%. The body
+Table 2: Rates of missing data in the UCSF dataset
+Missing rate Feature
+41.9% D-Dimer
+41.6% Factor VII (blood test)
+17.4% BMI
+10% ≥ & > 5%Factor VII treatment, PTT, Respiratory, SBP
+5% ≥ & > 0% HR, numribfxs, GCS, Vasopressor, Bun, Serumco2,
+PLTs, Crystalloids, Crystalloids, WBC, HGB, HCT,
+AIS scores, FFP_units, Blood_units, age, iss,
+Thromboembolic complication, Heparin_gtt
+0% Gender
+Table 3: Hidden layer setting of different modules in UCSF
+and Sepsis datasets.
+Dataset Network Hidden layer 1Hidden layer 2Dropout rate
+UCSF
+Classifier 32 16 0.1
+Generator 64 32 0.1
+Discriminator 64 32 0.1
+Sepsis
+Classifier 128 64 0.1
+Generator 64 32 0.1
+Discriminator 64 32 0.1
+mass index (BMI) missed 17.4%. Factor VII treatment, partial throm-
+boplastin time (PTT), respiratory rate and systolic blood pressure
+were missing at rates between 5% and 10%. The remainder of the
+features were missing at rates less than 5%. The rate of missing
+data for each feature is listed in Table 2, ordered from high to low.
+Missing values account for 6.42% among all observations and the
+labelling ratio between No MOF (class 0) and MOF (class 1) is 11 : 1
+in the dataset.
+4.2 Experimental settings
+Evaluation metrics. We measure the performance of Classifier-
+GAIN and baselines by both macro F1-score and area under the
+ROC curve (AUC-ROC).
+Macro F1-score is defined as the mean of class-wise F1 scores
+which assigns equal importance to every class. It is low for models
+that perform well on the common classes, while performing poorly
+on the rare classes. For the Macro F1-Score calculation, we use 0.5
+as the predicted value threshold.
+AUC-ROC is also commonly used for MOF prediction [2, 20].
+AUC-ROC assesses the overall preference of a classifier by summa-
+rizing over all possible classification thresholds. In binary classifi-
+cation problems, the higher the AUC-ROC, the better the model’s
+performance in identifying the two classes.
+Model configurations. We compare Classifier-GAIN with both
+classical and state-of-art neural baselines for MOF prediction as
+follows:
+(1) Simple imputation: It imputes missing components by
+mean imputation and most frequent imputation for con-
+tinuous and categorical variables, respectively.
+BIOKDD’21, August 15,2021, Virtual Event, Singapore Xinlu Zhang, Yun Zhao, Rachael Callcut and Linda Petzold
+Missing
+Rate
+macro F1-score AUC-ROC
+Classifier-GAIN
+Simple
+imputation
+MICE GAIN Classifier-GAIN
+Simple
+imputation
+MICE GAIN
+0% Upper bound: 84.8 ± 0.1 Upper bound: 90.9 ± 0.3
+20% 83.2 ± 0.3 67.8 ± 2.1 68.6 ± 1.569.5 ± 1.8 88.3 ± 0.6 83.1 ± 0.9 84.3 ± 1.583.4 ± 1.4
+25% 82.9 ± 0.2 68.3 ± 3.3 66.9 ± 1.565.9 ± 1.6 87.1 ± 0.4 81.8 ± 1.2 81.9 ± 0.681.3 ± 0.6
+30% 80.8 ± 0.8 67.4 ± 2.1 67.3 ± 1.167.1 ± 2.0 86.4 ± 0.6 81.9 ± 1.0 81.0 ± 0.981.8 ± 1.0
+35% 79.7 ± 0.9 66.9 ± 1.6 68.9 ± 1.566.2 ± 3.3 84.8 ± 0.4 81.2 ± 1.1 80.3 ± 1.081.7 ± 0.8
+40% 78.8 ± 0.7 64.6 ± 2.6 66.9 ± 2.364.8 ± 3.5 83.9 ± 0.6 80.3 ± 0.4 80.0 ± 1.181.2 ± 0.9
+45% 77.2 ± 0.5 65.6 ± 3.0 66.4 ± 1.965.4 ± 3.2 81.1 ± 0.4 79.5 ± 0.9 79.2 ± 0.979.0 ± 0.7
+50% 77.7 ± 0.8 65.1 ± 1.6 63.7 ± 1.065.5 ± 2.1 82.1 ± 0.7 80.5 ± 0.4 74.7 ± 0.680.7 ± 0.6
+Table 4: Model performance (%) on PhysioNet sepsis dataset in different missing ratio settings.
+(2) MICE [5]: It is a multiple imputation method, accounting
+for the statistical uncertainty in the imputations.
+(3) GAIN [31]: It is a deep learning adversarial imputation
+framework, which we explained in Section 2.2 in detail.
+Each of methods (1), (2) and (3) is separated into two steps. First we
+impute missing components by the corresponding method. Then
+we utilize a binary classifier to predict the subjects’ outcomes by
+taking imputed data. For our proposed Classifier-GAIN, we take
+the partially observed data as input, and output both an imputed
+data and classification outcomes.
+In order to make the performance comparison as fair as possible,
+we assign the same structure and hidden size for all classifiers.
+GAIN has exactly the same structure in the generator and the same
+number of hidden layers in the discriminator as Classifier-GAIN. All
+of the networks are designed as multi-layer perceptrons with two
+hidden layers. We use batch normalization to normalize the input
+layer by re-centering and re-scaling. ReLU activation function and
+dropout are applied after each hidden linear layer. All of the neural
+networks utilize Sigmoid activation at the last step for outputs. The
+hidden layer settings in all of our experiments are listed in Table 3.
+We implement our model and its variants using PyTorch [21],
+and use a GeForce GTX TITAN X 12 GB GPU for training, validation
+as well as testing. All of the neural networks are trained by using
+the Adam optimizer [13], whose learning rates are selected by
+grid search from 0.0005 to 0.002∗.For the convergence of the MICE
+imputation, we apply the IterativeImputer in Scikit-learn [22] with
+mean initial strategy, 100 maximum number of imputation rounds
+and 0.001 as tolerance of the stopping condition.
+4.3 Performance comparison
+We conduct each experiment by running 5 times with different
+random initializations and show the results in the format "mean ±
+standard deviation" to answer Q1 and Q2. For readers’ convenience,
+we make the best performance bold in each of the performance
+tables in this section.
+Synthetic data. To evaluate Classifier-GAIN’s capability to cap-
+ture the relationship between clinical records (vital signs and labo-
+ratory values) and label outcome for downstream prediction, we
+∗Other hyper-parameters are detailed in the Appendix B, and all of them are
+selected by grid search.
+randomly remove 20%, 25%, 30%, 35%, 40%, 45% and 50% of all com-
+ponents from clinical records, to simulate missingness resulting
+from the urgency of the clinical situation. We demonstrate the ef-
+fectiveness of Classifier-GAIN against other baselines in Table 4.
+To understand the performance gap between different missing sce-
+narios and the completed data, we train a binary classifier on the
+completed dataset, which we refer to as the upper bound. As shown
+in Table 4, Classifier-GAIN consistently outperforms the simple
+imputation, MICE and GAIN across the entire range of missing
+rates, for both evaluation metrics. Especially, when the missing rate
+is 25%, Classifier-GAIN improves 5.2% and 14.6% in AUC-ROC and
+macro F1-score, respectively, compared with the best baselines.
+To quantitatively evaluate the performance of Classifier-GAIN,
+we derive two additional metrics: (1) the relative improvement rate
+(RIR),
+Classifier-GAIN - best_baseline
+best_baseline
+, (7)
+to demonstrate how much Classifier-GAIN improves compared to
+the best baseline, and (2) the relative gap reduction rate (RGRR),
+Classifier-GAIN - best_baseline
+Upper bound - best_baseline
+, (8)
+to measure the capability of Classifier-GAIN reducing the perfor-
+mance gap to the upper bound.
+20 25 30 35 40 45 50
+Missing rate(%)
+0
+5
+10
+15
+20
+25
+30
+35
+RIR
+(%)
+AUC-ROC
+Macro F1
+(a) The relative improvement rate (%)
+20 25 30 35 40 45 50
+Missing rate(%)
+20
+30
+40
+50
+60
+70
+80
+90
+RGRR
+(%)
+AUC-ROC
+Macro F1
+(b) The relative gap reduction rate (%)
+Figure 3: The relative improvement rate (left) and the rel-
+ative gap reduction rate (right) of Classifier-GAIN on AUC-
+ROC and macro F1-score for PhysioNet sepsis dataset across
+different missing ratio scenarios.
+The relative improvement rates calculated by Eq. 7 across dif-
+ferent settings are shown in Figure 3 (a). For both macro F1-score
+Multiple Organ Failure Prediction with Classifier-Guided Generative Adversarial Imputation Networks BIOKDD’21, August 15,2021, Virtual Event, Singapore
+Missing
+Rate
+macro F1-score AUC-ROC
+Classifier-GAIN
+Simple
+imputation
+MICE GAIN Classifier-GAIN
+Simple
+imputation
+MICE GAIN
+20% 68.3 ± 0.4 64.9 ± 1.6 65.2 ± 1.566.0 ± 0.9 88.9 ± 0.5 88.2 ± 0.6 89.1 ± 0.288.7 ± 0.5
+25% 67.9 ± 1.0 64.3 ± 0.5 61.5 ± 1.764.6 ± 1.7 88.5 ± 0.4 87.4 ± 0.5 88.4 ± 0.2 87.8 ± 0.3
+30% 70.2 ± 0.7 68.2 ± 1.3 61.6 ± 2.265.9 ± 1.0 89.5 ± 0.5 89.0 ± 0.2 87.7 ± 0.2 88.7 ± 0.4
+35% 67.7 ± 0.8 64.5 ± 1.2 60.4 ± 2.165.0 ± 0.4 88.5 ± 0.4 87.7 ± 0.4 87.0 ± 0.6 87.4 ± 0.5
+40% 65.7 ± 1.4 61.9 ± 0.8 58.1 ± 3.063.2 ± 1.2 87.8 ± 0.5 86.8 ± 0.4 85.3 ± 0.2 86.5 ± 0.5
+45% 65.7 ± 1.0 62.5 ± 1.4 57.3 ± 2.761.7 ± 1.7 86.8 ± 0.6 85.7 ± 0.7 84.6 ± 0.2 85.0 ± 0.7
+50% 65.0 ± 0.2 59.4 ± 1.6 57.3 ± 3.360.0 ± 1.7 83.9 ± 0.8 83.7 ± 0.5 84.2 ± 0.183.5 ± 1.4
+Table 7: Model performance(%) on UCSF MOF dataset with different additionally simulated missing ratios.
+and AUC-ROC, Classifier-GAIN consistently achieves a high rela-
+tive improvement rate, with 21.62% and 6.16% on average across
+different scenarios, respectively. Especially, the relative improve-
+ment rate of macro F1-score is 25.80% when the missing rate is
+25%, and the relative improvement rate of AUC-ROC is 9.91% when
+the missing rate is 50%. Figure 3 (b) shows the relative gap reduc-
+tion rate of Classifier-GAIN with different missing ratio settings.
+Classifier-GAIN significantly reduces the performance gap to the
+upper bound, with a 75.43% relative reduction rate for macro F1-
+score on average compared to best baselines, making the prediction
+less susceptible to missingness across different scenarios. Especially
+when missing rates are 20% and 25% (relatively low), the relative gap
+reduction rates are as high as 90.58% and 89.94%, which significantly
+narrows the performance gap caused by missing components. Even
+when missing rates are 40% and 50% (very high), the relative gap
+reduction rates remain 60.82% and 66.35%, which further validates
+Classifier-GAIN’s applicability in different missing scenarios.
+Real-world data. We further evaluate our model on the UCSF
+MOF real-world dataset, including early-stage clinical records for
+MOF prediction. In addition to the high missing ratio in bio-marker
+measurements, there is a serious label imbalance issue in this
+dataset, which is common in real-world clinical data. We evalu-
+ate the performance of Classifier-GAIN on the UCSF MOF dataset
+in the following settings: (1) imputing the original missing compo-
+nents and predicting MOF outcome; (2) adding additional random
+masks with 20%, 25%, 30%, 35%, 40%, 45% and 50% missing rates to
+simulate more serious missing situations in real-world data.
+Table 6 reports the macro F1-score and AUC-ROC to evaluate
+Classifier-GAIN’s prediction performance against other methods,
+on the UCSF MOF dataset with original missing components (The
+missing ratio of features is 6.42% among all patients on average.).
+Classifier-GAIN yields the best prediction performance as measured
+by both macro F1-score and AUC-ROC. All the three baselines in the
+original missing scenario have similar performance, and the simple
+imputation has the best performance in baselines, which may due to
+the small size and high imbalance of the real-world data. Classifier-
+GAIN shows better performance reflecting the classifier-guided
+imputation helps the downstream MOF prediction by making im-
+puted values label-aware.
+Algorithm macro F1-scoreAUC-ROC
+Classifier-GAIN 71.0 ± 1.0 90.6 ± 0.5
+Simple imputation 68.9 ± 1.0 90.3 ± 0.3
+MICE 68.2 ± 0.8 90.0 ± 0.4
+GAIN 68.2 ± 0.9 90.2 ± 0.3
+Table 6: Model performance on UCSF MOF dataset with orig-
+inal missing components.
+For more missing ratios in our simulated setting, the correspond-
+ing macro F1-score and AUC-ROC are shown in Table 7. For the
+macro F1-score, Classifier-GAIN consistently outperforms the best
+baselines more than 2% across the entire range of missing rates.
+Especially, in the 50% missing scenario, Classifier-GAIN improves
+5% comparing to the best baseline, GAIN. For AUC-ROC, Classifier-
+GAIN outperforms other post-imputation predictions in 25%, 30%,
+35%, 40%, 45% missing scenarios, and achieves comparable perfor-
+mance with MICE in 20% and 50% missing conditions.
+4.4 Imputation results
+To further visualize the imputation outcomes of the generator in
+Classifier-GAIN, we compare the imputation results for the original
+missingness in the UCSF MOF dataset of Classifier-GAIN and other
+baselines. We select three features: D-Dimer, Factor VII (blood test)†
+and respiratory rate, for the imputation study. Both D-Dimer and
+Factor VII have more than 40% missing in the original dataset, and
+the missing rate of respiratory rate is 7.31%. D-Dimer is an indicator
+of patients who may develop organ failure in the further course of
+acute pancreatitis[24]. Factor VII and respiratory rate are highly
+related to pulmonary failure [6, 29].
+Figure 4 plots the univariate distributions of selected features for
+MOF (MOF = 1) and no MOF (MOF = 0) patients, respectively. The
+blue and orange curves are density curves of observed components
+of features that need imputation. The blue curves represent the
+density curves of MOF = 0, and the orange ones represent MOF =
+1. Dashed vertical lines are the imputed results of three different
+imputation methods: red is Classifier-GAIN, green is GAIN, and
+black is MICE imputation. In the UCSF MOF dataset, the feature
+values available with maximum density of D-Dimer, Factor VII and
+respiratory rate for patients who did not develop MOF are 0.86
+mg/L, 68.82% and 16.92 breaths per minute, respectively. For MOF
+†In the remainder of this subsection, we use Factor VII to represent Factor VII
+(blood test).
+BIOKDD’21, August 15,2021, Virtual Event, Singapore Xinlu Zhang, Yun Zhao, Rachael Callcut and Linda Petzold
+patients, the feature values available with the maximum density
+are 7.71 mg/L, 80.69% and 18.75 breaths per minute, respectively.
+For panels (a) and (b), Classifier-GAIN predicts correctly for a
+patient without MOF, while the other classifiers, whose input data
+are imputed by MICE or GAIN, predict incorrectly. The imputed
+values of Classifier-GAIN for Factor VII and respiratory rate are
+relatively closer to the feature values with maximum density for
+no-MOF’s in both cases. Panel (c) shows a MOF patient whose data
+was missing the D-Dimer record. MICE and GAIN have very similar
+imputed value which are 3.38 mg/L and 3.35 mg/L, Classifier-GAIN
+imputes the D-Dimer as 6.53,mg/L which follows the trend of MOF
+patients in this dataset. Panel (d) shows a situation that all of the
+classifiers predict a no-MOF case incorrectly. In this case, all three
+methods impute the Factor VII closer to the feature value with the
+maximum density for MOF’s.
+0 50 100 150 200 250 300
+Factor VII (%)
+0.000
+0.002
+0.004
+0.006
+0.008
+0.010
+0.012 No MOF
+MOF
+Classifier-GAIN
+GAIN
+MICE
+(a) Factor VII imputation for no MOF
+0 10 20 30 40 50
+Respiratory rate (breaths per minute)
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+No MOF
+MOF
+Classifier-GAIN
+GAIN
+MICE
+(b) Respiratory rate imputation for
+no MOF
+0 5 10 15 20 25
+D-Dimer (mg/L)
+0.00
+0.05
+0.10
+0.15
+0.20 No MOF
+MOF
+Classifier-GAIN
+GAIN
+MICE
+(c) D-Dimer imputation for MOF
+0 50 100 150 200 250 300
+Factor VII (%)
+0.000
+0.002
+0.004
+0.006
+0.008
+0.010
+0.012 No MOF
+MOF
+Classifier-GAIN
+GAIN
+MICE
+(d) Factor VII imputation for no MOF
+Figure 4: Density plots of features and imputed values. The
+blue and orange curves are density curves of observed data
+points. The blue curve represents MOF = 0, and the orange
+represents MOF = 1. The dashed vertical lines are the im-
+putation results of three different imputation methods.For
+(c), GAIN and MICE have similar imputation results, which
+makes lines overlap.
+5 RELATED WORK
+Generative Adversarial Networks (GAN). GAN, introduced in [8],
+is a game-theoretic framework for estimating the implicit distri-
+bution of data via an adversarial process. CGAN conditions the
+GAN framework on class labels to direct the data generation pro-
+cess [16]. AC-GAN further improves generation performance by
+modifying the discriminator to contain an auxiliary decoder net-
+work [18]. However, both CGAN and AC-GAN need to feed label
+information to their generators, which could not be achieved if the
+final goal is classification and the label information is unknown
+during inference. Semi-supervised GAN [17] performs GAN in a
+semi-supervised context to make the discriminator output either
+data validation or class labels. Triple-GAN facilitates the conver-
+gence of both the generator and the discriminator by introducing
+the "third player" – classifier [14].
+Researchers have also applied GANs on missing value imputa-
+tion. In GAIN [31], the generator imputes the missing components
+while the discriminator takes a completed vector and attempts to
+determine which components were actually observed and which
+were imputed with some additional information in the form of a
+hint vector. MISGAN learns a complete data generator along with a
+mask generator that models the missing data distribution and an ad-
+versarially trained imputer [15]. However, those existing methods
+ignore the connection between observations and classification in-
+formation, which can make use for learning label-aware imputation
+during training and help to improve downstream task prediction
+during inference.
+Multiple Organ Failure (MOF). MOF is a major threat to the
+survival of patients with sepsis and is becoming the most common
+cause of death for surgical ICU patients [4]. According to a recent
+study of ICU trauma patients, almost half of them developed MOF,
+and MOF increased the overall risk of death 6.0 times compared
+to the patients without MOF [27]. Sepsis is viewed as an immune
+storm that leads to MOF and death, which still is a leading cause of
+death in critically ill patients, though modern antibiotics and new
+resuscitation therapies have been used [9]. The Acute Physiology
+and Chronic Health Evaluation (APACHE) score and the Ranson
+score are widely used for seriously ill patients, but their empirical
+utilization for predicting the risk of MOF at an early stage is limited
+by cumbersomeness and needs to record some indexes dynami-
+cally [23]. Therefore, a prognostic tool that can reliably predict
+MOF in the early phase is essential for improving patient outcomes.
+In this work, we have chosen to base our MOF prediction on highly-
+related vital signs at the initial stage, to predict outcomes with
+classifier-guided imputation, in order to handle the data sparsity
+problem.
+Missing Data Mechanisms. Depending on the underlying rea-
+sons, missingness is divided into three categories: missing com-
+pletely at random (MCAR), missing at random (MAR), and missing
+not at random (MNAR). MCAR refers to a situation in which the
+occurrence for a data point to be missing is entirely random. MAR
+assumes that the missingness does not have any relationship with
+the missing data but may depend on the observed data. MNAR indi-
+cates that the missing elements are related to the reasons for which
+the data is missing. In general, we assume that the EHR data is
+MAR data because, in most EHR instances, those collected features
+would be expected to explain some, but not all, of the variation
+among patients whose data have missing values[30].
+Various methodologies are available to address the missing data
+problem. Single imputation algorithms only impute missing compo-
+nents in one iteration, which can utilize some unique numbers (e.g.,
+0) or statistical characteristics, such as mean value imputation [1],
+median imputation [12] and most common value imputation [11].
+MICE [5] is one of the most commonly used multiple imputation
+algorithms, applying multiple regression models iteratively to im-
+pute missing values for different types of variables [33]. Grape
+Multiple Organ Failure Prediction with Classifier-Guided Generative Adversarial Imputation Networks BIOKDD’21, August 15,2021, Virtual Event, Singapore
+is a graph-based framework with both feature imputation and la-
+bel prediction, which formulates missing components imputation
+as an edge-level prediction and downstream label prediction as a
+node-level prediction [32]. Unlike our work, Grape predicts the
+downstream task without caring about imputed data and the fea-
+ture imputation only learns information from partially observed
+data, which is not label-aware. In this work, we have explored the
+algorithm with missing components in EHRs datasets to resolve
+the real-world MOF prediction task.
+6 CONCLUSION
+In this paper, we present Classifier-GAIN, an end-to-end deep learn-
+ing framework to improve performance of MOF prediction on
+datasets with a wide range of missingness ratios. In contrast to most
+of the label-aware GANs, whose generator takes label information
+directly, focusing on improving the generator outputs, we design a
+three-player adversarial imputation network to optimize the down-
+stream prediction while imputing missing values. Classifier-GAIN
+uses a classifier to provide label supervision signals to the generator
+in training, and the trained generator to improve the classifier’s
+downstream prediction performance in inference. Extensive ex-
+perimental results on both a synthetic sepsis dataset and a real
+world MOF dataset demonstrate the usefulness of this framework.
+Although we only demonstrate the effeteness of Classifier-GAIN in
+MOF prediction tasks, its applications in other domains are worth
+exploring, which we leave as further work.
+ACKNOWLEDGMENTS
+This work was funded by the National Institutes for Health (NIH)
+grant NIH 7R01HL149670.
+REFERENCES
+[1] Edgar Acuna and Caroline Rodriguez. 2004. The treatment of missing values
+and its effect on classifier accuracy. In Classification, clustering, and data mining
+applications. Springer, 639–647.
+[2] Jan Bakker, Philippe Gris, Michel Coffernils, Robert J Kahn, and Jean-Louis
+Vincent. 1996. Serial blood lactate levels can predict the development of multiple
+organ failure following septic shock. The American journal of surgery 171, 2
+(1996), 221–226.
+[3] Laura Bravo-Merodio, Animesh Acharjee, Jon Hazeldine, Conor Bentley, Mark
+Foster, Georgios V Gkoutos, and Janet M Lord. 2019. Machine learning for the de-
+tection of early immunological markers as predictors of multi-organ dysfunction.
+Scientific data 6, 1 (2019), 1–10.
+[4] KA Brown, SD Brain, JD Pearson, JD Edgeworth, SM Lewis, and DF Treacher.
+2006. Neutrophils in development of multiple organ failure in sepsis. The Lancet
+368, 9530 (2006), 157–169.
+[5] S van Buuren and Karin Groothuis-Oudshoorn. 2010. mice: Multivariate imputa-
+tion by chained equations in R. Journal of statistical software (2010), 1–68.
+[6] Lorenzo Del Sorbo and Arthur S Slutsky. 2011. Acute Respiratory Distress
+Syndrome and Multiple Organ Failure. Current opinion in critical care 17, 1
+(2011), 1–6.
+[7] Rodney M Durham, JJ Moran, John E Mazuski, Marc J Shapiro, Arthur E Baue,
+and Lewis M Flint. 2003. Multiple organ failure in trauma patients. Journal of
+Trauma and Acute Care Surgery 55, 4 (2003), 608–616.
+[8] Ian Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley,
+Sherjil Ozair, Aaron Courville, and Yoshua Bengio. 2014. Generative adversarial
+nets. Advances in neural information processing systems 27 (2014), 2672–2680.
+[9] Thierry Gustot. 2011. Multiple organ failure in sepsis: prognosis and role of
+systemic inflammatory response. Current opinion in critical care 17, 2 (2011),
+153–159.
+[10] Veli-Pekka Harjola, Wilfried Mullens, Marek Banaszewski, Johann Bauersachs,
+Hans-Peter Brunner-La Rocca, Ovidiu Chioncel, Sean P Collins, Wolfram Doehner,
+Gerasimos S Filippatos, Andreas J Flammer, et al. 2017. Organ dysfunction,
+injury and failure in acute heart failure: from pathophysiology to diagnosis and
+management. A review on behalf of the Acute Heart Failure Committee of the
+Heart Failure Association (HFA) of the European Society of Cardiology (ESC).
+European journal of heart failure 19, 7 (2017), 821–836.
+[11] Frank E Harrell Jr. 2015. Regression modeling strategies: with applications to
+linear models, logistic and ordinal regression, and survival analysis. Springer.
+[12] Mehmed Kantardzic. 2011. Data mining: concepts, models, methods, and
+algorithms. John Wiley & Sons.
+[13] Diederik P Kingma and Jimmy Ba. 2014. Adam: A method for stochastic opti-
+mization. arXiv preprint arXiv:1412.6980 (2014).
+[14] Chongxuan Li, Taufik Xu, Jun Zhu, and Bo Zhang. 2017. Triple generative
+adversarial nets. Advances in neural information processing systems 30 (2017),
+4088–4098.
+[15] Steven Cheng-Xian Li, Bo Jiang, and Benjamin Marlin. 2019. Misgan: Learning
+from incomplete data with generative adversarial networks. arXiv preprint
+arXiv:1902.09599 (2019).
+[16] Mehdi Mirza and Simon Osindero. 2014. Conditional generative adversarial nets.
+arXiv preprint arXiv:1411.1784 (2014).
+[17] Augustus Odena. 2016. Semi-supervised learning with generative adversarial
+networks. arXiv preprint arXiv:1606.01583 (2016).
+[18] Augustus Odena, Christopher Olah, and Jonathon Shlens. 2017. Conditional
+image synthesis with auxiliary classifier gans. In International conference on
+machine learning. PMLR, 2642–2651.
+[19] María José Otero-López, Pablo Alonso-Hernández, José Angel Maderuelo-
+Fernández, Beatriz Garrido-Corro, Alfonso Domínguez-Gil, and Angel Sánchez-
+Rodríguez. 2006. Preventable adverse drug events in hospitalized patients.
+Medicina clinica 126, 3 (2006), 81–87.
+[20] Georgios I Papachristou, Venkata Muddana, Dhiraj Yadav, Michael O’connell,
+Michael K Sanders, Adam Slivka, and David C Whitcomb. 2010. Compari-
+son of BISAP, Ranson’s, APACHE-II, and CTSI scores in predicting organ fail-
+ure, complications, and mortality in acute pancreatitis. American Journal of
+Gastroenterology 105, 2 (2010), 435–441.
+[21] Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory
+Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, et al.
+2019. Pytorch: An imperative style, high-performance deep learning library. In
+Advances in neural information processing systems. 8026–8037.
+[22] Fabian Pedregosa, Gaël Varoquaux, Alexandre Gramfort, Vincent Michel,
+Bertrand Thirion, Olivier Grisel, Mathieu Blondel, Peter Prettenhofer, Ron Weiss,
+Vincent Dubourg, et al. 2011. Scikit-learn: Machine learning in Python. the
+Journal of machine Learning research 12 (2011), 2825–2830.
+[23] Qiu Qiu, Yong-jian Nian, Yan Guo, Liang Tang, Nan Lu, Liang-zhi Wen, Bin Wang,
+Dong-feng Chen, and Kai-jun Liu. 2019. Development and validation of three
+machine-learning models for predicting multiple organ failure in moderately
+severe and severe acute pancreatitis. BMC gastroenterology 19, 1 (2019), 1–9.
+[24] Dejan Radenkovic, Djordje Bajec, Nenad Ivancevic, Natasa Milic, Vesna Bum-
+basirevic, Vasilije Jeremic, Vladimir Djukic, Branislava Stefanovic, Branislav
+Stefanovic, Gorica Milosevic-Zbutega, et al. 2009. D-dimer in acute pancreatitis:
+a new approach for an early assessment of organ failure. Pancreas 38, 6 (2009),
+655–660.
+[25] Matthew A Reyna, Chris Josef, Salman Seyedi, Russell Jeter, Supreeth P Shashiku-
+mar, M Brandon Westover, Ashish Sharma, Shamim Nemati, and Gari D Clifford.
+2019. Early prediction of sepsis from clinical data: the PhysioNet/Computing
+in Cardiology Challenge 2019. In 2019 Computing in Cardiology (CinC). IEEE,
+Page–1.
+[26] Jan Rossaint and Alexander Zarbock. 2015. Pathogenesis of multiple organ failure
+in sepsis. Critical Reviews™ in Immunology 35, 4 (2015).
+[27] Atle Ulvik, Reidar Kvåle, Tore Wentzel-Larsen, and Hans Flaatten. 2007. Multiple
+organ failure after trauma affects even long-term survival and functional status.
+Critical Care 11, 5 (2007), R95.
+[28] Zhan-Ke Wang, Rong-Jian Chen, Shi-Liang Wang, Guang-Wei Li, Zhong-Zhen
+Zhu, Qiang Huang, Zi-Li Chen, Fan-Chang Chen, Lei Deng, Xiao-Peng Lan, et al.
+2018. Clinical application of a novel diagnostic scheme including pancreatic 𝛽-
+cell dysfunction for traumatic multiple organ dysfunction syndrome. Molecular
+Medicine Reports 17, 1 (2018), 683–693.
+[29] SJ Wei. 1990. The assessment of factor VIII-related antigen in endothelial cells
+of pulmonary blood vessels in multiple organ failure. Zhonghua jie he he hu
+xi za zhi= Zhonghua jiehe he huxi zazhi= Chinese journal of tuberculosis and
+respiratory diseases 13, 6 (1990), 346–8.
+[30] Brian J Wells, Kevin M Chagin, Amy S Nowacki, and Michael W Kattan. 2013.
+Strategies for handling missing data in electronic health record derived data.
+Egems 1, 3 (2013).
+[31] Jinsung Yoon, James Jordon, and Mihaela Van Der Schaar. 2018. Gain: Missing data
+imputation using generative adversarial nets. arXiv preprint arXiv:1806.02920
+(2018).
+[32] Jiaxuan You, Xiaobai Ma, Daisy Yi Ding, Mykel Kochenderfer, and Jure Leskovec.
+2020. Handling missing data with graph representation learning. arXiv preprint
+arXiv:2010.16418 (2020).
+[33] Chenguang Zhang, Vahed Maroufy, Baojiang Chen, and Hulin Wu. 2020. Missing
+Data Issues in EHR. Statistics and Machine Learning Methods for EHR Data:
+From Data Extraction to Data Analytics (2020), 149.
+BIOKDD’21, August 15,2021, Virtual Event, Singapore Xinlu Zhang, Yun Zhao, Rachael Callcut and Linda Petzold
+[34] Yuanyang Zhang, Tie Bo Wu, Bernie J Daigle, Mitchell Cohen, and Linda Petzold.
+2016. Identification of disease states associated with coagulopathy in trauma.
+BMC medical informatics and decision making 16, 1 (2016), 1–9.
+Appendix A UCSF MOF DATA STATISTICS
+For numerical variables, all features except age are list as: feature
+name, unit: type, description, mean (standard deviation) of no MOF
+patients, mean (standard deviation) of MOF patients. For age, we
+show the min-max age for no MOF and MOF patients.
+For categorical variable, all features are list as: feature name, unit:
+type, description, number and percentage in each level.
+Demographic:
+Gender, no.(%): categorical, Male = 1, Female = 0, 1608 (81.3%), 157
+(86.3%)
+Age, year: numerical, age of patients, 37(15.0 - 100.0), 45.5 (19.9 -
+99.0)
+BMI, kg/m2: numerical, body mass index, 26.50 ± 4.80, 27.02 ± 5.25
+TBI, no.(%): categorical, traumatic brain injury, Yes = 1, No = 0, 629
+(31.8%), 129(70.9%)
+Injury measurement
+AIS-Head: numerical, abbreviated injury scale: head, 1.52 ± 2.00,
+3.40 ± 4.97
+AIS-Chest: numerical, abbreviated injury scale: chest, 0.98 ± 1.53,
+2.03 ± 1.77
+ISS: numerical, injury severity score, 14.95 ± 14.46, 33.03 ± 13.98
+GCS: numerical, GCS (Glasgow Coma Scale), 9.58 ± 5.36, 4.92 ±
+3.67
+Admission day
+Vasopressor, no.(%): categorical, vasopressor utilization Yes = 1, No
+= 0, 429 (21.7%), 109 (60.0%)
+Heparin_gtt, no.(%): categorical, heparin utilization Yes = 1, No = 0,
+84 (4.2%), 43 (23.6%)
+Factor VII treatment, no.(%): categorical, factor VII medication given
+Yes = 1, No = 0, 12 (0.6%), 14 (7.7%)
+Thromboembolic complication, no.(%): categorical, thromboembolic
+complication condition Yes = 1, No = 0, 83 (4.2%), 51 (28.0%)
+numribfxs: numerical, number of rib fractures, 0.68 ± 1.97, 3.40 ±
+4.97
+Initial hour measurement
+WBC,103/mcL: numerical, white blood cell, 10.44 ± 4.76, 11.85 ±
+5.47
+HCT, %: numerical, hematocrit, 40.99 ± 5.48, 39.69 ± 6.03
+HGB, g/dL: numerical, hemoglobin, 13.66 ± 1.74, 13.18 ± 2.12
+Bun, mg/dL: numerical, blood urea nitrogen, 15.58 ± 8.06, 19.66 ±
+15.25
+Creatinine, g/24 hr: numerical, creatinine value, 1.00 ± 0.48, 1.27 ±
+1.29
+D-Dimer, mg/L: numerical, D-Dimer value, 2.90 ± 5.70, 6.43 ± 9.13
+Factor VII, %: numerical, factor VII value, 79.39 ± 37.82, 75.81± 32.57
+PLTs, 103/ mcL: numerical, platelets, 272.08 ± 85.04, 267.12 ± 87.71
+PTT, sec: numerical, partial thromboplastin time, 29.66 ± 11.20,
+11.08 ± 0.28
+Serumco2, mmol/L: numerical, carbon dioxide, 23.66 ± 4.35, 4.83 ±
+0.28
+Vital signs
+HR, beats per minute: numerical, heart rate, 96.44 ± 27.74, 102.14 ±
+29.27
+Respiratory, breaths per minute: numerical, respiratory rate, 19.67
+± 5.43, 20.57 ± 5.96
+SBP, mmHg: numerical, systolic blood pressure, 136.53 ± 31.22,
+132.57 ± 37.14
+ICU first day measurement
+Blood_units, unit: numerical, blood units transfusion, 2.41 ± 6.51,9.28
+± 15.65
+Crystalloids, ml: numerical, crystalloids for fluids resuscitation,
+3856.62 ± 3395.06, 6721.5 ± 4437.48
+FFP_Units, unit: numerical, fresh frozen plasma, 1.52 ± 4.71, 7.53 ±
+12.91
+Appendix B HYPERPARAMETERS
+To support the reproducibility of the results in this paper, we provide
+the hyperparameters we used in all the experiments.
+B.1 PhysioNet sepsis dataset:
+Model:
+Simple imputation & Classifier: epochs: 30, batch size: 128, learn-
+ing rate: 0.0005-0.002, classifier’s weight decay: 5e-4.
+MICE & Classifier: initial strategy: mean, maximum number of
+imputation iteration: 100, tolerance: 0.001.
+GAIN & Classifier: epochs for GAIN: 20, batch size for GAIN: 128,
+generator’s learning rate: 0.0005-0.002, discriminator’s learning
+rate: 0.0005-0.002, generator’s weight decay: 5e-4, discriminator’s
+weight decay: 5e-4, p_hint: 0.9, alpha: 1, epochs for classifier: 30,
+batch size for classifier: 128, classifier’s learning rate: 0.0005-0.002,
+classifier’s weight decay: 5e-4
+Classifier-GAIN: epochs: 50, batch size: 128, generator’s learn-
+ing rate: 0.0005-0.002, discriminator ’s learning rate: 0.0005-0.002,
+classifier’s learning rate: 0.0005-0.002, p_hint: 0.5, alpha: 20, beta:1,
+generator’s weight decay: 5e-4, discriminator’s weight decay: 5e-4,
+classifier’s weight decay: 5e-4.
+B.2 UCSF MOF dataset:
+Model:
+Simple imputation & Classifier: epochs: 30, batch size: 16, learn-
+ing rate: 0.0005-0.002, classifier’s weight decay: 5e-4.
+MICE & Classifier: initial strategy: mean, maximum number of
+imputation iteration: 100, tolerance: 0.001.
+GAIN & Classifier: epochs for GAIN: 50, batch size for GAIN:
+16, generator’s learning rate: 0.0005-0.002, discriminator’s learning
+rate: 0.0005-0.002, generator’s weight decay: 5e-4, discriminator’s
+weight decay: 5e-4, p_hint: 0.9, alpha: 5, epochs for classifier: 30,
+batch size for classifier: 16, classifier’s learning rate: 0.0005-0.002,
+classifier’s weight decay: 5e-4.
+Classifier-GAIN: epochs: 50, batch size: 128, generator’s learn-
+ing rate: 0.0005-0.002, discriminator’s learning rate: 0.0005-0.002,
+classifier’s learning rate: 0.0005-0.002, p_hint: 0.9, alpha: 5, beta: 1,
+generator’s weight decay: 5e-4, discriminator’s weight decay: 5e-4,
+classifier’s weight decay: 5e-4.
+

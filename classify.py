@@ -3,6 +3,8 @@ usage: python classify.py --data-dir [papers_processed]
 """
 # conda env export > environment.yml
 import glob
+import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import learning_curve
 import argparse
@@ -10,15 +12,18 @@ import os
 from transformers import AutoTokenizer, AutoModel #pip install transformers
 from sklearn.linear_model import LogisticRegression, Perceptron #pip install sklearn
 from sklearn import svm
+from sklearn.neural_network import MLPClassifier
 import random
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
-
+import seaborn as s
+# random.seed(42)
 
 class classify:
     def __init__(self):
         self.chunk_size = 500
+        self.model = None
         self.lr = None
         self.svm = None
         self.perceptron = None
@@ -38,28 +43,32 @@ class classify:
         self.cv_x = []
         self.cv_y = []
 
-    def process_data(self, data_dir):
+    def process_data(self, data_dir, concept):
         print("processing data")
+        jj=0
         for j, dir_path in enumerate(glob.glob(data_dir)): #mathy, non_mathy
-            dir_path = os.path.join(dir_path, "*")
-            for k, dirr in enumerate(glob.glob(dir_path)): #test, train
-                dirr = os.path.join(dirr, "*")
-                for l, pdf in enumerate(glob.glob(dirr)): #txts
-                    pdf = open(pdf, "r", encoding="utf8")
-                    pdf_text = pdf.read()
-                    pdf.close()
-                    embedding_vector = None
-                    r = range(0, len(pdf_text), self.chunk_size)
-                    n = len(r)
-                    for i in r:#txt-content
-                        inputs = self.tokenizer(pdf_text[i:i+self.chunk_size], return_tensors="pt")
-                        outputs = self.model(**inputs)
-                        if embedding_vector is None:
-                            embedding_vector = outputs.last_hidden_state[0][0]
-                        else:
-                            embedding_vector += outputs.last_hidden_state[0][0]
-                    embedding_vector /= n
-                    self.data[j][k].append([embedding_vector.detach().numpy(), j])
+            if concept in dir_path:
+                print(dir_path)
+                dir_path = os.path.join(dir_path, "*")
+                for k, dirr in enumerate(glob.glob(dir_path)): #test, train
+                    dirr = os.path.join(dirr, "*")
+                    for l, pdf in enumerate(glob.glob(dirr)): #txts
+                        pdf = open(pdf, "r", encoding="utf8")
+                        pdf_text = pdf.read()
+                        pdf.close()
+                        embedding_vector = None
+                        r = range(0, len(pdf_text), self.chunk_size)
+                        n = len(r)
+                        for i in r:#txt-content
+                            inputs = self.tokenizer(pdf_text[i:i+self.chunk_size], return_tensors="pt")
+                            outputs = self.model(**inputs)
+                            if embedding_vector is None:
+                                embedding_vector = outputs.last_hidden_state[0][0]
+                            else:
+                                embedding_vector += outputs.last_hidden_state[0][0]
+                        embedding_vector /= n
+                        self.data[jj][k].append([embedding_vector.detach().numpy(), jj])
+                jj+=1
         self.mathy_test = self.data[0][0]
         self.mathy_train = self.data[0][1]
         self.non_mathy_test = self.data[1][0]
@@ -77,183 +86,210 @@ class classify:
         print("non_mathy_train: "+str(len(self.non_mathy_train)))
         print()
         print("saving data: ")
-        os.mkdir(".\\embeddings")
-        np.save(".\\embeddings\\train_x.npy", self.train_x)
-        np.save(".\\embeddings\\train_y.npy", self.train_y)
-        np.save(".\\embeddings\\test_x.npy", self.test_x)
-        np.save(".\\embeddings\\test_y.npy", self.test_y)
+        os.mkdir(".\\embeddings"+concept)
+        np.save(".\\embeddings"+concept+"\\train_x.npy", self.train_x)
+        np.save(".\\embeddings"+concept+"\\train_y.npy", self.train_y)
+        np.save(".\\embeddings"+concept+"\\test_x.npy", self.test_x)
+        np.save(".\\embeddings"+concept+"\\test_y.npy", self.test_y)
         print("data saved")
         print()
 
-    def load_embeddings(self):
-        self.train_x = np.load(".\\embeddings\\train_x.npy")
-        self.train_y = np.load(".\\embeddings\\train_y.npy")
-        self.test_x = np.load(".\\embeddings\\test_x.npy")
-        self.test_y = np.load(".\\embeddings\\test_y.npy")
+    def load_embeddings(self, concept):
+        self.train_x = np.load(".\\embeddings"+concept+"\\train_x.npy")
+        self.train_y = np.load(".\\embeddings"+concept+"\\train_y.npy")
+        self.test_x = np.load(".\\embeddings"+concept+"\\test_x.npy")
+        self.test_y = np.load(".\\embeddings"+concept+"\\test_y.npy")
 
         # t, c = train_test_split(list(zip(self.train_x, self.train_y)), test_size=0.20)
         # self.train_x, self.train_y = zip(*t)
         # self.cv_x, self.cv_y = zip(*c)
-        # self.train_x = np.array(self.train_x)
-        # self.train_y = np.array(self.train_y)
-        # self.test_x = np.array(self.test_x)
-        # self.test_y = np.array(self.test_y)
+        self.train_x = np.array(self.train_x)
+        self.train_y = np.array(self.train_y)
+        self.test_x = np.array(self.test_x)
+        self.test_y = np.array(self.test_y)
         # self.cv_x = np.array(self.cv_x)
         # self.cv_y = np.array(self.cv_y)
+        # print(len(self.train_x))
+        # print(self.train_x[0])
 
-    def train_logistic_regression_classifier(self):
+    def train(self, model):
         x, y = self.train_x, self.train_y
-        model = LogisticRegression(max_iter=300).fit(x, y)
-        score = model.score(x, y)
-        print(f"LR score: {score}")
-        self.lr = model
-
-    def train_svm_classifier(self):
-        x, y = self.train_x, self.train_y
-        model = svm.SVC()
         model.fit(x, y)
         score = model.score(x, y)
-        print(f"SVM score: {score}")
-        self.svm = model
+        print(f"Model score: {score}")
+        self.model = model
 
     def get_test_performance_for_model(self, model):
+        #average over different subsets
         cvy = self.cv_y
         # cvy = np.random.choice([0, 1], size=len(self.cv_y))
         return model.score(self.cv_x, cvy)
 
-    # def get_precision(self):
-    #     x, y = self.train_x, self.train_y
-    #     predictions = self.lr.predict(x)
-    #     mathy_predictions = [1*(pred==0) for pred in predictions]#1s for mathy
-    #     non_mathy_predictions = [1*(pred==1) for pred in predictions]#1s for non_mathy
-    #     total_mathy_predictions = np.sum(mathy_predictions)
-    #     total_non_mathy_predictions = np.sum(non_mathy_predictions)
-    #     mathy_template = [1*(label==0) for label in y]#1s for mathy
-    #     non_mathy_template = [1*(label==1) for label in y]#1s for non_mathy
-    #     total_mathy = np.sum(mathy_template)
-    #     total_non_mathy = np.sum(non_mathy_template)
-    #     mathy_recall_num = np.sum([1*(pred==1 and pred==mathy_template[i])
-    #                                for i, pred in enumerate(mathy_predictions)])
-    #     non_mathy_recall_num = np.sum([1*(pred==1 and pred==non_mathy_template[i])
-    #                                    for i, pred in enumerate(non_mathy_predictions)])
-    #     mathy_precision = mathy_recall_num/total_mathy_predictions
-    #     non_mathy_precision = non_mathy_recall_num/total_non_mathy_predictions
-    #     print("mathy_precision: " + str(mathy_precision))
-    #     print("non_mathy_precision: " + str(non_mathy_precision))
-    #     mathy_recall = mathy_recall_num/total_mathy
-    #     non_mathy_recall = non_mathy_recall_num/total_non_mathy
-    #     print("mathy recall: " +str(mathy_recall))
-    #     print("non mathy recall: " +str(non_mathy_recall))
-
     def get_model_report(self, model):
-        predictions = model.predict(self.cv_x)
-        report = classification_report(self.cv_y, predictions)
+        predictions = model.predict(self.test_x)
+        report = classification_report(self.test_y, predictions)
         print(report)
 
-    def train_perceptron_classifier(self):
-        perceptron = Perceptron()
-        perceptron.fit(self.train_x, self.train_y)
-        score = perceptron.score(self.train_x, self.train_y)
-        print(f"Perceptron score: {score}")
-        self.perceptron = perceptron
+    def learning_curve_new(self, x, y, model, output, concept):
+        # 0.8 -> seeds -> training subsets, test fixed
+        t, c = train_test_split(list(zip(x, y)), test_size=0.50, random_state=42)
+        x, y = zip(*t)
+        test_x, test_y = zip(*c)
+        train_x = np.array(x)
+        train_y = np.array(y)
+        test_x = np.array(test_x)
+        test_y = np.array(test_y)
+        # print(len(test_x))
+        # print(len(train_x))
 
-    def learning_curve(self):
-        return 0
+        seeds = range(0, 15)
+        # print(seeds)
+        min_files = 6
+        sizes = np.arange(min_files, len(train_x), step=1)
 
-    def plot_learning_curve(self, estimator, title, X, y, axes=None, ylim=None, cv=None,
-                            n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
+        train_scores = np.zeros((len(sizes)))
+        train_scores_stds = np.zeros((len(sizes)))
+        test_scores_stds = np.zeros((len(sizes)))
+        test_scores = np.zeros((len(sizes)))
 
-        if axes is None:
-            _, axes = plt.subplots(1, 3, figsize=(20, 5))
+        for i, train_x_size in enumerate(sizes):
+            train_score_train = np.zeros(len(seeds))
+            test_score_train = np.zeros(len(seeds))
+            for j, seed in enumerate(seeds):
+                # print(seed)
+                train_x_subset, _, train_y_subset, _\
+                    = train_test_split(train_x, train_y, train_size=train_x_size, random_state=seed)
+                new_model = None
+                if model == "lr":
+                    new_model = LogisticRegression(random_state=seed)
+                elif model == "svm":
+                    new_model = svm.SVC(kernel="linear", random_state=seed)
+                elif model == "perceptron":
+                    # new_model = Perceptron(random_state=seed)
+                    new_model = MLPClassifier(random_state=seed)
 
-        axes[0].set_title(title)
-        if ylim is not None:
-            axes[0].set_ylim(*ylim)
-        axes[0].set_xlabel("Training examples")
-        axes[0].set_ylabel("Score")
+                new_model.fit(train_x_subset, train_y_subset)
+                train_score_train[j] = new_model.score(train_x_subset, train_y_subset)
+                test_score_train[j] = new_model.score(test_x, test_y)
 
-        train_sizes, train_scores, test_scores, fit_times, _ = \
-            learning_curve(estimator, X, y, cv=cv, n_jobs=n_jobs,
-                           train_sizes=train_sizes,
-                           return_times=True)
-        train_scores_mean = np.mean(train_scores, axis=1)
-        train_scores_std = np.std(train_scores, axis=1)
-        test_scores_mean = np.mean(test_scores, axis=1)
-        test_scores_std = np.std(test_scores, axis=1)
-        fit_times_mean = np.mean(fit_times, axis=1)
-        fit_times_std = np.std(fit_times, axis=1)
+            # print(model.class_weight)
+            # print(new_model.score(test_x, test_y))
 
-        # Plot learning curve
-        axes[0].grid()
-        axes[0].fill_between(train_sizes, train_scores_mean - train_scores_std,
-                             train_scores_mean + train_scores_std, alpha=0.1,
-                             color="r")
-        axes[0].fill_between(train_sizes, test_scores_mean - test_scores_std,
-                             test_scores_mean + test_scores_std, alpha=0.1,
-                             color="g")
-        axes[0].plot(train_sizes, train_scores_mean, 'o-', color="r",
-                     label="Training score")
-        axes[0].plot(train_sizes, test_scores_mean, 'o-', color="g",
-                     label="Cross-validation score")
-        axes[0].legend(loc="best")
+            # train_score /= len(seeds)
+            # test_score /= len(seeds)
+            # train_scores[i] = train_score_train.mean()
+            # test_scores[i] = test_score_train.mean()
+            train_scores_stds[i] = train_score_train.std()
+            test_scores_stds[i] = test_score_train.std()
+            train_scores[i] = train_score_train.mean()
+            test_scores[i] = test_score_train.mean()
+            # train_scores[i] = train_score_train
+            # test_scores[i] = test_score_train
+        # print(test_scores)
+        # data_train = [[sizes[i], list(train_scores[i][:])] for i in range(len(sizes))]
+        # df_tr = pd.DataFrame(data_train, columns=["x", "y"])
+        # data_test = [[sizes[i], list(test_scores[i][:])] for i in range(len(sizes))]
+        # df_te = pd.DataFrame(data_test, columns=["x", "y"])
+        # plt.grid()
+        #
+        # df_train = pd.DataFrame(dict(sizes=sizes, train_scores=train_scores))
+        # df_test = pd.DataFrame(dict(sizes=sizes, train_scores=test_scores))
+        # s.relplot(x="sizes", y="train_scores", kind="line", data=df_train)
+        # s.relplot(x="sizes", y="test_scores", kind="line", data=df_test)
 
-        # Plot n_samples vs fit_times
-        axes[1].grid()
-        axes[1].plot(train_sizes, fit_times_mean, 'o-')
-        axes[1].fill_between(train_sizes, fit_times_mean - fit_times_std,
-                             fit_times_mean + fit_times_std, alpha=0.1)
-        axes[1].set_xlabel("Training examples")
-        axes[1].set_ylabel("fit_times")
-        axes[1].set_title("Scalability of the model")
+        # s.lineplot(x=sizes, y=train_scores, ci=95)
+        # s.lineplot(x=sizes, y=test_scores, ci=95)
+        # s.lineplot(x="x", y="y", data=df_tr, ci=95)
+        # s.lineplot(x="x", y="y", data=df_te, ci=95)
+        # #err_kws=matplotlib.axes.Axes.fill_between()
+        # # plt.savefig(output)
 
-        # Plot fit_time vs score
-        axes[2].grid()
-        axes[2].plot(fit_times_mean, test_scores_mean, 'o-')
-        axes[2].fill_between(fit_times_mean, test_scores_mean - test_scores_std,
-                             test_scores_mean + test_scores_std, alpha=0.1)
-        axes[2].set_xlabel("fit_times")
-        axes[2].set_ylabel("Score")
-        axes[2].set_title("Performance of the model")
+        # train_scores_mean = train_scores.mean()
+        # test_scores_mean = test_scores.mean()
+        # train_scores_std = 1.96*(train_scores.std()/train_scores_mean)
+        # test_scores_std = 1.96*(test_scores.std()/test_scores_mean)
 
-        return plt
+        # have to replace with seaborn
+        plt.grid()
+        plt.fill_between(sizes, train_scores-((train_scores_stds*1.96)),
+                         train_scores+((train_scores_stds*1.96)), color="green", alpha=0.1)
+        plt.fill_between(sizes, test_scores-((test_scores_stds*1.96)),
+                         test_scores+((test_scores_stds*1.96)), color="red", alpha=0.1)
+        print(test_scores+((test_scores_stds*1.96)))
+        print(((test_scores_stds*1)/np.sqrt(len(seeds))))
+        print(test_scores-((test_scores_stds*1)/np.sqrt(len(seeds))))
+        plt.plot(sizes, train_scores, color="g", label="training scores")
+        plt.plot(sizes, test_scores, color="r", label="test scores")
+        plt.ylabel("Score (Average accuracy)")
+        plt.xlabel("Number of Training Examples")
+        plt.title(concept+" concept")
+        plt.legend(loc="best")
+        # print(len(train_scores))
+        plt.xlim(5, sizes[len(sizes)-1])
+        plt.ylim(0.5, 1.01)
+        # # plt.show()
+        plt.savefig(output)
+        return train_scores, test_scores, sizes
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--data_dir")
-args = parser.parse_args()
-c = classify()
-# c.process_data(args.data_dir)
-c.load_embeddings()
-# c.train_logistic_regression_classifier()
-# c.train_svm_classifier()
-# c.train_perceptron_classifier()
-# # c.get_precision()
-# lr_test = c.get_test_performance_for_model(c.lr)
-# svm_test = c.get_test_performance_for_model(c.svm)
-# perceptron_test = c.get_test_performance_for_model(c.perceptron)
-# print()
-# print()
-# print(f"lr performance: {lr_test}")
-# print(f"svm performance: {svm_test}")
-# print(f"perceptron performance: {perceptron_test}")
-# print()
-# c.get_model_report(c.lr)
-# c.get_model_report(c.svm)
-# c.get_model_report(c.perceptron)
-estimator = LogisticRegression()
-estimator = svm.SVC()
-# estimator = Perceptron()
-title = "Learning curve"
-plot = c.plot_learning_curve(estimator, title, c.train_x, c.train_y)
-# print(c.train_y)
-plot.show()
+def main():
+    parser = argparse.ArgumentParser()
+    # add comments/help so the users know
+    # what to send in as command line args
+    parser.add_argument("--data_dir")
+    parser.add_argument("--model")
+    parser.add_argument("--report", required=False, action="store_true")
+    parser.add_argument("--learning_curve", required=False, action="store_true")
+    parser.add_argument("--learning_curve_output", required=False)
+    parser.add_argument("--concept")
+    parser.add_argument("--process_data", required=False, action="store_true")
+    args = parser.parse_args()
+    c = classify()
+    # c.process_data(args.data_dir, args.concept)
+    model = args.model
+    if args.learning_curve and not args.learning_curve_output:
+        print("You need to specify an output file for the learning curve")
+        exit()
+    if args.report:
+        c.load_embeddings(args.concept)
+        c.train(model)
+        model_test = c.get_test_performance_for_model(model)
+        print(f"model performance: {model_test}")
+        print()
+        c.get_model_report(model)
+    if args.learning_curve:
+        c.load_embeddings(args.concept)
+        c.learning_curve_new(c.train_x, c.train_y, model, args.learning_curve_output, args.concept)
+    if args.process_data:
+        c.process_data(args.data_dir, args.concept)
+
+
+main()
+
 
 # conda env export > environment.yml
 # saving models
-# # store embeddings as .npy np.save np.load
-# we can change the way we compute embeddings for the doc
-# # cv for checking on unseen not test
-# # (1) acc vs number of training examples/learning curve
-# # ...(2)  w/ confidence intervals for lr, svm, perceptron
-# more concepts -
-# https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/chi2008-cueflik.pdfx
+# different ways to compute embeddings for the doc
+# https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/chi2008-cueflik.pdf
+
+# learning_curve - confidence intervals
+# collect papers for {guidelines, qualitative, sentiment} concepts
+# # define concept, model from terminal, everything from terminal
+
+# new concepts
+# documentation for args
+# ranking model paper - see whittlesearch
+# confidence intervals, error bars
+# fix the (x, y) label ranges, title
+# output file for lc
+# sentiment -
+# guidelines, principles, ben shneiderman,
+
+# control problem, limeade figure,
+# explanation vocab incomplete, learning concept
+# refining explanatory vocab
+
+
+# keyword based concepts
+# standardize the x(stepsize=2), y(0.5 to 1) axes
+# seaborn

@@ -1,0 +1,457 @@
+AVHYAS: A Free and Open Source QGIS Plugin
+for Advanced Hyperspectral Image Analysis
+Rosly Boy Lyngdoh∗, Anand S Sahadevan†, Touseef Ahmad, Pradyuman Singh Rathore,
+Manoj Mishra, Praveen Kumar Gupta and Arundhati Misra
+Hyperspectral Techniques Development Division,
+Advanced Microwave and Hyperspectral Techniques Development Group,
+Space Applications Centre, ISRO, Ahmedabad, Gujarat, India
+Email: ∗ roslylyngdoh@sac.isro.gov.in, †anandss@sac.isro.gov.in
+Abstract—Advanced Hyperspectral Data Analysis Software
+(AVHYAS) plugin is a Python-3 based Quantum-GIS (QGIS) plu-
+gin designed to process and analyse hyperspectral (Hx) images.
+Starting with version 1.0, AVHYAS serves as a free and open-
+source platform for sharing and distributing Hx data analysis
+methods among research scholars, scientists and potential end-
+users. It is developed to guarantee full usage of present and
+future Hx airborne or spaceborne sensors and provides access
+to advanced algorithms for Hx data processing. The software
+is freely available and offers a range of basic and advanced
+tools such as atmospheric correction (for airborne AVIRIS-NG
+image), standard processing tools as well as powerful machine
+learning and Deep Learning interfaces for Hx data analysis. This
+paper gives an overview of the AVHYAS plugin, explains typical
+workflows and use cases for making it a constantly used platform
+for hyperspectral remote sensing applications.
+Index Terms—AVHYAS, QGIS, Python 3.0, Hyperspectral
+Data Analysis, Classification, Deep Learning, Unmixing, Fusion,
+Regression, Target Detection
+I. INTRODUCTION
+Hyperspectral Remote Sensing (HRS) is a powerful remote
+sensing approach for detecting and monitoring the biophysical
+characteristics of the Earth’s surface. Successful applications
+with HRS include monitoring agricultural areas, forests, urban
+areas, snow and ice, atmosphere, inland waters, oceans, and
+other natural ecosystems. Wide varieties of methods are used
+for analysing the hyperspectral data [1] (e.g., classification,
+target Physico-chemical property estimation, target abundance
+estimation, radiative transfer modelling etc.). Some Hx sensors
+onboard airborne and spaceborne platforms have provided
+information-rich datasets with high spectral and spatial res-
+olution. However, the methods used in multi-spectral (Mx)
+remote sensing data analysis are not adaptable for hyperspec-
+tral data processing due to the high collinearity (redundant
+information) between the adjacent bands. Other difficulties
+are the high dimensionality of the hyperspectral data, spectral
+mixing, systematic or non-systematic noises and atmospheric
+effects. Therefore, data mining from Hx image needs complex
+and highly compute-intensive data processing and analysis
+algorithms for various applications. Hyperspectral imaging
+systems such as AVIRIS-NG, Hyperion, PRISMA, HySIS and
+future hyperspectral missions (GISAT-ISRO, EnMAP-DLR,
+HyspIRI-NASA) along with in situ measurements from spec-
+troradiometer, will provide ample scope of scientific studies,
+Fig. 1. Schematic of different functionalities of advanced hyperspectral data
+analysis plugin (AVHYAS)
+analysis, and value-added products generation for scientific
+missions.
+Hyperspectral data analysis requires specific algorithms to
+analyze such extensive dimensional data (e.g. parallelopiped
+classification, broad-band ratios and multi-linear regression,
+which are not suited for analyzing Hx data). Widely used
+Mx data processing software requires additional functionalities
+(e.g. feature selection and feature extraction) to exploit the
+wealth of rich spectral information. At present, advanced
+algorithms such as deep learning (DL), sparse-linear un-
+mixing are not available in commercial or open-source soft-
+ware. Moreover, advanced algorithms which are available in
+different scripting languages (usually written in C/C++, Java,
+Python and Matlab) do not have a simple user interface
+(UI) for the users having no prior programming skill [2].
+Nevertheless, libraries for advanced algorithms are usually
+domain-specific and are not provided with user interfaces.
+Therefore, programming skills beyond that of Mx data users
+are required to perform computationally intensive tasks for
+advanced algorithms [3], [4]. Over the last decade, Python
+scripting language opened up new and simple pathways for
+effective implementation of machine learning (ML) and DL
+algorithms, making it possible to perform the programming
+tasks in a few lines of code that would otherwise take hundreds
+arXiv:2106.12776v1
+[eess.IV]
+24
+Jun
+2021
+Fig. 2. (a) AVHYAS plugin is integrated with QGIS as ’Hyperspectral’ Menu, (b) spectral viewer, (c) scatter Plot viewer for finding the pure and mixed
+pixels
+of lines in lower-level languages. The success of Python script-
+ing languages is vastly based on the constant improvement
+of shared scripts and resources within an active community.
+In this context, the concept for the AVHYAS was developed
+with a focus on exploring the full potential of QGIS and other
+powerful python modules for Hx data analysis (see Fig. 1).
+The AVHYAS plug-in efficiently bridges all advantages of
+QGIS (e.g., visualization, vector data processing) and powerful
+python packages like GDAL (for data I/O or working with
+virtual raster files), TensorFlow, scikit-learn, scikit-image for
+Hx data processing and analysis in Windows-based operating
+system. It also uses QGIS-interface and other python packages
+such as matplotlib, seaborn to visualize Hx data.
+The Overarching aim of AVHYAS is to provide free-of-
+charge and user-friendly access to advanced approaches for
+Hx data processing for both beginners and advanced users.
+The AVHYAS is integrated into the QGIS classic menu to
+extend its range of available applications. It can also be
+used with any Mx imagery for specific applications (e.g.,
+classification, regression, feature extraction etc.). A standard
+workflow was adopted for effectively integrating machine
+learning approaches to the QGIS environment. This way, func-
+tionalities were implemented that include the standard methods
+available in other proprietary software (e.g., ENVI, ArcGIS)
+or non-commercial/open-source software (e.g., EnMAP-Box
+[5]) and the advanced algorithms (e.g. DL based classification)
+which are not available in the standard software. This paper
+provides an overview of the AVHYAS and examples for some
+of the use cases (technical documentation of the AVHYAS
+plugin is included in the installation bundle available at the
+website (https://sites.google.com/view/avhyas-sac-isro/home).
+II. AVHYAS FRAMEWORK
+The AVHYAS can be added to the QGIS as a plugin
+(see Fig. 2 (a)) and shall be registered in the QGIS plugin
+repository. General tasks like raster and vector file manage-
+ment follow the same principles and look-and-feel available
+in QGIS. These functionalities are extended based on more
+specific requirements for Hx data (e.g. spectral viewer, RGB-
+tool for visualizing true colour composite (TCC) and false
+colour composite (FCC)) or the management of Hx data
+analysis workflow (e.g. text view for presenting classification
+accuracy in HTML format). Views can interact in various
+ways with each other; for example, the selected image spectral
+profile can be visualized in a spectral view together with
+multiple target spectra of the same image or different images.
+The AVHYAS uses generic file formats (available in GDAL)
+for storing image data (e.g., binary spectral data in band-
+sequential-order with metadata information). The header file
+is compatible with the widely used ENVI file format and the
+generated output, therefore compatible with other software
+products. An additional ’Add Data’ button is included in
+the Hxtools RGB toolbar, which enables the fast loading of
+large Hx images without the rotational information. AVHYAS
+provides typical interactive tools for feature space visualization
+and spectral visualization. Multiple pixel spectra can be added
+to the spectral viewer to compare the spectral features (see Fig.
+2 (b)). Interactive scatter plot visualization is provided with
+the un-mixing module to locate the pixels that represent the
+end member spectra or mixed spectra (see Fig. 2 (c)). A check
+box is provided with each module to load the generated image
+into QGIS canvas. User can use QGIS raster-functionalities to
+compute image band statistics and histograms.
+Besides data source management and visualization modules,
+the AVHYAS consists of Atmospheric Correction Module,
+Basic Tools Module, Pre-processing Module, Data Quality
+Analysis Module, Un-mixing Module, Classification Module,
+Deep Learning Module, Regression Module, Fusion Module,
+Spectral Indices, and Geo-Physical Applications Module.
+III. AVHYAS TOOLS AND APPLICATIONS
+A. Atmospheric Correction Module for AVIRIS-NG Data
+Applications of high-spatial-resolution imaging spectrom-
+eter data acquired from the AVIRIS-NG require a thor-
+ough compensation for atmospheric absorption and scatter-
+ing. Atmospheric Correction utility is for converting Level-
+1 radiance image of advanced visible-near-infrared-imaging-
+spectroradiometer next-generation (AVIRIS-NG) airborne-
+sensor to Level-2 Reflectance image. Retrieval of water vapour
+and aerosol optical depth (AOD) over land is critical for
+Fig. 3. UI of ASD utility Module for visualising and resampling ASD
+spectroradiometer data
+correcting atmospheric influence on Hx images. The dark
+dense vegetation method and radiative transfer modelling are
+used to derive AOD. Estimation of perceptible water vapour
+is carried out using short-wave hyperspectral measurements
+for each pixel. A differential absorption technique (continuum
+interpolated band ratio) has been used for this purpose [6].
+Further, these parameters were used to derive ‘atmospherically
+corrected surface reflectance for land pixels, assuming hori-
+zontal surfaces having Lambertian reflectance. This module
+contains an entirely standalone version of the operational
+model to convert radiance data to reflectance data [6]. All the
+necessary auxiliary looks up tables have been bundled along
+with AVHYAS.
+B. Basic Tools Module
+Basic-Tools module contains sub-modules such as sensor-
+utility, data-subset, spectral plot, scatter plot, scaling, and ROI
+Separability. Sensor utility module contains four sub-modules
+to read ASD spectroradiometer data (Fig. 3 illustrates the
+UI of ASD utility Module for visualizing and resampling
+ASD spectroradiometer data, to generate spectral-response-
+function (SRF) from full-width-half-maximum (FWHM) and
+the central wavelengths of the sensor, to perform spatial and
+spectral resampling of the Hx images to generate Mx images.
+Scaling functionality allows the user to scale the Hx images
+by a factor to bring the Hx data within a specific numerical
+range. ROI separability module is designed to perform the
+class separability analysis and feature separability analysis to
+identify the separable classes, visualize the mean and standard
+deviation spectra of different classes, low-dimensional visual-
+ization of different classes, and identify the optimum bands to
+discriminate different classes.
+C. Pre-processing and Data Quality Analysis Modules
+Pre-processing module contains sub-modules such as Di-
+mensionality Reduction (DR), General Purpose Utility, Feature
+Fig. 4. (a) UI of Cloud removal module, (b) target image with cloud (c)
+reference cloud-free (d) cloud removed target image
+Fig. 5. UI of ROI-separability analysis tool
+Fig. 6. UI of noise estimation module to visualise the band-wise noise
+standard deviation
+Fig. 7. UI of abundance map viewer to visualise the un-mixing results
+Extraction, Data Transformation and Savitsky-Golay-Filtering.
+Dimensionality reduction (DR) [7] utility can perform linear
+(e.g. minimum-noise-fraction, MNF) and non-linear DR (e.g.
+Kernel PCA) on Hx images. Cloud removal [8] tool in
+General-Purpose-Utility module can perform cloud removal in
+Hx images using sparse-coding and dictionary learning. Figure
+4 (a) illustrates the UI of the cloud removal module, Fig.4(b)
+shows the cloudy image (EO1-Hyperion image), (c) shows
+the reference cloud-free image obtained from the Hyperion
+sensor, and (d) illustrates the result obtained using the cloud
+removal tool (cloud removed target image). Feature extraction
+employs local spectral similarity [9], spatial-spectral-gradient
+and extended morphological filter [10] algorithm to extract
+spatial features from the Hx image. Similarly, the fit-transform
+module can perform different data transformations such as
+standard-scalar [11], min-max scalar, robust-scalar transfor-
+mations, and continuum-removal [12] to enhance the spectral
+features in the Hx images, which are useful pre-processing
+functionalities to improve the performance of classification and
+regression algorithms.
+Data Quality Analysis module has been developed to
+analyse the quality of the Hx images in terms of spec-
+tral and spatial characteristics. This module has seven sub-
+modules such as signal-to-noise ratio (SNR), bad-band detec-
+tion, whitening, noise estimation [13], and de-striping. Noise
+estimation module can be applied to analyse the spectral-
+noise, spatial-spectral-noise and to estimate the noise in the
+spectrally homogeneous regions (Fig.7 illustrates UI of the
+noise estimation tool and the plot showing the noise-standard-
+deviation obtained from the radiance image). The bad-band
+detection method requires a threshold value to demarcate the
+noisy channel based on the user-defined threshold.
+D. Un-mixing Module
+The field of spectral mixture analysis (or spectral unmixing)
+is dedicated to both identifying the most probable set of pure
+pixels (called endmembers) and estimating their proportions
+(called abundances) in each of the image pixels. The Un-
+mixing module performs the endmember extraction and the
+abundance estimation in Hx images. Sub-modules consist of
+Material-Count, endmember extraction, abundance estimation,
+sparse based un-mixing, interactive scatter plot visualization,
+visualization of un-mixing results, and un-mixing error anal-
+ysis. The endmember extraction module includes the widely
+used algorithms such as PPI, NFINDER, ATGP and VCA [14].
+The abundance estimation module includes linear algorithms
+and generalized bi-linear models [15]. The interactive scatter
+plot visualization module provides an interface for visualizing
+the un-mixing results. QGIS, as such, has no viewer for
+visualizing spectra and abundances. This utility has been
+implemented so as the user can visualize the different end-
+members along with their respective abundances and generate
+the root-mean-square-error (RMSE) map of the abundance
+estimation methods (Fig. 7 illustrates the UI of abundance
+map viewer to visualize the un-mixing results).
+E. Classification and Deep Learning Modules
+The classification and Deep Learning module are designed
+to provide simple user interfaces to perform classification
+of Hx images. Classification module consists of supervised
+classification, unsupervised classification and segmentation
+modules. Supervised classification module can perform clas-
+sification of Hx images using widely used algorithms such
+as spectral angle mapper, support-vector-machine, random-
+forest etc. These modules employ scikit-learn package [11]
+to perform the classification tasks. Moreover, the workflow
+functionality of these modules can perform hyperparameter
+tuning of the specific algorithm to achieve better accuracy. DL
+module consists of state-of-the-art DL algorithms for the clas-
+sification of Hx images [3], [16]. The inference sub-module
+of DL provides an interface for performing prediction based
+on a trained deep learning model. The user has to provide a
+valid H5 file [2] which contains the weight and biases of the
+model being trained (using AVHYAS). The design of the UI
+for classification workflow has been adopted from the EnMap-
+Box toolbox. Model performance is printed as html reports and
+the assessment report will be pop up in the default browser.
+Fig. 8. (a) UI of deep learning based classification workflow (b) inference visualisation for Deep Learning (c) report of classification accuracy displayed on
+web-browser using HTML (d) Pavia University Hx image, (e) ground truth of the image, (f) classified map generated using AVHYAS 3D-CNN model
+The segmentation module consists of spatial-spectral, split-
+merge and mean-shift segmentation methods, which can be
+used for segmenting the spatial-spectral homogeneous patches
+in Hx images.
+Pavia University scene was used for generating the output
+of the DL module. This data was acquired by the Reflective
+Optics System Imaging Spectrometer(ROSIS-3) over the city
+of Pavia, Italy (see [17], and [16] for the detailed information
+about the dataset). Figure 8 (a), (b) and (c) illustrate the UI
+of deep Learning-based Classification Workflow, inference vi-
+sualisation and classification performance report, respectively.
+Figure 8 (d), (e) and (f) show the Pavia University Hx image
+(TCC), the ground truth of the image and the classified map
+generated using the 3D-CNN model available in AVHYAS.
+F. Regression, Fusion, Geo-Physical Applications and Spec-
+tral Indices Modules
+Regression is a statistical method used in remote sensing to
+build a relationship between the desired attributes (Physico-
+chemical or biological properties of target) and their Hx sig-
+nature. In AVHYAS, the regression module provides a flexible
+way of running different regression algorithms (e.g. PLSR,
+Support-vector-regression, random-forest-regression, etc.) on
+Hx images [18]. The idea of workflow has been borrowed
+and inspired from Enmapbox plugin [19] with the back-end
+module written and prepared in house.
+At present, Geo-Physical Applications Module consists of
+an interactive simulation tool for generating the vegetation
+spectra using the PROSAIL model. The idea of workflow has
+been borrowed from Enmapbox plugin [19] with the additional
+sensor resampling functions for Mx sensors of Indian-Space-
+Research-Organisation (ISRO) was incorporated. Similarly, the
+vegetation spectral indices module has been adopted from
+the Enmap toolbox [19]. Moreover, the future versions of
+AVHYAS will have the spectral index module for other targets
+such as soil, water etc.
+Data Fusion module in AVHYAS is designed for enhanc-
+ing the hyperspectral spatial resolution using high spatial-
+resolution Mx image. AROSICS (Automated and Robust
+Open-Source Image Co-Registration Software), a python-
+Fig. 9. (a) UI of Hx-Mx image fusion module, (b) synthetic low spatial
+resolution Pavia University Hx image, (c) synthesize high spatial resolution
+Mx data over Pavia Univ. (d) High spatial resolution Hx image generated using
+the fusion module (e) Spectral-Angle-Mapper error between the reconstructed
+and the original image
+based open-source module [20] was integrated with AVHYAS
+for automatic detection and correction of sub-pixel misalign-
+ment between Hx and Mx images. This module can improve
+the co-registration between Hx and Mx images and may
+substantially improve the data fusion performance [17]. Figure
+9 (a) shows the UI of data fusion module. Figure 9 (b) and
+(c) show the synthesized low spatial resolution (10m) Pavia
+University Hx image and the high spatial resolution Mx image
+(5m), respectively. Figure 9 (d) and (e) show the high spatial
+resolution Hx image generated using the fusion module, and
+pixel-wise cosine distance [17] between the fused image and
+the original image.
+AVHYAS is not limited to HRS data of the airborne or
+spaceborne sensors, and it can also be used for analyzing the
+data acquired by the handheld/tabletop Hx cameras. Moreover,
+the chance for the AVHYAS to become an evolving plugin
+with a constantly growing set of applications is high, given
+its flexibility of integrating new algorithms for different Hx
+sensors and new powerful ML/DL libraries.
+IV. CONCLUSION
+AVHYAS integrates powerful machine-learning and deep-
+learning algorithms to perform various data analysis tasks
+for extracting information from Hx data. Basic and advanced
+algorithms were incorporated in the AVHYAS toolbox aiming
+at the extension of the user community (in the field of HRS)
+in India and providing the most powerful algorithms for the
+analysis of the present and the future Hx-imaging sensor data.
+The AVHYAS plugin development was thus driven by the idea
+of familiarising advanced Hx image analysis algorithms with
+the multi-disciplinary community. It was used for training the
+academia and research community to get hands-on experience
+on Hx image analysis and always received positive responses.
+A set of multi-disciplinary applications will be integrated
+into future versions, such as non-linear un-mixing for mineral
+mapping, soil spectral indices, Look-up table-based inversion
+for biophysical parameter estimation, Deep-Learning based
+regression, Ensemble classification for multi-modal data etc.
+Moreover, the future versions of AVHYAS will have parallel
+implementations of a widely used hyperspectral data analysis
+algorithm, which will help users process large-sized Hx images
+on multi-core processors.
+ACKNOWLEDGMENT
+The AVHYAS plugin is developed at Hyperspectral tech-
+niques Development Division, Space Applications Centre
+(SAC), Indian Space Research Organisation (ISRO), Ahmed-
+abad, Gujarat, as part of the Microwave and Hyperspectral
+Techniques for Earth Resources Applications and Manage-
+ment (MAHTRAM) project. The authors are grateful to the
+technical evaluation committee members in SAC for their
+valuable feedback, which helped us improve the functionalities
+of AVHYAS. AVHYAS installation bundle available at the
+website (https://sites.google.com/view/avhyas-sac-isro/home)
+REFERENCES
+[1] J. M. Bioucas-Dias, A. Plaza, G. Camps-Valls, P. Scheunders,
+N. Nasrabadi, and J. Chanussot, “Hyperspectral remote sensing data
+analysis and future challenges,” IEEE Geoscience and remote sensing
+magazine, vol. 1, no. 2, pp. 6–36, 2013.
+[2] M. Abadi, P. Barham, J. Chen, Z. Chen, A. Davis, J. Dean, M. Devin,
+S. Ghemawat, G. Irving, M. Isard et al., “Tensorflow: A system for large-
+scale machine learning,” in 12th {USENIX} symposium on operating
+systems design and implementation ({OSDI} 16), 2016, pp. 265–283.
+[3] N. Audebert, B. Le Saux, and S. Lefèvre, “Deep learning for classifi-
+cation of hyperspectral data: A comparative review,” IEEE geoscience
+and remote sensing magazine, vol. 7, no. 2, pp. 159–173, 2019.
+[4] T. Ahmad, R. B. Lyngdoh, A. S. Sahadevan, S. Raha, P. K. Gupta, and
+A. Misra, “Four-directional spatial regularization for sparse hyperspec-
+tral unmixing,” Journal of Applied Remote Sensing, vol. 14, no. 4, p.
+046511, 2020.
+[5] A. Rabe, B. Jakimow, F. Thiel, P. Hostert, and S. van der Linden,
+“Enmap-box 3 a free and open source python plug-in for qgis,” in
+IGARSS 2018-2018 IEEE International Geoscience and Remote Sensing
+Symposium. IEEE, 2018, pp. 7764–7766.
+[6] M. K. Mishra, A. Gupta, J. John, B. P. Shukla, P. Dennison, S. Srivastava,
+N. K. Kaushik, A. Misra, and D. Dhar, “Retrieval of atmospheric
+parameters and data-processing algorithms for aviris-ng indian campaign
+data.” Current Science (00113891), vol. 116, no. 7, 2019.
+[7] J. Khodr and R. Younes, “Dimensionality reduction on hyperspectral
+images: A comparative review based on artificial datas,” in 2011 4th
+International Congress on Image and Signal Processing, vol. 4. IEEE,
+2011, pp. 1875–1883.
+[8] M. Xu, X. Jia, M. Pickering, and A. J. Plaza, “Cloud removal based
+on sparse representation via multitemporal dictionary learning,” IEEE
+Transactions on Geoscience and Remote Sensing, vol. 54, no. 5, pp.
+2998–3006, 2016.
+[9] A. S. Sahadevan, A. Misra, and P. Gupta, “Spatial feature extraction
+in airborne hyperspectral images using local spectral similarity,” arXiv
+preprint arXiv:1911.02285, 2019.
+[10] A. Plaza, P. Martı́nez, J. Plaza, and R. Pérez, “Dimensionality reduc-
+tion and classification of hyperspectral image data using sequences
+of extended morphological transformations,” IEEE Transactions on
+Geoscience and remote sensing, vol. 43, no. 3, pp. 466–479, 2005.
+[11] F. Pedregosa, G. Varoquaux, A. Gramfort, V. Michel, B. Thirion,
+O. Grisel, M. Blondel, P. Prettenhofer, R. Weiss, V. Dubourg et al.,
+“Scikit-learn: Machine learning in python,” the Journal of machine
+Learning research, vol. 12, pp. 2825–2830, 2011.
+[12] C. Gomez, P. Lagacherie, and G. Coulouma, “Continuum removal versus
+plsr method for clay and calcium carbonate content estimation from
+laboratory and airborne hyperspectral measurements,” Geoderma, vol.
+148, no. 2, pp. 141–148, 2008.
+[13] L. Gao, Q. Du, B. Zhang, W. Yang, and Y. Wu, “A comparative study
+on linear regression-based noise estimation for hyperspectral imagery,”
+IEEE Journal of Selected Topics in Applied Earth Observations and
+Remote Sensing, vol. 6, no. 2, pp. 488–498, 2013.
+[14] C.-I. Chang, S.-Y. Chen, H.-C. Li, H.-M. Chen, and C.-H. Wen,
+“Comparative study and analysis among atgp, vca, and sga for finding
+endmembers in hyperspectral imagery,” IEEE Journal of Selected Topics
+in Applied Earth Observations and Remote Sensing, vol. 9, no. 9, pp.
+4280–4306, 2016.
+[15] J. M. Bioucas-Dias, A. Plaza, N. Dobigeon, M. Parente, Q. Du, P. Gader,
+and J. Chanussot, “Hyperspectral unmixing overview: Geometrical,
+statistical, and sparse regression-based approaches,” IEEE journal of
+selected topics in applied earth observations and remote sensing, vol. 5,
+no. 2, pp. 354–379, 2012.
+[16] M. Paoletti, J. Haut, J. Plaza, and A. Plaza, “Deep learning classifiers
+for hyperspectral imaging: A review,” ISPRS Journal of Photogrammetry
+and Remote Sensing, vol. 158, pp. 279–317, 2019.
+[17] N. Yokoya, T. Yairi, and A. Iwasaki, “Coupled non-negative matrix
+factorization (cnmf) for hyperspectral and multispectral data fusion:
+Application to pasture classification,” in 2011 IEEE International Geo-
+science and Remote Sensing Symposium. IEEE, 2011, pp. 1779–1782.
+[18] I. Torres and J. M. Amigo, “An overview of regression methods in
+hyperspectral and multispectral imaging,” Data Handling in Science and
+Technology, vol. 32, pp. 205–230, 2020.
+[19] S. Van der Linden, A. Rabe, M. Held, B. Jakimow, P. J. Leitão,
+A. Okujeni, M. Schwieder, S. Suess, and P. Hostert, “The enmap-
+box—a toolbox and application programming interface for enmap data
+processing,” Remote Sensing, vol. 7, no. 9, pp. 11 249–11 266, 2015.
+[20] D. Scheffler, A. Hollstein, H. Diedrich, K. Segl, and P. Hostert, “Arosics:
+An automated and robust open-source image co-registration software for
+multi-sensor satellite data,” Remote sensing, vol. 9, no. 7, p. 676, 2017.
+

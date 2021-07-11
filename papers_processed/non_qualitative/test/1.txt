@@ -1,0 +1,958 @@
+Promises and Pitfalls of Black-Box Concept Learning Models
+Anita Mahinpei * 1
+Justin Clark * 1
+Isaac Lage 1
+Finale Doshi-Velez 1
+Weiwei Pan 1
+Abstract
+Machine learning models that incorporate concept
+learning as an intermediate step in their decision
+making process can match the performance of
+black-box predictive models while retaining the
+ability to explain outcomes in human understand-
+able terms. However, we demonstrate that the
+concept representations learned by these models
+encode information beyond the pre-defined con-
+cepts, and that natural mitigation strategies do
+not fully work, rendering the interpretation of the
+downstream prediction misleading. We describe
+the mechanism underlying the information leak-
+age and suggest recourse for mitigating its effects.
+1. Introduction
+When human decision makers need to meaningfully interact
+with machine learning models, it is often helpful to explain
+the decision of the model in terms of intermediate concepts
+that are human interpretable. For example, if the raw data
+consists of high-frequency accelerometer measurements, we
+might want to frame a Parkinson’s diagonsis in terms of a
+concept like “increased tremors.”
+However, most deep models are trained end-to-end (from
+raw input to prediction) and, although there are a number
+of methods that perform post-hoc analysis of information
+captured by intermediate layers in neural networks (e.g.
+Ghorbani et al. (2019); Kim et al. (2018); Zhou et al. (2018)),
+there is no guarantee that this information will naturally
+align with human concepts (Chen et al., 2020).
+For this reason, a number of recent works propose explicitly
+aligning intermediate neural network model outputs with
+pre-defined expert concepts (e.g. increased tremors) in su-
+pervised training procedures (e.g. Koh et al. (2020); Chen
+et al. (2020); Kumar et al. (2009); Lampert et al. (2009);
+De Fauw et al. (2018); Yi et al. (2018); Bucher et al. (2018);
+*
+Equal contribution 1
+Harvard University. Correspondence
+to: Anita Mahinpei <amahinpei@g.harvard.edu>, Justin Clark
+<jclark@cyber.harvard.edu>.
+Proceedings of the 38th
+International Conference on Machine
+Learning, PMLR 139, 2021. Copyright 2021 by the author(s).
+Losch et al. (2019)). In each case, the neural network model
+learns to map raw input to concepts and then map those
+concepts to predictions. We call the mapping from input to
+concepts a Concept Learning Model (CLM), although this
+mapping may not always be trained independently from the
+downstream prediction task. Models that incorporate a CLM
+component have been shown to match the performance of
+complex black-box prediction models while retaining the
+interpretability of decisions based on human understandable
+concepts, since for these models, one can explain the model
+decision in terms of intermediate concepts.
+Unfortunately, recent work noted that black-box CLMs do
+not learn as expected. Specifically, Margeloiu et al. (2021)
+demonstrate that outputs of CLMs used in Concept Bottle-
+neck Models (CBMs) encode more information than the
+concepts themselves. This renders interpretations of down-
+stream models built on these CLMs unreliable (e.g. it be-
+comes hard to isolate the individual influence of a concept
+like “increase in tremors” if the concept representation con-
+tains additional information). The authors posit that outputs
+of CLMs are encouraged to encode additional information
+about the task label when trained jointly with the down-
+stream task model. They suggest that task-blind training
+of the CLM mitigates information leakage. Alternatively,
+Concept Whitening (CW) models, which explicitly decorre-
+late concept representations during training, also have the
+potential to prevent information leakage (Chen et al., 2020).
+In this paper, we observe that the issue of information leak-
+age in concept representations is even more pervasive and
+consequential than indicated in exiting literature, and that
+existing approaches not completely address the problem.
+We demonstrate that CLMs trained with natural mitigation
+strategies for information leakage suffer from it in the set-
+ting where concept representations are soft—that is, the
+intermediate node representing the concept is a real-valued
+quantity that corresponds to our confidence in the presence
+of the concept. Unfortunately, soft representations are used
+in most current work built on CLMs (Koh et al., 2020;
+Chen et al., 2020). Specifically, we (1) demonstrate how
+extra information can continue to be encoded in the out-
+puts of CLMs and when exactly this leakage will occur; (2)
+demonstrate that mitigation techniques – task-blind training,
+adding unsupervised concepts dimensions to account for
+additional task-relevant information, and concept whitening
+arXiv:2106.13314v1
+[cs.LG]
+24
+Jun
+2021
+Promises and Pitfalls of Black-Box Concept Learning Models
+– do not fully address the problem; and (3) suggest strategies
+to mitigate the effect of information leakage in CLMs.
+2. Background
+The Concept Bottleneck Model Consider training data of
+the form {(xi, yi, ci)}n
+i=1 where n is the number of observa-
+tions, xi ∈ Rd
+are inputs with d features, yi ∈ R are down-
+stream task labels, and ci ∈ Rk
+are vectors of k pre-defined
+concepts. A Concept Bottleneck Model (CBM) (Koh et al.,
+2020) is the composition of a function, g : X → C, map-
+ping inputs x to concepts c, and a function h : C → Y ,
+mapping concepts c to labels y. We refer to g as the CLM
+component. The functions g and h are parameterized by neu-
+ral networks and can be trained independently, sequentially
+or jointly (details in Appendix Section A).
+Concept Whitening Model In the Concept Whitening
+(CW) model (Chen et al., 2020), we similarly divide a neural
+network f : X → Y into two parts: 1) a feature extractor
+g : X → Z that maps the inputs to the latent space Z
+and 2) and a classifier h : Z → Y that maps the latent
+space to the labels. We refer to g as the CLM component.
+While the model is trained to predict the downstream task,
+each of the k concepts of interest is aligned with one of
+the latent dimensions extracted by g: a pre-defined concept,
+C, is aligned to a specific latent dimension by applying a
+rotation to the output of g, such that the axis in the latent
+space along which pre-defined examples of C obtain the
+largest value, is aligned with the latent dimension chosen to
+represent C. The latent dimensions are decorrelated to en-
+courage independence of concept representations. Any extra
+latent dimensions are left unaligned but still go through the
+decorrelation process.
+3. Extraneous Information Leakage in Soft
+Concept Representations
+When the concept representation is soft, as in most current
+work using CLMs (Koh et al. (2020), Chen et al. (2020)),
+these values not only encode for the pre-defined (that is,
+the desired) concepts, but they also unavoidably encode the
+distribution of the data in the feature space. This allows
+non-concept-related information to leak through, render-
+ing flawed interpretations of the prediction based on the
+concepts.
+Previous work observed that this information leakage hap-
+pens when the CLM is trained jointly with the downstream
+task model (Margeloiu et al., 2021): in this case, the joint
+training objective encourages the concept representations to
+encode for all possible task-relevant information.
+Below, we demonstrate information leakage occurs even
+without joint training, and that natural mitigation strategies
+are not sufficient to solve it. Specifically, we consider three
+methods for mitigating information leakage (1) sequential
+training of CLMs (where the CLM is trained prior to consid-
+eration of any downstream tasks), (2) adding unsupervised
+concepts dimensions to account for extra task-relevant in-
+formation, and (3) decorrelating concept representations
+through concept whitening. We explain why none succeed
+in completely preventing leakage.
+Leakage Occurs When the CLM is Trained Sequen-
+tially When the CLM g : X → C is trained separately
+from the concept-to-task model h : C → Y rather than
+jointly, one might expect no information leakage; the task-
+blind training of the CLM should only encourage the model
+to capture the concepts and not any additional task-relevant
+information. We show that, surprisingly, the soft concept
+representations of these CLMs nonetheless encode much
+more information than the concepts themselves, even when
+the concepts are irrelevant for the downstream task.
+Consider the task of predicting the parity of digits in a subset
+of MNIST, in which there are equal numbers of odd and
+even digits. Define two binary concepts: whether the digit
+is a four and whether the digit is a five. We consider an
+extreme case where there are zero instances of fours or fives
+in both training and hold-out data. In this case, the concepts
+are clearly task-irrelevant and a classifier for parity built
+on these concept labels should do no better than random
+guessing – we’d expect a predictive accuracy of 50%.
+We set up a CBM as follows: we parameterize the CLM,
+i.e. the feature-to-concept model (g(x) 7→ c), as a feed-
+forward network (two hidden layers, 128 nodes each, ReLU
+activation) whose output is passed through a sigmoid; we pa-
+rameterize the concept-to-task model with a neural network
+with the same architecture. Using the sequential training
+approach, we first train the CLM. Fixing the trained CLM,
+we train the concept-to-task model to predict parity based
+on the concept probabilities output by the CLM. The latter
+model achieves a test accuracy of 69%, far higher than the
+expected 50%!
+Why are the outputs from our CLM far more useful than the
+true concept labels for the downstream task? The reason lies
+in the fact that concept classification probabilities encode
+much more information than whether or not a digit is a “4”
+or a “5.” The concept classification probability is a func-
+tion of the distance from the input to the decision surface
+corresponding to that concept. These soft concept repre-
+sentations, therefore, necessarily encode the distribution of
+the data along axes perpendicular to decision surfaces. The
+downstream classifier h : C → Y takes advantage of this
+additional information to make its predictions.
+We see this in the top panel of Figure 1, where we visualize
+the first two PCA dimensions of our MNIST dataset (the
+Promises and Pitfalls of Black-Box Concept Learning Models
+Figure 1. Top: The top two PCA dimensions of a curated subset
+of MNIST. Bottom: Activations for the two concepts of “is 4” and
+“is 5” for each observation. Colors in both indicate each observa-
+tion’s location along the first PCA dimension. Note that the “is 4”
+concept preserves the ordering of the colors, and thus encoding
+the first PCA dimension (Pearson correlation of -0.72). The “is
+5” concept also helps preserve the first PCA dimension (Pearson
+correlation of -0.67). Together these soft concept representations
+encode the data distribution to allow for good task performance
+though both concepts are independent of the task.
+color indicates each observation’s location along the first
+PCA dimension). In the bottom panel, we visualize the
+activation values of the output nodes corresponding to the
+concepts of “4” and “5”. We see that the activations for the
+concept “4” roughly preserve the first PCA dimension of
+the MNIST data (“5” encodes similar information). In fact,
+predicting the task label using only the top PCA component
+of the data yields an impressive accuracy of 86%.
+In this example, the concepts “4” and “5” are semantically
+related to the downstream task, so is this why their soft repre-
+sentations encode salient aspects of the data? Unfortunately,
+in Appendix Section C, we show that, even random con-
+cepts (i.e. concepts defined by random hyperplanes in the
+input space with no real-life meaning) can capture much of
+the data distribution through soft representations. In fact, as
+the number of random concepts grow so does the degree of
+information leakage (as measured by the difference between
+the utility of hard and soft concept representations for the
+downstream prediction). This has significant consequences
+for decision-making based on interpretations of Concept
+Bottleneck Models. In particular, one cannot naively inter-
+pret the utility of the learned concepts representations as ev-
+idence for the correlation between the human concepts and
+the downstream task label - e.g. the fact that the predicted
+probability of an increase in tremors is highly indicative of
+Parkinson’s disease does not imply that there is significant
+correlation between an increase in tremors and Parkinson’s
+in the data.
+Finally, although all soft concept representations encode
+more than we might desire, in Appendix Section B, we
+show that the extent to which information about the data dis-
+tribution leaks into the soft concept representations - and cor-
+respondingly, the extent to which soft outputs from CLMs
+become more useful than true concept labels for downstream
+tasks - is sensitive to modeling choices (hyperparameters,
+architecture and training).
+Leakage Occurs When the CLM is Trained with Added
+Capacity to Represent Latent Task-Relevant Dimen-
+sions Another approach for getting more pure concepts is to
+train a CLM with additional unsupervised concept dimen-
+sions that can be used to capture task-relevant concepts not
+included in the set of concept labels (e.g. Chen et al. (2020)).
+The hope here is that, should the original, curated concepts
+be insufficient for the downstream prediction, these addi-
+tional dimensions will capture what is necessary and leave
+the original concept dimensions interpretable. Note that, in
+this case, the CLM cannot be trained sequentially since we
+do not have labels for the missing concepts, so optimization
+must be done jointly.
+Unfortunately, leakage still occurs with this approach. Con-
+cepts, both pre-defined and latent, continue to be entangled
+in the learned representations, even when they are fully inde-
+pendent in the data. To demonstrate that leaving extra space
+for unlabeled concepts in the representation does not solve
+the leakage issue, we generate a toy dataset with 3 concepts,
+independent from each other, that are used to generate the
+label. We generate the dataset with seven input features,
+{(f1(xn, yn, zn), . . . , f7(xn, yn, zn))}, where X, Y , and
+Z ∼ N(0, 4) and each fi is a non-invertible, nonlinear
+function (details in Appendix Section D). For concepts, we
+define three binary concept variables x+, y+, and z+, each
+indicating whether the corresponding value of xn, yn, zn is
+positive. The downstream task is to identify whether at least
+two of the three values xn, yn, zn are positive (i.e. whether
+the sum of x+, y+, and z+ is greater than 1).
+We consider three models: (M1) a CBM with a complete
+concept set (i.e. 3 bottleneck nodes, aligned to x+, y+,
+and z+ respectively) as a baseline where there are no miss-
+ing concepts and the model has sufficient capacity; (M2)
+a CBM with an incomplete concept set (i.e. 2 bottleneck
+nodes aligned to x+ and y+ respectively) and insufficient
+capacity (no additional node for z+); and (M3) a CBM with
+an incomplete concept set, 2 bottleneck nodes aligned to
+x+ and y+, and one unaligned bottleneck node representing
+the latent concept z+, as the main case of interest where
+we know only some of the concepts but leave sufficient ca-
+Promises and Pitfalls of Black-Box Concept Learning Models
+pacity for additional important concepts. All models are
+jointly trained to ensure that unaligned bottleneck nodes can
+capture the task-relevant latent concept z+.
+We find that all 3 models are predictive in the downstream
+task, despite M2 having insufficient capacity for the rele-
+vant concepts and no supervision for z+. M2 is able to
+achieve an AUC of 0.999 on the downstream task, whereas
+a standard neural network trained to predict the task labels
+using the ground-truth hard labels x+ and y+ obtains an
+AUC of 0.875. The exceptional performance of M2 sug-
+gests that joint training encourages the soft representations
+of x+ and y+ to encode additional information necessary
+for the downstream task.
+To determine how these representations are encoding infor-
+mation about the latent concept z+ in these settings, we test
+the concept purity. Specifically, we measure whether we
+can predict concept labels based on the soft output of each
+individual concept node by reporting their AUC scores. If
+the concept is predictable from the node aligned with it, but
+not from the other nodes aligned with the other 2 concepts,
+then we consider the concept node pure (note that the 3
+concepts are mutually independent by construction). For a
+node that represents its aligned concept purely, we expect
+an AUC close to 1.0 when predicting the concept from that
+node, and an AUC close to 0.5 (random guessing) when
+predicting it from the other 2 nodes.
+For all models (even when the concept dimensions are su-
+pervised by the complete concept set during training), we
+observe impurities in all bottleneck dimensions. Although
+the aligned bottleneck dimensions are most predictive of
+the concepts with which they are aligned, they also have
+AUC’s greater than 0.6 for concepts with which they are not
+aligned (Appendix Tables 1, 2, 3). This supports our claims
+above that soft representations may entangle concepts, even
+when labeled; this also supports claims from Margeloiu et al.
+(2021) and Koh et al. (2020) about joint training potentially
+causing additional concept entanglement.
+Having an incomplete concept set exacerbates the leakage
+problem as the model is forced to relay a lot more infor-
+mation about the missing concept through the bottleneck
+dimensions. For M2, the concept dimensions aligned to x+
+and y+ each predicts z+ with AUC of approximately 0.75.
+Unfortunately, adding bottleneck dimensions in an attempt
+to capture the missing concept does not prevent leakage. We
+notice that the added bottleneck dimension in M3 does not
+consistently align with the missing concept across random
+trials (this dimension predicts z+ with an AUC of 0.4±0.4).
+Furthermore, the unaligned dimension sometimes contains
+information about x+, y+, further compromising the inter-
+pretability of the model (details in Appendix Section D).
+In all 3 models, soft representations entangle concepts, ren-
+dering interpretations of the CBM potentially misleading.
+For example, in these experiments, we do not recover fea-
+ture importance of the ground truth concept-to-task model
+when using entangled concept representations for our down-
+stream task model – according to the learned concept-to-task
+model, the concept x+ appears to be more important for the
+downstream prediction than in the ground truth model.
+Leakage Occurs When the Concept Representations
+are Decorrelated We just observed that joint training re-
+sults in impure concepts, even when extra capacity is given
+to learn additional task-relevant concept dimensions. A nat-
+ural solution might be to encourage independence among
+concept representations during training. The CW model
+implements a form of this training—it decorrelates the con-
+cept representations. However, we find that even in these
+decorrelated representations, information leakage occurs.
+We demonstrate that concepts can be predicted from other
+(even aligned) latent dimensions after concept whitening,
+which can potentially confound interpretation of predictions
+based on the concept representation.
+To demonstrate that this information leakage can occur be-
+tween concepts after concept whitening, we consider the
+task of classifying whether MNIST digits are less than 4.
+We create the following three binary concepts: 1) “is the
+number 1” 2) “is the number 2” 3) “is the number 3”. We
+train a CW model, aligning two latent dimensions to the first
+two concepts, and leaving a number of latent dimensions
+unaligned to capture the missing concept.
+We find that although the learned concept representations
+satisfy all three purity criteria described in Chen et al. (2020)
+– in particular, the representations are decorrelated – we can
+still predict any of the three concepts from any of the latent
+concept dimensions (both aligned and unaligned). This is
+because 1) purity is computed based on single activation
+values that summarize high-dimensional concept represen-
+tations; thus while these single summary values are pre-
+dictive of only one concept, the high-dimensional concept
+representation (used by the downstream task model) can
+encode information about other concepts; and 2) decorrelat-
+ing concept representations does not remove all statistical
+dependence; two representations can still share high mutual
+information while being uncorrelated. Again, importantly,
+we do not recover the ground truth feature importance of
+the three concepts when interpreting the downstream task
+model built on whitened concept representations. Details
+can be found in Appendix Section E.
+4. Avoiding the Pit-Falls of CLMs
+In the following, we outline ways to mitigate the negative
+effects of information leakage.
+Soft Versus Hard Concept Representations Since all of
+Promises and Pitfalls of Black-Box Concept Learning Models
+the pathologies that we observe arise from the flexibility of
+soft concept representations, one might be tempted to pro-
+pose always using hard concept representations (one-hot en-
+codings). However, in Appendix Section C, we observe that
+(when the data manifold is low-dimensional, as in MNIST)
+even a modest number of semantically meaningless random
+hard concepts can capture more information about the data
+distribution than we might expect. This indicates that in-
+formation leakage may always be an issue with black-box
+CLMs, regardless of the form of concept representation.
+Furthermore, we argue that the analysis of soft concept
+representations yields important insights for model improve-
+ment/debugging. Specifically, if the downstream label is
+better predicted with soft concept representations than with
+hard, it may indicate that the concept set is not relevant
+for the task (as in the case of the concepts of “4” and “5”
+when predicting the parity of digits in a dataset without 4’s
+and 5’s), and a new set of concepts must be sought. Al-
+ternatively, this difference in utility may indicate that the
+concepts should be modified, with the help of human experts.
+In Appendix Section F, we describe a toy example in which
+the pre-defined concept set is related to but not strongly
+predictive of the downstream label, where domain expertise
+allows us to refine them into useful sub-concepts. In fact,
+we are currently exploring strategies to leverage domain ex-
+pertise to refine or suggest new concepts, based on learned
+soft concept representations, that are human-interpretable
+and predictive of the downstream task.
+Disentangling Concepts While CW models encourage con-
+cept dimensions to be uncorrelated, this does not completely
+prevent information leakage – we show that each concept
+dimension can still encode for multiple concepts and that the
+concept dimensions can nonetheless be statistically depen-
+dent. Thus, we argue that CLM training should explicitly
+minimize mutual information between concept dimensions
+– both aligned and unaligned – as in Klys et al. (2018), if
+we believe the concepts to be independent. However, we
+note that if there are multiple statistically independent latent
+concepts, it is still possible for each concept dimension to
+encode for multiple concepts. Thus, we again advocate for
+domain expert supervision in the definition and training of
+the CLM, bringing more transparency to the relationship
+between input dimensions and learned concepts.
+5. Conclusion
+In this paper, we analyze pitfalls of black-box CLMs stem-
+ming from the fact that soft concept representations learned
+by these models encode undesirable additional information.
+We highlight scenarios wherein this information leakage
+negatively impacts the interpretability of the downstream
+predictive model, as well as describe important insights that
+can be gained from understanding the additional information
+contained in soft concept representations.
+6. Acknowledgments
+WP was funded by the Harvard Institute of Applied Com-
+putation Science. IL was funded by NSF GRFP (grant
+no. DGE1745303). FDV was supported by NSF CAREER
+1750358.
+References
+Bucher, M., Herbin, S., and Jurie, F. Semantic bottleneck for
+computer vision tasks. In Asian Conference on Computer
+Vision, pp. 695–712. Springer, 2018.
+Chen, Z., Bei, Y., and Rudin, C. Concept whitening for inter-
+pretable image recognition. Nature Machine Intelligence,
+2(12):772–782, 2020.
+De Fauw, J., Ledsam, J. R., Romera-Paredes, B., Nikolov,
+S., Tomasev, N., Blackwell, S., Askham, H., Glorot, X.,
+O’Donoghue, B., Visentin, D., et al. Clinically applicable
+deep learning for diagnosis and referral in retinal disease.
+Nature medicine, 24(9):1342–1350, 2018.
+Ghorbani, A., Wexler, J., Zou, J., and Kim, B. Towards
+automatic concept-based explanations. arXiv preprint
+arXiv:1902.03129, 2019.
+Kim, B., Wattenberg, M., Gilmer, J., Cai, C., Wexler, J.,
+Viegas, F., et al. Interpretability beyond feature attribu-
+tion: Quantitative testing with concept activation vectors
+(tcav). In International conference on machine learning,
+pp. 2668–2677. PMLR, 2018.
+Klys, J., Snell, J., and Zemel, R. Learning latent sub-
+spaces in variational autoencoders. arXiv preprint
+arXiv:1812.06190, 2018.
+Koh, P. W., Nguyen, T., Tang, Y. S., Mussmann, S., Pierson,
+E., Kim, B., and Liang, P. Concept bottleneck models.
+In International Conference on Machine Learning, pp.
+5338–5348. PMLR, 2020.
+Kumar, N., Berg, A. C., Belhumeur, P. N., and Nayar, S. K.
+Attribute and simile classifiers for face verification. In
+2009 IEEE 12th international conference on computer
+vision, pp. 365–372. IEEE, 2009.
+Lampert, C. H., Nickisch, H., and Harmeling, S. Learning
+to detect unseen object classes by between-class attribute
+transfer. In 2009 IEEE Conference on Computer Vision
+and Pattern Recognition, pp. 951–958. IEEE, 2009.
+Losch, M., Fritz, M., and Schiele, B. Interpretability be-
+yond classification output: Semantic bottleneck networks.
+arXiv preprint arXiv:1907.10882, 2019.
+Promises and Pitfalls of Black-Box Concept Learning Models
+Margeloiu, A., Ashman, M., Bhatt, U., Chen, Y., Jamnik,
+M., and Weller, A. Do concept bottleneck models learn
+as intended? arXiv preprint arXiv:2105.04289, 2021.
+Yi, K., Wu, J., Gan, C., Torralba, A., Kohli, P., and Tenen-
+baum, J. B. Neural-symbolic vqa: Disentangling rea-
+soning from vision and language understanding. arXiv
+preprint arXiv:1810.02338, 2018.
+Zhou, B., Bau, D., Oliva, A., and Torralba, A. Interpreting
+deep visual representations via network dissection. IEEE
+transactions on pattern analysis and machine intelligence,
+41(9):2131–2145, 2018.
+A. Training of Concept Bottleneck Models
+There are three approaches for training a CBM, consisting
+of a function g : X → C, mapping inputs x to concepts c,
+and a function h : C → Y , mapping concepts c to labels y:
+1. Independently learning g and h by minimizing their
+respective loss functions
+Pn
+i=1 Lg(g(xi); ci) and
+Pn
+i=1 Lh(h(ci); yi).
+2. Sequentially learning g and h by first minimizing the
+loss function
+Pn
+i=1 Lg(g(xi); ci) and then minimiz-
+ing the loss function
+Pn
+i=1 Lh(h(g(xi)); yi) using the
+outputs of g as inputs to h.
+3. Jointly learning g and h by minimizing
+Pn
+i=1[Lh(h(g(xi)); yi) + λLg(g(xi); ci)] where
+λ is a hyperparameter that determines the tradeoff
+between learning the concepts and the labels.
+B. Demonstration 1: Concept
+Representations Encode Data Distributions
+Figure 2. A synthetic dataset of two features, three concepts, and a
+somewhat complex task boundary that cuts across concepts.
+We consider a simple synthetic binary classification task
+where the data consist of two features and three mutually
+Figure 3. The same dataset as Figure 2 but with colors indicating
+task labels. This is the dataset prior to transformations present in
+Figures 5 and 7.
+exclusive, binary concepts (see Figures 2 and 3). There are
+300 observations for each concept label, and approximately
+60% of the observations have a positive task label.
+We build models for four tasks:
+• Predict the task labels from the features, h(x) → ŷ
+• Predict the task labels from the concepts, f(c) → ŷ
+• Predict the concepts from the features, g(x) → ĉ
+• Predict the task labels from the predicted concepts,
+f(g(x)) → ŷ
+For each model, we use a simple MLP with three hidden
+layers of 32 nodes each and ReLU activations. When pre-
+dicting the task label, the final layer has a sigmoid activation,
+and we use a classification threshold of 0.5.
+We want to know how predictive our raw concept labels are
+of the task labels. We train a model with an architecture sim-
+ilar to above. These raw concept labels consist of only the
+values [0, 0, 1], [0, 1, 0], and [1, 0, 0], representing each of
+the mutually exclusive concepts. The model learns that two
+concepts are associated with the positive task label (the blue
+and orange concepts in Figure 2) and the remaining concept
+is associated with the negative task label, which achieves an
+accuracy of 74.5% on a test set. This is significantly better
+than the 60% we would expect of random guessing, so the
+concepts are not independent of the task.
+We now move to building the sequential concept model. The
+first component, g(x) → ĉ, predicts the concept labels from
+the features. The model architecture is the same as above,
+except the output layer contains three nodes with linear
+activations, and we use mean-squared error loss. (We chose
+linear activations because they make the behavior we’re
+trying to show more easily visible geometrically, but the
+same behavior exists with softmax or sigmoid activations.)
+Promises and Pitfalls of Black-Box Concept Learning Models
+If we take the maximum activation of the output nodes as
+our concept prediction, this model achieves 87.0% accuracy
+on a test set.
+We now train the second component to complete our sequen-
+tial concept model, f(ĉ) → ŷ = f(g(x)) → ŷ. We know
+our concepts can predict our task labels with 74.5% accu-
+racy and our features can predict our concepts with 87.0%
+accuracy. If we train the second component of our concept
+model to convergence, it achieves an accuracy of 95.9% on
+the downstream task. On first blush, this is surprising as it
+is significantly higher than the performance of the model
+the predicts the task from the concept labels.
+Figure 4. Concept activations output from the features-to-concepts
+model. Because the three concepts are mutually exclusive, only
+two concept activations are independent. Hence, the three concept
+activations can be projected onto a plane without loss of informa-
+tion. Left: One angle showing the dataset. Right: A second angle
+showing the data lying on a plane.
+Figure 5. The first two PCA dimensions of the concept activations,
+along with the synthetic task boundary and learned task boundary
+in the same PCA space. The task boundary and dataset are only
+modestly transformed from the original dataset seen in Figure
+3, and the learned task boundary appears similar to that learned
+directly from the features (Figure 6). The concept predictions →
+task model achieves 95.9% accuracy.
+To understand what is happening, we can visualize the three-
+dimensional concept activations of the first component of
+the concept model, g(x) → ĉ (Figure 4). As the concepts
+Figure 6. The dataset and learned task boundary if the task is
+learned directly from the features. The features → task model
+achieves 99.3% accuracy.
+are mutually exclusive, there are only two linearly inde-
+pendent concept vectors, so we can accurately summarize
+our three-dimensional concept activations with the first two
+dimensions of a PCA decomposition. We can also pass our
+original synthetic decision boundary through the first com-
+ponent of our sequential concept model, g(x), and through
+our PCA transformation to see how it is affected. We can
+see the resulting graph in Figure 5. If we train a model to
+predict the task labels from the features directly, with no
+concepts (h(x) → ŷ), we achieve a test accuracy of 99.3%
+(Figure 6). Comparing Figure 5 to Figure 6, we can see that
+g(x) actually did very little; the geometry of the features
+and task boundary are mostly intact. g(x) may have aligned
+concept labels with specific neurons in the overall concept
+model, but it is essentially a mild transformation of the fea-
+tures that resulted in a slightly harder task. When adding
+concepts to a model, we should not interpret the minor drop
+in performance from 99.3% to 95.9% as signifying a re-
+lationship between the concepts and the task – we should
+instead interpret it as signifying a relationship between the
+features, the concepts, and modeling decisions made when
+predicting the concepts from the features.
+Modeling decisions are involved because the success that
+f(ĉ) has in predicting the task labels depends on the com-
+plexity of the task decision boundary after passing through
+g(x). This complexity depends not only on the data, but on
+the architecture, activation functions, and learning rate used
+when training g(x) → ĉ. For example, in g(x) above, the
+activations in the output layer were identity functions. If we
+instead use sigmoid activations to ensure our concept pre-
+dictions lie between 0 and 1 (see Figure 7), the feature data
+is transformed in a more extreme way which results in task
+performance dropping to 89.5%. If the downstream task per-
+formance of a set of concepts is dependent on architectural
+choices (e.g. particular activation functions), interpreting
+that performance as a property of the relationship between
+the concept set and the task is a mistake.
+Promises and Pitfalls of Black-Box Concept Learning Models
+Figure 7. The first two PCA dimensions of the sigmoided concept
+activations, along with the synthetic task boundary and learned
+task boundary in the same PCA space. The synthetic task boundary
+is severly transformed, leading to a harder optimization problem.
+The concept predictions → task model with sigmoid activations
+achieves 89.5% accuracy.
+This propagation of feature information is the same mech-
+anism that explains the performance of the concept model
+in the MNIST example. While there is no additional in-
+formation provided by the concepts, they allow enough of
+the original feature information to pass through g(x) that
+f(g(x)) can perform decently.
+C. Demonstration 2: Sufficiently Large
+Number of Random Concepts Can Encode
+Data Distribution via Soft Representations
+We subset both the training and test splits of MNIST to
+include only 500 images each of the digits 0, 1, 6, and 7.
+The task is to predict whether or not each image depicts an
+even digit. We perform this task using two models trained
+sequentially: one that predicts concept labels from features,
+g(x) → ĉ, and one that predicts the task label from those
+concept predictions, f(ĉ) → ŷ. We refer to these concept
+predictions, ĉ, as the “soft” representation of the concept
+in contrast to the “hard”, binary representation of the con-
+cept. Each model is a fully connected feed-forward neural
+network with two hidden layers of 128 nodes each, ReLU
+activations and binary cross entropy loss.
+Instead of using human interpretable concepts, we gener-
+ate random concept labels. We do this by generating ran-
+dom hyperplanes in the feature space and labeling all im-
+ages that fall on one side of these hyperplanes as “true”
+examples while the remaining are “false” examples. The
+equation for a hyperplane in this context can be given as
+a1xi,1 +a2xi,2 +...+akxi,k = b where i is the index of the
+given observation, k is the dimension of the feature space,
+ak is an arbitrary coefficient, xi,k is the value of the kth fea-
+ture of the ith observation, and b is an arbitrary number. To
+generate random hyperplanes, we first generate coefficients
+a1...ak by randomly sampling from the uniform distribution
+from 0 to 1. For each observation in the training set, we cal-
+culate the dot product of these random coefficients and the
+observation’s feature values, a1xi,1 +...+akxi,k = si. This
+gives us one number, si, for each training image. We then
+randomly sample from the uniform distribution bounded
+by the minimum and maximum of this set of dot products,
+b ∼ Unif(min([s1, ..., sn]), max(s1, ..., sn)]), where n is
+the total number of observations. Sampling b in this way
+ensures the generated hyperplane passes through the train-
+ing dataset. Observations in both the training and test sets
+were then assigned concept values based on the inequality
+a1xi,1 + ... + akxi,k < b. This process was repeated for as
+many random concepts we chose to generate.
+We fit models with an increasing number of random hy-
+perplane concepts. For each number of concepts, we first
+trained g(x) → ĉ to generate the “soft” concept represen-
+tations ĉ and then trained f(ĉ) → ŷ. Hyperparameters for
+each number of concepts were tuned to ensure the models
+trained to convergence. For 10 runs with different seeds, we
+recorded the accuracy of the composition of these models,
+f(g(x)) → ŷ, on the test set.
+As a point of comparison, we also trained models to predict
+each digit’s parity from the hard representation of each of set
+of random hyperplane concepts using the same architecture,
+but with different hyperparameters to ensure convergence.
+Figure 8 shows the results of this experiment. As more ran-
+dom concepts are added, the predictiveness of the hard con-
+cept representations increases, notably indicating that even
+hard concepts representations can encode more informa-
+tion than we intend. The predictiveness of the soft concept
+representations increases even more so – these soft represen-
+tations always perform better than the hard representations
+when used in the downstream task. When predicting the task
+labels directly from the 784 pixel values, a model of similar
+architecture achieves 99% accuracy on the test set. We can
+see that as the number of random features increases, the
+models approach this performance, thus showing that most
+of the feature information has passed through the concept
+modeling process.
+D. Demonstration 3: Representations
+Entangling Concepts
+A normal distribution N(0, 2) is used to independently gen-
+erate three coordinates x, y, and z for our toy dataset. The
+input features to our model are defined by a set of seven non-
+invertible function transformations, six of which are created
+by applying β(w) = sin(w) + w and α(w) = cos(w) + w
+to each of our three coordinates. The final feature is defined
+as the sum of squares of the coordinates. The concepts are
+the binary variables x+, y+, and z+, each indicate whether
+Promises and Pitfalls of Black-Box Concept Learning Models
+Figure 8. Performance of “hard” and “soft” random concept representations on the task of predicting MNIST digit parity. Accuracies are
+averaged over 10 runs. Performance increases but starts to diminish as more hard concepts are introduced. The soft representations of the
+same concepts have better performance, and the performance doesn’t diminish in the same way. We suggest this is because more random
+concepts allow for more feature information to pass through.
+the corresponding values xn, yn, zn have positive values.
+The downstream task is to identify whether at least two of
+the values xn, yn, zn are positive, that is, whether the sum
+of concepts x+, y+, and z+ is greater than 1. Our train-
+ing dataset contains 2000 examples while our test dataset
+contains 1000 examples.
+We first set up a standard neural network model with four
+layers (8, 6, 4, 1 nodes) to predict labels from features. The
+model achieves an AUC of 0.99. We then create a jointly
+trained CBM by setting the bottleneck at the second layer
+of our standard model. We train the CBM both with the
+complete concept set (ie. 3 bottleneck nodes) and the in-
+complete concept set that only uses concepts x+ and y+
+(ie. 2 bottleneck nodes). A naive approach to address the
+incompleteness of the concept set could be to include latent
+dimensions in the bottleneck that are not aligned with any
+concepts and see whether they will automatically align with
+the missing concepts during training. Thus, we also build
+a CBM that is trained with the incomplete concept set in-
+cluding x+ and y+ but with three bottleneck nodes; the first
+two nodes will be aligned with x+ and y+ while the third
+node will be the latent dimension. We train the CBMs for
+350 epochs using the Adam optimizer with a learning rate
+of 0.001. The λ hyperparameter from the jointly trained
+CBM loss function is set to 0.001, 0.01, 0.1, 1.0, and 10.0.
+λ = 0.1 generally provides the best trade-off between con-
+cept prediction accuracy and downstream task accuracy.
+Despite having no latent dimensions and an incomplete
+set of concepts, the second CBM model is able to achieve
+high downstream task AUCs that are greater than 0.98 and
+accuracies that are greater than 90% for all λ less than or
+equal to 0.1. We train a standard neural network with two
+layers (4 and 1 nodes) using the original concepts x+ and y+
+to predict the task labels and obtain an AUC of 0.875 and an
+Figure 9. The distribution of the coordinates X, Y, Z ∼ N(0, 4)
+generated for demonstration 3. Data points have a downstream
+task label of 1, if at least two of their coordinate values are positive.
+accuracy of 75%. This makes sense; algebraically, we have
+2
+3 of the information needed for the downstream task, and at
+best, we can correctly guess the third missing concept half
+of the time (since the binary concepts are balanced). This
+brings the maximum possible accuracy to about 83%, yet
+our CBM achieved much greater accuracies. These results
+bring into question the interpretability of CBMs when our
+concept set is incomplete. When λ is small, the model seems
+to relay information through the bottleneck beyond what is
+provided in our known concepts thus compromising model
+interpretability. When λ is large, the model will show a
+Promises and Pitfalls of Black-Box Concept Learning Models
+Table 1. AUC scores between the concept values x+, y+, z+ and
+bottleneck dimensions from the CBM with three bottleneck nodes
+trained with λ = 0.1, aligning dimension 1 with x+, dimension 2
+with y+, and dimension 3 with z+
+BOTTLENECK DIMENSION
+1 2 3
+x+ 0.9999 ± 0.0001 0.65 ± 0.03 0.63 ± 0.03
+y+ 0.65 ± 0.02 0.9995 ± 0.0001 0.67 ± 0.04
+z+ 0.64 ± 0.02 0.66 ± 0.02 0.9995 ± 0.001
+Table 2. AUC scores between the concept values x+, y+, z+ and
+bottleneck dimensions from the CBM with two bottleneck nodes
+trained with λ = 0.1 and an incomplete concept set, aligning
+dimension 1 with x+ and dimension 2 with y+
+BOTTLENECK DIMENSION
+1 2
+x+ 0.97 ± 0.01 0.64 ± 0.01
+y+ 0.66 ± 0.01 0.98 ± 0.01
+z+ 0.75 ± 0.01 0.74 ± 0.01
+significant drop in accuracy compared to a standard neural
+network model.
+The CBM results discussed in the previous paragraph hint at
+potential impurities in the bottleneck dimensions. To eval-
+uate concept purity, we compute AUC scores between the
+bottleneck dimension outputs and each of the ground truth
+concepts. For all the models (even when the full concept
+set is used during training), we observe impurities in all
+the bottleneck dimensions; although the aligned bottleneck
+dimensions have the highest AUC scores for the concepts
+with which they were aligned, they also have AUC scores
+that are larger than 0.6 for all the concepts with which they
+were not aligned (Tables 1, 2, and 3). If the bottleneck di-
+mensions were pure, these AUC scores should have been
+around 0.5. Having an incomplete concept set exacerbates
+the leakage problem as the model is forced to relay a lot
+more information about the missing concept through the
+bottleneck dimensions; the larger AUC scores of about 0.75
+for the z+ concept in Table 2 are indicative of this prob-
+lem. Adding latent bottleneck dimensions in an attempt to
+capture the missing concept without compromising purity
+does not resolve the issue either. We notice that the latent
+bottleneck dimension does not consistently align with the
+missing concept across random trials as suggested by the
+AUC score of 0.4 ± 0.4. Furthermore, the latent dimension
+had the potential to leak information about the x+ and y+
+concepts in some of the trials thus further compromising the
+interpretability of the model.
+Table 3. AUC scores between the concept values x+, y+, z+ and
+bottleneck dimensions from the CBM with 3 bottleneck nodes
+trained with λ = 0.1 and an incomplete concept set, aligning
+dimension 1 with x+ and dimension 2 with y+.
+BOTTLENECK DIMENSION
+1 2 3
+x+ 0.99998 ± 0.00001 0.59 ± 0.02 0.5 ± 0.2
+y+ 0.60 ± 0.01 0.99973 ± 0.00002 0.5 ± 0.3
+z+ 0.68 ± 0.02 0.693 ± 0.005 0.4 ± 0.4
+E. Demonstration 4: Information Leakage in
+Concept Whitening Models
+Since the CW model is primarily built for image recogni-
+tion, we consider the task of classifying whether digits in
+MNIST are less than 4. We create the following three binary
+concepts: ‘is the number 1’ (c1), ‘is the number 2’ (c2),
+and ‘is the number 3’ (c3). We limit the dataset to images
+of numbers 1 to 6 in order to get a balanced classification
+problem.
+We set up a standard CNN with five layers (8, 16, 32, 16,
+and 8 filters each). All layers use a 3 by 3 kernel and a stride
+of 1. We apply batch normalization after each convolutional
+layer. 2 by 2 max pooling layers with strides of 2 are placed
+after the second, fourth, and fifth layers’ outputs. Global
+average pooling is applied to the last layer’s output and the
+flattened result is passed to a linear layer with a single node
+to make a prediction. The model is trained with an Adam
+optimizer and a learning rate of 0.001. We also set up a
+CW model by replacing the last batch normalization layer
+with the CW layer provided by (Chen et al., 2020) in the
+code accompanying their paper. We use the CW model to
+align the latent dimensions with concepts c1 and c2 and
+leave the third concept out of training. To confirm the CW
+model has finished aligning the latent dimensions to our
+concept examples, we use three quantitative checks that
+were reported in (Chen et al., 2020): 1) reduced correlation
+between latent dimensions 2) an increase in AUC scores of
+the latent dimensions and 3) reduced inter-concept cosine
+similarity.
+We observe that correlation reduction is achieved early on
+during training; however, the model tends to struggle with
+achieving high AUC scores. More specifically, most trials
+tend to achieve a high AUC score (above 0.8) for one of the
+concepts without improving the AUC score for the latent
+dimension aligned with the other concept. We report results
+from a trial that was able to achieve high AUC scores of
+above 0.9 for both concepts to show that high AUC scores
+alone cannot be indicative of concept purity.
+Although all three concept purity checks that were reported
+Promises and Pitfalls of Black-Box Concept Learning Models
+Figure 10. The three CBMs with complete and incomplete concept sets are jointly trained with λ = 0.001, 0.01, 0.1, 1.0, and 10.0.
+λ = 0.1 generally provides the best trade-off between downstream task and concept prediction AUC. The top left plot shows the AUC of
+the downstream task against log(λ). The remaining plots display the AUC of predicting concepts x+, y+, and z+ from the bottleneck
+dimension with which they are supposed to be aligned. The CBM with an incomplete concept set and one latent bottleneck dimension
+does not align z+ with the latent bottleneck dimension during training; its AUC does not stay above 0.5 across random restarts regardless
+of the value of λ.
+Promises and Pitfalls of Black-Box Concept Learning Models
+Figure 11. Top: Correlation matrix between the 8 dimensions out-
+putted by the last batch normalization layer in the standard CNN.
+Bottom: Correlation matrix between the 8 dimensions outputted
+by the CW layer in the CW model. We observe less correlation
+between the CW layer dimensions compared to the standard CNN
+model.
+Figure 12. Normalized cosine similarities for examples of the same
+concepts (diagonal) and different concepts (off-diagonal) for the
+standard CNN model’s last batch normalization layer output (left)
+vs. the CW model’s output (right).
+in (Chen et al., 2020) are satisfied in this trial, we propose a
+different purity check that highlights impurities in the CW
+model’s latent dimensions. Using the AUC score to evaluate
+purity may not provide a complete picture of how much
+information leakage there is between concepts in the model,
+since these scores are calculated using a single activation
+value from each of the latent dimensions (ie CNN filter
+outputs), while the rest of the CW model, has access to the
+full activation map of the latent dimension and is free to
+use any information from it. As a result, the AUC score
+may suggest the concept representation is pure, while the
+predictions based on the concept representation may contain
+information leakage between the concepts.
+We demonstrate that this can occur by creating a purity
+check neural network with two convolutional layers (16
+and 32 filters each) followed by a linear output layer. We
+provide the model with one of the output dimensions of the
+CW layer as inputs and train the model to predict each of
+the three concepts. We observe that the purity check model
+can predict any of the three concepts from any of the latent
+dimensions (aligned or not aligned with a concept) with over
+95% accuracy. This is despite the high AUC scores achieved
+by whitening and alignment. As a result, unless the rest of
+our model only has access to the same activation values
+used to compute AUC, we cannot be sure that the rest of the
+model is interpreting the latent dimensions as intended (ie
+aligned with a specific concept) thus potentially rendering
+meaningless, any interpretation of feature importance of the
+downstream task model. For instance, in our experiment, we
+examine the final linear layer’s weights which are applied
+to the global average pooling values for each of the CW
+layer’s dimensions and observe that the first weight is 0.874
+while the second weight is 0.056. The first and second CW
+dimensions were aligned with the concepts c1 and c2 which
+are equally important for predicting the downstream task
+labels defined as c1 + c2 + c3 > 1. However, if we were to
+interpret the CW model’s weights, we would conclude that
+c1 is more important than c2.
+F. Demonstration 5: Concept Refinement
+Consider a synthetic task where we model which type of
+fruit would sell based on weight and acidity. We identify
+two concepts potentially relevant to the prediction task: ‘is
+grapefruit” and “is apple”. Figure 13 shows our synthetic
+dataset, where the true decision boundaries depict the fact
+that people like to buy acidic grapefruit and smaller apples.
+If we were to model this problem using just acidity and
+weight and not the type of fruit, our model would perform
+well but would not provide insight on what distinguishes
+small apples that do sell from small grapefruit that do not.
+If we were to instead use the concepts of “is grapefruit”
+and “is apple” to predict whether or not our fruits sell, we
+Promises and Pitfalls of Black-Box Concept Learning Models
+would find that these concepts are not predictive at all –
+approximately 50% of grapefruit and apples sell.
+Figure 13. Fruit sales by weight and acidity
+However, we see from Figure 13 that though these concepts
+are not predictive on their own, they are related to the prob-
+lem. If we were to replace the concepts of “is grapefruit” and
+“is apple” with “is acidic grapefruit” and “is small apple”,
+i.e. by splitting our original concepts into sub-concepts, our
+concept set would be perfectly predictive. But what’s the
+difference between this and using all three of weight, acid-
+ity and fruit as features? Given proper thresholds, weight
+and acidity can be reduced to “is heavy” and “is acidic”.
+Thus, by finding a good refinement of our original concept
+set, we can nonetheless reduce the input space to a small
+number of regions that are is predictive, and when the di-
+mensional of the data is high, concept refinement can still
+yield interpretable but compressed representations of the
+data.
+

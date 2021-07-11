@@ -1,0 +1,308 @@
+Data-Driven Modeling and Control of Complex
+Dynamical Systems Arising in Renal Anemia
+Therapy
+S. Casper, D.H. Fuertinger, P. Kotanko, L. Mechelli, J. Rohleff and S. Volkwein
+Abstract This project is based on a mathematical model of erythropoiesis for ane-
+mia [1, 2], which consists of five hyperbolic population equations describing the
+production of red blood cells under treatment with epoetin-alfa (EPO). Extended
+dynamic mode decomposition (EDMD) is utilized to approximate the non-linear
+dynamical systems by linear ones. This allows for efficient and reliable strategies
+based on a combination of EDMD and model predictive control (MPC), which pro-
+duces results comparable with the one obtained in [7] for the original model.
+1 Introduction
+Almost all hemodialysis patients suffer from chronic anemia, due to the reduced
+functionality of the kidneys and the resulting low production of erythropoietin, a
+kidney-derived hormone that increases red blood cell output by the bone marrow.
+Therefore, physicians use erythropoietin stimulating agents, such as epoetin-alfa
+(EPO), to partially correct the anemia. The challenge in designing efficient thera-
+pies is due to the patients’ differences in long-term response to EPO. In [2], the
+authors introduce a mathematical model for predicting such a response. As in [7],
+our aim is to design a feedback control strategy, based on Model Predictive Con-
+trol (MPC) [3], to optimize the injections of EPO doses in order to reach a target
+hemoglobin level. In contrast to [7], we do not imply the EPO model from [2] during
+the optimization, but we utilize it to generate a data-driven approximation of such
+Sabrina Casper, Doris H. Fuertinger
+Fresenius Medical Care Deutschland GmbH, Bad Homburg, Germany.
+e-mail: \{Sabrina.Rogg,Doris.Fuertinger\}@fmc-ag.com
+Peter Kotanko
+Renal Research Institute New York, New York, USA.
+e-mail: Peter.Kotanko@rriny.com
+Luca Mechelli, Jan Rohleff, Stefan Volkwein
+Department of Mathematics and Statistics, University of Konstanz, Konstanz, Germany.
+e-mail: \{luca.mechelli,jan.rohleff,stefan.volkwein\}@uni-konstanz.
+de
+1
+arXiv:2106.11733v1
+[math.OC]
+22
+Jun
+2021
+2 S. Casper, D.H. Fuertinger, P. Kotanko, L. Mechelli, J. Rohleff and S. Volkwein
+a model through Extended Dynamic Mode Decomposition (EDMD) [8]. We then
+use such an EDMD-based surrogate model during the MPC. We refer to [5] where
+the authors introduced the idea to combine MPC and EDMD. We organize the work
+as follows: in Section 2 we introduce the model and how we combine EDMD and
+MPC. In Section 3 we show the reliability of the technique comparing our algorithm
+with the one in [7].
+2 The EDMD-MPC based algorithm
+Let us consider a finite horizon time interval [0,T] with T  0 and a finite num-
+ber of injections nu ∈ N. We consider discrete injections of doses ui at pred-
+ifined injection times ti for i = 1,...,nu. Given a set of EPO doses u = (ui)nu
+i=1 ∈
+Uad = {u ∈ Rnu |0 ≤ ui ≤ umax,1 ≤ i ≤ nu}, following [7], one can compute the cor-
+responding EPO concentration in the blood, which we indicate with E(t;u). This
+nonlinear function is continuously differentiable in [0,T] and twice continuously
+differentiable in Uad. For further details see [2, 7]. The EPO model is composed of
+five coupled advection-reaction partial differential equations (PDEs) of the form
+yt(t,x) = κ(x,E(t;u))y(t,x)−v(E(t;u))yx(t,x) in Q,
+y(t,x) = g(t;E(t;u)) in (0,T),
+y(0,x) = y0(x) in Ω
+(1)
+with the spatial domain Ω = (x,x) ⊂ R, the space-time cylinder Q = (0,T) × Ω
+and the initial condition y0. The solution y(t,x) to (1) denotes the cell density of the
+respective cell population with maturity x at time t. The coupling among the five
+equations is hidden in the boundary value g(t;E(t;u)). For the sake of brevity, we
+omit further explanations and we refer to [2, 7]. Note that in (1), the control u (EPO
+doses) enters in the equations through the nonlinear EPO concentration, on which
+the advection and reaction coefficients depend. Such a complicated relationship be-
+tween the states (cell densities) y and the control u leads to a non-convex optimiza-
+tion problem. Our aim is then to introduce a linear surrogate model based on EDMD,
+such that the resulting control-to-state map is linear. Doing so, we have the advan-
+tage of obtaining a convex optimization problem, which admits a unique minimizer
+and can be solved faster. In contrast to the standard Dynamic Mode Decomposition
+(DMD) [6], EDMD utilizes snapshots of the dynamic, controls and observables of
+a dynamical system to extract a discrete surrogate model [8]. Further we discretize
+in space with Legendre polynomials (as [7]) and in time with a constant time step
+∆t. In what follows n is the number of Legendre polynomials and m is the number
+of time steps. Let ψ : Rn → RNφ be a vector of lifting functions (or observables)
+ψi : Rn → R, i.e. ψ(x) =
+
+ψ1(x),...,ψNφ (x)
+
+∈ RNφ . Let Y0 = [y0|...|ym−1] ∈ Rn×m
+and Y1 = [y1|...|ym] ∈ Rn×m and U = [u0|...|um−1] ∈ R1×m be given snapshots data
+matrices. Next, we need to define the matrices
+Data-Driven Control of Dynamical Systems in Renal Anemia Therapy 3
+Y0,lift =
+
+
+
+ψ1(y0) ... ψ1(ym−1)
+.
+.
+.
+.
+.
+.
+ψNφ (y0) ... ψNφ (ym−1)
+
+
+, Y1,lift =
+
+
+
+ψ1(y1) ... ψ1(ym)
+.
+.
+.
+.
+.
+.
+ψNφ (y1) ... ψNφ (ym)
+
+
+ ∈ RNφ ×m
+and identify the matrices A ∈ RNφ ×Nφ , B ∈ RNφ ×nu and C ∈ Rn×Nφ such that
+[A,B] = argmin
+Ã,B̃
+kY1,lift −ÃY0,lift −B̃UkF , C = argmin
+C̃
+kY0 −C̃Y0,liftkF . (2)
+To solve (2) numerically, we have to perform two singular value decomposition; cf.
+[5]. We get then a discrete linear dynamical system in the observable space
+zk+1 = Azk +Buk for k ≥ 0, z0 =
+
+ψ1(y0),...,ψNφ (y0)
+
+,
+ŷk+1 = Czk+1 for k ≥ 0,
+(3)
+where ŷ is the EDMD approximation of the y solution to (1). Note that reconstruct-
+ing and solving the EDMD system (3) is generally cheaper than solving the system
+of coupled hyperbolic PDEs (1). Thus, (3) is the surrogate model we will use during
+the MPC algorithm. More specifically, our goal is to apply EDMD to the fifth (and
+last) equation of the EPO model (1) for two different choices of control snapshots,
+i.e. the EDMD matrix U will contain:
+(EDMD-C) The continuous EPO concentration E(t;u) at each time step;
+(EDMD-D) The discrete EPO doses u at the injection times and 0 for the rest.
+The cost functional for the model in [7] discretized by Legendre polynomials is
+JN(ỹ,u) =
+1
+2
+nu
+∑
+j=1
+γju2
+j +
+σω
+2
+Z T
+0
+
+ω
+1/2
+5 (ỹ5)0(t)−Pd
+2
+dt
++
+σf
+2
+
+ω
+1/2
+5 (ỹ5)0(T)−Pd
+2
+,
+where (·)0 means first-component in space and all the other parameters can be found
+in [7]. Moreover, ỹ = SN(u) is the solution of (24b) in [7]. Note that JN depends
+only on the solution of the fifth (and last) equation of (1). Therefore, to build our
+EDMD model, we use the solution ỹ5 as snapshots of the dynamic. We then get ma-
+trices A, B and C for (3) according to the chosen snapshots. Applying a trapezoidal
+rule to JN and considering the EDMD approximation ŷ, one obtains a cost functional
+Jm(z,u) = JN,disc(Cz,u) = JN,disc(ŷ,u) and the optimal control problem is given as
+minJm(z,u) s.t. z = {zk}m
+k=0 ⊂ RNφ satisfy (3) for u ∈ Uad. (4)
+Note that (4) is a convex linear-quadratic optimal control problem and thus admits
+a unique minimizer [4]. If the EDMD approximation is sufficiently good, such a
+minimizer is also close to a local one of the optimal control problem in [7]. Since the
+horizon T is generally large, the corresponding time discretization t0 = 0,...,tm = T
+4 S. Casper, D.H. Fuertinger, P. Kotanko, L. Mechelli, J. Rohleff and S. Volkwein
+Algorithm 1 (EDMD-MPC algorithm)
+1: Data: Initial control u(0) ∈ Uad, initial condition y
+(0)
+MPC, EDMD update tolerance τupd, MPC
+prediction horizon M, EDMD update steps MEDMD.
+2: Initialize the EDMD model at u(0) with snapshots from (1);
+3: for i = 0,1,... do
+4: Solve (4) in [ti,ti +M∆t] with projected BFGS and initial guess y
+(i)
+MPC to get an optimal ū(i);
+5: Store uMPC(ti) = ū(i)(ti) and compute the new initial guess y
+(i+1)
+MPC from (1) using uMPC(ti);
+6: if ky
+(i+1)
+MPC −y
+(i+1)
+EDMDk > τupd then
+7: Update the EDMD model using snapshots of (1) for MEDMD steps with the control ū(i);
+8: end if
+9: end for
+contains many points. To avoid costly computations and compute a feedback control
+we introduce an MPC [3] framework. This technique consists in fixing a prediction
+horizon M and computing the solution of a first optimal control problem in [0,M∆t],
+then storing the optimal control for the first time step, applying it to (1) and repeating
+the procedure for the horizon [t1,t1 + M∆t] and so on. This approach has also the
+advantage of obtaining a feedback control which reacts to the solution of the EPO
+model. Since the EDMD is just a local approximation of the dynamics, we need to
+define a strategy in order to update the EDMD model during the MPC. We simply
+measure the difference between the EDMD solution and its EPO model counter part
+for the first time step. Note that this does not require additional computations with
+respect to the described procedure. We resume our algorithm in Algorithm 1.
+3 Numerical experiments
+In this section, we compare the nonlinear MPC from [7] with the linear MPC based
+on the EDMD approach. For brevity, we report only the results on test conducted on
+Patient 2 and 3 of [7]. Let us mention, that we performed the numerical experiments
+also for the other patients in [7] and we got approximation errors similar to the
+one presented below. For both EDMD-MPC models, we choose an update tolerance
+τupd = 0.01, MEDMD = 30 steps, the MPC prediction horizon M = 14 days and
+ψ1(y) = ω
+1/2
+5 (y)0, ψi,j(y) = Lj
+
+(y)i
+∑n
+i=1(y)i
+
+, i = 0,...,n, j = 0,...NL −1,
+where (y)i is the i-th component of y and Lj is the j-th Legendre polynomial, NL = 2
+for EDMD-C and NL = 6 for EDMD-D. All the other parameters are chosen as in [7,
+Tables 4-8]. First of all, we consider a total time period of three weeks, i.e. T = 21
+days. We have an injection at day 1, 3 and 5 of each week. In Figure 1-left panel, we
+plot the optimal hemoglobin level computed using the method from [7] (RRI MPC)
+and with the two EDMD-MPC approaches proposed in Section 2. As one can see,
+for the first part of the time horizon, the three methods compute exactly the same
+optimal solution. These corresponds to a doses u = 0, which is one of the constraint
+imposed on the doses. As soon as the control starts impacting the system, we can
+Data-Driven Control of Dynamical Systems in Renal Anemia Therapy 5
+Fig. 1 Patient 2 - 21 days. Left: MPC solutions. Right: Relative error. (Black line: EDMD-D
+update, dashed black line: EDMD-C update).
+Fig. 2 Patient 3 - 21 days. Left: MPC solutions. Right: Relative error. (Black line: EDMD-D
+update, dashed black line: EDMD-C update).
+Fig. 3 Patient 3 - 49 days. Left: MPC solutions. Right: Relative error. (Black line: EDMD-D
+update, dashed black line: EDMD-C update, Red area: No injection possible).
+notice some differences arising between the RRI MPC and our proposed method,
+in particular for the EDMD-C approach. At each time step, such a difference re-
+mains approximately smaller than the 1%, as it can be seen from Figure 1-right
+panel, where the relative error between RRI MPC and our method is reported. We
+observe similar results for Patient 3 as for Patient 2, see Figure 2 for further details.
+It appears that reconstructing the optimal hemoglobin level works extremely well
+(up to machine precision) for the first half of the time horizon and become worse
+in the second half (cf. Figure 2). In this case, note that the EDMD updates are not
+triggered, even though the approximation worsens as time passes. This suggest that
+the chosen update strategy is too simple and its improvement will be object of fu-
+6 S. Casper, D.H. Fuertinger, P. Kotanko, L. Mechelli, J. Rohleff and S. Volkwein
+Table 1 Computational time, speed-up w.r.t. [7] and relative error of the EDMD-MPC algorithm.
+Patient Method T Computational time
+(including updates)
+Speed-up Relative error
+2 EDMD-D 21 d 11.5 s 9.5 9.1×10−6
+2 EDMD-C 21 d 11.4 s 9.6 1.9×10−5
+3 EDMD-D 21 d 5.3 s 10.3 9.0×10−10
+3 EDMD-C 21 d 6.0 s 9.1 1.0×10−10
+3 EDMD-D 49 d 17.5 s 7.1 7.4×10−5
+3 EDMD-C 49 d 9.9 s 12.6 1.4×10−5
+ture work. In the next test we consider a longer total time period of 7 weeks, i.e.
+T = 49 days, for Patient 3. This test simulates that Patient 3 skips one week of in-
+jections for some reason. In Figure 3 the week without injections is represented by
+the red area. For the MPC framework we do not require this additional informa-
+tion. We just assume that the patient will get three injections every week, until he
+skips the injection appointments. The test demonstrates the ability of the MPC al-
+gorithm to react with a quick feedback response. In Figure 3 we see that our MPC
+methods based on EDMD are reacting as well (additionally updating the EDMD
+approximation) and their response is close to the non-linear MPC from [7]. For
+all the numerical tests, we report the space-time relative error in reconstructing the
+RRI MPC hemoglobin level and the required computational times for the proposed
+EDMD-MPC schemes in Table 1. Note that our methods are almost one order of
+magnitude faster and reconstruct the solution with a reliable approximation error. In
+conclusion, the proposed EDMD-MPC method replicates the results obtained in [7]
+with reasonable error and a small factor of speed-up. This factor remains constant
+when the treatment horizon increases (cf. Table 1). The EDMD-MPC algorithm can
+be then a valid approach for hemodialysis treatments, although the estimates of the
+EDMD error and the resulting update strategy during the MPC iterations need to be
+improved. This will be the focus of a future work.
+Acknowledgements L. Mechelli and J. Rohleff gratefully acknowledge support of the Indepen-
+dent Research Grant Efficient model order reduction for model predictive control of non-linear
+input-output dynamical systems of the Zukunftskolleg at the University of Konstanz. The authors
+thank Christian Himpe, Max Planck Institute Magdeburg, for the fruitful discussions and remarks.
+References
+1. Fuertinger, D.H.: A model of erythropoiesis. PhD thesis, Karl-Franzens University Graz
+(2012)
+2. Fuertinger, D.H., Kappel, F., Thijssen, S., Levin, N.W., Kotanko, P.: A model of erythropoiesis
+in adults with sufficient iron availability. J. Math. Biol. 66(6), 1209–1240 (2013)
+3. Grüne, L., Pannek, J.: Nonlinear Model Predictive Control:Theory and Algorithms. 2nd Edi-
+tion. Springer, London (2016)
+4. Hinze, M., Pinnau, R., Ulbrich, M., Ulbrich, S.: Optimization with PDE Constraints.
+Springer-Verlag, Berlin (2009)
+5. Korda, M., Mezić I.: Linear predictors for nonlinear dynamical systems: Koopman oprator
+meets model predictive control. Automatica 93, 149–160 (2018)
+Data-Driven Control of Dynamical Systems in Renal Anemia Therapy 7
+6. Kutz, J.N., Brunton, S.L., Brunton, B.W., Proctor J.L.: Dynamic Mode Decomposition: Data-
+Driven Modeling of Complex Systems. SIAM, Philadelphia (2016)
+7. Rogg, S., Fuertinger, D.H., Volkwein, S., Kappel, F., Kotanko, P.: Optimal EPO dosing in
+hemodialysis patients using a non-linear model predictive control approach. J. Math. Biol.
+79, 2281–2313 (2019)
+8. Williams, M.O., Kevrekidis, I.G., Rowley, C.W.: A Data-Driven Approximation of the Koop-
+man Operator: Extending Dynamic Mode Decomposition. J. Nonlinear Sci. 25, 1307–1346
+(2015)
+

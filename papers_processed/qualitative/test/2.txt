@@ -1,0 +1,1508 @@
+Human Evaluation of Spoken vs. Visual Explanations
+for Open-Domain QA
+Ana Valeria González∗1
+, Gagan Bansal2
+, Angela Fan3,4
+, Yashar Mehdad3
+,
+Robin Jia3
+, and Srinivasan Iyer3
+1
+University of Copenhagen, 2
+University of Washington, 3
+Facebook AI, 4
+LORIA
+ana@di.ku.dk
+bansalg@cs.washington.edu
+{angelafan, mehdad, robinjia, sviyer}@fb.com
+Abstract
+While research on explaining predictions of
+open-domain QA systems (ODQA) to users is
+gaining momentum, most works have failed
+to evaluate the extent to which explanations
+improve user trust. While few works evalu-
+ate explanations using user studies, they em-
+ploy settings that may deviate from the end-
+user’s usage in-the-wild: ODQA is most ubiq-
+uitous in voice-assistants, yet current research
+only evaluates explanations using a visual dis-
+play, and may erroneously extrapolate conclu-
+sions about the most performant explanations
+to other modalities. To alleviate these issues,
+we conduct user studies that measure whether
+explanations help users correctly decide when
+to accept or reject an ODQA system’s answer.
+Unlike prior work, we control for explana-
+tion modality, i.e., whether they are communi-
+cated to users through a spoken or visual inter-
+face, and contrast effectiveness across modal-
+ities. Our results show that explanations de-
+rived from retrieved evidence passages can
+outperform strong baselines (calibrated confi-
+dence) across modalities but the best explana-
+tion strategy in fact changes with the modal-
+ity. We show common failure cases of cur-
+rent explanations, emphasize end-to-end evalu-
+ation of explanations, and caution against eval-
+uating them in proxy modalities that are differ-
+ent from deployment.
+1 Introduction
+Despite copious interest in developing explainable
+AI and NLP, there is increasing skepticism about
+whether explanations of system predictions provide
+value to users in many important downstream appli-
+cations. For instance, for classifying sentiment and
+answering LSAT questions, Bansal et al. (2020)
+observed that textual explanations were no more
+helpful to users for decision-making than simply
+presenting model confidence. Similarly, Chu et al.
+∗
+Work done while at Facebook AI.
+Figure 1: Using end-to-end user studies, we evaluate
+whether explanation strategies of open-domain ques-
+tion answering assistants help users decide when to
+trust (or reject) predicted answers.
+(2020) observed that visual explanations fail to sig-
+nificantly improve human accuracy or trust. Such
+negative results present a cautionary tale for ex-
+plainable NLP and emphasize the need to evaluate
+explanations using well-designed user-studies.
+In this work, we explore this problem for Open-
+Domain Question Answering models, which are
+increasingly deployed in voice-assistant and Web
+search to answer users’ questions. In ODQA, users
+ask factoid questions (e.g., “Who plays the Joker
+in the Lego Batman movie?”) and the system
+answers from a large corpus of documents (e.g.,
+Wikipedia). Even though the accuracy of such
+systems is rapidly improving, deployed models
+are imperfect and can make mistakes, pointing to-
+wards a need to provide users with mechanisms
+(e.g., displaying uncertainty) that aid in appropri-
+ate reliance on these systems. This motivates one
+of our key research questions, Does explaining the
+system’s reasoning, help users better assess when
+to (dis)trust their predictions? We henceforth refer
+to a user’s ability to distinguish correct and incor-
+rect answers as error-detectability.
+Recent work conducted user studies and
+concluded that explanations improve error-
+detectability for ODQA (Lamm et al., 2020; Feng
+and Boyd-Graber, 2019a). Lamm et al. (2020)
+arXiv:2012.15075v1
+[cs.CL]
+30
+Dec
+2020
+showed that providing an evidence sentence as
+well as coreference and entailment information,
+improves error-detectability marginally. However,
+this study lacked a strong baseline that uses
+calibrated confidence and which on other domains
+has been shown to be effective. While Feng
+and Boyd-Graber (2019a) did present model
+confidence along with highlighting of important
+attributes, and influential training examples, their
+evaluation setup is only suitable for visual displays.
+In practice, ODQA systems are ubiquitous in
+voice assistants, with recent surveys indicating that
+voice is an increasingly popular method for asking
+questions on a smartphone.1Spoken language inter-
+faces can also improve accessibility of technology
+for people with visual impairments and reading
+disabilities. Explanations in the spoken modality
+pose unique challenges— information will impose
+different cognitive demands depending on whether
+it is shown visually or by voice (Sweller, 2011;
+Leahy and Sweller, 2016), which could make long
+explanations less effective in the spoken modality.
+We focus on two central questions: (1) Do expla-
+nations help users discriminate between correct and
+incorrect model predictions across both spoken and
+visual modalities? and (2) Do the preferred expla-
+nation strategies depend on modality? We present
+the first study comparing both visual and spoken
+explanations for ODQA on error-detectability, in-
+volving over 500 participants, and evaluate three
+types of natural language explanations: a retrieved
+evidence paragraph, a retrieved evidence sentence,
+and a human-written sentence that abstractively
+summarizes the evidence.
+Our findings indicate that while natural language
+explanations help users in both modalities, they
+can mislead users into accepting incorrect predic-
+tions. Additionally, users prefer different expla-
+nation types in different modalities. In the spo-
+ken modality, all explanation types outperform
+the strong baseline of presenting calibrated con-
+fidence scores, demonstrating that they are help-
+ful to users. Among the three explanation types,
+extractive sentence explanations are the most use-
+ful. On the other hand, extractive explanations and
+human-written abstractive explanations frequently
+mislead users into trusting incorrect answers. In
+contrast, longer extractive explanations are more ef-
+fective than sentence-length explanations in the vi-
+1
+https://www.perficient.com/insights/
+research-hub/voice-usage-trends
+sual modality, which demonstrates the importance
+of tailoring explanations to the user interface.
+2 Related Work
+Natural Language Explanations Recent work
+has introduced neural models that are trained to
+perform a task and output a natural language (NL)
+explanation. Camburu et al. (2018) and Rajani
+et al. (2019), both introduce methods for training
+self-explaining models using free-form NL expla-
+nations collected from crowdsourced workers for
+natural language inference and common sense rea-
+soning. Atanasova et al. (2020) introduce a method
+for generating explanations for fact verification us-
+ing human veracity justifications. Lei et al. (2016)
+introduced an approach for extracting rationales by
+selecting phrases from the input text which are suf-
+ficient to provide an output. Rationales have since
+been introduced for various NLP tasks (DeYoung
+et al., 2020; Chen et al., 2018; Yang et al., 2018).
+Lamm et al. (2020) introduce QED explanations
+in ODQA consisting of the sentence containing
+the answer, coreference and entailment informa-
+tion. However, unlike free-form explanations or
+rationales, these explanations are too complex to
+adapt to the spoken modality. In question answer-
+ing, many current models provide an answer and
+a rationale (or extractive evidence). We evaluate
+extractive evidences from a state-of-the-art ODQA
+model, along with human-written summaries.
+Evaluating Explanations The quality of NL ex-
+planations has previously been evaluated using au-
+tomatic metrics that measure the agreement of ex-
+planations with human annotations (DeYoung et al.,
+2020; Paranjape et al., 2020; Swanson et al., 2020;
+Camburu et al., 2018; Rajani et al., 2019). It is not
+clear how these metrics reflect the usefulness of
+explanations in practice. As the goal of explainabil-
+ity is to make model decisions more predictable to
+human end users, a more useful way of evaluating
+explanations is through human evaluation.
+Some human evaluations have used proxy tasks
+to evaluate explanations (Hase and Bansal, 2020;
+Nguyen, 2018), however, Buçinca et al. (2020)
+showed that both subjective measures and proxy
+tasks tend to be misleading and do not reflect re-
+sults in actual decision making tasks.
+Within question answering, Feng and Boyd-
+Graber (2019b) evaluate how expert and novice
+trivia players engage with explanations. Lamm
+et al. (2020) evaluate how QED explanations help
+raters determine whether a model decision is cor-
+rect or incorrect, and find marginal improvements
+on rater accuracy. Unlike these works, we simplify
+the presentation setup so that we can adapt expla-
+nations across different modalities. Bansal et al.
+(2020) observed that for sentiment analysis and
+answering LSAT questions, state-of-the art expla-
+nation methods are not better than revealing model
+confidence scores and they increase the likelihood
+of users accepting wrong model predictions. We
+compare confidence to various explanation strate-
+gies for ODQA, but unlike previous work, we use
+calibrated model confidence.
+Open-domain QA ODQA consists of answer-
+ing questions from a corpus of unstructured docu-
+ments2. Currently, ODQA models consist of two
+components: (1) a document retriever which finds
+the most relevant documents from a large collec-
+tion and (2) a machine comprehension model or
+reader component, which selects the answer within
+the chosen documents (Chen et al., 2017; Das
+et al., 2018; Lee et al., 2019a; Karpukhin et al.,
+2020). Recent work focuses on identifying answers
+in Wikipedia (Karpukhin et al., 2020) as well as
+the web (Joshi et al., 2017), encompassing both
+short extractive answers (Rajpurkar et al., 2016)
+and long explanatory answers (Fan et al., 2019).
+3 Visual vs. Spoken Modalities
+When presenting NL explanations to users, we
+must keep in mind that users typically process in-
+formation differently across the spoken and visual
+modalities. In this section we discuss work in learn-
+ing and psychology research, which point to the
+differences motivating our evaluation.
+1. Real-time processing: Flowerdew et al.
+(1994) observe that one of the main differ-
+ences in how people process spoken versus
+written information is linearity. When listen-
+ing, as opposed to reading, information pro-
+gresses without you. Readers, on the other
+hand, are able to go back and dwell on spe-
+cific points in the text, skip over and jump
+back and forth (Buck, 1991; Lund, 1991). Al-
+though in some scenarios it is possible to get
+spoken information repeated, it may not be as
+effective as re-reading (see below).
+2
+https://trec.nist.gov/data/qamain.
+html
+2. Recall of information: People tend to re-
+call less after listening versus reading (Osada,
+2004). Lund (1991) found that for some lis-
+teners, listening to information again was not
+as effective as re-reading. While advanced lis-
+teners benefited from listening multiple times,
+this was a controlled learning scenario sim-
+ulating students learning classroom material;
+we would expect users in an ODQA setting to
+be slightly more passive.
+3. Effect on concentration: The heavier cog-
+nitive load imposed by listening to informa-
+tion can make people lose concentration more
+easily. Thompson and Rubin (1996) found
+that optimal length for listening materials was
+around 30 seconds to 2 minutes. Beyond that,
+listeners would lose full concentration. When
+people interact with voice assistants they may
+be on the go, or may be surrounded by ad-
+ditional distractions not present in a learning
+environment. This in turn may make the op-
+timal length of material (explanations, in our
+case) much shorter.
+We argue that these differences in processing of
+spoken and written information can have tremen-
+dous consequences in the effectiveness of natural
+language explanations in ODQA. Our experimental
+setup is the first to address these differences.
+4 Experimental Setup
+We design our user study to evaluate explanation ef-
+fectiveness for ODQA by varying two factors: type
+of explanation and modality of communication. We
+combine variations of each factor to obtain explana-
+tion conditions (Section 4.1) and obtain them using
+a state-of-the-art ODQA model (Section 4.3). We
+then deploy these conditions as HITs on Amazon
+Mechanical Turk (MTurk) to validate five hypoth-
+esis, each stating relative effectiveness of condi-
+tions at improving error-detectability (Section 4.2).
+Since MTurk studies can be prone to noise, to en-
+sure quality-control, we make and justify various
+design choices (Section 4.4).
+4.1 Explanation Types and Conditions
+ODQA models can justify their predictions by
+pointing to evidence text containing the predicted
+answer (Das et al., 2018; Lee et al., 2019a;
+Karpukhin et al., 2020). We experiment with two
+types of extractive explanations:
+• EXTRACTIVE-SENT: Extracts and communi-
+cates a sentence containing the predicted an-
+swer as evidence.
+• EXTRACTIVE-LONG: Extracts and communi-
+cates a longer, multi-sentence paragraph con-
+taining the answer as evidence.
+While extractive explanations are simpler to gen-
+erate, we also evaluate a third explanation type that
+has potential to more succinctly communicate evi-
+dence spread across documents (Liu et al., 2019).
+• ABSTRACTIVE: Generates and communicates
+new text to justify the predicted answer.
+Final explanation conditions For the voice
+modality, we test five conditions, two baselines and
+three explanation types: (1) BASELINE: present
+only the top answer, (2) CONFIDENCE, a second,
+stronger baseline that presents the top answer along
+with the model’s uncertainty in prediction, (3)
+ABSTRACTIVE, (4) EXTRACTIVE-LONG, and (5)
+EXTRACTIVE-SENT.
+In the visual modality, we have 2 conditions
+corresponding to the EXTRACTIVE-LONG and
+EXTRACTIVE-SENT explanation types. Here, we
+were primarily interested in contrasting these with
+the voice modality. Examples of our explanations
+can be found in Appendix A.
+4.2 Hypotheses
+We investigated five (pre-registered) hypothesis
+about the relative performance of various expla-
+nation conditions at improving error-detectability,
+motivated by pilot studies and authors’ intuitions.
+• H1: Presenting model confidence will im-
+prove performance over the baseline.
+• H2: Spoken EXTRACTIVE-SENT explana-
+tions will perform better than CONFIDENCE
+— the explanation would provide additional
+context to help validate predicted answers.
+• H3: Spoken EXTRACTIVE-SENT will per-
+form better than Spoken EXTRACTIVE-LONG.
+Since the spoken modality may impose higher
+cognitive limitations on people (Section 3),
+users may find concise explanations more use-
+ful despite them providing less context.
+• H4: ABSTRACTIVE will help users discrimi-
+nate between correct and incorrect more than
+CONFIDENCE alone.
+Abstractive summaries may contain more rele-
+vant information than extractive explanations
+of the same length, which may help users
+make better decisions.
+• H5: Visual EXTRACTIVE-LONG will perform
+better than spoken EXTRACTIVE-LONG .
+4.3 Implementation Details for Conditions
+Dataset For training our model and obtaining
+test questions for our user study, we used questions,
+answers, and documents from the Natural Ques-
+tions (NQ) corpus (Kwiatkowski et al., 2019). NQ
+is composed of anonymized queries posed by real
+users on the Google search engine, and the answers
+are human-annotated spans in Wikipedia articles.
+The naturally occurring aspect of this data makes
+it a more realistic task for evaluating explanations.
+To simplify the study, we restrict our attention to
+the subset of questions with short answers (< 6
+tokens) following Lee et al. (2019b). This subset
+contains 80k training examples, 8,757 examples
+for development, and 3,610 examples for testing.
+Model We train the current (extractive) state-of-
+the-art model on NQ: Dense Passage Retrieval and
+Reader (DPR) (Karpukhin et al., 2020). Similar to
+Karpukhin et al. (2020), we split documents (en-
+tire Wikipedia articles), into shorter passages of
+equal lengths (100 tokens). To answer an input
+question, DPR uses two separate dense encoders
+EQ(·) and EP (·) to encode the question and all pas-
+sages in the corpus into vectors. It then retrieves
+k most similar passages, where passage similar-
+ity to a question is defined using a dot product:
+sim(q, p) = EQ(q)|EP (p).
+Given the top k passages, a neural reader (Sec-
+tion 2) assigns a passage selection score to each
+passage, and a span score to every answer span.
+The original model uses the best span from the pas-
+sage with the highest passage selection score as the
+final answer. However, we re-score each answer
+using the product of the passage and span score
+and use the highest-scored answer as the prediction.
+Our initial analysis showed that this re-scoring im-
+proved exact match scores of predicted answers.
+Generating explanations To create our extrac-
+tive explanations, we use the passage associated
+with DPR’s answer— EXTRACTIVE-SENT is de-
+fined as the single sentence in the passage contain-
+ing the answer and EXTRACTIVE-LONG is defined
+Figure 2: UI for visual (left) and spoken modalities (right) for EXTRACTIVE-SENT explanation type. Users either
+read or hear an explanation and decide whether to trust or discard the QA system’s prediction.
+as the entire passage. Since DPR does not generate
+abstractive explanations, we simulate ABSTRAC-
+TIVE by manually creating a single sentence that
+captures the main information of EXTRACTIVE-
+SENT and adds additional relevant information
+from EXTRACTIVE-LONG, whilst remaining the
+same length as EXTRACTIVE-SENT.
+In order to improve transparency, in addition to
+presenting the evidence text in each explanation
+condition, we also inform users that the source of
+the text is Wikipedia and provide them with the
+title of the article containing the passage together
+with the model’s (calibrated) uncertainty in its pre-
+diction. Figure 2 shows an example of the final
+EXTRACTIVE-SENT explanation condition.
+To convert text to speech, we use an internally-
+available TTS tool. For the questions we used in
+our study, when spoken, our final ABSTRACTIVE
+and EXTRACTIVE-SENT conditions were on av-
+erage 15 seconds long, EXTRACTIVE-LONG was
+between 30-40 seconds.
+Confidence calibration Confidence scores gen-
+erated by neural networks (e.g., by normalizing
+softmax scores) often suffer from poor calibra-
+tionGuo et al. (2017). To alleviate this issue and
+to follow best practices (Amershi et al., 2019) for
+creating strong baselines, we calibrate our ODQA
+model’s confidence using temperature scaling (Guo
+et al., 2017), which is a post hoc calibration algo-
+rithm suitable for multi-class problems. We cali-
+brate the top 10 outputs of the model. We defer
+details on the improvement in calibration obtained
+through temperature scaling, and its implementa-
+tion, to Appendix B.
+4.4 User study & Interface
+We conduct our experiments using Amazon Me-
+chanical Turk. Our task presents each worker
+with 40 questions one-by-one, while showing them
+the model’s answer (along with other condition-
+dependant information, such as confidence or expla-
+nation) and asks them to either accept the model’s
+prediction if they think it is correct or reject it oth-
+erwise. Figure 2 shows an example. For each of
+the 7 conditions we hire 75 workers.
+Additional details about our setting and the in-
+structions can be found in Appendix D.
+Question selection We deliberately sample a set
+of questions on which the model’s aggregate (exact-
+match) accuracy is 50%; thus any improvements
+in error-detectability, beyond random-performance,
+must be a result of users making optimal assess-
+ment about the model’s correctness. To improve
+generalization of results, we average results over
+three such mutually exclusive sets of 40 questions.
+Before sampling the questions we also removed
+questions that were ambiguous or questions where
+the model was indeed correct but the explanations
+failed to justify the answer. For brevity, we defer
+these details and justifications of these details to
+the Appendix C.
+Incentive scheme To encourage MTurk workers
+to engage and pay attention to the task, we used
+a bonus-based strategy — When users accept a
+correct answer, we give them a 15 cent bonus but
+when they accept an incorrect answer they lose the
+same amount3. This choice aims to simulates real-
+world cost and utility from interacting successfully
+3
+If participants ended up with a negative bonus, no deduc-
+tions were made from their base pay, instead their bonus was
+simply zero
+(or unsuccessfully) with AI assistants (Bansal et al.,
+2019). Table 1 shows the final pay-off matrix that
+we used.
+PREDICTION/DECISION ACCEPT REJECT
+CORRECT +$0.15 $0
+INCORRECT -$0.15 $0
+Table 1: MTurk worker’s bonus as a function of the
+correctness of ODQA model’s prediction and the user’s
+decision to accept or reject the predicted answer.
+Post-task survey After the main task, we asked
+participants to (1) rate the length of responses, (2)
+rate their helpfulness and (3) give us general feed-
+back on what worked and how explanations could
+be made better. For the spoken modality, we also
+asked participants to rate the clarity of the voice
+to understand if confusion originated from text-to-
+speech challenges. The survey as presented to the
+participants can be found in Appendix E.
+Quantitative measures of error-detectability
+We quantify user performance at error-detectability
+using the following five metrics:
+• Accuracy: Percentage of times a user accepts
+correct and rejects incorrect answers. A high
+accuracy indicates high error-detectability.
+• Cumulative reward: The total dollar reward
+in bonuses earned by a worker based on the
+payoff in Table 1. Note that, unlike accuracy,
+the payoff matrix is not symmetric wrt. user
+decision and correctness of predictions.
+• % Accepts | correct: Percentage of times
+the user accepts correct answers. If a setting
+yields a high true positive rate, this would in-
+dicate this setting helps users better recognize
+correct model responses.
+• % Accepts | incorrect: Percentage of times
+the user accepts incorrect answers. For this
+metric, lower is better. If a setting yields a
+high number, this would indicate that this set-
+ting misleads users more often.
+• Time: The median time taken by a user to
+reach a decision after a question is shown.
+When computing these metrics, we remove the
+first 4 questions for each worker to account for
+Figure 3: Accuracy of users at error-detectability
+(75 workers per condition). In the spoken modality,
+EXTRACTIVE-SENT explanations yield the best results
+and is significantly better than CONFIDENCE. In con-
+trast, in the visual modality, EXTRACTIVE-LONG ex-
+planations perform best. We observe a statistically sig-
+nificant (p < 0.01) difference between EXTRACTIVE-
+LONG in visual vs spoken, perhaps due to differences
+in user’s cognitive limitations across modalities.
+workers getting used to the interface. We pre-
+registered this procedure prior to running our final
+studies and, as as result, the maximum cumulative
+reward for this setup is $ 2.70.
+5 Results
+To validate our hypothesis (Section 4.2) we com-
+pare explanation methods on the quantitative met-
+rics (Section 5.1). To further understand partici-
+pant behavior we analyze responses to the post-task
+survey (Section 5.2), and analyze common cases
+where explanations misled the users (Section 5.3).
+Results for reward and time metrics are included in
+Appendix F.1 and F.2.
+5.1 Quantitative Results
+Figure 3 shows average user accuracy at error-
+detectability with 75 workers per condition. Sim-
+ilarly to Lamm et al. (2020), in order to vali-
+date hypotheses and compute statistical signifi-
+cance, we fit a generalized linear mixed effects
+model using the lme4 library in R and the for-
+mula a~ c +(1|w) + (1|q), where a is ac-
+curacy, c is the condition, w is the worker id and
+q is the question id. We run pairwise compar-
+isons of these effects using Holm-Bonferroni to
+correct for multiple hypothesis testing. For both
+the spoken and visual modalities, all conditions
+lead to significantly higher accuracies than BASE-
+LINE (p < 0.01).
+Model confidence improved accuracy of error-
+detectability In Figure 3, CONFIDENCE achieves
+higher accuracy than BASELINE– 68.1% vs. 57.2%.
+This difference was statistically significant (p <
+0.01), thus validating H1. While previous
+guidelines recommend displaying confidence to
+users (Amershi et al., 2019) and show its benefit
+for sentiment classification and LSAT (Bansal et al.,
+2020), our observations provide the first empirical
+evidence that confidence serves as a simple yet
+stronger baseline against which explanations for
+ODQA should be compared.
+Explaining via an evidence sentence further im-
+proved performance. The more interesting com-
+parisons are between explanation types and CON-
+FIDENCE. In both modalities, EXTRACTIVE-SENT
+performed better than CONFIDENCE. For exam-
+ple, in the spoken modality, EXTRACTIVE-SENT
+improved accuracy over CONFIDENCE from 68.1%
+to 75.6% (p < 0.01); thus validating H2. Contrary
+to recent prior works that observed no benefit from
+explaining predictions, this result provides and con-
+firms a concrete application of explanations where
+they help users in an end-to-end task .
+While longer explanations improved perfor-
+mance over more concise explanations in the
+visual modality, they worsened performance in
+the spoken modality. Figure 3 shows that, for
+the visual modality, EXTRACTIVE-LONG outper-
+forms EXTRACTIVE-SENT explanations in the vi-
+sual modality – 77.6% vs. 74.7% (p < 0.4). Con-
+versely, for spoken, EXTRACTIVE-SENT is bet-
+ter than EXTRACTIVE-LONG– 75.6% vs. 70.4%
+(p < 0.01); thus supporting H3. In fact, the de-
+crease was severe enough that we no longer ob-
+served a statistically significant difference between
+long explanations and simply communicating con-
+fidence (p = 0.9).
+Although communicating the same content, vi-
+sual EXTRACTIVE-LONG led to significantly better
+accuracy than their spoken version— 77.6% vs.
+70.4% (p < 0.01); thus validating H5. These re-
+sults indicate large differences, across modalities,
+in user ability to process and utilize explanations,
+and how these differences need to be accounted for
+while evaluating and developing explanations.
+Despite improving conciseness, abstractive
+summaries (of the longer explanations) did not
+help improve performance in the spoken modal-
+ity. Figure 3 shows that while ABSTRACTIVE per-
+Figure 4: (Left) Explanations significantly increased
+participant ability to detect correct answers compared
+to simply displaying confidence. (Right) However,
+only EXTRACTIVE-SENT in the spoken modality and
+both explanations in the visual modality decreased the
+rate at which users are misled.
+forms marginally better than confidence– 71.3% vs.
+68.1%, the difference is not statistically significant
+(p = 0.4) and thus we could not validate H4. This
+results indicates that the length of the explanation
+(e.g., number of tokens) is not the only factor that
+affects user performance, instead the density of in-
+formation also increases cognitive load on users.
+This finding is in line with the Time Based Re-
+source Sharing (TBRS) model (Barrouillet et al.,
+2007), a theory on working memory establishing
+that time as well as the complexity of what is being
+communicated, both play a role in cognitive de-
+mand. We also observe the same effect in users sub-
+jective rating of length of explanation (Section 5.2).
+All explanations significantly increased partici-
+pants’ ability to detect correct answers, but only
+some explanations improved their ability to de-
+tect incorrect answers. Instead of aggregate ac-
+curacy, Figure 4 splits and visualizes how often
+users accept correct and incorrect answers. For
+accepting correct model predictions, all visual and
+spoken explanation conditions signficantly helped
+compared to CONFIDENCE (at least p < 0.05).
+In terms of accepting incorrect predictions, in the
+spoken modality, only EXTRACTIVE-SENT is sig-
+nificantly better (i.e., lower) than CONFIDENCE—
+34% vs. 40% (p < 0.05). Whereas in the
+visual modality, both EXTRACTIVE-LONG and
+EXTRACTIVE-SENT lead to improvements over
+CONFIDENCE— 30% (p < 0.01) and 32% (p <
+0.05), respectively. This shows that although expla-
+nations decrease the chance of being misled by the
+system, the least misleading explanations change
+with modality.
+Figure 5: Top: Users perceive the same explanation
+to be longer in the spoken modality. Bottom: While
+EXTRACTIVE-SENT and ABSTRACTIVE were the same
+length, participants rate the latter as longer more often
+perhaps because of they contain more content.
+5.2 Qualitative results
+We analyzed user responses to the post-task survey
+to understand their experience, what helped them
+and how the system could serve them better.
+Voice clarity To verify that the quality of the text-
+to-speech tool that we employed did not negatively
+affect our experiments, we asked users to rate the
+clarity of the assistant’s voice as very poor, poor,
+fair, good, or excellent. More than 90% of partici-
+pants felt that the voice was good or excellent.
+Length preference We asked participants to rate
+the length of the explanation as too short, short,
+right, long, or too-long. For EXTRACTIVE-LONG,
+over 85% of workers perceived that in the visual
+modality, responses were the right length. On the
+other hand, in the spoken modality, nearly 65% of
+participants felt that the responses were too long.
+In both modalities, users were presented with the
+same explanations, hence their lengths were exactly
+the same. This result indicates that what works well
+in one modality cannot simply be transferred as is
+to another modality.
+Additionally, even though ABSTRACTIVE and
+EXTRACTIVE-SENT were the same duration, in the
+post experimental survey, users indicated more of-
+ten that they found ABSTRACTIVE to be long, as op-
+posed to EXTRACTIVE-SENT. As previously men-
+tioned, this relates to the TBRS model of working
+memory (Barrouillet et al., 2007). We hypothesize
+that our ABSTRACTIVE explanations, which inte-
+grate more information than EXTRACTIVE-SENT
+in the same amount of time, might be more taxing
+in the working memory, making them less effective
+and in turn making users perceive them as being
+longer. These results are shown in Figure 5.
+Perceived helpfulness Participants were asked
+whether the responses helped them in their deci-
+sion making. Their responses showed that CON-
+FIDENCE and all explanation conditions were per-
+ceived as helpful by at least 80% of participants,
+with no real differences among them except for
+EXTRACTIVE-LONG in the visual modality (which
+is perceived helpful by close to 90% of users). Inter-
+estingly, 50% of participants indicated BASELINE
+to be helpful. In contrast, our results in Figure 3
+show that different explanations actually differ in
+their eventual helpfulness. These results suggest
+that subjective measures can sometimes correlate
+with actual performance when the differences are
+large, but for the most-part and smaller differences,
+the result from subjective rating can be unreliable.
+These findings align with prior observation made
+(Buçinca et al., 2020) that showed that evaluating
+explanations on proxy metrics can lead to incorrect
+conclusions. More on our these findings are shown
+in Figure 9 in Appendix F.4.
+User feedback In order to get more specific de-
+tails about how to improve the presentation of in-
+formation, we asked participants at the end of the
+survey: Do you have any additional feedback on
+what the system can improve? Two annotators read
+through about 400 responses across all conditions,
+and created codes to capture possible areas of im-
+provement. The annotators then used these codes
+to classify responses. Many users gave feedback
+that was not insightful (e.g."can’t think of anything
+to improve"). After removing such responses, 175
+responses remained for the final analysis. We com-
+puted the inter-annotator agreement using Cohen’s
+k (k=0.74). Here we briefly describe the most inter-
+esting findings, with more details about the codes
+we used and additional results in Appendix F.5.
+In BASELINE, where the answer was provided
+with no additional information, about 50% of par-
+ticipants mentioned that they would have liked
+it if the voice changed with system certainty. In
+CONFIDENCE, around 30% of participants give this
+feedback as well. Interestingly, for explanation
+conditions, this feedback is not seen as often.
+For EXTRACTIVE-SENT in both modalities,
+EXTRACTIVE-LONG in the visual modality and
+ABSTRACTIVE, 10-35 % of participants would
+like the level of detail to adapt to the model cer-
+tainty . More specifically, users would like to have
+more details or additional answers only when the
+model is not confident in the prediction. This strat-
+egy seems similar to adaptive explanations pro-
+posed by (Bansal et al., 2020).
+For the EXTRACTIVE-LONG condition in the
+spoken modality the feedback was mostly about
+the length of the responses. 78% of participants
+mentioned that responses should be shorter, which
+aligns with the higher perceived length of the expla-
+nations in Figure 5. For the visual modality, 40 %
+of participants mention that highlighting some key
+items would have made it even easier and faster.
+In fact, introducing highlights would improve the
+visual interface, and would likely increase the dif-
+ferences in modalities that we already observe.
+Finally, for all explanation conditions, 20-45 %
+of participants would like to see more than one
+source containing an answer. This means that
+the system would need to find multiple sources that
+converge to the provided answer. To provide users
+with this additional information without overload-
+ing cognitive capacity, an interactive strategy can
+be adopted. For example, evidence and additional
+sources can be presented through an explanatory
+dialogue (Miller, 2019), where users are initially
+provided with limited information, and more can
+be provided upon request.
+5.3 What misleads users?
+To better understand how explanations mislead
+users and how they can be further improved, we
+analyzed cases leading to user error. We compiled
+a set of unique questions alongside their frequency
+of errors across users in all explanation conditions.
+A single annotator followed a similar coding pro-
+cedure as previously described, where questions
+were analyzed in order to detect emergent error cat-
+egories. Following this initial analysis, questions
+were categorized into error types. We found that
+users tend to be misled on the same questions, with
+most of the errors happening on around 50 ques-
+tions per condition, and about 40 of these questions
+overlapping across conditions.
+Below we describe the three main cases:
+Plausible explanations. A concept is plausible
+if it is conceptually consistent to what is expected
+or appropriate in some context (Connell and Keane,
+2006). Work has consistently identified that peo-
+ple often fail to evaluate the accuracy of informa-
+tion (Fazio and Marsh, 2008; Marsh and Umanath,
+2013; Fan et al., 2020), particularly when no prior
+knowledge exists and information seems plausible
+(Hinze et al., 2014). We find many cases where a
+model response and explanation do not answer the
+question, yet the plausibility misleads users into
+accepting incorrect responses. For example:
+Question: Who is the patron saint of adoptive parents?
+Response: I am 37 percent confident that the answer
+is, Saint Anthony of Padua. I found the following evi-
+dence in a wikipedia passage titled, Anthony of Padua:
+Saint Anthony of Padua, born Fernando Martins de Bul-
+hoes, also known as Anthony of Lisbon, was a por-
+tuguese catholic priest and friar of the Franciscan order.
+Such errors make up 60 to 65% of the errors for
+all explanation conditions.
+Lexical overlap. McCoy et al. (2019) describe 3
+main heuristics exploited by NLI models: among
+them, lexical overlap. In our error analysis, the
+second most common mistake (from 30 to 35% of
+errors) that both the model and the users make is
+related to the lexical overlap between the question
+and the evidence. For example:
+Question: How many teams are in the MLB national
+League?
+Response: I am 60 percent confident that the answer
+is, 30. I found the following evidence in a wikipedia
+passage titled, Major League Baseball: A total of 30
+teams play in the National League( NL) and American
+League (AL) , with 15 teams in each league .
+The evidence contains the correct answer (15
+teams) but many users are misled by the phrase “A
+total of 30 teams play in the National League”.
+Belief bias. Humans tend to rely on prior belief
+when performing reasoning tasks (Klauer et al.,
+2000). In model evaluation, this has consequences
+affecting validity. For example, if instructions are
+not specific, participants are left to use their beliefs
+to infer what is required of them, leading to varied
+interpretations. People often rely more heavily on
+belief bias when processing information under pres-
+sure (Evans and Curtis-Holmes, 2005), therefore
+in time limited evaluations this phenomenon might
+be more prominent. We reduced these confounds
+by carefully designing instructions, a straightfor-
+ward interface, allowing workers plenty of time and
+removing ambiguous questions. However, some
+interesting cases of belief bias do occur — take for
+instance, the example below:
+Question: Where is the longest bone in the body
+found?
+Response: I am 17 percent confident that the answer
+is, femur. I found the following evidence in a wikipedia
+passage titled, Femur: The Femur or thigh bone, is the
+proximal bone of the hindlimb in tetrapod vertebrates .
+Such errors in our evaluation make about 3-5%
+of total errors in each explanation condition.
+6 Discussion
+6.1 Why Explanations Worked for ODQA?
+Our studies observed significant improvements
+from explanations for the end-task to help users de-
+cide whether to trust the prediction of an imperfect
+open-domain QA agent. A natural question then is
+why explanations worked for this task despite many
+negative results on other tasks, such as sentiment,
+LSAT, and computer vision (Bansal et al., 2020;
+Chu et al., 2020; Hase and Bansal, 2020). One
+hypothesis is that, in our task explanations provide
+user’s with new knowledge, previously unknown
+to them. For example, on a sentiment classification
+task, explanations highlight information in the text
+already visible to the users. In contrast, in ODQA,
+explanations in terms of evidence text provide users
+with the additional context that helps validate the
+system’s answers. This new evidence may be espe-
+cially helpful to users who don’t know the answers
+to the question, which would often be the case for
+open-domain question answering.
+However, its worth noting that like previous
+works, not all of our explanation methods pro-
+vided significant value over confidence; e.g., in
+Figure 3 we did not observe any significant dif-
+ferences between longer extractive explanations
+and confidence for the spoken modality. Thus the
+success from showing explanations still cannot be
+taken for granted but instead be measured using
+well-designed user studies.
+6.2 Implications and Recommendations
+Another interesting question is how can our find-
+ings inform future research in explainable NLP.
+Develop modality-specific explanations Our
+results showed that the best explanation varied
+across the modalities, indicating that evaluating
+explanations on one modality (e.g., using studies
+with visual UI) and deploying them on another (e.g.,
+voice assistant) can lead to sub-optimal deployment
+decisions. As a result, explanations should be eval-
+uated in the task and settings in which they will be
+deployed in-the-wild.
+Further study abstractive explanations
+Longer explanations helped in the visual case,
+showing that communicating more evidence has
+potential to help users. But, they hurt in the
+spoken case, perhaps because longer explanations
+increase cognitive load on users. This may
+indicate a trade-off between information content of
+explanation and its cognitive load for ODQA. We
+had hoped abstractive explanations would achieve
+a more optimal balance between fidelity and
+comprehensibility for spoken. However, Figure 3
+shows that they did not improve end-performance.
+One reason is that even though abstractive expla-
+nations were concise, they had high information
+density and thus did not sufficiently decrease
+cognitive load.
+That said, while abstractive explanations did not
+significantly improve accuracy compared to longer
+explanations, they did improve user speed at the
+task by 2.2 sec (Table 3) and were satisfactory
+rated in terms of their perceived length compared
+to longer explanations (Figure 5). The utility of
+such generated explanations, over longer explana-
+tions, may further increase when explain multiple
+sources (e.g., in Hotpot QA (Yang et al., 2018)) or
+candidate answers, where communicating multiple
+entire passages seems infeasible.
+Enable interactive explanations All explana-
+tion conditions we tested were static– they assumed
+a single trade-off between detail and conciseness.
+For example, EXTRACTIVE-SENT always conveyed
+a single sentence to the user as an explanation,
+which was concise but may not always convey all
+context required to validate answers. A different
+strategy may be to use interactive explanations, in
+which the system first gives a concise explanation
+and then lets users request additional information.
+Such explanations may be especially used to ac-
+commodate user suggestions such as, including
+and explaining multiple candidate answers or mul-
+tiple answers sources. Another possible strategy
+is to use adaptive explanations, where the model
+switches explanation strategies based on its confi-
+dence (Bansal et al., 2020).
+Limitations While our user study addresses is-
+sues of many similar previous evaluations of ex-
+planations, it still has limitations. First, although
+the interaction of users with the QA system was
+kept as realistic as possible, in reality users may
+have the option to double-check the model’s answer
+using external tools, such as Web search. Accom-
+modating that case, would require encoding the
+additional cost of the reject action (e.g., due to time
+spent and effort) into the payoff. In addition, un-
+like an interaction in-the-wild, questions were not
+posed by participants themselves, which may lead
+to different kinds of biases in the interpretation of
+the questions, as discussed before. Second, we con-
+ducted studies with MTurk workers who may not
+have the same motivation for performing the task
+as real users. To address this we incentivized them
+by rewarding high-performance through bonuses
+and penalties specified using a payoff matrix. In
+practice, the values of the payoff matrix can vary
+depending on the stake of the domain and may vary
+with users. Finally, we only registered hypothesis
+that compared performance on one metric– accu-
+racy of error-detectability. However, there may be
+other metrics that may be of interest, e.g., improve-
+ments in speed and user satisfaction.
+7 Conclusion
+Contrary to recent user-studies for other tasks (such
+as classification), ours suggest that for ODQA, ex-
+planations of model’s predictions significantly help
+end-users decide when to trust the model’s answers,
+over strong baselines such as displaying calibrated
+confidence. We observed this for two scenarios
+where users interact with ODQA model using spo-
+ken or visual modalities. However, the best ex-
+planation may change with the modality, e.g., due
+to differences in users’ cognitive abilities across
+modalities. For example, for the spoken modality,
+concise explanations that highlight the sentence
+containing the answer worked well. In contrast, for
+the visual modality, performance improved upon
+showing longer explanations. Thus, developers and
+researchers of explainable ODQA systems should
+evaluate explanations on the task and modalities
+where these models will be eventually deployed,
+and tune these explanations while accounting for
+user needs and limitations.
+Despite success of explanations on our domain,
+explanations sometimes still mislead users into
+trusting an incorrect prediction, and sometimes as
+often as displaying the baselines. These results indi-
+cate the need to develop better explanations or other
+mechanisms to further appropriate user reliance on
+ODQA agents, e.g., by enabling abstractive expla-
+nations that balance conciseness and detail while
+taking into account user’s cognitive limitations, in-
+teractive explanations that can explain multiple an-
+swer sources and candidates and adaptive explana-
+tions where model strategy changes based on its
+confidence.
+References
+Saleema Amershi, Dan Weld, Mihaela Vorvoreanu,
+Adam Fourney, Besmira Nushi, Penny Collisson,
+Jina Suh, Shamsi Iqbal, Paul N Bennett, Kori Inkpen,
+et al. 2019. Guidelines for human-ai interaction. In
+CHI.
+Pepa Atanasova, Jakob Grue Simonsen, Christina Li-
+oma, and Isabelle Augenstein. 2020. Generat-
+ing fact checking explanations. arXiv preprint
+arXiv:2004.05773.
+Gagan Bansal, Besmira Nushi, Ece Kamar, Walter S
+Lasecki, Daniel S Weld, and Eric Horvitz. 2019.
+Beyond accuracy: The role of mental models in
+human-ai team performance. In Proceedings of
+the AAAI Conference on Human Computation and
+Crowdsourcing, volume 7, pages 2–11.
+Gagan Bansal, Tongshuang Wu, Joyce Zhu, Raymond
+Fok, Besmira Nushi, Ece Kamar, Marco Tulio
+Ribeiro, and Daniel S Weld. 2020. Does the whole
+exceed its parts? the effect of ai explanations on
+complementary team performance. arXiv preprint
+arXiv:2006.14779.
+Pierre Barrouillet, Sophie Bernardin, Sophie Portrat,
+Evie Vergauwe, and Valérie Camos. 2007. Time
+and cognitive load in working memory. Journal of
+Experimental Psychology: Learning, Memory, and
+Cognition, 33(3):570.
+Zana Buçinca, Phoebe Lin, Krzysztof Z Gajos, and
+Elena L Glassman. 2020. Proxy tasks and subjective
+measures can be misleading in evaluating explain-
+able ai systems. In Proceedings of the 25th Inter-
+national Conference on Intelligent User Interfaces,
+pages 454–464.
+Gary Buck. 1991. The testing of listening compre-
+hension: an introspective study1. Language testing,
+8(1):67–91.
+Oana-Maria Camburu, Tim Rocktäschel, Thomas
+Lukasiewicz, and Phil Blunsom. 2018. e-snli: Nat-
+ural language inference with natural language expla-
+nations. In Advances in Neural Information Process-
+ing Systems, pages 9539–9549.
+Danqi Chen, Adam Fisch, Jason Weston, and Antoine
+Bordes. 2017. Reading wikipedia to answer open-
+domain questions. In Proceedings of the 55th An-
+nual Meeting of the Association for Computational
+Linguistics (Volume 1: Long Papers), pages 1870–
+1879.
+Jianbo Chen, Le Song, Martin J Wainwright, and
+Michael I Jordan. 2018. Learning to explain: An
+information-theoretic perspective on model interpre-
+tation. arXiv preprint arXiv:1802.07814.
+Eric Chu, Deb Roy, and Jacob Andreas. 2020.
+Are visual explanations useful? a case study
+in model-in-the-loop prediction. arXiv preprint
+arXiv:2007.12248.
+Louise Connell and Mark T Keane. 2006. A model of
+plausibility. Cognitive Science, 30(1):95–120.
+Rajarshi Das, Shehzaad Dhuliawala, Manzil Zaheer,
+and Andrew McCallum. 2018. Multi-step retriever-
+reader interaction for scalable open-domain question
+answering. In International Conference on Learn-
+ing Representations.
+Jay DeYoung, Sarthak Jain, Nazneen Fatema Rajani,
+Eric Lehman, Caiming Xiong, Richard Socher, and
+Byron C. Wallace. 2020. Eraser: A benchmark to
+evaluate rationalized nlp models. In ACL.
+Jonathan St BT Evans and Jodie Curtis-Holmes. 2005.
+Rapid responding increases belief bias: Evidence for
+the dual-process theory of reasoning. Thinking &
+Reasoning, 11(4):382–389.
+Angela Fan, Yacine Jernite, Ethan Perez, David Grang-
+ier, Jason Weston, and Michael Auli. 2019. Eli5:
+Long form question answering. arXiv preprint
+arXiv:1907.09190.
+Angela Fan, Aleksandra Piktus, Fabio Petroni, Guil-
+laume Wenzek, Marzieh Saeidi, Andreas Vla-
+chos, Antoine Bordes, and Sebastian Riedel. 2020.
+Generating fact checking briefs. arXiv preprint
+arXiv:2011.05448.
+Lisa K Fazio and Elizabeth J Marsh. 2008. Slowing
+presentation speed increases illusions of knowledge.
+Psychonomic Bulletin & Review, 15(1):180–185.
+Shi Feng and Jordan Boyd-Graber. 2019a. What can ai
+do for me? evaluating machine learning interpreta-
+tions in cooperative play. In IUI, pages 229–239.
+Shi Feng and Jordan Boyd-Graber. 2019b. What can ai
+do for me? evaluating machine learning interpreta-
+tions in cooperative play. In Proceedings of the 24th
+International Conference on Intelligent User Inter-
+faces, pages 229–239.
+John Flowerdew, Michael H Long, Jack C Richards,
+et al. 1994. Academic listening: Research perspec-
+tives. Cambridge University Press.
+Chuan Guo, Geoff Pleiss, Yu Sun, and Kilian Q Wein-
+berger. 2017. On calibration of modern neural net-
+works. arXiv preprint arXiv:1706.04599.
+Peter Hase and Mohit Bansal. 2020. Evaluating ex-
+plainable ai: Which algorithmic explanations help
+users predict model behavior? arXiv preprint
+arXiv:2005.01831.
+Scott R Hinze, Daniel G Slaten, William S Horton,
+Ryan Jenkins, and David N Rapp. 2014. Pilgrims
+sailing the titanic: Plausibility effects on memory for
+misinformation. Memory & Cognition, 42(2):305–
+324.
+Mandar Joshi, Eunsol Choi, Daniel S Weld, and Luke
+Zettlemoyer. 2017. Triviaqa: A large scale distantly
+supervised challenge dataset for reading comprehen-
+sion. arXiv preprint arXiv:1705.03551.
+Vladimir Karpukhin, Barlas Oğuz, Sewon Min, Ledell
+Wu, Sergey Edunov, Danqi Chen, and Wen-
+tau Yih. 2020. Dense passage retrieval for
+open-domain question answering. arXiv preprint
+arXiv:2004.04906.
+KC Klauer, J Musch, and B Naumer. 2000. On belief
+bias in syllogistic reasoning. Psychological Review,
+107.
+Tom Kwiatkowski, Jennimaria Palomaki, Olivia Red-
+field, Michael Collins, Ankur Parikh, Chris Alberti,
+Danielle Epstein, Illia Polosukhin, Jacob Devlin,
+Kenton Lee, et al. 2019. Natural questions: a bench-
+mark for question answering research. Transactions
+of the Association for Computational Linguistics,
+7:453–466.
+Matthew Lamm, Jennimaria Palomaki, Chris Alberti,
+Daniel Andor, Eunsol Choi, Livio Baldini Soares,
+and Michael Collins. 2020. Qed: A framework
+and dataset for explanations in question answering.
+arXiv preprint arXiv:2009.06354.
+Wayne Leahy and John Sweller. 2016. Cognitive load
+theory and the effects of transient information on the
+modality effect. Instructional Science, 44(1):107–
+123.
+Kenton Lee, Ming-Wei Chang, and Kristina Toutanova.
+2019a. Latent retrieval for weakly supervised open
+domain question answering. In Proceedings of the
+57th Annual Meeting of the Association for Compu-
+tational Linguistics, pages 6086–6096.
+Kenton Lee, Ming-Wei Chang, and Kristina Toutanova.
+2019b. Latent retrieval for weakly supervised open
+domain question answering. In Proceedings of the
+57th Annual Meeting of the Association for Com-
+putational Linguistics, pages 6086–6096, Florence,
+Italy. Association for Computational Linguistics.
+Tao Lei, Regina Barzilay, and Tommi Jaakkola. 2016.
+Rationalizing neural predictions. In Proceedings of
+the 2016 Conference on Empirical Methods in Natu-
+ral Language Processing, pages 107–117.
+Hui Liu, Qingyu Yin, and William Yang Wang. 2019.
+Towards explainable nlp: A generative explanation
+framework for text classification. In Proceedings of
+the 57th Annual Meeting of the Association for Com-
+putational Linguistics, pages 5570–5581.
+Randall J Lund. 1991. A comparison of second lan-
+guage listening and reading comprehension. The
+modern language journal, 75(2):196–204.
+ElizabethJ Marsh and Sharda Umanath. 2013. Knowl-
+edge neglect: Failures to notice contradictions with
+stored knowledge. Processing inaccurate informa-
+tion: Theoretical and applied perspectives from cog-
+nitive science and the educational sciences.
+R Thomas McCoy, Ellie Pavlick, and Tal Linzen. 2019.
+Right for the wrong reasons: Diagnosing syntactic
+heuristics in natural language inference. In ACL.
+Tim Miller. 2019. Explanation in artificial intelligence:
+Insights from the social sciences. Artificial Intelli-
+gence, 267:1–38.
+Sewon Min, Julian Michael, Hannaneh Hajishirzi, and
+Luke Zettlemoyer. 2020. Ambigqa: Answering
+ambiguous open-domain questions. arXiv preprint
+arXiv:2004.10645.
+Dong Nguyen. 2018. Comparing automatic and human
+evaluation of local explanations for text classifica-
+tion. In Proceedings of the 2018 Conference of the
+North American Chapter of the Association for Com-
+putational Linguistics: Human Language Technolo-
+gies, Volume 1 (Long Papers), pages 1069–1078.
+Nobuko Osada. 2004. Listening comprehension re-
+search: A brief review of the past thirty years. Di-
+alogue, 3(1):53–66.
+Bhargavi Paranjape, Mandar Joshi, John Thickstun,
+Hannaneh Hajishirzi, and Luke Zettlemoyer. 2020.
+An information bottleneck approach for controlling
+conciseness in rationale extraction. arXiv preprint
+arXiv:2005.00652.
+John Platt et al. 1999. Probabilistic outputs for sup-
+port vector machines and comparisons to regularized
+likelihood methods. Advances in large margin clas-
+sifiers, 10(3):61–74.
+Nazneen Fatema Rajani, Bryan McCann, Caiming
+Xiong, and Richard Socher. 2019. Explain your-
+self! leveraging language models for commonsense
+reasoning. In Proceedings of the 57th Annual Meet-
+ing of the Association for Computational Linguistics,
+pages 4932–4942.
+Pranav Rajpurkar, Jian Zhang, Konstantin Lopyrev, and
+Percy Liang. 2016. Squad: 100,000+ questions
+for machine comprehension of text. arXiv preprint
+arXiv:1606.05250.
+Kyle Swanson, Lili Yu, and Tao Lei. 2020. Ra-
+tionalizing text matching: Learning sparse align-
+ments via optimal transport. arXiv preprint
+arXiv:2005.13111.
+John Sweller. 2011. Cognitive load theory. In Psychol-
+ogy of learning and motivation, volume 55, pages
+37–76. Elsevier.
+Irene Thompson and Joan Rubin. 1996. Can strategy
+instruction improve listening comprehension? For-
+eign Language Annals, 29(3):331–342.
+Zhilin Yang, Peng Qi, Saizheng Zhang, Yoshua Ben-
+gio, William W Cohen, Ruslan Salakhutdinov, and
+Christopher D Manning. 2018. Hotpotqa: A dataset
+for diverse, explainable multi-hop question answer-
+ing. arXiv preprint arXiv:1809.09600.
+A Explanation Examples
+In Table 2, we show an example of how the re-
+sponses and explanations looked for each of the
+conditions. We also indicate in which modalities
+each explanation is shown in our experiments.
+B Temperature Scaling
+Temperature scaling (Guo et al., 2017), a multi-
+class extension of Platt Scaling (Platt et al., 1999),
+is a post-processing method applied on the logits
+of a neural network, before the softmax layer. It
+consists of learning a scalar parameter t, which de-
+creases or increases confidence. t is used to rescale
+the logit vector z, which is input to softmax σ,
+so that the predicted probabilities are obtained by
+σ(z/t), instead of σ(z).
+In our experiments, the model is set to pick from
+the top 100 solutions, however, in many cases the
+correct answer occurs within the top 10 items. For
+our purposes we calibrate the confidence scores of
+the top 10 outputs. We use the publicly available
+scripts provided by Guo et al. (2017).4
+The model confidence before and after calibra-
+tion can be seen in Figure 6.
+Figure 6: Confidence before and after calibration.
+C Additional Preprocessing
+Additional preprocessing to ascertain the quality
+of stimuli in each modality was required; more
+details can be found in Appendix . Before sampling
+questions for the task, to ensure a high-quality and
+non-ambiguous experience for MTurk workers, we
+manually filter out several “problematic” questions:
+4
+https://github.com/gpleiss/
+temperature_scaling
+• Ambiguity in the question: For various ques-
+tions in NQ, multiple answers can exist. For
+example, the question: when was King Kong
+released?, does not specify which of the many
+King Kong movies or video games it refers
+to. These cases have been known to appear
+often in NQ (Min et al., 2020). We remove
+such questions from our subset.
+• The gold answer was incorrect: Many ex-
+amples in NQ are incorrectly annotated. As it
+is too expensive to re annotate these cases, we
+remove them.
+• Answer marked incorrect is actually cor-
+rect : We present both correct and incorrect
+questions to users. There are cases where
+the predicted answer is marked incorrect (not
+exact match) but is actually correct (a para-
+phrase). We manually verify that correct an-
+swers are paired with contexts which support
+the answer.
+• Correct answer but incorrect evidence:
+The model sometimes, though not as often,
+chooses the correct answer but in the incorrect
+context. We discarded examples where the ex-
+planation was irrelevant to the question e.g.
+who plays Oscar in the office? Oscar Nuñez,
+is a Cuban-American actor and comedian.. In
+order to be able to make more general con-
+clusions about whether explanations help in
+error-detectability, we restrict our questions to
+ones containing correct answers in the correct
+context.
+• Question and prediction do not match type.
+We removed cases where the question asked
+for a certain type e.g. a date, and the predic-
+tion type did not match e.g. a location.
+In the visual modality, to ensure readability, we
+fixed capitalizations. For the spoken modality, to
+ensure fluency and clarity, we manually (1) in-
+serted punctuation to ensure more natural sounding
+pauses, and (2) changed abbreviations and symbols
+to a written out form e.g. $ 3.5 billion to 3.5 billion
+dollars.
+D Task Setup: Additional details
+Platform and participant details We conduct
+our experiments using Amazon Mechanical Turk5.
+5
+https://www.mturk.com/
+EXPLANATION TYPE RESPONSE+EXPLANATION MODALITY
+Baseline The answer is, two. Spoken
+Confidence I am 41 percent confident that the answer is, two. Spoken
+Abstractive I am 41 percent confident that the answer is, two. I summarized
+evidence from a wikipedia passage titled, Marco Polo (TV series).
+Netflix cancelled the show after two seasons, as it had resulted in
+a 200 million dollar loss.
+Spoken
+Extractive-sent I am 41 percent confident that the answer is, two. I found the
+following evidence in a wikipedia passage titled, Marco Polo
+(TV series). On December 12, 2016, Netflix announced they had
+canceled "Marco Polo" after two seasons.
+Spoken/visual.
+Extractive-long I am 41 percent confident that the answer is, two. I found the
+following evidence in a wikipedia passage titled, Marco Polo
+(TV series). On December 12, 2016, Netflix announced they had
+canceled "Marco Polo " after two seasons. Sources told "The
+Hollywood Reporter" that the series’ two seasons resulted in a 200
+million dollar loss for Netflix , and the decision to cancel the series
+was jointly taken by Netflix and the Weinstein Company. Luthi
+portrays Ling Ling in season 1, Chew in season 2. The series was
+originally developed at starz, which had picked up the series in
+January 2012.
+Spoken/visual
+Table 2: Explanation examples: Example of how system responses looked for each explanation type and baseline,
+for the question How many seasons of Marco Polo are there?
+We recruited 525 participants in total, with approval
+ratings greater than 95 % and had a maximum of 8
+days for approval of responses in order to minimize
+the amount of spamming.
+We use a random sample of 120 questions from
+our dataset which remains the same across all con-
+ditions. In order to keep each session per partici-
+pant at a reasonable time and ensure the quality of
+the data wouldn’t be affected by workers becoming
+exhausted, we opted for three fixed batches of 40
+questions, all split as 50 % correct and 50 % incor-
+rect. Workers could only participate once (only one
+batch in one condition). Participants took around
+from 35-45 minutes to complete the HITs, but were
+given up to 70 minutes to complete.
+We monitored if their screen went out of focus,
+to ensure that participants did not cheat. We en-
+sured that we had 25 user annotations per question.
+When analyzing the data, we remove the first 4
+questions of each batch, as it may take participants
+a few tries before getting used to the interface. In
+the end, we collect about 21,000 test instances.
+Task Instructions Imagine asking Norby a ques-
+tion and Norby responds with an answer. Norby’s
+answer can be correct or wrong. If you believe
+Norby’s answer is correct, you can accept the an-
+swer. If you believe it is wrong, you can reject it.
+If the answer is actually correct and you accept it,
+you will earn a bonus of $0.15. But, if the answer is
+wrong, and you accept it, you will lose $0.15 from
+your bonus. If you reject the answer, your bonus
+is not affected. (Don’t worry, the bonus is extra!
+Even if it shows negative during the experiment,
+in the end the minimum bonus is 0). In total you
+will see 40 questions in this HIT (you will only be
+allowed to participate once) and the task will take
+about 40 to 45 minutes. You can be compensated
+a maximum of $13.50 for about 40-45 minutes of
+work. Some things to note:
+1. You must listen to the audio before the options
+become available.
+2. If you make it to the end there is a submit
+button there, however, in case of an emergency
+you can hit the quit early button above and
+you will get rewarded for the answers you
+provided.
+3. You can play the audio as many times as you
+need but as soon as you click a choice you
+will be directed to the next item.
+4. IMPORTANT!! Please do not look up ques-
+tions in any search engine. We will monitor
+when the screen goes out of focus, so please
+keep the screen on focus or you might risk
+being rejected.
+5. Finally, please do not discuss answers in fo-
+rums; that will invalidate our results.
+E Post-task survey
+1. I found the CLARITY of Norby’s voice to be:
+(a) Excellent (b) Good (c) Fair (d) Poor (e)
+Very Poor
+2. I found Norby’s responses to be HELPFUL
+when deciding to Accept or Reject:
+(a) Strongly Agree (b) Agree (c) Undecided
+(d) Disagree (e) Strongly Disagree
+Can you give a few more details about your
+answer?
+3. I found the LENGTH of Norby’s responses to
+be:
+(a) Too Long (b) Long (c) Just right (d) Short
+(e) Too short
+4. No AI is perfect and Norby is no exception.
+We are interested in helping Norby provide
+responses that can help users to determine
+whether to trust it or not (to accept or reject,
+just as you have done in this experiment).
+From your interaction with Norby, do you
+have any additional feedback on what it
+can improve?
+F Results
+F.1 Reward
+We compute the differences in overall reward for
+each condition. We observe the same trends as we
+discussed for accuracy. More specifically, all ex-
+planation conditions improve the final user reward,
+with EXTRACTIVE-SENT performing best in the
+spoken modality and EXTRACTIVE-LONG perform-
+ing best overall. These differences are shown in
+Figure 7.
+Figure 7: Reward: The scores presented here are out
+of $ 2.70. Although all explanations are better than
+CONFIDENCE, the explanations leading to the highest
+rewards change across modalities.
+F.2 Time Differences
+We measured the time (in seconds) that it took
+participants to complete each question. In Table
+3 we present the median times averaged over all
+workers per condition. We also include an adjusted
+time, subtracting the length of the audio, in order
+to measure decision time.
+CONDITION SEC/QUESTION ADJUSTED
+SPOKEN MODALITY
+Baseline 10.2 ± 1.6 8.3 ± 1.6
+Confidence 9.4 ± 1.5 6.0 ± 1.5
+Abstractive 24.4 ± 1.5 7.0 ± 1.4
+Extractive-long 44.9 ±1.6 9.2 ± 1.6
+Extractive-sent 24.3 ±1.7 7.6 ± 1.7
+VISUAL MODALITY
+Extractive-long 16.1 ± 1.7 -
+Extractive-sent 10.4±1.1 -
+Table 3: Time differences across modalities. Time dif-
+ferences in the right column have been adjusted by re-
+moving the duration of the audio files. We observe that
+with additional information, users can make faster deci-
+sions than the BASELINE condition.
+F.3 Voice Quality
+Participants in the spoken conditions rated how
+clear they found the voice to be. Around 90 %
+rated the voice as good or excellent. These results
+are shown in Figure 8.
+F.4 Helpfulness
+Differences in perceived helpfulness are shown in
+Figure 9.
+Figure 8: Voice clarity: Most participants found the
+voice of the assistant to be good or excellent.
+Figure 9: Helpfulness: Participants indicated how
+helpful responses were. These results reflect the large
+differences we see in performance (BASELINE vs the
+rest of the settings), but are not able to capture the
+more subtle differences among explanation strategies
+and CONFIDENCE.
+F.5 User Feedback
+Users provided free-form written feedback on pos-
+sible ways to improve the system. The prompt they
+saw was: do you have any additional feedback on
+what the system can improve? After converging on
+a final set of codes, two annotators coded up about
+400 responses across all conditions. The codes and
+their descriptions can be found in Table 4. The
+codes are not mutually exclusive.
+We found that many users across most condi-
+tions, would like adaptability features added. Ad-
+ditionally, we found that participants would like to
+be provided with multiple sources which converge
+on the answer. We also observe that for spoken con-
+ditions, improvements on length are mentioned
+more often. The full distribution of codes across
+conditions is shown in Table 5.
+CODE DESCRIPTION CATEGORY
+len-conciseness users wish explanation was shorter
+improvement on length
+len-expand users wish explanation was shorter
+adapt-detail users wish details adapted with confi-
+dence
+adaptability feature
+adapt-voice users wish voice adapted to confidence
+pres-change-confidence users wish confidence would be com-
+municated differently e.g. the answer is
+probably....
+improve presentation
+pres-highlighting users wish important facts would be
+highlighted
+need-more-sources users wish more source were provided
+need-confidence users wish confidence was provided
+need-source users wished a source was provided
+need additional info
+need-explanation users wish an explanation would be pro-
+vided
+need-link users wish a link was provided
+need-multiple-answers users wish more than 1 answer was pro-
+vided
+Table 4: The codes used to uncover areas of improvement from the post-experimental user feedback.
+CONDITION CODE % PARTICIPANTS
+baseline
+adapt-voice 50
+need-confidence 36
+need-explanation 25
+need-source 17
+confidence
+need-explanation 38
+adapt-voice 29
+pres-change-confidence 14
+adapt-detail 10
+need-multiple-answers 10
+need-link 5
+extractive-sent (spoken)
+need-more-sources 44
+adapt-detail 28
+len-conciseness 22
+need-multiple-answers 17
+need-link 11
+len-expand 11
+pres-change-confidence 6
+extractive-long (spoken)
+len-conciseness 78
+need-more-sources 15
+pres-change-confidence 4
+abstractive
+len-conciseness 52
+need-more-sources 22
+adapt-detail 22
+pres-change-confidence 13
+need-multiple-answers 4
+extractive-sent (visual)
+need-more-sources 33
+adapt-detail 33
+len-expand 27
+need-multiple-answers 7
+extractive-long (visual) pres-highlighting 40
+need-more-sources 33
+adapt-detail 10
+need-link 10
+pres-change-confidence 7
+Table 5: Distribution of codes across all conditions. Codes are not mutually exclusive.
+
