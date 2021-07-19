@@ -293,3 +293,6 @@ main()
 # keyword based concepts
 # standardize the x(stepsize=2), y(0.5 to 1) axes
 # seaborn
+
+
+# results -> concepts -> plots
