@@ -1,0 +1,1622 @@
+Question Answering Infused Pre-training
+of General-Purpose Contextualized Representations
+Robin Jia, Mike Lewis, Luke Zettlemoyer
+Facebook AI Research
+{robinjia,mikelewis,lsz}@fb.com
+Abstract
+This paper proposes a pre-training objec-
+tive based on question answering (QA) for
+learning general-purpose contextual represen-
+tations, motivated by the intuition that the rep-
+resentation of a phrase in a passage should
+encode all questions that the phrase can an-
+swer in context. We accomplish this goal by
+training a bi-encoder QA model, which in-
+dependently encodes passages and questions,
+to match the predictions of a more accurate
+cross-encoder model on 80 million synthe-
+sized QA pairs. By encoding QA-relevant in-
+formation, the bi-encoder’s token-level repre-
+sentations are useful for non-QA downstream
+tasks without extensive (or in some cases, any)
+fine-tuning. We show large improvements over
+both RoBERTa-large and previous state-of-the-
+art results on zero-shot and few-shot para-
+phrase detection on four datasets, few-shot
+named entity recognition on two datasets, and
+zero-shot sentiment analysis on three datasets.
+1 Introduction
+Although masked language models build contex-
+tualized word representations, they are pre-trained
+with losses that minimize distance to uncontextual-
+ized word embeddings (Peters et al., 2018; Devlin
+et al., 2019; Liu et al., 2019). In this paper, we
+introduce a new pre-training loss based on ques-
+tion answering that depends much more directly on
+context, and learns improved token-level represen-
+tations for a range of zero- and few-shot tasks.
+More specifically, we propose Question Answer-
+ing Infused Pre-training (QUIP), a technique for
+training highly context dependent representations.
+Our intuition is that the representation for a phrase
+should contain enough information to identify all
+the questions that the phrase could answer in con-
+text. For example, in Figure 1, the representation
+for Johannes Brahms should be similar to an en-
+coding of all questions it can answer, such as “Who
+wrote the violin concerto?”—thereby capturing the
+The Violin Concerto in D major, Op. 77, was
+composed by Johannes Brahms in 1878 and
+dedicated to his friend, the violinist Joseph Joachim.
+What did Brahms
+write in 1878?
+What was dedicated
+to Joachim?
+Who was friends
+with Joachim?
+Who played
+the violin?
+Who wrote the
+violin concerto?
+Figure 1: An overview of Question Answering Infused
+Pre-training. Our model independently creates vector
+representations (middle) for phrases in a passage (top)
+and for synthesized questions (bottom). Our objective
+encourages the vector for each phrase to have high sim-
+ilarity with the vectors for all questions it answers.
+phrase’s role in the sentence. A further advantage
+is that these more contextualized representations
+allow for improved zero- and few-shot learning for
+many token-level tasks, especially when the tasks
+can be posed as question answering (Levy et al.,
+2017; McCann et al., 2018). Our approach builds
+on previous work using question-answer pairs as a
+meaning representation (He et al., 2015; Michael
+et al., 2018), and more generally from the tradition
+of using question answering ability as a proxy for
+language understanding (Lehnert, 1977; Hirschman
+et al., 1999; Peñas et al., 2013; Richardson et al.,
+2013).
+QUIP learns contextual representations with
+a bi-encoder extractive QA objective. Our bi-
+encoder model must independently encode pas-
+sages and questions such that the representation
+of each phrase in a passage is similar to the repre-
+sentations of all reading comprehension questions
+arXiv:2106.08190v1
+[cs.CL]
+15
+Jun
+2021
+that can be answered with that phrase. To train
+such a model, we use a question generation model
+to synthesize 80 million QA examples, then train
+the bi-encoder to match the predictions of a stan-
+dard cross-encoder QA model, which processes the
+passage and question together, on these examples.
+Bi-encoder QA has been used for efficient open-
+domain QA via phrase retrieval (Seo et al., 2018,
+2019; Lee et al., 2020, 2021), but its lower accu-
+racy compared to cross-encoder QA has previously
+been viewed as a drawback. We instead identify
+the relative weakness of bi-encoder QA as an op-
+portunity to improve contextual representations via
+knowledge distillation, as self-training can be ef-
+fective when the student model is forced to solve a
+harder problem than the teacher (Xie et al., 2020).
+In fact, using a bi-encoder student model is critical
+for QUIP: a cross-encoder trained in a similar way
+does not learn contextual representations that are
+as useful for later few-shot learning, despite having
+higher QA accuracy.
+We show that QUIP token-level representations
+are useful in a variety of zero-shot and few-shot
+learning settings, both because the representations
+directly encode useful contextual information, and
+because we can often reduce downstream tasks to
+QA. For few-shot paraphrase detection, QUIP with
+BERTScore-based features (Zhang et al., 2020)
+outperforms prior work by 9 F1 points across
+four datasets. For few-shot named entity recog-
+nition (NER), QUIP combined with an initializa-
+tion scheme that uses question embeddings im-
+proves over RoBERTa-large by 14 F1 across two
+datasets. Finally, for zero-shot sentiment analy-
+sis, QUIP with question prompts improves over
+RoBERTa-large with MLM-style prompts by 5 ac-
+curacy points across three datasets, and extracts
+interpretable rationales as a side effect. Through ab-
+lations, we show that using real questions, a strong
+teacher model, and the bi-encoder architecture are
+all crucial to the success of QUIP; on the other
+hand, many other design decisions (e.g., question
+generation decoding strategies) do not qualitatively
+affect our main findings, pointing to the stability of
+the QUIP approach.
+2 QA Infused Pre-training
+We introduce QA Infused Pre-training (QUIP), in
+which we pre-train contextual representations with
+a bi-encoder extractive QA objective. As shown in
+Figure 1, a bi-encoder model encodes a passage and
+a question independently, and predicts the answer
+to be the phrase in the passage whose learned rep-
+resentation is most similar to that of the question.
+Since the model does not know the question when
+encoding the passage, its representation for each
+phrase must be similar to those of all questions that
+can be answered with that phrase. In contrast, a
+cross-encoder model receives the concatenation of
+the passage and question as a single input; these
+models can use many layers of self-attention to
+extract an answer, and cannot be interpreted as en-
+coding all possible questions.
+In the rest of this section, we introduce some
+notation (§2.1), then describe our QUIP pipeline,
+which consists of three steps: question generation
+(§2.2), cross-encoder teacher re-labeling (§2.3),
+and bi-encoder training (§2.4).
+2.1 Notation
+All of our models operate on sequences of to-
+kens x = [x1, . . . , xL] of length L. By con-
+vention, we assume that x1 is always the spe-
+cial beginning-of-sequence token. Our goal is to
+learn an encoder r that maps inputs x to outputs
+r(x) = [r(x)1, . . . , r(x)L] where each r(x)i ∈ Rd
+for some fixed dimension d. We call r(x)i the
+contextual representation of the i-th token in x.
+In extractive question answering, a model is
+given a context passage c and question q, and must
+output a span of c that answers the question. Typi-
+cally, models approach this by independently pre-
+dicting probability distributions p(astart | c, q) and
+p(aend | c, q) over the answer start index astart and
+end index aend.
+2.2 Question Generation
+Question generation model. We train a BART-
+large model (Lewis et al., 2020) to generate
+question-answer pairs given context passages. The
+model receives the passage as context and must
+generate the answer text, then a special separator
+token, then the question; this approach is simpler
+than prior approaches that use separate models for
+answer and question generation (Lewis and Fan,
+2019; Alberti et al., 2019; Puri et al., 2020), and
+works well in practice.
+Training data. We train this model on the train-
+ing data from the MRQA 2019 Shared Task (Fisch
+et al., 2019), which combines data from six QA
+datasets: HotpotQA (Yang et al., 2018), Natu-
+ralQuestions (Kwiatkowski et al., 2019), NewsQA
+(Trischler et al., 2017), SearchQA (Dunn et al.,
+2017), SQuAD (Rajpurkar et al., 2016), and Trivi-
+aQA (Joshi et al., 2017). Together, these datasets
+cover many of the text sources commonly used for
+pre-training (Liu et al., 2019; Lewis et al., 2020),
+namely Wikipedia (HotpotQA, NaturalQuestions,
+SQuAD), News articles (NewsQA), and general
+web text (SearchQA, TriviaQA).
+Generating questions. We run our question gen-
+eration model over a large set of passages to gen-
+erate a large dataset of question-answer pairs. We
+decode using nucleus sampling (Holtzman et al.,
+2020) with p = 0.6, which was chosen by man-
+ual inspection to balance diversity with quality of
+generated questions. We also experimented with
+other decoding strategies, such as a two-stage beam
+search, but found these made little difference in the
+final results (see §4.8). We obtain passages from
+the same training corpus as RoBERTa (Liu et al.,
+2019), which uses four sub-domains: BOOKCOR-
+PUS plus Wikipedia, CC-NEWS, OPENWEBTEXT,
+and STORIES. For each domain, we sample 2 mil-
+lion passages and generate 10 questions per pas-
+sage, for a total of 80 million questions.1
+2.3 Teacher Re-labeling
+The answers generated by our BART model are not
+always accurate, and are also not always spans in
+the context passage. To improve the training sig-
+nal, we generate labels using a teacher model, as
+is common in knowledge distillation (Hinton et al.,
+2015). We use a standard cross-encoder RoBERTa-
+large model trained on the MRQA training data
+as our teacher model. The model takes in the con-
+catenation of the context passage c and question q
+and predicts astart and aend with two independent
+2-layer multi-layer perceptron (MLP) heads. Let
+Tstart(c, q) and Tend(c, q) denote the teacher’s pre-
+dicted probability distribution over astart and aend,
+respectively.
+2.4 Bi-encoder Training
+Finally, we train a bi-encoder model to match the
+cross-encoder predictions on the generated ques-
+tions. This objective encourages the contextual
+representation for a token in a passage to have high
+similarity (in inner product space) with the repre-
+sentation of every question that is answered by that
+1
+We estimate that using the entire corpus with these set-
+tings would generate around 900 million questions. We leave
+investigation of further scaling to future work.
+token.
+Model. The bi-encoder model with parameters θ
+consists of of three components: an encoder r and
+two question embedding heads hstart and hend that
+map Rd → Rd. These heads will only be applied to
+beginning-of-sequence (i.e., CLS) representations;
+as shorthand, define fstart(x) = hstart(r(x)1) and
+likewise for fend. Given a context passage c and
+question q, the model predicts
+pθ(astart = i | c, q) ∝ er(c)>
+i fstart(q)
+(1)
+pθ(aend = i | c, q) ∝ er(c)>
+i fend(q)
+. (2)
+In other words, the model independently encodes
+the passage and question with r, applies the start
+and end heads to the CLS token embedding for q,
+then predicts the answer start (end) index with a
+softmax over the dot product between the passage
+representation at that index and the output of the
+start (end) head.
+We initialize r to be the pre-trained RoBERTa-
+large model (Liu et al., 2019), which uses d =
+1024. hstart and hend are randomly-initialized 2-
+layer MLPs with hidden dimension 1024, matching
+the default initialization of classification heads in
+RoBERTa.2
+Training. For an input consisting of context c of
+length L and question q, we train θ to minimize
+the KL-divergence between the student and teacher
+predictions, which is equivalent to the objective
+−
+L
+X
+i=1
+Tstart(c, q)i log pθ(astart = i | c, q)
++ Tend(c, q)i log pθ(aend = i | c, q) (3)
+up to constants that do not depend on θ. We train
+for two epochs on the generated corpus of 80 mil-
+lion questions, which takes roughly 56 hours on 8
+V100 GPUs, or roughly 19 GPU-days; this is very
+fast compared to pre-training RoBERTa-large from
+scratch, which took roughly 5000 GPU-days (Liu
+et al., 2019). For efficiency, we process all ques-
+tions for the same passage in the same batch, as
+encoding passages dominates runtime. For further
+details, see Appendix A.1.
+2
+https://github.com/pytorch/fairseq/
+blob/master/fairseq/models/roberta/model.
+py
+3 Downstream Tasks
+We evaluate QUIP on zero-shot paraphrase ranking,
+few-shot paraphrase classification, few-shot NER,
+and zero-shot sentiment analysis. We leverage the
+improved token-level representations afforded by
+QUIP, and in many cases also directly use QUIP’s
+question-answering abilities.
+3.1 Paraphrase Ranking
+We first evaluate QUIP token-level representations
+by measuring their usefulness for zero-shot para-
+phrase ranking. In this task, systems must rank sen-
+tence pairs that are paraphrases above pairs that are
+non-paraphrases, without any task-specific train-
+ing data. We compute similarity scores using the
+FBERT variant of BERTScore (Zhang et al., 2020),
+which measures cosine similarities between the rep-
+resentation of each token in one sentence and its
+most similar token in the other sentence. Given
+sentences x1 and x2 of lengths L1 and L2, define
+B1 =
+1
+L1
+L1
+X
+i=1
+max
+1≤j≤L2
+cos-sim(r(x1)i, r(x2)j))
+B2 =
+1
+L2
+L2
+X
+i=1
+max
+1≤j≤L1
+cos-sim(r(x2)i, r(x1)j)),
+where cos-sim(u, v) = u>v
+kukkvk is the cosine sim-
+ilarity between vectors u and v. The FBERT
+BERTScore is defined as the harmonic mean of
+B1 and B2. Zhang et al. (2020) showed that
+BERTScore with RoBERTa representations is use-
+ful for both natural language generation evaluation
+and paraphrase ranking. Since BERTScore uses
+token-level representations, we hypothesize that it
+should pair well with QUIP. Following Zhang et al.
+(2020), we use representations from the from the
+layer of the network that maximizes Pearson corre-
+lation between BERTScore and human judgments
+on the WMT16 metrics shared task (Bojar et al.,
+2016).
+3.2 Paraphrase Classification
+We next use either frozen or fine-tuned QUIP rep-
+resentations for few-shot paraphrase classification,
+rather than ranking. Through these experiments,
+we can compare QUIP with existing work on few-
+shot paraphrase classification.
+Frozen model. We train a logistic regression
+model that uses BERTScore with frozen representa-
+tions as features. For a given pair of sentences, we
+extract eight features, corresponding to BERTScore
+computed with the final eight layers (i.e., layers 17-
+24) of the network. These layers encompass the
+optimal layers for both RoBERTa-large and QUIP
+(see §4.4). Freezing the encoder is often useful in
+practice, particularly for large models, as the same
+model can be reused for many tasks (Brown et al.,
+2020; Du et al., 2020).
+Fine-tuning. For fine-tuning, we use the same
+computation graph and logistic loss function, but
+now backpropagate through the parameters of our
+encoder. For details, see Appendix A.2.
+3.3 Named Entity Recognition
+We also use QUIP for few-shot3 named entity
+recognition, which we frame as a BIO tagging task.
+We add a linear layer that takes in token-level repre-
+sentations and predicts the tag for each token, and
+backpropagate log loss through the entire network.
+By default, the output layer is initialized randomly.
+As a refinement, we propose using question
+prompts to initialize this model. The output layer is
+parameterized by a T ×d matrix M, where T is the
+number of distinct BIO tags. The log-probability
+of predicting the j-th tag for token i is proportional
+to the dot product between the representation for
+token i and the j-th row of M; this resembles how
+the bi-encoder predicts answers. Thus, we initial-
+ize each row of M with the start head embedding
+of a question related to that row’s corresponding
+entity tag. For instance, we initialize the parame-
+ters for the B-location and I-location tags
+with the embedding for “What is a location ?” We
+normalize the question embeddings to have unit
+L2 norm. This style of initialization is uniquely
+enabled by our use of questions answering as an
+interface to the model; it would be unclear how to
+use a language model similarly.
+3.4 Zero-shot Sentiment Analysis
+Finally, we use QUIP for zero-shot binary senti-
+ment analysis. We reduce sentiment analysis to QA
+by writing a pair of questions that ask for a rea-
+son why an item is good or bad (e.g., “Why is this
+movie [good/bad]?”). We predict the label whose
+corresponding question has higher similarity with
+the QUIP representation of some token in the input.
+This prompting strategy has the additional benefit
+3
+Yang and Katiyar (2020) study few-shot NER assuming
+data from other NER datasets is available; we assume no such
+data is available, matching Huang et al. (2020).
+of extracting rationales, namely the span that the
+QUIP model predicts as the answer to the question.
+More formally, let x be an input sentence and
+(q0, q1) be a pair of questions (i.e., a prompt). For
+label y ∈ {0, 1}, we compute a score for y as
+S(x, y) = max
+i
+r(x)>
+i fstart(qy)+
+max
+i
+r(x)>
+i fend(qy). (4)
+Essentially, S(x, y) measures the extent to which
+some span in x looks like the answer to the question
+qy. We predict whichever y has the higher value of
+S(x, y) − Cy, where Cy is a calibration constant
+that offsets the model’s bias towards answering q0
+or q1. Our inclusion of Cy is inspired by Zhao
+et al. (2021), who recommend calibrating zero-shot
+and few-shot models with a baseline derived from
+content-free inputs to account for biases towards
+a particular label. To choose Cy, we obtain a list
+W of the ten most frequent English words, all of
+which convey no sentiment, and define Cy as the
+mean over w ∈ W of S(w, y), i.e., the score when
+using w as the input sentence (see Appendix A.4).
+4 Experiments
+4.1 Experimental details
+Datasets. For paraphrasing, we use four datasets:
+QQP (Iyer et al., 2017), MRPC (Dolan and Brock-
+ett, 2005), PAWS-Wiki, and PAWS-QQP (Zhang
+et al., 2019). The PAWS datasets are especially of
+interest as they are designed to be challenging for
+bag-of-words models, and thus can test whether
+our representations are truly contextual or mostly
+lexical in nature. For QQP and MRPC, we use
+the few-shot splits from Gao et al. (2021) that in-
+clude 16 examples per class; for the PAWS datasets,
+we create new few-shot splits in the same man-
+ner. We report results on the development sets of
+QQP and MRPC (as test labels were not available),
+the test set of PAWS-Wiki, and the “dev-and-test”
+set of PAWS-QQP. For NER, we use two datasets:
+CoNLL 2003 (Tjong Kim Sang and De Meulder,
+2003) and WNUT-17 (Derczynski et al., 2017). We
+use the few-shot splits from Huang et al. (2020) that
+include 5 examples per entity type. All few-shot
+experiments report an average over five random
+splits and seeds, following both Gao et al. (2021)
+and Huang et al. (2020). For sentiment analysis,
+we use two movie review datasets, SST-2 (Socher
+et al., 2013) and Movie Reviews (MR; Pang and
+Lee, 2005), as well as the Customer Reviews (CR)
+dataset (Hu and Liu, 2004). We evaluate on the
+SST-2 development set and the MR and CR test
+sets made by Gao et al. (2021).
+Hyperparameter and prompt selection. Due
+to the nature of zero-shot and few-shot experiments,
+we minimize the extent to which we tune hyper-
+parameters, relying on existing defaults and pre-
+viously published hyperparameters. For few-shot
+paraphrase classification, NER, and sentiment anal-
+ysis, we developed our final method only using
+QQP, CoNLL, and SST-2, respectively, and directly
+applied it to the other datasets with no further tun-
+ing. We did measure zero-shot paraphrase ranking
+accuracy on all datasets during development of
+QUIP. For more details, see Appendix A.3.
+For NER, we used the first question prompts we
+wrote for both CoNLL and WNUT, which all fol-
+low the same format, “Who/What is a/an [entity
+type] ?” (see Appendix A.6 for all prompts). For
+sentiment analysis, we wrote six prompts (shown
+in Appendix A.8) and report mean accuracy over
+these prompts, to avoid pitfalls associated with
+prompt tuning (Perez et al., 2021). We use the
+same prompts for SST-2 and MR; for CR, the only
+change we make is replacing occurrences of the
+word “movie” with “product” to reflect the change
+in domain between these datasets.
+4.2 Baselines and Ablations
+To confirm the importance of all three stages of our
+pre-training pipeline, we compare with a number
+of baselines and ablations.
+No question generation. We train the bi-
+encoder model directly on the MRQA training
+data (“Bi-encoder + MRQA”). We also include
+the cross-encoder teacher model trained on MRQA
+as a baseline (“Cross-encoder + MRQA”). These
+settings mirror standard intermediate task training
+(Phang et al., 2018; Pruksachatkun et al., 2020).
+No teacher. We train the bi-encoder using the an-
+swer supervision generated by the question genera-
+tion model (“QUIP, no teacher”). Occasionally, the
+generated answer is not a span in the corresponding
+passage; we consider these questions unanswerable
+and treat the span containing the CLS token as the
+“correct” answer, as in Devlin et al. (2019).
+Cross-encoder self-training. To test whether
+the bottleneck imposed by the bi-encoder archi-
+tecture is crucial for the success of QUIP, we also
+Model EM F1
+Lee et al. (2021) 78.3 86.3
+Bi-encoder + UnsupervisedQA 17.4 24.9
+Bi-encoder + MRQA 70.7 79.4
+QUIP, no teacher 75.3 84.7
+QUIP 85.2 91.7
+BERT-large cross-encoder 84.2 91.1
+Cross-encoder + MRQA 88.8 94.7
+QUIP, cross-encoder student 89.5 94.8
+Table 1: EM and F1 scores on the SQuAD development
+set for bi-encoder (top) and cross-encoder (bottom)
+models. The QUIP bi-encoder outperforms the other bi-
+encoder model baselines, and even BERT-large trained
+as a cross-encoder. The RoBERTa cross-encoder mod-
+els are more accurate than the bi-encoder at QA, but
+we show later that the bi-encoder model representations
+are more useful for non-QA tasks.
+train a cross-encoder model on the same gener-
+ated data (“QUIP, cross-encoder student”). Since
+this student model has the same architecture as the
+teacher model, we train the student to maximize the
+likelihood of the teacher’s argmax predictions, a
+standard self-training objective (Lee, 2013; Kumar
+et al., 2020). Training the cross-encoder is consid-
+erably less efficient than training the bi-encoder,
+since batching questions about the same passage
+together does not speed up training, so we train it
+for a comparable number of total GPU-hours (60
+hours on 8 V100 GPUs).
+Unsupervised QA. We test whether QUIP relies
+on having real QA examples, or if it is sufficient
+to use any task that forces word representations to
+encode information about surrounding words. To
+do this, we train on data generated by the Unsu-
+pervised QA pipeline of Lewis et al. (2019). This
+pipeline creates pseudo-questions by masking and
+applying noise to sentences in a passage. Lewis
+et al. (2019) showed that training on such data can
+yield non-trivial accuracy on SQuAD without any
+reliance on real QA data. We generate 10 pseudo-
+questions per passage in our training corpus, yield-
+ing another dataset of 80 million examples, and
+train our bi-encoder on this data (“Bi-encoder +
+UnsupervisedQA”).
+4.3 Bi-encoder Question Answering
+While not the main focus of this paper, we first
+check that QUIP improves bi-encoder QA accu-
+racy. Table 1 reports results on the SQuAD devel-
+opment set. QUIP not only improves over Lee et al.
+(2021) by 5.4 F1 on SQuAD, but also surpasses
+the reported human accuracy of 91.2 F1 on the
+SQuAD test set, as well as the best cross-encoder
+BERT-large single model from Devlin et al. (2019).
+QUIP greatly improves over baselines that directly
+train on the MRQA data or do not use the teacher
+model. As expected, our cross-encoder models are
+even more accurate at QA; the next sections will
+show that their representations are less useful for
+non-QA tasks than the QUIP bi-encoder representa-
+tions. Results on all MRQA development datasets
+are provided in Appendix A.5.
+4.4 Zero-shot Paraphrase Ranking
+The first half of Table 2 shows WMT develop-
+ment set Pearson correlations averaged across six
+to-English datasets, as in Zhang et al. (2020), along
+with the best layer for each model. QUIP reaches
+its optimal score at a later layer (20) than RoBERTa-
+large (17), which may suggest that the QUIP train-
+ing objective is more closely aligned with the goal
+of learning better representations than MLM.
+The rest of Table 2 shows zero-shot paraphrase
+ranking results using BERTScore. QUIP improves
+substantially over RoBERTa on all four datasets,
+with an average improvement of .076 AUROC. The
+improvement is greatest on the PAWS datasets;
+since these datasets are supposed to challenge mod-
+els that rely heavily on lexical rather than contex-
+tual cues, we infer that QUIP representations are
+much more contextualized than RoBERTa repre-
+sentations. Training on Unsupervised QA data de-
+grades performance compared to RoBERTa, indi-
+cating that the QUIP objective accomplishes much
+more than merely forcing word representations to
+encode local context in a simple way. Training the
+bi-encoder directly on the MRQA dataset or with-
+out the teacher improves on average over RoBERTa,
+but QUIP greatly outperforms both baselines across
+the board. The cross-encoder models also lag be-
+hind QUIP at paraphrase ranking, despite their
+higher QA accuracy. Thus, we conclude that hav-
+ing real questions, accurate answer supervision,
+and a bi-encoder student model are all crucial to
+the success of QUIP.
+4.5 Paraphrase Classification
+Table 3 shows few-shot paraphrase classification
+results. We compare with LM-BFF (Gao et al.,
+2021), which pairs RoBERTa-large with MLM-
+style prompts to do few-shot learning. We use the
+setting with fixed manually written prompts and
+demonstrations, which was their best method on
+Model WMT r WMT Best Layer QQP MRPC PAWS-Wiki PAWS-QQP
+RoBERTa-large .739 17 .763 .831 .698 .690
+Cross-encoder + MRQA .744 16 .767 .840 .742 .731
+QUIP, cross-encoder student .753 16 .769 .847 .751 .706
+Bi-encoder + UnsupervisedQA .654 11 .747 .801 .649 .580
+Bi-encoder + MRQA .749 15 .771 .807 .747 .725
+QUIP, no teacher .726 19 .767 .831 .780 .709
+QUIP .764 20 .809 .849 .830 .796
+Table 2: Pearson correlation on WMT development data, best layer chosen based on WMT results, and AUROC
+on zero-shot paraphrase ranking using BERTScore. QUIP outperforms all baselines on all datasets.
+Model Fine-tuned? QQP MRPC PAWS-Wiki PAWS-QQP
+LM-BFF (reported) Fine-tuned 69.80.8 77.80.9 - -
+LM-BFF (rerun) Fine-tuned 67.10.9 76.51.5 60.70.7 50.12.8
+RoBERTa-large Frozen 64.40.4 80.60.7 62.30.9 50.60.4
+QUIP Frozen 68.90.2 82.60.4 71.90.5 63.01.2
+RoBERTa-large Fine-tuned 64.90.7 84.40.3 65.70.3 50.90.8
+QUIP Fine-tuned 71.00.3 86.60.4 75.10.2 60.91.0
+Table 3: F1 scores on few-shot paraphrase ranking, averaged across five training splits (standard errors in sub-
+scripts). QUIP outperforms prior work on few-shot paraphrase classification (LM-BFF; Gao et al., 2021) as well
+as our own baselines using RoBERTa.
+Model CoNLL WNUT
+Huang et al. (2020) 65.4 37.6
+Standard init.
+RoBERTa-large 59.02.4 39.30.6
+Cross-encoder + MRQA 68.93.3 43.00.9
+QUIP, cross-encoder student 63.43.3 39.41.7
+Bi-encoder + UnsupervisedQA 58.22.6 26.01.0
+Bi-encoder + MRQA 66.43.3 42.20.4
+QUIP, no teacher 67.71.9 40.71.4
+QUIP 70.02.4 42.20.5
+Question prompt init.
+Bi-encoder + UnsupervisedQA 62.73.3 30.40.8
+Bi-encoder + MRQA 72.02.8 44.01.3
+QUIP, no teacher 71.43.0 47.81.1
+QUIP 74.02.4 49.60.5
+Table 4: F1 scores on few-shot NER, averaged over
+five training splits (standard errors in subscripts). QUIP
+with question prompts performs best on both datasets.
+QQP by 2.1 F1 and was 0.3 F1 worse than their
+best method on MRPC. QUIP used as a frozen en-
+coder is competitive with LM-BFF on QQP and
+outperforms it by 6.1 F1 on MRPC, 11.2 F1 on
+PAWS-Wiki, and 12.1 F1 on PAWS-QQP. Fine-
+tuning gives additional improvements on three of
+the four datasets, though it worsens accuracy on
+PAWS-QQP. Fine-tuning with QUIP also outper-
+forms using RoBERTa in the same way by an aver-
+age of 6.9 F1.
+4.6 Named Entity Recognition
+Table 4 shows few-shot NER results on the
+CoNLL and WNUT datasets. QUIP improves over
+RoBERTa-large by 11 F1 on CoNLL and 2.9 F1
+on WNUT when used with a randomly initialized
+output layer. We see a further improvement of
+4 F1 on CoNLL and 7.4 F1 on WNUT when us-
+ing question embeddings to initialize the output
+layer. Using the cross-encoder trained directly on
+QA data is roughly as good as QUIP when using
+randomly initialized output layers, but it is incom-
+patible with question embedding initialization (as
+it does not produce question embeddings).
+We also measured NER results when training
+on the full training datasets, but found minimal
+evidence that QUIP improves over RoBERTa. As
+shown in Appendix A.7, QUIP gives a 0.6 F1 im-
+provement on WNUT but effectively no gain on
+CoNLL. With extensive fine-tuning, RoBERTa can
+learn to extract useful token-level features, but it
+lags behind QUIP in the few-shot regime.
+4.7 Sentiment Analysis
+Table 5 shows zero-shot accuracy on our three sen-
+timent analysis datasets. We compare with zero-
+shot results for LM-BFF (Gao et al., 2021)4 and
+reported zero-shot results from Zhao et al. (2021)
+4
+We tried applying our calibration strategy to LM-BFF as
+well, but found that it did not improve accuracy.
+Model SST-2 MR CR
+CC + GPT-3 71.6 - -
+LM-BFF 83.6 80.8 79.5
+QUIP (average) 87.90.6 81.90.4 90.30.2
+w/ cross-enc. student 83.30.4 78.50.4 88.90.3
+QUIP (tune on SST-2) 89.6 83.1 90.4
+Table 5: Zero-shot accuracy on sentiment analysis.
+Third and fourth rows show mean accuracy across six
+prompts (standard error in subscripts). QUIP using an
+average prompt outperforms prior work; the final row
+shows additional benefits from using the best prompt
+on SST-2 for all datasets.
+Label Rationale
+- “too slim”, “stale”, “every idea”, “wore out its wel-
+come”, “unpleasant viewing experience”, “life-
+less”, “plot”, “amateurishly assembled”, “10
+times their natural size”, “wrong turn”
++ “packed with information and impressions”,
+“slash-and-hack”, “tightly organized efficiency”,
+“passion and talent”, “best films”, “surprises”,
+“great summer fun”, “play equally well”, “convic-
+tions”, “wickedly subversive bent”
+Table 6: Rationales extracted by QUIP on ten random
+examples for each label from SST-2.
+using GPT-3 with Contextual Calibration (CC) on
+SST-2. QUIP using an average prompt outperforms
+zero-shot LM-BFF by 5.4 points, averaged across
+the three datasets. Choosing the best prompt on
+SST-2 and using that for all datasets improves re-
+sults not only on SST-2 but also MR, and maintains
+average accuracy on CR. Using the cross-encoder
+student QA model with the same prompts leads to
+worse performance: we hypothesize that this is be-
+cause the bi-encoder bottleneck encourages QUIP
+to make each span’s representation dissimilar to
+those of questions that it does not answer, whereas
+the cross-encoder model trained only on answer-
+able questions does not naturally handle unanswer-
+able questions (e.g., “Why is it bad?” asked about
+a positive review).
+Table 6 shows rationales extracted from random
+SST-2 examples for which QUIP was correct with
+the best prompt for SST-2 (“What is the reason this
+movie is [good/bad]?”). To prefer shorter ratio-
+nales, we extract the highest-scoring span of five
+BPE tokens or less. The model often identifies
+phrases that convey clear sentiment. Appendix A.9
+shows many more full examples and rationales.
+Model
+SQuAD Paraphrase NER
+F1 AUROC F1
+QUIP 91.7 .821 61.8
++ concat. passages 91.7 .818 62.7
+w/ hard labels 91.5 .814 62.5
+w/ 2-stage beam search 91.7 .821 62.8
+Table 7: SQuAD development set F1, average zero-
+shot paraphrase ranking AUROC across all datasets,
+and average few-shot NER F1 using question prompts
+across both datasets for QUIP variants. Models shown
+here are all similarly effective.
+4.8 Stability Analysis
+We experimented with some design decisions that
+did not materially affect our results. Here, we re-
+port these findings as evidence that our basic recipe
+is stable to many small changes. First, we con-
+catenated the representations of all passages in the
+same batch and on the same GPU together (9 pas-
+sages on average), and trained the model to extract
+answers from this larger pseudo-document; this
+effectively adds in-batch negative passages, as in
+Lee et al. (2021). Second, we trained the model to
+match the argmax prediction of the teacher, rather
+than its soft distribution over start and end indices.
+Finally, we used a two-stage beam search to gen-
+erate questions. For a given passage, we generated
+20 possible answers via beam search, chose 10 of
+these to maximize answer diversity, then generated
+one question for each answer with another beam
+search. Our goal was to ensure diversity by forcing
+questions to be about different answers, while also
+maintaining high question quality. As shown in Ta-
+ble 7, these choices have a relatively minor impact
+on the results (within .007 AUROC and 1 F1 on
+NER).
+5 Discussion and Related Work
+In this work, we pre-trained token-level contextual
+representations that are useful for few-shot learning
+on downstream tasks. Our key idea was to leverage
+signal from extractive QA datasets to define what
+information should be encoded in passage repre-
+sentations. Our work builds on prior work studying
+question generation and answering, pre-training,
+and few-shot learning.
+5.1 Question Generation
+Neural question generation has been studied by a
+number of previous papers for different purposes
+(Du et al., 2017; Du and Cardie, 2018; Zhao et al.,
+2018; Lewis and Fan, 2019; Alberti et al., 2019;
+Puri et al., 2020). Recently, Lewis et al. (2021) use
+model-generated question-answer pairs for efficient
+open-domain QA. Bartolo et al. (2021) use gener-
+ated questions to improve robustness to human-
+written adversarial questions. Our work focuses
+on how generated questions can help learn general-
+purpose representations. We also show that a rela-
+tively simple strategy of generating the answer and
+question together with a single seq-to-seq model
+can be effective; most prior work uses separate
+answer selection and question generation models.
+5.2 Phrase-indexed Question Answering
+Phrase-indexed question answering is a paradigm
+for open-domain question answering that retrieves
+answers by embedding questions and candidate
+answers in a shared embedding space (Seo et al.,
+2018, 2019; Lee et al., 2020). Phrase-indexed QA
+requires using a bi-encoder architecture, as we use
+in our work. Especially related is Lee et al. (2021),
+which also uses question generation and a cross-
+encoder teacher model to improve phrase-indexed
+QA. We focus not on open-domain QA, but on
+learning generally useful representations for non-
+QA downstream tasks.
+5.3 Learning contextual representations
+Pre-training on unlabeled data has been highly ef-
+fective for learning contextual representations (Pe-
+ters et al., 2018; Devlin et al., 2019), but recent
+work has shown further improvements by using la-
+beled data. Intermediate task training (Phang et al.,
+2018) improves representations by training directly
+on large labeled datasets. Muppet (Aghajanyan
+et al., 2021) improves models by multi-task pre-
+finetuning on many labeled datasets. Most similar
+to our work, He et al. (2020) uses extractive ques-
+tion answering as a pre-training task for a BERT
+paragraph encoder. Our work leverages question
+generation and knowledge distillation to improve
+over directly training on labeled data, and focuses
+on zero-shot and few-shot applications.
+Other work has used methods similar to ours to
+learn sentence embeddings. Reimers and Gurevych
+(2019) train sentence embeddings for sentence sim-
+ilarity tasks using natural language inference data.
+Thakur et al. (2021) train a sentence embedding bi-
+encoder to mimic the predictions of a cross-encoder
+model. We focus on learning token-level represen-
+tations, rather than a single vector for a sentence,
+and thus use token-level supervision available in
+extractive QA.
+While we focus on QA as a source of training
+signal, other work aims to improve downstream
+QA accuracy. Ram et al. (2021) propose a span ex-
+traction pre-training objective that enables few-shot
+QA. Khashabi et al. (2020) show that multi-task
+training on many QA datasets, both extractive and
+non-extractive, can improve QA performance. Fu-
+ture work could explore learning question-agnostic
+passage embeddings that are also useful for non-
+extractive QA tasks.
+5.4 Few-shot Learning
+Language models have recently been used for few-
+shot learning on a wide range of tasks (Brown et al.,
+2020; Schick and Schütze, 2021; Gao et al., 2021).
+These papers all use natural language prompts to
+convert NLP tasks into language modeling prob-
+lems. We develop alternative methods for few-shot
+learning that use token-level representations and
+question-based prompts rather than language model
+prompts.
+Looking forward, pre-trained representations
+could be even more useful in few-shot settings if
+they could inherently capture more complex rela-
+tionships between words and sentences. For in-
+stance, box embeddings (Vilnis et al., 2018) natu-
+rally capture asymmetric relationships like set in-
+clusion, so pre-training such embeddings may be
+helpful for tasks like few-shot entailment classifi-
+cation. We hope to see more work in the future on
+designing pre-training objectives that align better
+with downstream needs for few-shot learning.
+Acknowledgements
+We thank Terra Blevins for investigating applica-
+tions to word sense disambiguation, and Douwe
+Kiela, Max Bartolo, Sebastian Riedel, Sewon Min,
+Patrick Lewis, and Scott Yih for their feedback on
+this project. We thank Jiaxin Huang for providing
+the few-shot NER splits used in their paper.
+References
+Armen Aghajanyan, Anchit Gupta, Akshat Shrivas-
+tava, Xilun Chen, Luke Zettlemoyer, and Sonal
+Gupta. 2021. Muppet: Massive multi-task rep-
+resentations with pre-finetuning. arXiv preprint
+arXiv:2101.11038.
+Chris Alberti, Daniel Andor, Emily Pitler, Jacob De-
+vlin, and Michael Collins. 2019. Synthetic QA cor-
+pora generation with roundtrip consistency. In Pro-
+ceedings of the 57th Annual Meeting of the Asso-
+ciation for Computational Linguistics, pages 6168–
+6173, Florence, Italy. Association for Computa-
+tional Linguistics.
+Max Bartolo, Tristan Thrush, Robin Jia, Sebastian
+Riedel, Pontus Stenetorp, and Douwe Kiela. 2021.
+Improving question answering model robustness
+with synthetic adversarial data generation. arXiv
+preprint arXiv:2104.08678.
+Ondřej Bojar, Yvette Graham, Amir Kamran, and
+Miloš Stanojević. 2016. Results of the WMT16 met-
+rics shared task. In Proceedings of the First Con-
+ference on Machine Translation: Volume 2, Shared
+Task Papers, pages 199–231, Berlin, Germany. As-
+sociation for Computational Linguistics.
+Tom Brown, Benjamin Mann, Nick Ryder, Melanie
+Subbiah, Jared D Kaplan, Prafulla Dhariwal,
+Arvind Neelakantan, Pranav Shyam, Girish Sastry,
+Amanda Askell, Sandhini Agarwal, Ariel Herbert-
+Voss, Gretchen Krueger, Tom Henighan, Rewon
+Child, Aditya Ramesh, Daniel Ziegler, Jeffrey Wu,
+Clemens Winter, Chris Hesse, Mark Chen, Eric
+Sigler, Mateusz Litwin, Scott Gray, Benjamin Chess,
+Jack Clark, Christopher Berner, Sam McCandlish,
+Alec Radford, Ilya Sutskever, and Dario Amodei.
+2020. Language models are few-shot learners. In
+Advances in Neural Information Processing Systems,
+volume 33, pages 1877–1901. Curran Associates,
+Inc.
+Leon Derczynski, Eric Nichols, Marieke van Erp, and
+Nut Limsopatham. 2017. Results of the WNUT2017
+shared task on novel and emerging entity recogni-
+tion. In Proceedings of the 3rd Workshop on Noisy
+User-generated Text, pages 140–147, Copenhagen,
+Denmark. Association for Computational Linguis-
+tics.
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and
+Kristina Toutanova. 2019. BERT: Pre-training of
+deep bidirectional transformers for language under-
+standing. In Proceedings of the 2019 Conference
+of the North American Chapter of the Association
+for Computational Linguistics: Human Language
+Technologies, Volume 1 (Long and Short Papers),
+pages 4171–4186, Minneapolis, Minnesota. Associ-
+ation for Computational Linguistics.
+William B. Dolan and Chris Brockett. 2005. Automati-
+cally constructing a corpus of sentential paraphrases.
+In Proceedings of the Third International Workshop
+on Paraphrasing (IWP2005).
+Jingfei Du, Myle Ott, Haoran Li, Xing Zhou, and
+Veselin Stoyanov. 2020. General purpose text em-
+beddings from pre-trained language models for scal-
+able inference. In Findings of the Association for
+Computational Linguistics: EMNLP 2020, pages
+3018–3030, Online. Association for Computational
+Linguistics.
+Xinya Du and Claire Cardie. 2018. Harvest-
+ing paragraph-level question-answer pairs from
+Wikipedia. In Proceedings of the 56th Annual Meet-
+ing of the Association for Computational Linguistics
+(Volume 1: Long Papers), pages 1907–1917, Mel-
+bourne, Australia. Association for Computational
+Linguistics.
+Xinya Du, Junru Shao, and Claire Cardie. 2017. Learn-
+ing to ask: Neural question generation for reading
+comprehension. In Proceedings of the 55th Annual
+Meeting of the Association for Computational Lin-
+guistics (Volume 1: Long Papers), pages 1342–1352,
+Vancouver, Canada. Association for Computational
+Linguistics.
+Dheeru Dua, Yizhong Wang, Pradeep Dasigi, Gabriel
+Stanovsky, Sameer Singh, and Matt Gardner. 2019.
+DROP: A reading comprehension benchmark requir-
+ing discrete reasoning over paragraphs. In Proceed-
+ings of the 2019 Conference of the North American
+Chapter of the Association for Computational Lin-
+guistics: Human Language Technologies, Volume 1
+(Long and Short Papers), pages 2368–2378, Min-
+neapolis, Minnesota. Association for Computational
+Linguistics.
+Matthew Dunn, Levent Sagun, Mike Higgins, V. Ugur
+Guney, Volkan Cirik, and Kyunghyun Cho. 2017.
+SearchQA: A new Q&A dataset augmented with
+context from a search engine. arXiv preprint
+arXiv:1704.05179.
+Adam Fisch, Alon Talmor, Robin Jia, Minjoon Seo, Eu-
+nsol Choi, and Danqi Chen. 2019. MRQA 2019
+shared task: Evaluating generalization in reading
+comprehension. In Proceedings of the 2nd Work-
+shop on Machine Reading for Question Answering,
+pages 1–13, Hong Kong, China. Association for
+Computational Linguistics.
+Tianyu Gao, Adam Fisch, and Danqi Chen. 2021.
+Making pre-trained language models better few-shot
+learners. In Association for Computational Linguis-
+tics (ACL).
+Hangfeng He, Qiang Ning, and Dan Roth. 2020.
+QuASE: Question-answer driven sentence encoding.
+In Proceedings of the 58th Annual Meeting of the
+Association for Computational Linguistics, pages
+8743–8758, Online. Association for Computational
+Linguistics.
+Luheng He, Mike Lewis, and Luke Zettlemoyer. 2015.
+Question-answer driven semantic role labeling: Us-
+ing natural language to annotate natural language.
+In Proceedings of the 2015 Conference on Empiri-
+cal Methods in Natural Language Processing, pages
+643–653, Lisbon, Portugal. Association for Compu-
+tational Linguistics.
+Geoffrey Hinton, Oriol Vinyals, and Jeffrey Dean.
+2015. Distilling the knowledge in a neural network.
+In NIPS Deep Learning and Representation Learn-
+ing Workshop.
+Lynette Hirschman, Marc Light, Eric Breck, and
+John D. Burger. 1999. Deep read: A reading com-
+prehension system. In Proceedings of the 37th An-
+nual Meeting of the Association for Computational
+Linguistics, pages 325–332, College Park, Maryland,
+USA. Association for Computational Linguistics.
+Ari Holtzman, Jan Buys, Li Du, Maxwell Forbes, and
+Yejin Choi. 2020. The curious case of neural text de-
+generation. In International Conference on Learn-
+ing Representations.
+Minqing Hu and Bing Liu. 2004. Mining and summa-
+rizing customer reviews. In Proceedings of the tenth
+ACM SIGKDD international conference on Knowl-
+edge discovery and data mining, pages 168–177.
+Jiaxin Huang, Chunyuan Li, Krishan Subudhi, Damien
+Jose, Shobana Balakrishnan, Weizhu Chen, Baolin
+Peng, Jianfeng Gao, and Jiawei Han. 2020. Few-
+shot named entity recognition: A comprehensive
+study. arXiv preprint arXiv:2012.14978.
+Shankar Iyer, Nikhil Dandekar, and Kornél Csernai.
+2017. First quora dataset release: Question pairs.
+https://www.quora.com/q/quoradata/
+First-Quora-Dataset-Release-Question-Pairs.
+Mandar Joshi, Eunsol Choi, Daniel Weld, and Luke
+Zettlemoyer. 2017. TriviaQA: A large scale dis-
+tantly supervised challenge dataset for reading com-
+prehension. In Proceedings of the 55th Annual Meet-
+ing of the Association for Computational Linguistics
+(Volume 1: Long Papers), pages 1601–1611, Van-
+couver, Canada. Association for Computational Lin-
+guistics.
+Aniruddha Kembhavi, Minjoon Seo, Dustin Schwenk,
+Jonghyun Choi, Ali Farhadi, and Hannaneh Ha-
+jishirzi. 2017. Are you smarter than a sixth grader?
+textbook question answering for multimodal ma-
+chine comprehension. In 2017 IEEE Conference on
+Computer Vision and Pattern Recognition (CVPR),
+pages 5376–5384.
+Daniel Khashabi, Sewon Min, Tushar Khot, Ashish
+Sabharwal, Oyvind Tafjord, Peter Clark, and Han-
+naneh Hajishirzi. 2020. UNIFIEDQA: Crossing for-
+mat boundaries with a single QA system. In Find-
+ings of the Association for Computational Linguis-
+tics: EMNLP 2020, pages 1896–1907, Online. As-
+sociation for Computational Linguistics.
+Ananya Kumar, Tengyu Ma, and Percy Liang. 2020.
+Understanding self-training for gradual domain
+adaptation. In Proceedings of the 37th International
+Conference on Machine Learning, volume 119 of
+Proceedings of Machine Learning Research, pages
+5468–5479. PMLR.
+Tom Kwiatkowski, Jennimaria Palomaki, Olivia Red-
+field, Michael Collins, Ankur Parikh, Chris Al-
+berti, Danielle Epstein, Illia Polosukhin, Jacob De-
+vlin, Kenton Lee, Kristina Toutanova, Llion Jones,
+Matthew Kelcey, Ming-Wei Chang, Andrew M. Dai,
+Jakob Uszkoreit, Quoc Le, and Slav Petrov. 2019.
+Natural questions: A benchmark for question an-
+swering research. Transactions of the Association
+for Computational Linguistics, 7:452–466.
+Guokun Lai, Qizhe Xie, Hanxiao Liu, Yiming Yang,
+and Eduard Hovy. 2017. RACE: Large-scale ReAd-
+ing comprehension dataset from examinations. In
+Proceedings of the 2017 Conference on Empirical
+Methods in Natural Language Processing, pages
+785–794, Copenhagen, Denmark. Association for
+Computational Linguistics.
+Dong-Hyun Lee. 2013. Pseudo-label: The simple and
+efficient semi-supervised learning method for deep
+neural networks. In ICML 2013 Workshop on Chal-
+lenges in Representation Learning (WREPL).
+Jinhyuk Lee, Minjoon Seo, Hannaneh Hajishirzi, and
+Jaewoo Kang. 2020. Contextualized sparse repre-
+sentations for real-time open-domain question an-
+swering. In Proceedings of the 58th Annual Meet-
+ing of the Association for Computational Linguis-
+tics, pages 912–919, Online. Association for Com-
+putational Linguistics.
+Jinhyuk Lee, Mujeen Sung, Jaewoo Kang, and Danqi
+Chen. 2021. Learning dense representations of
+phrases at scale. In Association for Computational
+Linguistics (ACL).
+Wendy Lehnert. 1977. Human and computational ques-
+tion answering. Cognitive Science, 1(1):47–73.
+Omer Levy, Minjoon Seo, Eunsol Choi, and Luke
+Zettlemoyer. 2017. Zero-shot relation extraction via
+reading comprehension. In Proceedings of the 21st
+Conference on Computational Natural Language
+Learning (CoNLL 2017), pages 333–342, Vancou-
+ver, Canada. Association for Computational Linguis-
+tics.
+Mike Lewis and Angela Fan. 2019. Generative ques-
+tion answering: Learning to answer the whole ques-
+tion. In International Conference on Learning Rep-
+resentations.
+Mike Lewis, Yinhan Liu, Naman Goyal, Mar-
+jan Ghazvininejad, Abdelrahman Mohamed, Omer
+Levy, Veselin Stoyanov, and Luke Zettlemoyer.
+2020. BART: Denoising sequence-to-sequence pre-
+training for natural language generation, translation,
+and comprehension. In Proceedings of the 58th An-
+nual Meeting of the Association for Computational
+Linguistics, pages 7871–7880, Online. Association
+for Computational Linguistics.
+Patrick Lewis, Ludovic Denoyer, and Sebastian Riedel.
+2019. Unsupervised question answering by cloze
+translation. In Proceedings of the 57th Annual Meet-
+ing of the Association for Computational Linguistics,
+pages 4896–4910, Florence, Italy. Association for
+Computational Linguistics.
+Patrick Lewis, Yuxiang Wu, Linqing Liu, Pasquale
+Minervini, Heinrich Küttler, Aleksandra Piktus, Pon-
+tus Stenetorp, and Sebastian Riedel. 2021. Paq: 65
+million probably-asked questions and what you can
+do with them. arXiv preprint arXiv:2102.07033.
+Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Man-
+dar Joshi, Danqi Chen, Omer Levy, Mike Lewis,
+Luke Zettlemoyer, and Veselin Stoyanov. 2019.
+RoBERTa: A robustly optimized bert pretraining ap-
+proach. arXiv preprint arXiv:1907.11692.
+Bryan McCann, Nitish Shirish Keskar, Caiming Xiong,
+and Richard Socher. 2018. The natural language de-
+cathlon: Multitask learning as question answering.
+arXiv preprint arXiv:1806.08730.
+Julian Michael, Gabriel Stanovsky, Luheng He, Ido Da-
+gan, and Luke Zettlemoyer. 2018. Crowdsourcing
+question-answer meaning representations. In Pro-
+ceedings of the 2018 Conference of the North Amer-
+ican Chapter of the Association for Computational
+Linguistics: Human Language Technologies, Vol-
+ume 2 (Short Papers), pages 560–568, New Orleans,
+Louisiana. Association for Computational Linguis-
+tics.
+Stephen Mussmann, Robin Jia, and Percy Liang. 2020.
+On the Importance of Adaptive Data Collection for
+Extremely Imbalanced Pairwise Tasks. In Findings
+of the Association for Computational Linguistics:
+EMNLP 2020, pages 3400–3413, Online. Associa-
+tion for Computational Linguistics.
+Bo Pang and Lillian Lee. 2005. Seeing stars: Ex-
+ploiting class relationships for sentiment categoriza-
+tion with respect to rating scales. In Proceed-
+ings of the 43rd Annual Meeting of the Association
+for Computational Linguistics (ACL’05), pages 115–
+124, Ann Arbor, Michigan. Association for Compu-
+tational Linguistics.
+F. Pedregosa, G. Varoquaux, A. Gramfort, V. Michel,
+B. Thirion, O. Grisel, M. Blondel, P. Prettenhofer,
+R. Weiss, V. Dubourg, J. Vanderplas, A. Passos,
+D. Cournapeau, M. Brucher, M. Perrot, and E. Duch-
+esnay. 2011. Scikit-learn: Machine learning in
+Python. Journal of Machine Learning Research,
+12:2825–2830.
+Anselmo Peñas, Pamela Forner, Richard Sutcliffe, Ál-
+varo Rodrigo, Corina Forăscu, In̄aki Alegria, Danilo
+Giampiccolo, Nicolas Moreau, and Petya Osenova.
+2013. QA4MRE 2011-2013: Overview of question
+answering for machine reading evaluation. In Inter-
+national Conference of the Cross-Language Evalu-
+ation Forum for European Languages, pages 303 –
+320.
+Ethan Perez, Douwe Kiela, and Kyunghyun Cho. 2021.
+True few-shot learning with language models. arXiv
+preprint arXiv:2105.11447.
+Matthew Peters, Mark Neumann, Mohit Iyyer, Matt
+Gardner, Christopher Clark, Kenton Lee, and Luke
+Zettlemoyer. 2018. Deep contextualized word rep-
+resentations. In Proceedings of the 2018 Confer-
+ence of the North American Chapter of the Associ-
+ation for Computational Linguistics: Human Lan-
+guage Technologies, Volume 1 (Long Papers), pages
+2227–2237, New Orleans, Louisiana. Association
+for Computational Linguistics.
+Jason Phang, Thibault Févry, and Samuel R Bowman.
+2018. Sentence encoders on stilts: Supplementary
+training on intermediate labeled-data tasks. arXiv
+preprint arXiv:1811.01088.
+Yada Pruksachatkun, Jason Phang, Haokun Liu,
+Phu Mon Htut, Xiaoyi Zhang, Richard Yuanzhe
+Pang, Clara Vania, Katharina Kann, and Samuel R.
+Bowman. 2020. Intermediate-task transfer learning
+with pretrained language models: When and why
+does it work? In Proceedings of the 58th Annual
+Meeting of the Association for Computational Lin-
+guistics, pages 5231–5247, Online. Association for
+Computational Linguistics.
+Raul Puri, Ryan Spring, Mohammad Shoeybi, Mostofa
+Patwary, and Bryan Catanzaro. 2020. Training ques-
+tion answering models from synthetic data. In
+Proceedings of the 2020 Conference on Empirical
+Methods in Natural Language Processing (EMNLP),
+pages 5811–5826, Online. Association for Computa-
+tional Linguistics.
+Pranav Rajpurkar, Jian Zhang, Konstantin Lopyrev, and
+Percy Liang. 2016. SQuAD: 100,000+ questions for
+machine comprehension of text. In Proceedings of
+the 2016 Conference on Empirical Methods in Natu-
+ral Language Processing, pages 2383–2392, Austin,
+Texas. Association for Computational Linguistics.
+Ori Ram, Yuval Kirstain, Jonathan Berant, Amir
+Globerson, and Omer Levy. 2021. Few-shot ques-
+tion answering by pretraining span selection. In As-
+sociation for Computational Linguistics (ACL).
+Nils Reimers and Iryna Gurevych. 2019. Sentence-
+BERT: Sentence embeddings using Siamese BERT-
+networks. In Proceedings of the 2019 Conference on
+Empirical Methods in Natural Language Processing
+and the 9th International Joint Conference on Natu-
+ral Language Processing (EMNLP-IJCNLP), pages
+3982–3992, Hong Kong, China. Association for
+Computational Linguistics.
+Matthew Richardson, Christopher J.C. Burges, and
+Erin Renshaw. 2013. MCTest: A challenge dataset
+for the open-domain machine comprehension of text.
+In Proceedings of the 2013 Conference on Empiri-
+cal Methods in Natural Language Processing, pages
+193–203, Seattle, Washington, USA. Association for
+Computational Linguistics.
+Amrita Saha, Rahul Aralikatte, Mitesh M. Khapra, and
+Karthik Sankaranarayanan. 2018. DuoRC: Towards
+complex language understanding with paraphrased
+reading comprehension. In Proceedings of the 56th
+Annual Meeting of the Association for Computa-
+tional Linguistics (Volume 1: Long Papers), pages
+1683–1693, Melbourne, Australia. Association for
+Computational Linguistics.
+Timo Schick and Hinrich Schütze. 2021. It’s not just
+size that matters: Small language models are also
+few-shot learners. In Proceedings of the 2021 Con-
+ference of the North American Chapter of the Asso-
+ciation for Computational Linguistics: Human Lan-
+guage Technologies, pages 2339–2352, Online. As-
+sociation for Computational Linguistics.
+Minjoon Seo, Tom Kwiatkowski, Ankur Parikh, Ali
+Farhadi, and Hannaneh Hajishirzi. 2018. Phrase-
+indexed question answering: A new challenge for
+scalable document comprehension. In Proceedings
+of the 2018 Conference on Empirical Methods in
+Natural Language Processing, pages 559–564, Brus-
+sels, Belgium. Association for Computational Lin-
+guistics.
+Minjoon Seo, Jinhyuk Lee, Tom Kwiatkowski, Ankur
+Parikh, Ali Farhadi, and Hannaneh Hajishirzi. 2019.
+Real-time open-domain question answering with
+dense-sparse phrase index. In Proceedings of the
+57th Annual Meeting of the Association for Com-
+putational Linguistics, pages 4430–4441, Florence,
+Italy. Association for Computational Linguistics.
+Richard Socher, Alex Perelygin, Jean Wu, Jason
+Chuang, Christopher D. Manning, Andrew Ng, and
+Christopher Potts. 2013. Recursive deep models
+for semantic compositionality over a sentiment tree-
+bank. In Proceedings of the 2013 Conference on
+Empirical Methods in Natural Language Processing,
+pages 1631–1642, Seattle, Washington, USA. Asso-
+ciation for Computational Linguistics.
+Nandan Thakur, Nils Reimers, Johannes Daxen-
+berger, and Iryna Gurevych. 2021. Augmented
+SBERT: Data augmentation method for improving
+bi-encoders for pairwise sentence scoring tasks. In
+Proceedings of the 2021 Conference of the North
+American Chapter of the Association for Computa-
+tional Linguistics: Human Language Technologies,
+pages 296–310, Online. Association for Computa-
+tional Linguistics.
+Erik F. Tjong Kim Sang and Fien De Meulder.
+2003. Introduction to the CoNLL-2003 shared task:
+Language-independent named entity recognition. In
+Proceedings of the Seventh Conference on Natu-
+ral Language Learning at HLT-NAACL 2003, pages
+142–147.
+Adam Trischler, Tong Wang, Xingdi Yuan, Justin Har-
+ris, Alessandro Sordoni, Philip Bachman, and Ka-
+heer Suleman. 2017. NewsQA: A machine compre-
+hension dataset. In Proceedings of the 2nd Work-
+shop on Representation Learning for NLP, pages
+191–200, Vancouver, Canada. Association for Com-
+putational Linguistics.
+George Tsatsaronis, Georgios Balikas, Prodromos
+Malakasiotis, Ioannis Partalas, Matthias Zschunke,
+Michael R Alvers, Dirk Weissenborn, Anastasia
+Krithara, Sergios Petridis, Dimitris Polychronopou-
+los, Yannis Almirantis, John Pavlopoulos, Nico-
+las Baskiotis, Patrick Gallinari, Thierry Artieres,
+Axel Ngonga, Norman Heino, Eric Gaussier, Lil-
+iana Barrio-Alvers, Michael Schroeder, Ion An-
+droutsopoulos, and Georgios Paliouras. 2015. An
+overview of the bioasq large-scale biomedical se-
+mantic indexing and question answering competi-
+tion. BMC Bioinformatics, 16:138.
+Luke Vilnis, Xiang Li, Shikhar Murty, and Andrew Mc-
+Callum. 2018. Probabilistic embedding of knowl-
+edge graphs with box lattice measures. In Proceed-
+ings of the 56th Annual Meeting of the Association
+for Computational Linguistics (Volume 1: Long Pa-
+pers), pages 263–272, Melbourne, Australia. Asso-
+ciation for Computational Linguistics.
+Thomas Wolf, Lysandre Debut, Victor Sanh, Julien
+Chaumond, Clement Delangue, Anthony Moi, Pier-
+ric Cistac, Tim Rault, Remi Louf, Morgan Funtow-
+icz, Joe Davison, Sam Shleifer, Patrick von Platen,
+Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu,
+Teven Le Scao, Sylvain Gugger, Mariama Drame,
+Quentin Lhoest, and Alexander Rush. 2020. Trans-
+formers: State-of-the-art natural language process-
+ing. In Proceedings of the 2020 Conference on Em-
+pirical Methods in Natural Language Processing:
+System Demonstrations, pages 38–45, Online. Asso-
+ciation for Computational Linguistics.
+Qizhe Xie, Minh-Thang Luong, Eduard Hovy, and
+Quoc V. Le. 2020. Self-training with noisy student
+improves imagenet classification. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and
+Pattern Recognition (CVPR).
+Yi Yang and Arzoo Katiyar. 2020. Simple and effective
+few-shot named entity recognition with structured
+nearest neighbor learning. In Proceedings of the
+2020 Conference on Empirical Methods in Natural
+Language Processing (EMNLP), pages 6365–6375,
+Online. Association for Computational Linguistics.
+Zhilin Yang, Peng Qi, Saizheng Zhang, Yoshua Bengio,
+William Cohen, Ruslan Salakhutdinov, and Christo-
+pher D. Manning. 2018. HotpotQA: A dataset
+for diverse, explainable multi-hop question answer-
+ing. In Proceedings of the 2018 Conference on Em-
+pirical Methods in Natural Language Processing,
+pages 2369–2380, Brussels, Belgium. Association
+for Computational Linguistics.
+Tianyi Zhang, Varsha Kishore, Felix Wu, Kilian Q.
+Weinberger, and Yoav Artzi. 2020. BERTScore:
+Evaluating text generation with bert. In Interna-
+tional Conference on Learning Representations.
+Yuan Zhang, Jason Baldridge, and Luheng He. 2019.
+PAWS: Paraphrase adversaries from word scram-
+bling. In Proceedings of the 2019 Conference of
+the North American Chapter of the Association for
+Computational Linguistics: Human Language Tech-
+nologies, Volume 1 (Long and Short Papers), pages
+1298–1308, Minneapolis, Minnesota. Association
+for Computational Linguistics.
+Tony Z. Zhao, Eric Wallace, Shi Feng, Dan Klein,
+and Sameer Singh. 2021. Calibrate before use: Im-
+proving few-shot performance of language models.
+arXiv preprint arXiv:2102.09690.
+Yao Zhao, Xiaochuan Ni, Yuanyuan Ding, and Qifa
+Ke. 2018. Paragraph-level neural question gener-
+ation with maxout pointer and gated self-attention
+networks. In Proceedings of the 2018 Conference
+on Empirical Methods in Natural Language Process-
+ing, pages 3901–3910, Brussels, Belgium. Associa-
+tion for Computational Linguistics.
+A Appendix
+A.1 QUIP Details
+We limit passages to 456 byte-pair encoding (BPE)
+tokens and questions to 50 so that the concatenation
+can fit comfortably within the 512 token context
+usable by the cross-encoder teacher. We create
+passages from our unlabeled text corpus by greedily
+selecting maximal chunks of contiguous sentences
+that fit within the BPE token limit. We pre-compute
+the teacher predictions Tstart and Tend before bi-
+encoder training. To save space, we sparsify these
+vectors by only storing the eight largest predicted
+probabilities, treating all others as 0.
+We conducted minimal hyperparameter tuning
+for QUIP. We used a learning rate of 1 · 10−5 (de-
+fault for most RoBERTa fine-tuning experiments5)
+and no gradient accumulation, which we found led
+to faster training.
+A.2 Paraphrase Fine-tuning Details
+To fine-tune our model for paraphrase classification,
+we use two practices recommended by Mussmann
+et al. (2020), who also train a binary classification
+model that uses cosine similarity-based features
+derived from fine-tuned BERT embeddings. First,
+we disable dropout during training, as dropout arti-
+ficially lowers all cosine similarities. Second, we
+use a larger learning rate on the final output layer
+than the Transformer parameters, by a factor of
+103.
+A.3 Downstream Task Hyperparameter
+Details
+For few-shot paraphrase detection with the frozen
+model, we use Scikit-learn’s logistic regression im-
+plementation with default settings (Pedregosa et al.,
+2011). For fine-tuned paraphrase detection, we
+again use a learning rate of 1·10−5 and train for 20
+5
+https://github.com/pytorch/fairseq/
+tree/master/examples/roberta
+epochs, which we found to usually be sufficient for
+convergence on the training data. For NER, we use
+the default hyperparameters from the Huggingface
+transformers repository (Wolf et al., 2020),
+with the exception of decreasing the learning rate
+from 5·10−5 to 2·10−5, which we found improved
+the RoBERTa baseline on CoNLL.
+A.4 Sentiment Analysis Calibration
+To calibrate the zero-shot sentiment analysis
+model, we use ten content-free inputs: “the”,
+“be”, “to”, “of”, “and”, “a”, “in”, “that”, “have”,
+and “I”. These were the top ten words listed
+on https://en.wikipedia.org/wiki/
+Most_common_words_in_English. We
+only applied calibration for the main QUIP model,
+as we did not find calibration to improve results for
+either LM-BFF or the cross-encoder QA student
+model.
+A.5 Full QA results
+Table 8 shows EM and F1 scores on the 12 develop-
+ment sets from the MRQA 2019 Shared Task (Fisch
+et al., 2019). These are divided into 6 in-domain
+datasets—HotpotQA (Yang et al., 2018), Natu-
+ralQuestions (Kwiatkowski et al., 2019), NewsQA
+(Trischler et al., 2017), SearchQA (Dunn et al.,
+2017), SQuAD (Rajpurkar et al., 2016), and Triv-
+iaQA (Joshi et al., 2017)—for which correspond-
+ing training data was used to train the ques-
+tion generation model and teacher, and 6 out-
+of-domain datasets—BioASQ (Tsatsaronis et al.,
+2015), DROP (Dua et al., 2019), DuoRC (Saha
+et al., 2018), RACE (Lai et al., 2017), RelationEx-
+traction (Levy et al., 2017), and TextbookQA (Kem-
+bhavi et al., 2017)—for which no training data was
+used in the QUIP pipeline. QUIP improves over
+training the bi-encoder directly on the MRQA data
+by an average of 4.4 F1 on the in-domain datasets
+and 12.7 F1 on the out-of-domain datasets. It under-
+performs the cross-encoder teacher by about 5 F1
+on both the in-domain and out-of-domain datasets
+on average.
+A.6 QA Prompts for NER
+Table 9 shows the question prompts we use to ini-
+tialize the NER model for CoNLL and WNUT. For
+entity types that occur in both datasets, and for the
+O tag, we always use the same question. We used
+the English description of the entity type provided
+by the dataset.
+In-domain HotpotQA NaturalQ NewsQA SQuAD SearchQA TriviaQA Average
+Bi-encoder + UnsupervisedQA 9.5 / 16.6 8.0 / 15.5 7.6 / 14.4 17.5 / 25.0 15.4 / 21.1 17.6 / 23.3 12.6 / 19.3
+Bi-encoder + MRQA 61.0 / 77.5 64.1 / 76.4 46.1 / 61.5 70.9 / 79.6 73.8 / 79.8 63.1 / 69.0 63.2 / 74.0
+QUIP, no teacher 52.9 / 68.7 57.8 / 70.8 41.8 / 58.7 75.4 / 84.8 64.5 / 71.7 71.1 / 76.1 60.6 / 71.8
+QUIP 61.3 / 77.9 63.7 / 77.2 52.4 / 68.7 85.3 / 91.8 68.7 / 76.8 72.0 / 78.1 67.2 / 78.4
+Cross-encoder + MRQA 66.8 / 83.0 70.5 / 82.0 58.8 / 72.9 89.1 / 94.8 78.3 / 84.6 73.4 / 79.6 72.8 / 82.8
+QUIP, cross-encoder student 66.3 / 82.3 66.5 / 79.4 54.4 / 70.5 89.6 / 94.9 72.1 / 80.1 73.4 / 79.8 70.4 / 81.2
+Out-of-domain BioASQ DROP DuoRC RACE RelationExt TextbookQA Average
+Bi-encoder + UnsupervisedQA 15.3 / 19.2 5.9 / 9.5 14.1 / 17.4 6.5 / 11.4 12.7 / 22.1 8.9 / 13.3 10.6 / 15.5
+Bi-encoder + MRQA 42.2 / 57.2 29.9 / 38.3 38.6 / 48.6 29.1 / 39.8 71.3 / 83.5 34.7 / 43.6 41.0 / 51.8
+QUIP, no teacher 40.9 / 54.9 33.5 / 43.0 44.1 / 53.2 31.8 / 44.4 70.8 / 82.1 37.3 / 46.2 43.0 / 54.0
+QUIP 51.3 / 67.5 46.2 / 57.1 53.0 / 63.2 39.6 / 53.4 75.5 / 86.0 50.2 / 60.0 52.6 / 64.5
+Cross-encoder + MRQA 58.0 / 72.9 55.4 / 65.3 55.0 / 66.8 44.2 / 57.7 78.5 / 88.8 58.5 / 67.4 58.2 / 69.8
+QUIP, cross-encoder student 57.3 / 72.6 57.5 / 68.3 56.2 / 67.5 44.8 / 58.6 79.5 / 89.1 58.4 / 67.3 59.0 / 70.6
+Table 8: Exact match/F1 scores on the twelve development datasets from the MRQA 2019 shared task. The six
+in-domain datasets are on top; the six out-of-domain datasets are on bottom.
+Entity type Question
+Both datasets
+O “What is a generic object ?”
+Person “Who is a person ?”
+Location “What is a location ?”
+CoNLL
+Organization “What is an organization ?”
+Miscellaneous “What is a miscellaneous entity ?”
+WNUT
+Corporation “What is a corporation ?”
+Product “What is a product ?”
+Creative work “What is a creative work ?”
+Group “What is a group ?”
+Table 9: Question prompts used for the CoNLL and
+WNUT NER datasets.
+Model CoNLL WNUT
+RoBERTa-large 92.7 57.9
+QUIP, standard 92.7 58.1
+QUIP, QA prompts 92.8 58.8
+Table 10: F1 scores on NER, using the entire training
+dataset.
+A.7 Full training set NER
+Table 10 shows NER results when training on the
+full training dataset. QUIP gives a 0.6 F1 improve-
+ment on WNUT, but has effectively the same accu-
+racy on CoNLL.
+A.8 Sentiment Analysis QA Prompts
+Table 11 shows the six prompts we use for senti-
+ment analysis for the movie review datasets (SST-2
+and MR). Each prompt consists of one question
+for the positive label and one for the negative la-
+bel. For CR, we use the same prompts except that
+# Label Question
+1
++ “Why is it good?”
+- “Why is it bad?”
+2
++ “Why is this movie good?”
+- “Why is this movie bad?”
+3
++ “Why is it great?”
+- “Why is it terrible?”
+4
++ “What makes this movie good?”
+- “What makes this movie bad?”
+5
++ “What is the reason this movie is good?”
+- “What is the reason this movie is bad?”
+6
++ “What is the reason this movie is great?”
+- “What is the reason this movie is terrible?”
+Table 11: Question prompts used for sentiment analy-
+sis on movie review datasets (SST-2 and MR). Prompts
+used for CR are identical except for replacing “movie”
+with “product”.
+we replace all instances of the word “movie” with
+“product”.
+A.9 Sentiment Analysis Rationales
+Tables 12, 13, and 14 show full examples and ratio-
+nales extracted by our zero-shot sentiment analysis
+method for SST-2, MR, and CR, respectively. In
+all cases, we use the prompt that led to the highest
+accuracy on SST-2. For each dataset, we randomly
+sample ten examples of each label for which the
+model predicted the correct answer. We highlight
+in bold the span of ≤ 5 BPE tokens that the model
+predicts best answers the question associated with
+the correct label. In some cases, the rationales cor-
+respond to clear sentiment markers. In other cases,
+they highlight an aspect of a movie or product that
+is criticized or praised in the review; these could be
+considered reasonable answers to a question like
+“Why is this movie bad?” even if the sentiment asso-
+ciated with them is unclear without the surrounding
+context. In future work, it would be interesting to
+find better ways to align the task of extractive QA
+and with the goal of producing rationales that are
+human-interpretable in isolation.
+Label SST-2 Example (rationale in bold)
+-
+“for starters , the story is just too slim .”
+“paid in full is so stale , in fact , that its most vibrant scene is one that uses clips from brian de palma ’s scarface
+.”
+“( e ) ventually , every idea in this film is flushed down the latrine of heroism .”
+“corpus collosum – while undeniably interesting – wore out its welcome well before the end credits rolled about
+45 minutes in .”
+“makes for a pretty unpleasant viewing experience .”
+“while ( hill ) has learned new tricks , the tricks alone are not enough to salvage this lifeless boxing film .”
+“it ’s hampered by a lifetime-channel kind of plot and a lead actress who is out of her depth .”
+“dull , lifeless , and amateurishly assembled .”
+“the movie is what happens when you blow up small potatoes to 10 times their natural size , and it ai n’t pretty .”
+“every time you look , sweet home alabama is taking another bummer of a wrong turn .”
++
+“though only 60 minutes long , the film is packed with information and impressions .”
+“good old-fashioned slash-and-hack is back !”
+“with tightly organized efficiency , numerous flashbacks and a constant edge of tension , miller ’s film is one of
+2002 ’s involvingly adult surprises .”
+“displaying about equal amounts of naiveté , passion and talent , beneath clouds establishes sen as a filmmaker
+of considerable potential .”
+“‘ easily my choice for one of the year ’s best films . ’”
+“a delectable and intriguing thriller filled with surprises , read my lips is an original .”
+“it is great summer fun to watch arnold and his buddy gerald bounce off a quirky cast of characters .”
+“the film will play equally well on both the standard and giant screens .”
+“for this reason and this reason only – the power of its own steadfast , hoity-toity convictions – chelsea walls
+deserves a medal .”
+“there ’s a wickedly subversive bent to the best parts of birthday girl .”
+Table 12: Rationales (in bold) extracted by the zero-shot QUIP sentiment analysis model for SST-2. We show ten
+random examples for each label on which the model made the correct prediction.
+Label MR Example (rationale in bold)
+-
+“strangely comes off as a kingdom more mild than wild .”
+“feels like the work of someone who may indeed have finally aged past his prime . . . and , perhaps more than he
+realizes , just wants to be liked by the people who can still give him work .”
+“watching the powerpuff girls movie , my mind kept returning to one anecdote for comparison : the cartoon in
+japan that gave people seizures .”
+“this is a movie so insecure about its capacity to excite that it churns up not one but two flagrantly fake
+thunderstorms to underscore the action .”
+“witless , pointless , tasteless and idiotic .”
+“the next big thing’s not-so-big ( and not-so-hot ) directorial debut .”
+“unfortunately , it’s also not very good . especially compared with the television series that inspired the movie .”
+“irwin and his director never come up with an adequate reason why we should pay money for what we can get
+on television for free .”
+“with this new rollerball , sense and sensibility have been overrun by what can only be characterized as robotic
+sentiment .”
+“the video work is so grainy and rough , so dependent on being ’naturalistic’ rather than carefully lit and set up
+, that it’s exhausting to watch .”
++
+“the appearance of treebeard and gollum’s expanded role will either have you loving what you’re seeing , or
+rolling your eyes . i loved it ! gollum’s ’performance’ is incredible !”
+“droll caper-comedy remake of " big deal on madonna street " that’s a sly , amusing , laugh-filled little gem in
+which the ultimate " bellini " begins to look like a " real kaputschnik . "”
+“katz uses archival footage , horrifying documents of lynchings , still photographs and charming old reel-to-reel
+recordings of meeropol entertaining his children to create his song history , but most powerful of all is the song
+itself”
+“a thunderous ride at first , quiet cadences of pure finesse are few and far between ; their shortage dilutes the
+potency of otherwise respectable action . still , this flick is fun , and host to some truly excellent sequences .”
+“compellingly watchable .”
+“an unbelievably fun film just a leading man away from perfection .”
+“andersson creates a world that’s at once surreal and disturbingly familiar ; absurd , yet tremendously sad .”
+“the invincible werner herzog is alive and well and living in la”
+“you can feel the heat that ignites this gripping tale , and the humor and humanity that root it in feeling .”
+“this is a terrific character study , a probe into the life of a complex man .”
+Table 13: Rationales (in bold) extracted by the zero-shot QUIP sentiment analysis model for the Movie Reviews
+(MR) dataset. We show ten random examples for each label on which the model made the correct prediction.
+Label CR Example (rationale in bold)
+-
+“i ’ve tried the belkin fm transmitter unit with it & it worked well when i set it on top of a portable radio , but was
+awful trying to use in the car which is somewhat of a disappointment .”
+“but the major problem i had was with the software .”
+“after a week i tried to load some more songs and delete a few but the auto load didn ’t do anything but turn on
+my player .”
+“2 . the scroll button is n ’t the best , as it sometimes can be hard to select .”
+“iriver has a better fm receiver built in , but the drawback to iriver products is they are flimsy and poorly
+constructed .”
+“i would imagine this is a problem with any camera of a compact nature .”
+“the pictures are a little dark sometimes .”
+“the depth adjustment was sloppy .”
+“the instructions that come with it do n ’t explain how to make things simple .”
+“my " fast forward " button works , but it takes a little extra pressure on it to make it go .”
++
+“i did not conduct a rigorous test , but just took some identical shots in identical lighting with both cameras ,
+and the canon won hands down .”
+“as a whole , the dvd player has a sleek design and works fine .”
+“i , as many others , have waited for many years for the convergence of price , features , size and ease of use to
+hit that happy center point .”
+“+ i had no problem using musicmatch software already on my computer to load songs and albums onto this
+unit”
+“apex is the best cheap quality brand for dvd players .”
+“i chose this one because from what i read , it was the best deal for the money .”
+“the two-times optical zoom operates smoothly and quietly , and lo and behold , a two-piece shutter-like cap
+automatically slides closed over the lens when you turn the camera off .”
+“this camera is perfect for the person who wants a compact camera that produces excellent photos in just about
+any situation .”
+“it was easy enough to remove the front plate , and there was only one way the battery could be inserted .”
+“i have been very impressed with my purchase of the sd500 i bought it at the beginning of the month as the
+ultimate pocket camera and have shot 300 images so far with it .”
+Table 14: Rationales (in bold) extracted by the zero-shot QUIP sentiment analysis model for the Customer Reviews
+(CR) dataset. We show ten random examples for each label on which the model made the correct prediction.
+

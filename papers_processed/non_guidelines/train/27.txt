@@ -1,0 +1,7328 @@
+STEM: A Stochastic Two-Sided Momentum Algorithm
+Achieving Near-Optimal Sample and Communication
+Complexities for Federated Learning
+Prashant Khanduri∗†
+, Pranay Sharma
+, Haibo Yang∗
+, Mingyi Hong†
+, Jia Liu∗
+,
+Ketan Rajawat‡
+, and Pramod K. Varshney
+∗
+Department of Electrical and Computer Engineering,
+The Ohio State University, OH, USA
+†
+Department of Electrical and Computer Engineering,
+University of Minnesota, MN, USA
+
+Department of Electrical Engineering and Computer Science,
+Syracuse University, NY, USA
+‡
+Department of Electrical Engineering,
+Indian Institute of Technology Kanpur, India
+Email: khand095@umn.edu, psharm04@syr.edu, yang.5952@buckeyemail.osu.edu
+mhong@umn.edu, liu@ece.osu.edu, ketan@iitk.ac.in, varshney@syr.edu
+Abstract
+Federated Learning (FL) refers to the paradigm where multiple worker nodes (WNs) build a joint model
+by using local data. Despite extensive research, for a generic non-convex FL problem, it is not clear, how to
+choose the WNs’ and the server’s update directions, the minibatch sizes, and the local update frequency, so
+that the WNs use the minimum number of samples and communication rounds to achieve the desired solution.
+This work addresses the above question and considers a class of stochastic algorithms where the WNs perform
+a few local updates before communication. We show that when both the WN’s and the server’s directions
+are chosen based on a stochastic momentum estimator, the algorithm requires Õ(−3/2
+) samples and Õ(−1
+)
+communication rounds to compute an -stationary solution. To the best of our knowledge, this is the first FL
+algorithm that achieves such near-optimal sample and communication complexities simultaneously. Further,
+we show that there is a trade-off curve between local update frequencies and local minibatch sizes, on which
+the above sample and communication complexities can be maintained. Finally, we show that for the classical
+FedAvg (a.k.a. Local SGD, which is a momentum-less special case of the STEM), a similar trade-off curve
+exists, albeit with worse sample and communication complexities. Our insights on this trade-off provides
+guidelines for choosing the four important design elements for FL algorithms, the update frequency, directions,
+and minibatch sizes to achieve the best performance.
+1 Introduction
+In Federated Learning (FL), multiple worker nodes (WNs) collaborate with the goal of learning a joint model,
+by only using local data. Therefore it has become popular for machine learning problems where datasets
+are massively distributed [1]. In FL, the data is often collected at or off-loaded to multiple WNs which in
+collaboration with a server node (SN) jointly aim to learn a centralized model [2,3]. The local WNs share the
+computational load and since the data is local to each WN, FL also provides some level of data privacy [4]. A
+1
+arXiv:2106.10435v1
+[cs.LG]
+19
+Jun
+2021
+(a) Communication complexity. (b) Minibatch sizes vs Local Updates.
+Figure 1: The 3D surface in (a) plots the communication complexity of the proposed STEM for different minibatch sizes
+and number of local updates. The surface is generated such that each point represents STEM with a particular choice of
+(b, I), so that it requires Õ(−3/2
+) samples to achieve -stationarity, but a . Plot (b) shows the optimal trade off between
+the minibatch sizes and the number of local updates at each WN (i.e., achieving the lowest communication and sample
+complexities). Both plots are generated for an accuracy of  = 10−3
+and all the constants dependent on system parameters
+(variance of stochastic gradients, heterogeneity parameter, optimality gap, Lipschitz constants, etc.) are assumed to be
+1. Fed STEM is a special case of STEM where O(1) minibatch is used; Minibatch STEM is a special case of STEM where
+O(1) local updates are used.
+classical distributed optimization problem that K WNs aim to solve:
+min
+x∈Rd
+
+f(x) :=
+1
+K
+K
+X
+k=1
+f(k)
+(x) :=
+1
+K
+K
+X
+k=1
+Eξ(k)∼D(k) [f(k)
+(x; ξ(k)
+)]
+
+. (1)
+where f(k) : Rd → R denotes the smooth (possibly non-convex) objective function and ξ(k) ∼ D(k) represents
+the sample/s drawn from distribution D(k) at the kth WN with k ∈ [K]. When the distributions D(k) are
+different across the WNs, it is referred to as the heterogeneous data setting.
+The optimization performance of non-convex FL algorithms is typically measured by the total number of
+samples accessed (cf. Definition 2.2) and the total rounds of communication (cf. Definition 2.3) required by each
+WN to achieve an -stationary solution (cf. Definition 2.1). To minimize the sample and the communication
+complexities, FL algorithms rely on the following four key design elements: (i) the WNs’ local model update
+directions, (ii) Minibatch size to compute each local direction, (iii) the number of local updates before WNs
+share their parameters, and (iv) the SN’s update direction. How to find effective FL algorithms by (optimally)
+designing these parameters has received significant research interest recently.
+Contributions. The main contributions of this work are listed below:
+1) We propose the Stochastic Two-Sided Momentum (STEM) algorithm, that utilizes a momentum-assisted
+stochastic gradient directions for both the WNs and SN updates. We show that there exists an optimal trade
+off between the minibatch sizes and local update frequency, such that on the trade-off curve STEM requires
+Õ(−3/2)1 samples and Õ(−1) communication rounds to reach an -stationary solution; see Figure 1 for an
+illustration. These complexity results are the best achievable for first-order stochastic FL algorithms (under
+certain assumptions, cf. Assumption 1); see [5–8] and [9,10], as well as Remark 1 of this paper for discussions
+regarding optimality. To the best of our knowledge, STEM is the first algorithm which – (i) simultaneously
+achieves the optimal sample and communication complexities for FL and (ii) can optimally trade off the
+minibatch sizes and the local update frequency.
+1
+The notation Õ(·) hides the logarithmic factors.
+2
+Algorithm Work Sample Communication Minibatch (b) Local Updates (I) /round
+FedAvg
+[12] / [14]
+O(−2
+)
+O(−3/2
+) O(1) O(−1/2
+)
+[15]/ [16] O(−2
+) O(1) O(1)
+this work O(−3/2
+) O −
+2(1−ν)
+(4−ν)
+
+O − 3ν
+2(4−ν)
+
+SCAFFOLD∗
+[15] O(−2
+) O(−2
+) O(1) O(1)
+FedPD/FedProx‡
+[9]/ [10] O(−2
+) O(−1
+) O(1) O(−1
+)
+MIME†
+/FedGLOMO [17]/ [18] O(−3/2
+) O(−3/2
+) O(1) O(1)
+STEM
+O −
+3(1−ν)
+2(3−ν)
+
+O − ν
+(3−ν)
+
+Fed STEM O(1) O(−1/2
+)
+Minibatch STEM∗
+this work Õ(−3/2
+) Õ(−1
+)
+O(−1/2
+) O(1)
+Table 1: Comparison of FedAvg and STEM with different FL algorithms for various choices of the minibatch sizes (b)
+and the number of per node local updates between two rounds of communication (I).
+
+ν ∈ [0, 1] trades off b and I; ν = 1 (resp. ν = 0) uses multiple (resp. O(1)) local updates and O(1) (resp. multiple)
+samples. Fed STEM and Minibatch STEM are two variants of the proposed STEM.
+‡
+The data heterogeneity assumption is weaker than Assumption 2 (please see [9] for details).
+†
+Requires bounded Hessian dissimilarity to model data heterogeneity across WNs.
+∗
+Guarantees for Minibatch STEM with I = 1 and SCAFFOLD are independent of the data heterogeneity.
+2) A momentum-less special case of our STEM result further reveals some interesting insights of the classical
+FedAvg algorithm (a.k.a. the Local SGD) [11–13]. Specifically, we show that for FedAvg, there also exists a
+trade-off between the minibatch sizes and the local update frequency, on which it requires O(−2) samples and
+O(−3/2) communication rounds to achieve an -stationary solution.
+Collectively, our insights on the trade-offs provide practical guidelines for choosing different design elements
+for FL algorithms.
+Related Works. FL algorithms were first proposed in the form of FedAvg [11], where the local update
+directions at each WN were chosen to be the SGD updates. Earlier works analyzed these algorithms in
+the homogeneous data setting [19–25], while many recent studies have focused on designing new algorithms
+to deal with heterogeneous data settings, as well as problems where the local loss functions are non-convex
+[9,10,12–16,18,26–32]. In [12], the authors showed that Parallel Restarted SGD (Local SGD or FedAvg [11])
+achieves linear speed up while requiring O(−2) samples and O(−3/2) rounds of communication to reach
+an -stationary solution. In [14], a Momentum SGD was proposed, which achieved the same sample and
+communication complexities as Parallel Restarted SGD [12], without requiring that the second moments of the
+gradients be bounded. Further, it was shown that under the homogeneous data setting, the communication
+complexity can be improved to O(−1) while maintaining the same sample complexity. The works in [15, 16]
+conducted tighter analysis for FedAvg with partial WN participation with O(1) local updates and batch sizes.
+Their analysis showed that FedAvg’s sample and communication complexities are both O(−2). Additionally,
+SCAFFOLD was proposed in [15], which utilized variance reduction based local update directions [33] to
+achieve the same sample and communication complexities as FedAvg. Similarly, VRL-SGD proposed in [29] also
+utilized variance reduction and showed improved communication complexity of O(−1), while requiring the same
+computations as FedAvg. Importantly, both SCAFFOLD and VRL-SGD’s guarantees were independent of the
+data heterogeneity. The FedProx proposed in [10] used a penalty based method to improve the communication
+complexity of FedAvg (i.e., the Parallel Restarted and Momentum SGD [12, 14]) to O(−1). FedProx used
+a gradient similarity assumption to model data heterogeneity which can be stringent for many practical
+applications. This assumption was relaxed by FedPD proposed in [9].
+Recently, the works [17, 18] proposed to utilize hybrid momentum gradient estimators [7, 8]. The MIME
+algorithm [17] matched the optimal sample complexity (under certain smoothness assumptions) of O(−3/2)
+of the centralized non-convex stochastic optimization algorithms [5–8]. Similarly, Fed-GLOMO [18] achieved
+3
+the same sample complexity while employing compression to further reduce communication. Both MIME and
+Fed-GLOMO required O(−3/2) communication rounds to achieve an -stationary solution. Please see Table 1
+for a summary of the above discussion.
+The comparison of Local SGD (FedAvg) to Minibatch SGD for convex and strongly convex problems with
+homogeneous data setting was first conducted in [19] and later extended to heterogeneous setting in [13]. It
+was shown that Minibatch SGD almost always dominates the Local SGD. In contrast, it was shown in [24] that
+Local SGD dominates Minibatch SGD in terms of generalization performance. Although existing FL results
+are rich, but they are somehow ad hoc and there is a lack of principled understanding of the algorithms. We
+note that the proposed STEM algorithmic framework provides a theoretical framework that unifies all existing
+FL results on sample and communication complexities.
+Notations. The expected value of a random variable X is denoted by E[X] and its expectation conditioned
+on an Event A is denoted as E[X|Event A]. We denote by R (and Rd) the real line (and the d-dimensional
+Euclidean space). The set of natural numbers is denoted by N. Given a positive integer K ∈ N, we denote
+[K] , {1, 2, . . . , K}. Notation k · k denotes the `2-norm and h·, ·i the Euclidean inner product. For a discrete
+set B, |B| denotes the cardinality of the set.
+2 Preliminaries
+Before we proceed to the the algorithms, we make the following assumptions about problem (1).
+Assumption 1 (Sample Gradient Lipschitz Smoothness). The stochastic functions f(k)(·, ξ(k)) with ξ(k) ∼ D(k)
+for all k ∈ [K], satisfy the mean squared smoothness property, i.e, we have
+Ek∇f(k)
+(x; ξ(k)
+) − ∇f(k)
+(y; ξ(k)
+)k2
+≤ L2
+kx − yk2
+for all x, y ∈ Rd
+.
+Assumption 2 (Unbiased gradient and Variance Bounds). (i) Unbiased Gradient. The stochastic gradients
+computed at each WN are unbiased
+E[∇f(k)
+(x; ξ(k)
+)] = ∇f(k)
+(x), ∀ ξ(k)
+∼ D(k)
+, ∀ k ∈ [K].
+(ii) Intra- and inter- node Variance Bound. The following bounds hold:
+Ek∇f(k)
+(x; ξ(k)
+) − ∇f(k)
+(x)k2
+≤ σ2
+, k∇f(k)
+(x) − ∇f(`)
+(x)k2
+≤ ζ2
+, ∀ ξ(k)
+∼ D(k)
+, ∀k, ` ∈ [K].
+Note that Assumption 1 is stronger than directly assuming f(k)’s are Lipschitz smooth (which we will refer
+to as the averaged gradient Lipschitz smooth condition), but it is still a rather standard assumption in SGD
+analysis. For example it has been used in analyzing centralized SGD algorithms such as SPIDER [5], SNVRG [6],
+STORM [7] (and many others) as well as in FL algorithms such as MIME [17] and Fed-GLOMO [18]. The
+second relation in Assumption 2-(ii) quantifies the data heterogeneity, and we call ζ > 0 as the heterogeneity
+parameter. This is a typical assumption required to evaluate the performance of FL algorithms. If data
+distributions across individual WNs are identical, i.e., D(k) = D(`) for all k, ` ∈ [K] then we have ζ = 0.
+Next, we define the -stationary solution for non-convex optimization problems, as well as quantify the
+computation and communication complexities to achieve an -stationary point.
+Definition 2.1 (-Stationary Point). A point x is called -stationary if k∇f(x)k2 ≤ . Moreover, a stochastic
+algorithm is said to achieve an -stationary point in t iterations if E[k∇f(xt)k2] ≤ , where the expectation is
+over the stochasticity of the algorithm until time instant t.
+Definition 2.2 (Sample complexity). We assume an Incremental First-order Oracle (IFO) framework [34],
+where, given a sample ξ(k) ∼ D(k) at the kth node and iterate x, the oracle returns (f(k)(x; ξ(k)), ∇f(k)(x; ξ(k))).
+Each access to the oracle is counted as a single IFO operation. We measure the sample (and computational)
+complexity in terms of the total number of calls to the IFO by all WNs to achieve an -stationary point given
+in Definition 2.1.
+4
+Definition 2.3 (Communication complexity). We define a communication round as a one back-and-forth
+sharing of parameters between the WNs and the SN. Then the communication complexity is defined to be the
+total number of communication rounds between any WN and the SN required to achieve an -stationary point
+given in Definition 2.1.
+3 The STEM algorithm and the trade-off analysis
+In this section, we discuss the proposed algorithm and present the main results. The key in the algorithm
+design is to carefully balance all the four design elements mentioned in Sec. 1, so that sufficient and useful
+progress can be made between two rounds of communication.
+Let us discuss the key steps of STEM, listed in Algorithm 1. In Step 10, each node locally updates its model
+parameters using the local direction dk
+t , computed by using b stochastic gradients at two consecutive iterates
+x
+(k)
+t+1 and x
+(k)
+t . After every I local steps, the WNs share their current local models {x
+(k)
+t+1}K
+k=1 and directions
+{d
+(k)
+t+1}K
+k=1 with the SN. The SN aggregates these quantities, and performs a server-side momentum step, before
+returning x̄t+1 and ¯
+dt+1 to all the WNs. Because both the WNs and the SN perform momentum based updates,
+we call the algorithm a stochastic two-sided momentum algorithm. The key parameters are: b the minibatch
+size, I the local update steps between two communication rounds, {ηt} the stepsizes, and {at} the momentum
+parameters.
+One key technical innovation of our algorithm design is to identify the most suitable way to incorporate
+momentum based directions in FL algorithms. Although the momentum-based gradient estimator itself is not
+new and has been used in the literature before (see e.g., in [7,8] and [17,18] to improve the sample complexities
+of centralized and decentralized stochastic optimization problems, respectively), it is by no means clear if and
+how it can contribute to improve the communication complexity of FL algorithms. We show that in the FL
+setting, the local directions together with the local models have to be aggregated by the SN so to avoid being
+influenced too much by the local data. More importantly, besides the WNs, the SN also needs to perform
+updates using the (aggregated) momentum directions. Finally, such two-sided momentum updates have to be
+done carefully with the correct choice of minibatch size b, and the local update frequency I. Overall, it is the
+judicious choice of all these design elements that results in the optimal sample and communication complexities.
+Next, we present the convergence guarantees of the STEM algorithm.
+3.1 Main results: convergence guarantees for STEM
+In this section, we analyze the performance of STEM. We first present our main result, and then provide
+discussions about a few parameter choices. In the next subsection, we discuss a special case of STEM related
+to the classical FedAvg and minibatch SGD algorithms.
+Theorem 3.1. Under the Assumptions 1 and 2, suppose the stepsize sequence is chosen as:
+ηt =
+κ̄
+(wt + σ2t)1/3
+, (2)
+where we define :
+κ̄ =
+(bK)2/3σ2/3
+L
+, wt = max
+
+2σ2
+, 4096L3
+I3
+κ̄3
+− σ2
+t,
+c3κ̄3
+4096L3I3
+
+.
+Further, let us set c = 64L2
+bK + σ2
+24κ̄3LI
+= L2
+
+64
+bK + 1
+24(bK)2I
+
+, and set the initial batch size as B = bI; set the
+local updates I and minibatch size b as follows:
+I = O (T/K2
+)ν/3
+
+, b = O (T/K2
+)1/2−ν/2
+
+(3)
+where ν satisfies ν ∈ [0, 1]. Then for STEM the following holds:
+5
+Algorithm 1 The Stochastic Two-Sided Momentum (STEM) Algorithm
+1: Input: Parameters: c > 0, the number of local updates I, batch size b, stepsizes {ηt}.
+2: Initialize: Iterate x
+(k)
+1 = x̄1 = 1
+K
+PK
+k=1 x
+(k)
+1 , descent direction d
+(k)
+1 = ¯
+d1 = 1
+K
+PK
+k=1 d
+(k)
+1 with d
+(k)
+1 =
+1
+B
+P
+ξ
+(k)
+1 ∈B
+(k)
+1
+∇f(k)(x
+(k)
+1 ; ξ
+(k)
+1 ) and |B
+(k)
+1 | = B for k ∈ [K].
+3: Perform: x
+(k)
+2 = xk
+1 − η1d
+(k)
+1 , ∀ k ∈ [K]
+4: for t = 1 to T do
+5: for k = 1 to K do # at the WN
+6: d
+(k)
+t+1 =
+1
+b
+X
+ξ
+(k)
+t+1∈B
+(k)
+t+1
+∇f(k)
+(x
+(k)
+t+1; ξ
+(k)
+t+1)+(1−at+1)
+
+d
+(k)
+t −
+1
+b
+X
+ξ
+(k)
+t+1∈B
+(k)
+t+1
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t+1)
+
+with |B
+(k)
+t+1| = b, at+1 =cη2
+t
+7: if t mod I = 0 then # at the SN
+8: d
+(k)
+t+1 = ¯
+dt+1 := 1
+K
+PK
+k=1 d
+(k)
+t+1
+9: x
+(k)
+t+2 := x̄t+1 − ηt+1
+¯
+dt+1 = 1
+K
+PK
+k=1 x
+(k)
+t+1 − ηt+1
+¯
+dt+1 # server-side momentum step
+10: else x
+(k)
+t+2 = x
+(k)
+t+1 − ηt+1d
+(k)
+t+1 # worker-side momentum step
+11: end if
+12: end for
+13: end for
+14: Return: x̄a chosen uniformly randomly from {x̄t}T
+t=1
+(i) For x̄a chosen according to Algorithm 1, we have:
+Ek∇f(x̄a)k2
+= O
+
+f(x̄1) − f∗
+K2ν/3T1−ν/3
+
++ Õ
+
+σ2
+K2ν/3T1−ν/3
+
++ Õ
+
+ζ2
+K2ν/3T1−ν/3
+
+. (4)
+(ii) For any ν ∈ [0, 1], we have
+Sample Complexity: The sample complexity of STEM is Õ(−3/2). This implies that each WN requires at
+most Õ(K−1−3/2) gradient computations, thereby achieving linear speedup with the number of WNs present
+in the network.
+Communication Complexity: The communication complexity of STEM is Õ(−1).
+The proof of this result is relegated to the Supplemental Material. A few remarks are in order.
+Remark 1 (Near-Optimal sample and communication complexities). Theorem 3.1 suggests that when I and b
+are selected appropriately, then STEM achieves Õ(−3/2) and Õ(−1) sample and communication complexities.
+Taking them separately, these complexity bounds are the best achievable by the existing FL algorithms (upto
+logarithmic factors regardless of sample or batch Lipschitz smooth assumption) [35]; see Table 1. We note
+that the O(−3/2) complexity is the best possible that can be achieved by centralized SGD with the sample
+Lipschitz gradient assumption; see [5]. On the other hand, the O(−1) complexity bound is also likely to be the
+optimal, since in [9] the authors showed that even when the local steps use a class of (deterministic) first-order
+algorithms, O(−1) is the best achievable communication complexity. The only difference is that [9] does not
+explicitly assume the intra-node variance bound (i.e., the second relation in Assumption 2-(ii)). We leave the
+precise characterization of the communication lower bound with intra-node variance as future work.
+Remark 2 (The Optimal Batch Sizes and Local Updates Trade-off). The parameter ν ∈ [0, 1] is used to balance
+the local minibatch sizes b, and the number of local updates I. Eqs. in (3) suggest that when ν increases
+from 0 to 1, b decreases and I increases. Specifically, if ν = 1, then b is only O(1) but I = O(T1/3/K2/3). In
+this case, each WN chooses a small minibatch while executing multiple local updates, and STEM resembles a
+FedAvg (a.k.a. Local SGD) algorithm but with double-sided momentum update directions, and is referred to
+as Fed STEM. In contrast, if ν = 0, then b = O(T1/2/K) but I is only O(1). In this case, each WN chooses
+6
+a large batch size while executing only a few, or even one, local updates, and STEM resembles the Minibatch
+SGD, but again with different update directions, and is referred to as Minibatch STEM. Such a trade-off can be
+seen in Fig. 1(b). Due to space limitation, these two special cases will be precisely stated in the supplementary
+materials as corollaries of Theorem 3.1.
+Remark 3 (The Sub-Optimal Batch Sizes and Local Updates Trade-off). From our proof (Theorem A.10
+included in the supplemental material), we can see that STEM requires Õ max
+
+(b·I)−1, K−1−3/2
+
+samples
+and Õ max
+
+−1, (b · I)−1K−1−3/2
+
+and communication rounds. According to the above expressions, if b · I
+increases beyond O(K−1−1/2), then the sample complexity will increase from the optimal Õ(−3/2); otherwise,
+the optimal sample complexity Õ(−3/2) is maintained. On the other hand, if b·I decreases beyond O(K−1−1/2),
+the communication complexity increases from Õ(−1). For instance, if we choose b = O(1) and I = O(1) the
+communication complexity becomes Õ(−3/2). This trade-off is illustrated in Figure 1(a), where we maintain
+the optimal sample complexity, while changing b and I to generate the trade-off surface.
+Remark 4 (Data Heterogeneity). The term Õ
+
+ζ2
+K2ν/3T1−ν/3
+
+in the gradient bound (4) captures the effect of the
+heterogeneity of data across WNs, where ζ is the parameter characterizing the intra-node variance and has been
+defined in Assumption 2-(ii). Highly heterogeneous data with large ζ2 can adversely impact the performance
+of STEM. Note that such a dependency on ζ also appears in other existing FL algorithms, such as [9,14,18].
+However, there is one special case of STEM that does not depend on the parameter ζ. This is the case where
+I = 1, i.e., the minibatch SGD counterpart of STEM where only a single local iteration is performed between
+two communication rounds. We have the following corollary.
+Corollary 1 (Minibatch STEM). Under Assumptions 1 and 2 , and choose the algorithm parameters as
+in Theorem 3.1. At each WN, choose I = 1, b = (T/K2
+)1/2
+, and the initial batch size B = b · I. Then
+STEM satisfies:
+(i) For x̄a chosen according to Algorithm 1, we have
+Ek∇f(x̄a)k2
+= O
+f(x̄1) − f∗
+T
+
++ Õ
+σ2
+T
+
+.
+(ii) Minibatch STEM achieves Õ(−3/2) sample and Õ(−1) communication complexity.
+Next, we show that FedAvg also exhibits a trade-off similar to that of STEM but with worse sample and
+communication complexities.
+3.2 Special cases: The FedAvg algorithm
+We briefly discuss another interesting special case of STEM, where the local momentum update is replaced
+by the conventional SGD (i.e., at = 1, ∀ t), while the server does not perform the momentum update (i.e.,
+¯
+dt = 0, ∀ t). This is essentially the classical FedAvg algorithm, just that it balances the number of local updates
+I and the minibatch size b. We show that this algorithm also exhibits a trade-off between b and I and on the
+trade-off curve it achieves O(−2) sample complexity and O(−3/2) communication complexity.
+Theorem 3.2 (The FedAvg Algorithm). Under Assumptions 1 and 2, suppose the stepsize is chosen as:
+η =
+q
+bK
+T ; Let us set:
+I = O (T/K3
+)ν/4
+
+, b = O (T/K3
+)1/3−ν/3
+
+(5)
+where ν ∈ [0, 1] is a constant. Then for FedAvg with T ≥ 81L2I2bK, the following holds
+(i) For x̄a chosen according to Algorithm 2, we have
+Ek∇f(x̄a)k2
+= O
+
+f(x̄1) − f∗
+Kν/2T2/3−ν/6
+
++ O
+
+σ2
+Kν/2T2/3−ν/6
+
++ O
+
+ζ2
+Kν/2T2/3−ν/6
+
+.
+7
+Algorithm 2 The FedAvg Algorithm
+1: Input: {ηt}T
+t=0; I, the # of local updates per communication rounds; b, the minibatch sizes.
+2: for t = 1 to T do
+3: for k = 1 to K do
+4: d
+(k)
+t = 1
+b
+P
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)(x
+(k)
+t ; ξ
+(k)
+t ) with |B
+(k)
+t | = b
+5: x
+(k)
+t+1 = x
+(k)
+t − ηtd
+(k)
+t
+6: if t mod I = 0 then
+7: x
+(k)
+t+1 = x̄t+1 = 1
+K
+PK
+k=1 x
+(k)
+t+1
+8: end if
+9: end for
+10: end for
+11: Return: x̄a chosen uniformly randomly from {x̄t}T
+t=1
+(ii) For any choice of ν ∈ [0, 1] we have:
+Sample Complexity: The sample complexity of FedAvg is O(−2). This implies that each WN requires at
+most O(K−1−2) gradient computations, thereby achieving linear speedup with the number of WNs in the
+network.
+Communication Complexity: The communication complexity of FedAvg is O(−3/2).
+Note that the requirement on T being lower bounded is only relevant for theoretical purposes, a similar
+requirement was also imposed in [14] to prove convergence. Again, the parameter ν ∈ [0, 1] in the statement
+of Theorem 3.2 balances I and b at each WN while maintaining state-of-the-art sample and communication
+complexities; please see Table 1 for a comparison of those bounds with existing FedAvg bounds. For ν = 1,
+FedAvg (cf. Theorem 3.2) reduces to FedAvg proposed in [12,14] and for ν = 0, the algorithm can be viewed
+as a large batch FedAvg with constant local updates [15, 16]. Note that similar to STEM, it is known that
+for I = 1, the Minibatch SGD’s performance is independent of the heterogeneity parameter, ζ [13]. We also
+point out that if Algorithm 1 uses Nesterov’s or Polyak’s momentum [14] at local WNs instead of the recursive
+momentum estimator we get the same guarantees as in Theorem 3.2.
+In summary, this section established that once the WN’s and the SN’s update directions (SGD in FedAvg
+and momentum based directions in STEM) are fixed, there exists a sequence of optimal choices of the number
+of local updates I, and the batch sizes b, which guarantees the best possible sample and communication
+complexities for the particular algorithm. The trade-off analysis presented in this section provides some useful
+guidelines for how to best select b and I in practice. Our subsequent numerical results will also verify that if b
+or I are not chosen judiciously, then the practical performance of the algorithms can degrade significantly.
+4 Numerical results
+In this section, we validate the proposed STEM algorithm and compare its performance with the de facto
+standard FedAvg [11] and recently proposed SCAFFOLD [15]. The goal of our experiments are three-fold: (1)
+To show that STEM performs on par, if not better, compared to other algorithms in both moderate and high
+heterogeneity settings, (2) there are multiple ways to reach the desired solution accuracy, one can either choose
+a large batch size and perform only a few local updates or select a smaller batch size and perform multiple
+local updates, and finally, (3) if the local updates and the batch sizes are not chosen appropriately, the WNs
+might need to perform excessive computations to achieve the desired solution accuracy, thereby slowing down
+convergence.
+Data and Parameter Settings: We compare the algorithms for image classification tasks on CIFAR-10 and
+MNIST data sets with 100 WNs in the network. For both CIFAR-10 and MNIST, each WN implements a
+two-hidden-layer convolutional neural network (CNN) architecture followed by three linear layers for CIFAR-10
+8
+Figure 2: Training loss and testing accuracy for classification on CIFAR-10 dataset against the number of
+communication rounds for moderate heterogeneity setting with b = 8 and I = 61.
+Figure 3: Training loss and testing accuracy for classification on CIFAR-10 dataset against the number of
+communication rounds for moderate heterogeneity setting with b = 64 and I = 7.
+and two for MNIST. All the experiments are implemented on a single NVIDIA Quadro RTX 5000 GPU. We
+consider two settings, one with moderate heterogeneity and the other with high heterogeneity. For both settings,
+the data is partitioned into disjoint sets among the WNs. In the moderate heterogeneity setting, the WNs have
+access to partitioned data from all the classes but for the high heterogeneity setting the data is partitioned
+such that each WN can access data from only a subset (5 out of 10 classes) of classes. For CIFAR-10 (resp.
+MNIST), each WN has access to 490 (resp. 540) samples for training and 90 (resp. 80) samples for testing
+purposes.
+For STEM, we set wt = 1, c = c̄/κ̄2 and tune for κ̄ and c̄ in the range κ̄ ∈ [0.01, 0.5] and c̄ ∈ [1, 10],
+respectively (cf. Theorem 3.1). We note that for small batch sizes κ̄ ∈ [0.01, 0.1], whereas for larger batch sizes
+κ̄ ∈ [0.3, 0.5] perform well. We diminish ηt according to (2) in each epoch2. For SCAFFOLD and FedAvg,
+the stepsize choices of 0.1 and 0.01 perform well for large and smaller batch sizes, respectively. We use cross
+entropy as the loss function and evaluate the algorithm performance under a few settings discussed next.
+Discussion: In Figures 2 and 3, we compare the training and testing performance of STEM with FedAvg and
+SCAFFOLD for CIFAR-10 dataset under moderate heterogeneity setting. For Figure 2, we choose b = 8 and
+I = 61, whereas for Figure 3, we choose b = 64 and I = 7. We first note that for both cases STEM performs
+2
+We define epoch as a single pass over the whole data.
+9
+Figure 4: Training loss and testing accuracy for classification on CIFAR-10 dataset against the number of
+communication rounds for high heterogeneity setting with b = 8 and I = 61.
+Figure 5: Training loss and the testing accuracy for classification on MNIST data set against the number of
+samples accessed at each WN for high heterogeneity setting with b = 8.
+better than FedAvg and SCAFFOLD. Moreover, observe that for both settings, small batches with multiple
+local updates (Figure 2) and large batches with few local updates (Figure 3), the algorithms converge with
+approximately similar performance, corroborating the theoretical analysis (see Discussion in Section 1). Next,
+in Figure 4 we evaluate the performance of the proposed algorithms on CIFAR-10 with high heterogeneity
+setting for b = 8 and I = 61. We note that STEM outperforms FedAvg and SCAFFOLD in this setting as well.
+Finally, with the next set of experiments we emphasize the importance of choosing b and I carefully. In Figure
+5, we compare the training and testing performance of the algorithms against the number of samples accessed
+at each WN for the classification task on MNIST dataset with high heterogeneity. We fix b = 8 and conduct
+experiments under two settings, one with I = 67, and the other with I = 536 local updates at each WN. Note
+that although a large number of local updates might lead to fewer communication rounds but it can make the
+sample complexity extremely high as is demonstrated by Figure 5. For example, Figure 5 shows that to reach
+testing accuracy of 96 − 97% with I = 67, STEM requires approximately 5000 − 6000 samples, in contrast with
+I = 536 it requires more than 25000 samples at each WN. Similar behavior can be observed if we fix I > 1
+and increase the local batch sizes. This implies not choosing the local updates and the batch sizes judiciously
+might lead to increased sample complexity.
+10
+5 Conclusion
+In this work, we proposed a novel algorithm STEM, for distributed stochastic non-convex optimization with
+applications to FL. We showed that STEM reaches an -stationary point with Õ(−3/2) sample complexity
+while achieving linear speed-up with the number of WNs. Moreover, the algorithm achieves a communication
+complexity of Õ(−1). We established a (optimal) trade-off that allows interpolation between varying choices
+of local updates and the batch sizes at each WN while maintaining (near optimal) sample and communication
+complexities. We showed that FedAvg (a.k.a LocalSGD) also exhibits a similar trade-off while achieving worse
+complexities. Our results provide guidelines to carefully choose the update frequency, directions, and minibatch
+sizes to achieve the best performance. The future directions of this work include developing lower bounds on
+communication complexity that establishes the tightness of the analysis conducted in this work.
+11
+References
+[1] J. Konečnỳ, H. B. McMahan, D. Ramage, and P. Richtárik, “Federated optimization: Distributed machine
+learning for on-device intelligence,” arXiv preprint arXiv:1610.02527, 2016.
+[2] M. Li, D. G. Andersen, A. J. Smola, and K. Yu, “Communication efficient distributed machine learning
+with the parameter server,” in Advances in Neural Information Processing Systems 27, Z. Ghahramani,
+M. Welling, C. Cortes, N. D. Lawrence, and K. Q. Weinberger, Eds. Curran Associates, Inc., 2014, pp.
+19–27.
+[3] J. Dean, G. Corrado, R. Monga, K. Chen, M. Devin, M. Mao, M. Ranzato, A. Senior, P. Tucker, K. Yang
+et al., “Large scale distributed deep networks,” in Advances in neural information processing systems,
+2012, pp. 1223–1231.
+[4] T. Léauté and B. Faltings, “Protecting privacy through distributed computation in multi-agent decision
+making,” Journal of Artificial Intelligence Research, vol. 47, pp. 649–695, 2013.
+[5] C. Fang, C. J. Li, Z. Lin, and T. Zhang, “Spider: Near-optimal non-convex optimization via stochastic
+path-integrated differential estimator,” in Advances in Neural Information Processing Systems, 2018, pp.
+689–699.
+[6] D. Zhou, P. Xu, and Q. Gu, “Stochastic nested variance reduction for nonconvex optimization,” arXiv
+preprint arXiv:1806.07811, 2018.
+[7] A. Cutkosky and F. Orabona, “Momentum-based variance reduction in non-convex SGD,” in Advances in
+Neural Information Processing Systems 32. Curran Associates, Inc., 2019, pp. 15 236–15 245.
+[8] Q. Tran-Dinh, N. H. Pham, D. T. Phan, and L. M. Nguyen, “Hybrid stochastic gradient descent algorithms
+for stochastic nonconvex optimization,” arXiv preprint arXiv:1905.05920, 2019.
+[9] X. Zhang, M. Hong, S. Dhople, W. Yin, and Y. Liu, “Fedpd: A federated learning framework with optimal
+rates and adaptivity to non-iid data,” 2020.
+[10] T. Li, A. K. Sahu, M. Zaheer, M. Sanjabi, A. Talwalkar, and V. Smith, “Federated optimization in
+heterogeneous networks,” arXiv preprint arXiv:1812.06127, 2018.
+[11] B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. A. y Arcas, “Communication-efficient learning
+of deep networks from decentralized data,” in Artificial Intelligence and Statistics. PMLR, 2017, pp.
+1273–1282.
+[12] H. Yu, S. Yang, and S. Zhu, “Parallel restarted sgd with faster convergence and less communication:
+Demystifying why model averaging works for deep learning,” 2018.
+[13] B. Woodworth, K. K. Patel, and N. Srebro, “Minibatch vs local sgd for heterogeneous distributed learning,”
+2020.
+[14] H. Yu, R. Jin, and S. Yang, “On the linear speedup analysis of communication efficient momentum sgd
+for distributed non-convex optimization,” 2019.
+[15] S. P. Karimireddy, S. Kale, M. Mohri, S. Reddi, S. Stich, and A. T. Suresh, “Scaffold: Stochastic controlled
+averaging for federated learning,” in International Conference on Machine Learning. PMLR, 2020, pp.
+5132–5143.
+[16] H. Yang, M. Fang, and J. Liu, “Achieving linear speedup with partial worker participation in non-iid
+federated learning,” 2021.
+12
+[17] S. P. Karimireddy, M. Jaggi, S. Kale, M. Mohri, S. J. Reddi, S. U. Stich, and A. T. Suresh, “Mime:
+Mimicking centralized stochastic algorithms in federated learning,” arXiv preprint arXiv:2008.03606, 2020.
+[18] R. Das, A. Hashemi, S. Sanghavi, and I. S. Dhillon, “Improved convergence rates for non-convex federated
+learning with compression,” arXiv preprint arXiv:2012.04061, 2020.
+[19] B. Woodworth, K. K. Patel, S. U. Stich, Z. Dai, B. Bullins, H. B. McMahan, O. Shamir, and N. Srebro,
+“Is local sgd better than minibatch sgd?” arXiv preprint arXiv:2002.07839, 2020.
+[20] H. Yu and R. Jin, “On the computation and communication complexity of parallel sgd with dynamic batch
+sizes for stochastic non-convex optimization,” in International Conference on Machine Learning. PMLR,
+2019, pp. 7174–7183.
+[21] J. Wang and G. Joshi, “Cooperative sgd: A unified framework for the design and analysis of
+communication-efficient sgd algorithms,” 2018.
+[22] A. Khaled, K. Mishchenko, and P. Richtárik, “Better communication complexity for local sgd,” arXiv,
+2019.
+[23] S. U. Stich, “Local sgd converges fast and communicates little,” arXiv preprint arXiv:1805.09767, 2018.
+[24] T. Lin, S. U. Stich, K. K. Patel, and M. Jaggi, “Don’t use large mini-batches, use local sgd,” 2018.
+[25] F. Zhou and G. Cong, “On the convergence properties of a k-step averaging stochastic gradient
+descent algorithm for nonconvex optimization,” in Proceedings of the Twenty-Seventh International Joint
+Conference on Artificial Intelligence, IJCAI-18. International Joint Conferences on Artificial Intelligence
+Organization, 7 2018, pp. 3219–3227. [Online]. Available: https://doi.org/10.24963/ijcai.2018/447
+[26] F. Sattler, S. Wiedemann, K.-R. Müller, and W. Samek, “Robust and communication-efficient federated
+learning from non-iid data,” IEEE transactions on neural networks and learning systems, vol. 31, no. 9,
+pp. 3400–3413, 2019.
+[27] Y. Zhao, M. Li, L. Lai, N. Suda, D. Civin, and V. Chandra, “Federated learning with non-iid data,” arXiv
+preprint arXiv:1806.00582, 2018.
+[28] J. Wang, V. Tantia, N. Ballas, and M. Rabbat, “Slowmo: Improving communication-efficient distributed
+sgd with slow momentum,” arXiv preprint arXiv:1910.00643, 2019.
+[29] X. Liang, S. Shen, J. Liu, Z. Pan, E. Chen, and Y. Cheng, “Variance reduced local sgd with lower
+communication complexity,” arXiv preprint arXiv:1912.12844, 2019.
+[30] P. Sharma, P. Khanduri, S. Bulusu, K. Rajawat, and P. K. Varshney, “Parallel restarted SPIDER –
+communication efficient distributed nonconvex optimization with optimal computation complexity,” arXiv
+preprint arXiv:1912.06036, 2019.
+[31] S. J. Reddi, S. Kale, and S. Kumar, “On the convergence of adam and beyond,” arXiv preprint
+arXiv:1904.09237, 2019.
+[32] A. Koloskova, N. Loizou, S. Boreiri, M. Jaggi, and S. Stich, “A unified theory of decentralized sgd with
+changing topology and local updates,” in International Conference on Machine Learning. PMLR, 2020,
+pp. 5381–5393.
+[33] R. Johnson and T. Zhang, “Accelerating stochastic gradient descent using predictive variance reduction,”
+in Advances in Neural Information Processing Systems 26. Curran Associates, Inc., 2013, pp. 315–323.
+13
+[34] L. Bottou, F. E. Curtis, and J. Nocedal, “Optimization methods for large-scale machine learning,” SIAM
+Review, vol. 60, no. 2, pp. 223–311, 2018.
+[35] Y. Drori and O. Shamir, “The complexity of finding stationary points with stochastic gradient descent,”
+in International Conference on Machine Learning. PMLR, 2020, pp. 2658–2667.
+14
+Appendix
+The organization of the Appendix is given below. In Appendix A, we present the proof of the convergence
+guarantees for STEM (Algorithm 1) stated in Section 3.1. In Appendix B, we present the proof of the
+convergence guarantees associated with FedAvg (Algorithm 2) stated in Section 3.2. Finally, in Appendix
+C we state some useful lemmas utilized throughout the proofs.
+A Proofs of Convergence Guarantees for STEM
+In this section we present the proofs for the convergence of STEM. First, we present some preliminary lemmas
+to be utilized throughout the proof. For reader’s convenience here we restate the steps of the Algorithm 1 in
+Algorithm 3.
+A.1 Preliminary lemmas
+Lemma A.1. Define ēt := ¯
+dt − 1
+K
+PK
+k=1 ∇f(k)(x
+(k)
+t ), then the iterates generated according to Algorithm 3 satisfy
+E
+"
+(1 − at)ēt−1,
+1
+K
+K
+X
+k=1
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+ #
+= 0,
+where the expectation is w.r.t. the stochasticity of the algorithm.
+Proof. Note that, given the filtration
+Ft = σ(x
+(k)
+1 , x
+(k)
+2 , . . . , x
+(k)
+t for all k ∈ [K]),
+the gradient error term, ēt−1, is fixed. The only randomness in the left hand side of the statement of the Lemma
+is with respect to ξ
+(k)
+t , for all k ∈ [K]. This implies that we have
+E
+"
+(1 − at)ēt−1,
+1
+K
+K
+X
+k=1
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+ #
+= E
+"
+(1 − at)ēt−1,
+1
+K
+K
+X
+k=1
+E
+
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+
+Ft
+#
+.
+The result then follows from the fact that ξ
+(k)
+t is chosen uniformly randomly at each k ∈ [K], and we have from
+(Assumption 2) that: E
+
+∇f(k)(x
+(k)
+t ; ξ
+(k)
+t )
+
+= ∇f(k)(x
+(k)
+t ). This implies we have
+E
+
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+h
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+i
+Ft
+
+= 0
+for all k ∈ [K].
+Therefore, the lemma is proved.
+15
+Lemma A.2. For k, ` ∈ [K] with k 6= `, the iterates generated according to Algorithm 3 satisfy
+E
+" X
+ξ
+(k)
+t ∈B
+(k)
+t
+h
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+i
+,
+X
+ξ
+(`)
+t ∈B
+(`)
+t
+h
+∇f(`)
+(x
+(`)
+t ; ξ
+(`)
+t ) − ∇f(`)
+(x
+(`)
+t )
+
+− (1 − at)
+
+∇f(`)
+(x
+(`)
+t−1; ξ
+(`)
+t ) − ∇f(`)
+(x
+(`)
+t−1)
+i#
+= 0
+Proof. Again note from the fact that conditioned on Ft the batches B
+(k)
+t and B
+(`)
+t for all k, ` ∈ [K] with k 6= `
+across WNs are chosen independently of each other. Therefore, we have
+E
+" X
+ξ
+(k)
+t ∈B
+(k)
+t
+h
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+i
+,
+X
+ξ
+(`)
+t ∈B
+(`)
+t
+h
+∇f(`)
+(x
+(`)
+t ; ξ
+(`)
+t ) − ∇f(`)
+(x
+(`)
+t )
+
+− (1 − at)
+
+∇f(`)
+(x
+(`)
+t−1; ξ
+(`)
+t ) − ∇f(`)
+(x
+(`)
+t−1)
+i#
+= E
+"
+E
+ X
+ξ
+(k)
+t ∈B
+(k)
+t
+h
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+i
+Ft
+
+,
+E
+ X
+ξ
+(`)
+t ∈B
+(`)
+t
+h
+∇f(`)
+(x
+(`)
+t ; ξ
+(`)
+t ) − ∇f(`)
+(x
+(`)
+t )
+
+− (1 − at)
+
+∇f(`)
+(x
+(`)
+t−1; ξ
+(`)
+t ) − ∇f(`)
+(x
+(`)
+t−1)
+i
+Ft
+#
+.
+The result then follows from the fact that ξ
+(k)
+t is chosen uniformly randomly across k ∈ [K] and we have from
+the unbiased gradient Assumption 2 that: E
+
+∇f(k)(x
+(k)
+t ; ξ
+(k)
+t )
+
+= ∇f(k)(x
+(k)
+t ). This implies we have
+E
+ X
+ξ
+(k)
+t ∈B
+(k)
+t
+h
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+i
+Ft
+
+= 0
+for all k ∈ [K].
+Therefore, the lemma is proved.
+Lemma A.3. For ē1 := ¯
+d1 − 1
+K
+PK
+k=1 ∇f(k)(x
+(k)
+1 ) where ¯
+d1 chosen according to Algorithm 3, we have:
+Ekē1k2
+≤
+σ2
+KB
+.
+16
+Proof. Using the definition of ē1 we have:
+Ekē1k2
+= E ¯
+d1 −
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+1 )
+2
+(a)
+= E
+1
+K
+K
+X
+k=1
+1
+B
+X
+ξ
+(k)
+1 ∈B
+(k)
+1
+∇f(k)
+(x
+(k)
+1 ; ξ
+(k)
+1 ) −
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+1 )
+2
+(b)
+=
+1
+K2B2
+K
+X
+k=1
+E
+X
+ξ
+(k)
+1 ∈B
+(k)
+1
+∇f(k)
+(x
+(k)
+1 ; ξ
+(k)
+1 ) − ∇f(k)
+(x
+(k)
+1 )
+ 2
+(c)
+=
+1
+K2B2
+K
+X
+k=1
+X
+ξ
+(k)
+1 ∈B
+(k)
+1
+E ∇f(k)
+(x
+(k)
+1 ; ξ
+(k)
+1 ) − ∇f(k)
+(x
+(k)
+1 )
+2
+(d)
+≤
+σ2
+KB
+.
+where (a) follows from the definition of ¯
+d1 in Algorithm 1 and (b) follows from the following: From Assumption
+2, given Ft we have: E
+
+∇f(k)(x
+(k)
+1 ; ξ
+(k)
+1 )
+
+= ∇f(k)(x
+(k)
+1 ), for all k ∈ [K]. Moreover, given Ft the samples ξ
+(k)
+1
+and ξ
+(`)
+1 at the kth and the `th WNs are chosen uniformly randomly, and independent of each other for all
+k, ` ∈ [K] and k 6= `.
+E
+ X
+ξ
+(k)
+1 ∈B
+(k)
+1
+∇f(k)
+(x
+(k)
+1 ; ξ
+(k)
+1 ) − ∇f(k)
+(x
+(k)
+1 )
+
+,
+X
+ξ
+(`)
+1 ∈B
+(`)
+1
+∇f(`)
+(x
+(`)
+1 ; ξ
+(`)
+1 ) − ∇f(`)
+(x̄1)
+
+#
+= E
+ X
+ξ
+(k)
+1 ∈B
+(k)
+1
+E
+
+∇f(k)
+(x
+(k)
+1 ; ξ
+(k)
+1 ) − ∇f(k)
+(x
+(k)
+1 ) Ft
+
+| {z }
+=0
+,
+X
+ξ
+(`)
+1 ∈B
+(`)
+1
+E
+
+∇f(`)
+(x
+(`)
+1 ; ξ
+(`)
+1 ) − ∇f(`)
+(x
+(`)
+1 ) Ft
+
+| {z }
+=0
+
+= 0.
+The equality (c) follows from the fact that the samples ξ
+(k)
+1 ∈ B
+(k)
+1 for all k ∈ [K] are chosen independently
+of each other. Then we conclude (c) from an argument similar to that of (b). Finally, (d) results from the
+intra-node variance bound given in Assumption 2.
+Hence, the lemma is proved.
+Next, using the preliminary lemmas developed in this section we prove the main results of the work.
+A.2 Proof of Main Results: STEM
+In this section, we utilize the results developed in earlier sections to derive the main result of the paper presented
+in Section 3.1. Throughout the section we assume Assumptions 1 and 2 to hold. Before proceeding, we first
+define some notations.
+We define t̄s := sI +1 with s ∈ [S]. Note from Algorithm 3 that at (s×I)th iteration, i.e., when t mod I = 0,
+the descent directions, {d
+(k)
+t }K
+k=1, corresponding to t = (t̄s)th time instant are shared with the SN. At the same
+time instant, the iterates, {x
+(k)
+t }K
+k=1 are also shared and the SN performs the “server side momentum step” (cf.
+Step 9 of Algorithm 3).
+A.2.1 Proof of Descent Lemma
+In the first step, we bound the error accumulation via the iterates generated by Algorithm 3.
+17
+Algorithm 3 The Stochastic Two-Sided Momentum (STEM) Algorithm
+1: Input: Parameters: c > 0, the number of local updates I, batch size b, stepsizes {ηt}.
+2: Initialize: Iterate x
+(k)
+1 = x̄1 = 1
+K
+PK
+k=1 x
+(k)
+1 , descent direction d
+(k)
+1 = ¯
+d1 = 1
+K
+PK
+k=1 d
+(k)
+1 with d
+(k)
+1 =
+1
+B
+P
+ξ
+(k)
+1 ∈B
+(k)
+1
+∇f(k)(x
+(k)
+1 ; ξ
+(k)
+1 ) and |B
+(k)
+1 | = B for k ∈ [K].
+3: Perform: x
+(k)
+2 = xk
+1 − η1d
+(k)
+1 , ∀ k ∈ [K]
+4: for t = 1 to T do
+5: for k = 1 to K do # at the WN
+6: d
+(k)
+t+1 =
+1
+b
+X
+ξ
+(k)
+t+1∈B
+(k)
+t+1
+∇f(k)
+(x
+(k)
+t+1; ξ
+(k)
+t+1)+(1−at+1)
+
+d
+(k)
+t −
+1
+b
+X
+ξ
+(k)
+t+1∈B
+(k)
+t+1
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t+1)
+
+with |B
+(k)
+t+1| = b, at+1 =cη2
+t
+7: if t mod I = 0 then # at the SN
+8: d
+(k)
+t+1 = ¯
+dt+1 := 1
+K
+PK
+k=1 d
+(k)
+t+1
+9: x
+(k)
+t+2 := x̄t+1 − ηt+1
+¯
+dt+1 = 1
+K
+PK
+k=1 x
+(k)
+t+1 − ηt+1
+¯
+dt+1 # server-side momentum step
+10: else x
+(k)
+t+2 = x
+(k)
+t+1 − ηt+1d
+(k)
+t+1 # worker-side momentum step
+11: end if
+12: end for
+13: end for
+14: Return: x̄a chosen uniformly randomly from {x̄t}T
+t=1
+Lemma A.4 (Error Accumulation from Iterates). For each t ∈ [t̄s−1, t̄s − 1] and s ∈ [S], the iterates x
+(k)
+t for
+each k ∈ [K] generated from Algorithm 3 satisfy:
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+≤ (I − 1)
+t
+X
+`=t̄s−1
+η2
+`
+K
+X
+k=1
+Ekd
+(k)
+` − ¯
+d`k2
+,
+where the expectation is w.r.t the stochasticity of the algorithm.
+Proof. Note from Algorithm 3 and the definition of t̄s that at t = t̄s−1 with s ∈ [S], x
+(k)
+t = x̄t, for all k. This
+implies
+K
+X
+k=1
+kx
+(k)
+t̄s−1
+− x̄t̄s−1
+k2
+= 0.
+Therefore, the statement of the lemma holds trivially. Moreover, for t ∈ [t̄s−1 + 1, t̄s − 1], with s ∈ [S], we have
+from Algorithm 3: x
+(k)
+t = x
+(k)
+t−1 − ηt−1d
+(k)
+t−1, this implies that:
+x
+(k)
+t = x
+(k)
+t̄s−1
+−
+t−1
+X
+`=t̄s−1
+η`d
+(k)
+` and x̄t = x̄t̄s−1
+−
+t−1
+X
+`=t̄s−1
+η`
+¯
+d`.
+18
+This implies that for t ∈ [t̄s−1 + 1, t̄s − 1], with s ∈ [S] we have
+K
+X
+k=1
+kx
+(k)
+t − x̄tk2
+=
+K
+X
+k=1
+x
+(k)
+t̄s−1
+− x̄t̄s−1
+−
+ t−1
+X
+`=t̄s−1
+η`d
+(k)
+` −
+t−1
+X
+`=t̄s−1
+η`
+¯
+d`
+ 2
+(a)
+=
+K
+X
+k=1
+t−1
+X
+`=t̄s−1
+η`d
+(k)
+` − η`
+¯
+d`
+ 2
+(b)
+≤ (I − 1)
+t−1
+X
+`=t̄s−1
+η2
+`
+K
+X
+k=1
+kd
+(k)
+` − ¯
+d`k2
+≤ (I − 1)
+t
+X
+`=t̄s−1
+η2
+`
+K
+X
+k=1
+kd
+(k)
+` − ¯
+d`k2
+,
+where the equality (a) follows from the fact that x
+(k)
+t̄s−1
+= x̄t̄s−1
+and inequality (b) uses the Lemma C.3 along
+with the fact that we have d
+(k)
+t = ¯
+dt for t = t̄s−1.
+Taking expectation on both sides yields the statement of the lemma.
+Next, we utilize Lemma A.4 along with the smoothness of the function f(·) (Assumption 1) to show descent
+in the objective function value at consecutive iterates.
+Lemma A.5 (Descent Lemma). With ēt := ¯
+dt − 1
+K
+PK
+k=1 ∇f(k)(x
+(k)
+t ), for all t ∈ [t̄s−1, t̄s − 1] and s ∈ [S], the
+iterates generated by Algorithm 3 satisfy:
+Ef(x̄t+1) ≤ Ef(x̄t) −
+
+ηt
+2
+−
+η2
+t L
+2
+
+Ek ¯
+dtk2
+−
+ηt
+2
+Ek∇f(x̄t)k2
++ ηtEkētk2
++
+ηtL2(I − 1)
+K
+t
+X
+`=t̄s−1
+η2
+`
+K
+X
+k=1
+Ekd
+(k)
+` − ¯
+d`k2
+,
+where the expectation is w.r.t the stochasticity of the algorithm.
+Proof. Using the smoothness of f (Assumption 1) we have:
+f(x̄t+1) ≤ f(x̄t) + h∇f(x̄t), x̄t+1 − x̄ti +
+L
+2
+kx̄t+1 − x̄tk2
+(a)
+= f(x̄t) − ηth∇f(x̄t), ¯
+dti +
+η2
+t L
+2
+k ¯
+dtk2
+(b)
+= f(x̄t) − ηtk ¯
+dtk2
++ ηth ¯
+dt − ∇f(x̄t), ¯
+dti +
+η2
+t L
+2
+k ¯
+dtk2
+(c)
+= f(x̄t) −
+
+ηt
+2
+−
+η2
+t L
+2
+
+k ¯
+dtk2
+−
+ηt
+2
+k∇f(x̄t)k2
++
+ηt
+2
+k ¯
+dt − ∇f(x̄t)k2
+(d)
+≤ f(x̄t) −
+
+ηt
+2
+−
+η2
+t L
+2
+
+k ¯
+dtk2
+−
+ηt
+2
+k∇f(x̄t)k2
++ ηt
+¯
+dt −
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t )
+2
++ ηt
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t ) − ∇f(k)
+(x̄t)
+ 2
+, (6)
+where equality (a) follows from the iterate update given in Step 10 of Algorithm 3, (b) results by adding and
+subtracting ¯
+dt to ∇f(x̄t) in the inner product term and using the linearity of the inner product, (c) follows
+19
+from the relation hx, yi = 1
+2kxk2 + 1
+2kyk2 − 1
+2kx−yk2, finally inequality (d) results from adding and subtracting
+1
+K
+PK
+k=1 ∇f(k)(x
+(k)
+t ) in the last term of (c) and using Lemma C.3.
+Taking expectation on both sides and considering the last term of (6), we have
+E
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t ) − ∇f(k)
+(x̄t)
+ 2
+≤
+1
+K
+K
+X
+k=1
+E ∇f(k)
+(x
+(k)
+t ) − ∇f(k)
+(x̄t)
+2
+≤
+L2
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+, (7)
+where the first inequality follows from Lemma C.3, and the second follows from the L-smoothness of f(k)(·)
+(Assumption 1).
+Substituting (7) in (6) and using the definition ēt := ¯
+dt −
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t ) we get:
+Ef(x̄t+1) ≤ Ef(x̄t) −
+
+ηt
+2
+−
+η2
+t L
+2
+
+Ek ¯
+dtk2
+−
+ηt
+2
+Ek∇f(x̄t)k2
++ ηtEkētk2
++
+ηtL2
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+. (8)
+Finally, using Lemma A.4 to bound the last term of (8), we get:
+Ef(x̄t+1) ≤ Ef(x̄t) −
+
+ηt
+2
+−
+η2
+t L
+2
+
+Ek ¯
+dtk2
+−
+ηt
+2
+Ek∇f(x̄t)k2
++ ηtEkētk2
++
+ηtL2(I − 1)
+K
+t
+X
+`=t̄s−1
+η2
+`
+K
+X
+k=1
+Ekd
+(k)
+` − ¯
+d`k2
+.
+Hence, the lemma is proved.
+Lemma A.5 shows that the expected descent in the function f depends on the magnitude of the expected
+gradient error term ēt, and the expected gradient drift across WNs, i.e., Ekd
+(k)
+` − ¯
+d`k2. This implies that to
+ensure sufficient descent we need to control the gradient error and the gradient drift across WNs. We achieve
+this by carefully designing the number of local updates, I, at each WN, and the batch-sizes b (and initial batch
+size B), that each WN uses to compute the descent direction.
+Next, we present the error contraction lemma which analyzes how the term Ekētk2 contracts across time.
+A.2.2 Proof of Gradient Error Contraction
+Lemma A.6 (Gradient Error Contraction). Define ēt := ¯
+dt − 1
+K
+PK
+k=1 ∇f(k)(x
+(k)
+t ), then for every t ∈ [T] the
+iterates generated by Algorithm 3 satisfy
+Ekēt+1k2
+≤ (1 − at+1)2
+Ekētk2
++
+8(1 − at+1)2L2
+bK2
+(I − 1)
+I
+η2
+t
+K
+X
+k=1
+E d
+(k)
+t − ¯
+dt
+2
++
+4(1 − at+1)2L2η2
+t
+bK
+Ek ¯
+dtk2
++
+2a2
+t+1σ2
+bK
+,
+where the expectation is w.r.t the stochasticity of the algorithm.
+20
+Proof. Consider the error term kētk2 as
+Ekētk2
+= E ¯
+dt −
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t )
+2
+(a)
+= E
+1
+K
+K
+X
+k=1
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) + (1 − at)
+
+¯
+dt−1 −
+1
+K
+K
+X
+k=1
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t )
+
+−
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t )
+2
+(b)
+= E
+1
+K
+K
+X
+k=1
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+ 
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+
++ (1 − at)ēt−1
+2
+,
+where (a) follows from the definition of descent direction given in Step 6 of Algorithm 3; (b) follows by adding
+and subtracting (1 − at) 1
+K
+PK
+k=1 ∇f(k)(x
+(k)
+t−1) and using the definition of ēt−1. Further simplifying the above
+expression, we get
+Ekētk2 (c)
+= (1 − at)2
+Ekēt−1k2
++
+1
+b2K2
+E
+K
+X
+k=1
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+h 
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+ i 2
+(d)
+= (1 − at)2
+Ekēt−1k2
++
+1
+b2K2
+K
+X
+k=1
+E
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+h
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+i 2
+,
+(e)
+= (1 − at)2
+Ekēt−1k2
++
+1
+b2K2
+K
+X
+k=1
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+E
+
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at)
+
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+ 2
+, (9)
+where (c) results from expanding the norm using inner product and noting that the cross terms are zero in
+expectation from Lemma A.1; (d) follows from expanding the norm using the inner products across k ∈ [K]
+and noting that the cross term is zero in expectation from Lemma A.2; finally, (e) results from expanding the
+norm using the inner product across samples used to compute the minibatch gradients and the inner product is
+zero since at each node k ∈ [K], the samples in the minibatch, ξ
+(k)
+t ∈ B
+(k)
+t , are sampled independently of each
+other.
+21
+Now considering the 2nd term of (9) above, we have
+E ∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− (1 − at) ∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+ 2
+= E (1 − at)
+
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+
+− ∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+
++ at ∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+ 2
+(a)
+≤ 2(1 − at)2
+E ∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t )
+
+− ∇f(k)
+(x
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+ 2
++ 2a2
+t E ∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t )
+2
+(b)
+≤ 2(1 − at)2
+E ∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t )
+2
++ 2a2
+t σ2
+(c)
+≤ 2(1 − at)2
+L2
+Ekx
+(k)
+t − x
+(k)
+t−1k2
++ 2a2
+t σ2
+(d)
+≤ 2(1 − at)2
+L2
+η2
+t−1Ekd
+(k)
+t−1k2
++ 2a2
+t σ2
+(e)
+≤ 8(1 − at)2
+L2 (I − 1)
+I
+η2
+t−1Ekd
+(k)
+t−1 − ¯
+dt−1k2
++ 4(1 − at)2
+L2
+η2
+t−1Ek ¯
+dt−1k2
++ 2a2
+t σ2
+, (10)
+where (a) follows from Lemma C.3; (b) results from use of Assumption 2 and mean variance inequality: For a
+random variable Z we have EkZ − E[Z]k2 ≤ EkZk2; (c) follows from the Lipschitz continuity of the gradient
+given in Assumption 1; (d) results from the iterate update equation given in Step 10 of Algorithm 3; finally,
+(e) uses the fact that: (i) for I = 1 we have d
+(k)
+t = ¯
+dt for all t ∈ [T] and (ii) for I ≥ 2 we use Lemma C.3 and
+the fact that (I − 1)/I ≥ 1/2.
+Substituting (10) in (9) we get:
+Ekētk2
+≤ (1 − at)2
+Ekēt−1k2
++
+8(1 − at)2L2
+bK2
+(I − 1)
+I
+η2
+t−1
+K
+X
+k=1
+Ekd
+(k)
+t−1 − ¯
+dt−1k2
++
+4(1 − at)2L2η2
+t−1
+bK
+Ek ¯
+dt−1k2
++
+2a2
+t σ2
+bK
+.
+Finally, the lemma is proved by replacing t by t + 1.
+Lemma A.6 shows that the gradient error contracts in each iteration. Next, we first define a potential
+function and then utilize Lemmas A.5 and A.6 to show descent in the potential function.
+A.2.3 Descent in Potential Function
+We define the potential function as a linear combination of the objective function and the gradient estimation
+error: ēt := ¯
+dt − 1
+K
+PK
+k=1 ∇f(k)(x
+(k)
+t )
+Φt := f(x̄t) +
+bK
+64L2
+kētk2
+ηt−1
+. (11)
+Next, we characterize the descent in the potential function.
+Lemma A.7 (Potential Function Descent). For t̄ ∈ [t̄s−1, t̄s − 1] and for ηt ≤ 1
+16LI we have
+E[Φt̄+1 − Φt̄s−1
+] ≤ −
+t̄
+X
+t=t̄s−1
+
+7ηt
+16
+−
+η2
+t L
+2
+
+Ek ¯
+dtk2
+−
+t̄
+X
+t=t̄s−1
+ηt
+2
+Ek∇f(x̄t)k2
++
+σ2c2
+32L2
+t̄
+X
+t=t̄s−1
+η3
+t
++
+33
+256K
+(I − 1)
+I
+t̄
+X
+t=t̄s−1
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+where the expectation is w.r.t the stochasticity of the algorithm.
+22
+Proof. To get the descent on the the potential function, we first consider the term:
+Ekēt+1k2
+ηt
+−
+Ekētk2
+ηt−1
+.
+Using Lemma A.6 we get
+Ekēt+1k2
+ηt
+−
+Ekētk2
+ηt−1
+≤
+
+(1 − at+1)2
+ηt
+−
+1
+ηt−1
+
+Ekētk2
++
+8(1 − at+1)2L2
+bK2
+(I − 1)
+I
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
++
+4(1 − at+1)2L2ηt
+bK
+Ek ¯
+dtk2
++
+2a2
+t+1σ2
+ηtbK
+(a)
+≤ η−1
+t − η−1
+t−1 − cηt
+
+Ekētk2
++
+8L2
+bK2
+(I − 1)
+I
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
++
+4L2ηt
+bK
+Ek ¯
+dtk2
++
+2σ2c2η3
+t
+bK
+, (12)
+where inequality (a) utilizes the fact that (1 − at)2 ≤ 1 − at ≤ 1 for all t ∈ [T].
+Let us consider η−1
+t − η−1
+t−1 in the first term of the inequality in (12) and using the definition of the stepsize
+ηt from Theorem 3.1, we have
+η−1
+t − η−1
+t−1 =
+(wt + σ2t)1/3
+κ̄
+−
+(wt−1 + σ2(t − 1))1/3
+κ̄
+(a)
+≤
+(wt + σ2t)1/3
+κ̄
+−
+(wt + σ2(t − 1))1/3
+κ̄
+(b)
+≤
+σ2
+3κ̄(wt + σ2(t − 1))2/3
+(c)
+≤
+22/3σ2κ̄2
+3κ̄3(wt + σ2t)2/3
+(d)
+=
+22/3σ2
+3κ̄3
+η2
+t
+(e)
+≤
+σ2
+24κ̄3LI
+ηt, (13)
+where inequality (a) follows from the fact that we choose wt ≤ wt−1 (see definition of wt in Theorem 3.1), (b)
+results from the concavity of x1/3 as:
+(x + y)1/3
+− x1/3
+≤
+y
+3x2/3
+.
+In inequality (c), we have used the fact that wt ≥ 2σ2, finally, (d) and (e) utilize the definition of ηt and the
+fact that ηt ≤ 1
+16LI for all t ∈ [T], respectively.
+Now combining the first term of inequality in (12) with (13) and choosing c =
+64L2
+bK
++
+σ2
+24κ̄3LI
+we get:
+η−1
+t − η−1
+t−1 − cηt ≤ −
+64L2
+bK
+ηt.
+Therefore, we have from (12):
+Ekēt+1k2
+ηt
+−
+Ekētk2
+ηt−1
+≤ −
+64L2ηt
+bK
+Ekētk2
++
+8L2
+bK2
+(I − 1)
+I
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
++
+4L2ηt
+bK
+Ek ¯
+dtk2
++
+2σ2c2η3
+t
+bK
+bK
+64L2
+
+Ekēt+1k2
+ηt
+−
+Ekētk2
+ηt−1
+
+≤ −ηtEkētk2
++
+1
+8K
+(I − 1)
+I
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
++
+ηt
+16
+Ek ¯
+dtk2
++
+σ2c2η3
+t
+32L2
+.
+23
+Finally, using Lemma A.5 and the definition of potential function given in (11), using the above we get the
+descent in the potential function for any t ∈ [t̄s−1, t̄s − 1] with s ∈ [S] as:
+E[Φt+1 − Φt] ≤ −
+
+7ηt
+16
+−
+η2
+t L
+2
+
+Ek ¯
+dtk2
+−
+ηt
+2
+Ek∇f(x̄t)k2
++
+ηtL2(I − 1)
+K
+t
+X
+`=t̄s−1
+η2
+`
+K
+X
+k=1
+Ekd
+(k)
+` − ¯
+d`k2
++
+1
+8K
+(I − 1)
+I
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
++
+σ2c2η3
+t
+32L2
+.
+Summing the above over t = t̄s−1 to t̄ for t̄ ∈ [t̄s−1, t̄s − 1], we get:
+E[Φt̄+1 − Φt̄s−1
+] ≤ −
+t̄
+X
+t=t̄s−1
+
+7ηt
+16
+−
+η2
+t L
+2
+
+Ek ¯
+dtk2
+−
+t̄
+X
+t=t̄s−1
+ηt
+2
+Ek∇f(x̄t)k2
++
+σ2c2
+32L2
+t̄
+X
+t=t̄s−1
+η3
+t
++
+L2(I − 1)
+K
+t̄
+X
+t=t̄s−1
+ηt
+t
+X
+`=t̄s−1
+η2
+`
+K
+X
+k=1
+Ekd
+(k)
+` − ¯
+d`k2
++
+1
+8K
+(I − 1)
+I
+t̄
+X
+t=t̄s−1
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+≤ −
+t̄
+X
+t=t̄s−1
+
+7ηt
+16
+−
+η2
+t L
+2
+
+Ek ¯
+dtk2
+−
+t̄
+X
+t=t̄s−1
+ηt
+2
+Ek∇f(x̄t)k2
++
+σ2c2
+32L2
+t̄
+X
+t=t̄s−1
+η3
+t
++
+L2(I − 1)
+K
+ t̄
+X
+t=t̄s−1
+ηt
+ t̄
+X
+`=t̄s−1
+η2
+`
+K
+X
+k=1
+Ekd
+(k)
+` − ¯
+d`k2
+
++
+1
+8K
+(I − 1)
+I
+t̄
+X
+t=t̄s−1
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+.
+Finally, using the fact that we have: ηt ≤ 1
+16LI for all t ∈ [T], we get:
+E[Φt̄+1 − Φt̄s−1
+] ≤ −
+t̄
+X
+t=t̄s−1
+
+7ηt
+16
+−
+η2
+t L
+2
+
+Ek ¯
+dtk2
+−
+t̄
+X
+t=t̄s−1
+ηt
+2
+Ek∇f(x̄t)k2
++
+σ2c2
+32L2
+t̄
+X
+t=t̄s−1
+η3
+t
++
+L2(I − 1)
+K
+
+I ×
+1
+16LI
+×
+1
+16LI
+ t̄
+X
+t=t̄s−1
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
++
+1
+8K
+(I − 1)
+I
+t̄
+X
+t=t̄s−1
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+= −
+t̄
+X
+t=t̄s−1
+
+7ηt
+16
+−
+η2
+t L
+2
+
+Ek ¯
+dtk2
+−
+t̄
+X
+t=t̄s−1
+ηt
+2
+Ek∇f(x̄t)k2
++
+σ2c2
+32L2
+t̄
+X
+t=t̄s−1
+η3
+t
++
+33
+256K
+(I − 1)
+I
+t̄
+X
+t=t̄s−1
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+.
+Therefore, the lemma is proved.
+Multiple local updates at each WN on heterogeneous data can cause the local descent directions to drift
+away from each other. Next, we bound this error accumulated via gradient drift across WNs.
+24
+A.2.4 Accumulated Gradient Consensus Error
+We first upper bound the gradient consensus error given by term
+PK
+k=1 Ekd
+(k)
+t − ¯
+dtk2.
+Lemma A.8 (Gradient Consensus Error). For every t ∈ [T] and some β > 0 we have
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+≤
+
+(1 − at)2
+(1 + β) + 4L2
+
+1 +
+1
+β
+
+η2
+t−1
+ K
+X
+k=1
+Ekd
+(k)
+t−1 − ¯
+dt−1k2
++ 4KL2
+
+1 +
+1
+β
+
+η2
+t−1Ek ¯
+dt−1k2
++
+4Kσ2
+b
+
+1 +
+1
+β
+
+a2
+t + 8Kζ2
+
+1 +
+1
+β
+
+a2
+t
++32L2
+
+1 +
+1
+β
+
+(I − 1)a2
+t
+t−1
+X
+¯
+`=t̄s−1
+η2
+¯
+`
+K
+X
+k=1
+Ekd
+(k)
+¯
+`
+− ¯
+d¯
+`k2
+.
+where the expectation is w.r.t. the stochasticity of the algorithm.
+Proof. Using the definition of the descent direction d
+(k)
+t from Algorithm 3 we have
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+=
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) + (1 − at) d
+(k)
+t−1 −
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t )
+
+−
+
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t ; ξ
+(j)
+t ) + (1 − at) ¯
+dt−1 −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+
+ 2
+=
+K
+X
+k=1
+E (1 − at) d
+(k)
+t−1 − ¯
+dt−1
+
++
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t ; ξ
+(j)
+t )
+− (1 − at)
+
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+ 2
+(a)
+≤ (1 + β)(1 − at)2
+K
+X
+k=1
+Ekd
+(k)
+t−1 − ¯
+dt−1k2
++
+
+1 +
+1
+β
+ K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t ; ξ
+(j)
+t )
+− (1 − at)
+
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+ 2
+(14)
+where inequality (a) follows from the Young’s inequality for some β > 0. Now considering the second term in
+25
+(14), we get
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t ; ξ
+(j)
+t )
+− (1 − at)
+
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+ 2
+=
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t ; ξ
+(j)
+t )
+−
+
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+
++ at
+
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+ 2
+(a)
+≤ 2
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t ; ξ
+(j)
+t )
+−
+
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+ 2
++ 2a2
+t
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+2
+(b)
+≤ 2
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t )
+ 2
++ 2a2
+t
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+2
+(c)
+≤ 2
+K
+X
+k=1
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+E ∇f(k)
+(x
+(k)
+t ; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t )
+2
++ 2a2
+t
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+2
+(d)
+≤ 2L2
+K
+X
+k=1
+Ekx
+(k)
+t − x
+(k)
+t−1k2
++ 2a2
+t
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+2
+,
+(15)
+where inequality (a) above follows from Lemma C.3, (b) follows from Lemma C.1, inequality (c) again uses
+Lemma C.3 and (d) follows from the Lipschitz-smoothness of the individual functions f(k) given in Assumption
+1.
+26
+Next, we consider the second term in (15) above, we have
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t )
+2
+(a)
+=
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+
+−
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t ) − ∇f(j)
+(x
+(j)
+t−1)
+
++ ∇f(k)
+(x
+(k)
+t−1) −
+1
+K
+K
+X
+j=1
+∇f(j)
+(x
+(j)
+t−1)
+2
+(b)
+≤ 2
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+
+−
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+t ∈B
+(j)
+t
+∇f(j)
+(x
+(j)
+t−1; ξ
+(j)
+t ) − ∇f(j)
+(x
+(j)
+t−1)
+ 2
++ 2
+K
+X
+k=1
+E ∇f(k)
+(x
+(k)
+t−1) −
+1
+K
+K
+X
+j=1
+∇f(j)
+(x
+(j)
+t−1)
+2
+(c)
+≤ 2
+K
+X
+k=1
+E
+1
+b
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+ 2
++ 2
+K
+X
+k=1
+E ∇f(k)
+(x
+(k)
+t−1) −
+1
+K
+K
+X
+j=1
+∇f(j)
+(x
+(j)
+t−1)
+2
+(d)
+≤ 2
+K
+X
+k=1
+1
+b2
+X
+ξ
+(k)
+t ∈B
+(k)
+t
+E ∇f(k)
+(x
+(k)
+t−1; ξ
+(k)
+t ) − ∇f(k)
+(x
+(k)
+t−1)
+ 2
++ 4
+K
+X
+k=1
+E ∇f(k)
+(x̄t−1) − ∇f(x̄t−1)
+2
++ 8
+K
+X
+k=1
+E ∇f(k)
+(x
+(k)
+t−1) − ∇f(k)
+(x̄t−1)
+2
++ 8
+K
+X
+k=1
+E ∇f(x̄t−1) −
+1
+K
+K
+X
+j=1
+∇f(j)
+(x
+(j)
+t−1)
+2
+(e)
+≤
+2Kσ2
+b
++ 4
+K
+X
+k=1
+1
+K
+K
+X
+j=1
+Ek∇f(k)
+(x̄t−1) − ∇f(j)
+(x̄t−1)k2
++ 16L2
+K
+X
+k=1
+Ekx
+(k)
+t−1 − x̄t−1k2
+(g)
+≤
+2Kσ2
+b
++ 4Kζ2
++ 16L2
+K
+X
+k=1
+Ekx
+(k)
+t−1 − x̄t−1k2
+, (16)
+where equality (a) follows from adding and subtracting ∇f(k)(x
+(k)
+t−1) and 1
+K
+PK
+j=1 ∇f(j)(x
+(j)
+t−1) inside the norm;
+inequality (b) uses Lemma C.3; inequality (c) results from the use of Lemma C.1; inequality (d) expands the sum
+of the first term using inner products and utilizes the fact that the cross product terms are zero in expectation.
+This follows from the fact that conditioned on Ft we have E[∇f(k)(x
+(k)
+t ; ξ
+(k)
+t )] = ∇f(k)(x
+(k)
+t ) for all k ∈ [K] and
+t ∈ [T]; inequality (e) utilizes intra-node variance Bound given in Assumption 2, Lemma C.3 and Lipschitz
+smoothness Assumption 1; finally, (g) results from the inter-node variance bound stated in Assumption 2.
+27
+Finally, substituting (16) and (15) in (14), we get
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+≤ (1 − at)2
+(1 + β)
+K
+X
+k=1
+E d
+(k)
+t−1 − ¯
+dt−1
+2
++ 2L2
+
+1 +
+1
+β
+ K
+X
+k=1
+Ekx
+(k)
+t − x
+(k)
+t−1k2
++
+4Kσ2
+b
+
+1 +
+1
+β
+
+a2
+t + 8Kζ2
+
+1 +
+1
+β
+
+a2
+t + 32L2
+
+1 +
+1
+β
+
+a2
+t
+K
+X
+k=1
+Ekx
+(k)
+t−1 − x̄t−1k2
+(a)
+≤ (1 − at)2
+(1 + β)
+K
+X
+k=1
+E d
+(k)
+t−1 − ¯
+dt−1
+2
++ 2L2
+
+1 +
+1
+β
+
+η2
+t−1
+K
+X
+k=1
+Ekd
+(k)
+t−1k2
++
+4Kσ2
+b
+
+1 +
+1
+β
+
+a2
+t + 8Kζ2
+
+1 +
+1
+β
+
+a2
+t
++ 32L2
+
+1 +
+1
+β
+
+(I − 1)a2
+t
+t−1
+X
+¯
+`=t̄s−1
+η2
+¯
+`
+K
+X
+k=1
+Ekd
+(k)
+¯
+`
+− ¯
+d¯
+`k2
+(b)
+≤ (1 − at)2
+(1 + β)
+K
+X
+k=1
+E d
+(k)
+t−1 − ¯
+dt−1
+2
++ 4L2
+
+1 +
+1
+β
+
+η2
+t−1
+K
+X
+k=1
+Ekd
+(k)
+t−1 − ¯
+dt−1k2
++ 4L2
+
+1 +
+1
+β
+
+η2
+t−1
+K
+X
+k=1
+Ek ¯
+dt−1k2
++
+4Kσ2
+b
+
+1 +
+1
+β
+
+a2
+t + 8Kζ2
+
+1 +
+1
+β
+
+a2
+t
++ 32L2
+
+1 +
+1
+β
+
+(I − 1)a2
+t
+t−1
+X
+¯
+`=t̄s−1
+η2
+¯
+`
+K
+X
+k=1
+Ekd
+(k)
+¯
+`
+− ¯
+d¯
+`k2
+=
+
+(1 − at)2
+(1 + β) + 4L2
+
+1 +
+1
+β
+
+η2
+t−1
+ K
+X
+k=1
+Ekd
+(k)
+t−1 − ¯
+dt−1k2
++ 4KL2
+
+1 +
+1
+β
+
+η2
+t−1Ek ¯
+dt−1k2
++
+4Kσ2
+b
+
+1 +
+1
+β
+
+a2
+t + 8Kζ2
+
+1 +
+1
+β
+
+a2
+t
++ 32L2
+
+1 +
+1
+β
+
+(I − 1)a2
+t
+t−1
+X
+¯
+`=t̄s−1
+η2
+¯
+`
+K
+X
+k=1
+Ekd
+(k)
+¯
+`
+− ¯
+d¯
+`k2
+,
+where inequality (a) follows from the iterate update given in Step 10 of Algorithm 3 and the application Lemma
+A.4; and inequality (b) results from the use of Lemma C.3.
+Next, we utilize the above Lemma A.8 to bound the accumulated gradient consensus error in the potential
+function’s descent derived in Lemma A.7.
+Lemma A.9 (Accumulated Gradient Consensus Error). For t̄ ∈ [t̄s−1, t̄s − 1] with s ∈ [S] we have
+33
+256K
+(I − 1)
+I
+t̄
+X
+t=t̄s−1
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+≤
+t̄
+X
+t=t̄s−1
+ηt
+64
+Ek ¯
+dtk2
++
+σ2c2
+64bL2
+t̄
+X
+t=t̄s−1
+η3
+t +
+ζ2c2
+32L2
+(I − 1)
+I
+t̄
+X
+t=t̄s−1
+η3
+t .
+Proof. First, from the statement of Lemma A.8, considering the coefficient of first term on the right hand side
+28
+of the expression, we have:
+(1 − at)2
+(1 + β) + 4L2
+
+1 +
+1
+β
+
+η2
+t−1
+(a)
+≤ 1 + β + 4L2
+
+1 +
+1
+β
+
+η2
+t−1
+(b)
+≤ 1 +
+1
+I
++ 4L2
+(I + 1)η2
+t−1
+(c)
+≤ 1 +
+1
+I
++
+I + 1
+64I2
+(d)
+≤ 1 +
+33
+32I
+,
+where inequality (a) uses the fact that (1 − at)2 ≤ 1; the second inequality (b) follows from taking β = 1/I,
+inequality (c) uses the bound ηt ≤ 1/16LI for all t ∈ [T]. Finally, the last inequality (d) results by using the
+fact that we have I + 1 ≤ 2I. Substituting in the statement of Lemma A.8 above, we get
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+≤
+
+1 +
+33
+32I
+ K
+X
+k=1
+Ekd
+(k)
+t−1 − ¯
+dt−1k2
++ 4KL2
+
+1 +
+1
+β
+
+η2
+t−1Ek ¯
+dt−1k2
++
+4Kσ2
+b
+
+1 +
+1
+β
+
+a2
+t
++ 8Kζ2
+
+1 +
+1
+β
+
+a2
+t +32L2
+
+1 +
+1
+β
+
+(I − 1)a2
+t
+t−1
+X
+¯
+`=t̄s−1
+η2
+¯
+`
+K
+X
+k=1
+Ekd
+(k)
+¯
+`
+− ¯
+d¯
+`k2
+.
+(a)
+≤
+
+1 +
+33
+32I
+ K
+X
+k=1
+Ekd
+(k)
+t−1 − ¯
+dt−1k2
++ 8KL2
+Iη2
+t−1Ek ¯
+dt−1k2
++
+8KIσ2
+b
+c2
+η4
+t−1
++ 16KIζ2
+c2
+η4
+t−1+64L2
+I2
+c2
+η4
+t−1
+t−1
+X
+¯
+`=t̄s−1
+η2
+¯
+`
+K
+X
+k=1
+Ekd
+(k)
+¯
+`
+− ¯
+d¯
+`k2
+(b)
+≤
+
+1 +
+33
+32I
+ K
+X
+k=1
+Ekd
+(k)
+t−1 − ¯
+dt−1k2
++
+KL
+2
+ηt−1Ek ¯
+dt−1k2
++
+Kσ2c2
+2bL
+η3
+t−1
++
+Kζ2c2
+L
+η3
+t−1+ 64L2
+I2
+c2
+η4
+t−1
+t−1
+X
+¯
+`=t̄s−1
+η2
+¯
+`
+K
+X
+k=1
+Ekd
+(k)
+¯
+`
+− ¯
+d¯
+`k2
+(17)
+where (a) follows from using β = 1/I, the fact that I + 1 ≤ 2I and the definition of at from Algorithm 3.
+Note form Algorithm 3 that we have d
+(k)
+t = ¯
+dt for t = t̄s−1 with s ∈ [S]. This implies that for t = t̄s−1 with
+29
+s ∈ [S], we have,
+PK
+k=1 kd
+(k)
+t − ¯
+dtk2 = 0. Applying (17) above recursively for t ∈ [t̄s−1 + 1, t̄s − 1] we get:
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+≤
+KL
+2
+t−1
+X
+`=t̄s−1
+
+1 +
+33
+32I
+t−1−`
+η`Ek ¯
+d`k2
++
+Kσ2c2
+2bL
+t−1
+X
+`=t̄s−1
+
+1 +
+33
+32I
+t−1−`
+η3
+`
++
+Kζ2c2
+L
+t−1
+X
+`=t̄s−1
+
+1 +
+3
+2I
+t−1−`
+η3
+` + 64L2
+I2
+c2
+t−1
+X
+`=t̄s−1
+
+1 +
+33
+32I
+t−1−`
+η4
+`
+`
+X
+¯
+`=t̄s−1
+η2
+¯
+`
+K
+X
+k=1
+Ekd
+(k)
+¯
+`
+− ¯
+d¯
+`k2
+(a)
+≤
+KL
+2
+
+1 +
+33
+32I
+I t
+X
+`=t̄s−1
+η`Ek ¯
+d`k2
++
+Kσ2c2
+2bL
+
+1 +
+33
+32I
+I t
+X
+`=t̄s−1
+η3
+`
++
+Kζ2c2
+L
+
+1 +
+33
+32I
+I t
+X
+`=t̄s−1
+η3
+` + 64L2
+I3
+c2
+
+1
+16LI
+5
+1 +
+33
+32I
+I t
+X
+¯
+`=t̄s−1
+η¯
+`
+K
+X
+k=1
+Ekd
+(k)
+¯
+`
+− ¯
+d¯
+`k2
+(b)
+≤
+3KL
+2
+t
+X
+`=t̄s−1
+η`Ek ¯
+d`k2
++
+3Kσ2c2
+2bL
+t
+X
+`=t̄s−1
+η3
+` +
+3Kζ2c2
+L
+t
+X
+`=t̄s−1
+η3
+`
++ 192L2
+I3
+c2
+
+1
+16LI
+5 t
+X
+`=t̄s−1
+η`
+K
+X
+k=1
+Ekd
+(k)
+` − ¯
+d`k2
+, (18)
+where inequality (a) follows from the fact that 1 + 33/32I > 1 and t − 1 − ` ≤ I for t ∈ [t̄s−1, t̄s − 1] and
+` ∈ [t̄s−1, t] and inequality (b) follows from the fact that (1+33/32I)I ≤ e33/32 < 3 and ηt ≤ 1
+16LI for all t ∈ [T].
+Next, multiplying both sides of (18) by ηt and summing over t = t̄s−1 to t̄ for t̄ ∈ [t̄s−1, t̄s − 1] with s ∈ [S]
+t̄
+X
+t=t̄s−1
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+≤
+3KL
+2
+t̄
+X
+t=t̄s−1
+ηt
+t
+X
+`=t̄s−1
+η`Ek ¯
+d`k2
++
+3Kσ2c2
+2bL
+t̄
+X
+t=t̄s−1
+ηt
+t
+X
+`=t̄s−1
+η3
+`
++
+3Kζ2c2
+L
+t̄
+X
+t=t̄s−1
+ηt
+t
+X
+`=t̄s−1
+η3
+` + 192L2
+I3
+c2
+
+1
+16LI
+5 t̄
+X
+t=t̄s−1
+ηt
+t
+X
+`=t̄s−1
+η`
+K
+X
+k=1
+Ekd
+(k)
+` − ¯
+d`k2
+(a)
+≤
+3KL
+2
+ t̄
+X
+t=t̄s−1
+ηt
+ t̄
+X
+`=t̄s−1
+η`Ek ¯
+d`k2
++
+3Kσ2c2
+2bL
+ t̄
+X
+t=t̄s−1
+ηt
+ t̄
+X
+`=t̄s−1
+η3
+`
++
+3Kζ2c2
+L
+ t̄
+X
+t=t̄s−1
+ηt
+ t̄
+X
+`=t̄s−1
+η3
+` + 192L2
+I3
+c2
+
+1
+16LI
+5 t̄
+X
+t=t̄s−1
+ηt
+ t̄
+X
+`=t̄s−1
+η`
+K
+X
+k=1
+Ekd
+(k)
+` − ¯
+d`k2
+(b)
+≤
+3K
+32
+t̄
+X
+t=t̄s−1
+ηtEk ¯
+dtk2
++
+3Kσ2c2
+32bL2
+t̄
+X
+t=t̄s−1
+η3
+t +
+3Kζ2c2
+16L2
+t̄
+X
+t=t̄s−1
+η3
+t + 192L2
+I4
+c2
+
+1
+16LI
+6 t̄
+X
+t=t̄s−1
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+where inequality (a) uses the fact that t ∈ [t̄s−1, t̄] and (b) follows from the fact that we have ηt ≤ 1/16LI for
+all t ∈ [T]. Rearranging the terms we get
+
+1 − 192L2
+I4
+c2
+
+1
+16LI
+6 t̄
+X
+t=t̄s−1
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+≤
+3K
+32
+t̄
+X
+t=t̄s−1
+ηtEk ¯
+dtk2
++
+3Kσ2c2
+32bL2
+t̄
+X
+t=t̄s−1
+η3
+t +
+3Kζ2c2
+16L2
+t̄
+X
+t=t̄s−1
+η3
+t
+30
+using the fact that c ≤ 128L2/bK, b ≥ 1, K ≥ 1 and I ≥ 1, we have
+h
+1 − 192L2I4c2
+
+1
+16LI
+6i
+≥ 4
+5, therefore,
+we get
+33
+256K
+(I − 1)
+I
+t̄
+X
+t=t̄s−1
+ηt
+K
+X
+k=1
+Ekd
+(k)
+t − ¯
+dtk2
+≤
+t̄
+X
+t=t̄s−1
+ηt
+64
+Ek ¯
+dtk2
++
+σ2c2
+64bL2
+t̄
+X
+t=t̄s−1
+η3
+t +
+ζ2c2
+32L2
+(I − 1)
+I
+t̄
+X
+t=t̄s−1
+η3
+t .
+Hence, the lemma is proved.
+A.2.5 Proof of Theorem 3.1
+Next, to prove Theorem 3.1 we first prove an intermediate theorem by utilizing Lemmas A.9 and A.7 derived
+above.
+Theorem A.10. Choosing the parameters as
+(i) κ̄ =
+(bK)2/3σ2/3
+L
+,
+(ii) c =
+64L2
+bK
++
+σ2
+24κ̄3LI
+(i)
+= L2
+
+64
+bK
++
+1
+24(bK)2I
+
+≤
+128L2
+bK
+,
+(iii) We choose {wt}T
+t=0 as
+wt = max
+
+2σ2
+, 4096L3
+I3
+κ̄3
+− σ2
+t,
+c3κ̄3
+4096L3I3
+ (i)(ii)
+≤ σ2
+max
+
+2, 4096I3
+(bK)2
+− t,
+512
+bKI3
+
+.
+Moreover, for any number of local updates, I ≥ 1, batch sizes, b ≥ 1, and initial batch size, B ≥ 1, computed at
+individual WNs, STEM satisfies:
+Ek∇f(x̄a)k2
+≤
+
+32LI
+T
++
+2L
+(bK)2/3T2/3
+
+(f(x̄1) − f∗
+) +
+
+8bI2
+BT
++
+bI
+2(bK)2/3BT2/3
+
+σ2
++
+
+2562I
+T
++
+642
+(bK)2/3T2/3
+
+σ2
+log(T + 1) +
+
+2562I
+T
++
+642
+(bK)2/3T2/3
+
+ζ2 (I − 1)
+I
+log(T + 1).
+Proof. Substituting the gradient consensus error derived in Lemma A.9 into the Potential function descent
+derived in Lemma A.7, we can write the descent of potential function for t̄ ∈ [t̄s−1, t̄s − 1] with s ∈ [S] as:
+E[Φt̄+1 − Φt̄s−1
+] ≤ −
+t̄
+X
+t=t̄s−1
+
+27ηt
+64
+−
+η2
+t L
+2
+
+Ek ¯
+dtk2
+−
+t̄
+X
+t=t̄s−1
+ηt
+2
+Ek∇f(x̄t)k2
++
+c2σ2
+32L2
+t̄
+X
+t=t̄s−1
+η3
+t +
+c2σ2
+64bL2
+t̄
+X
+t=t̄s−1
+η3
+t +
+c2ζ2
+32L2
+(I − 1)
+I
+t̄
+X
+t=t̄s−1
+η3
+t
+(a)
+≤ −
+t̄
+X
+t=t̄s−1
+ηt
+2
+Ek∇f(x̄t)k2
++
+3c2σ2
+64L2
+t̄
+X
+t=t̄s−1
+η3
+t +
+c2ζ2
+32L2
+(I − 1)
+I
+t̄
+X
+t=t̄s−1
+η3
+t .
+where (a) follows from the fact that ηt ≤ 1
+16LI for all t ∈ [T] and b ≥ 1. Taking t̄ = t̄s − 1 = sI, the above
+expression can be written as:
+E[Φt̄s
+− Φt̄s−1
+] ≤ −
+t̄s−1
+X
+t=t̄s−1
+ηt
+2
+Ek∇f(x̄t)k2
++
+3c2σ2
+64L2
+t̄s−1
+X
+t=t̄s−1
+η3
+t +
+c2ζ2
+32L2
+(I − 1)
+I
+t̄s−1
+X
+t=t̄s−1
+η3
+t .
+31
+Summing over all the restarts, i.e, s ∈ [S], we get:
+E[Φt̄S
+− Φt̄0
+]≤ −
+t̄S−1
+X
+t=t̄0
+ηt
+2
+Ek∇f(x̄t)k2
++
+3c2σ2
+64L2
+t̄S−1
+X
+t=t̄0
+η3
+t +
+c2ζ2
+32L2
+(I − 1)
+I
+t̄S−1
+X
+t=t̄0
+η3
+t .
+Assuming that T = SI, then from the definition of t̄s that t̄0 = 1 and t̄S = SI + 1 = T + 1, we get
+T
+X
+t=1
+ηt
+2
+Ek∇f(x̄t)k2
+≤ E[Φ1 − ΦT+1] +
+3c2σ2
+64L2
+T
+X
+t=1
+η3
+t +
+c2ζ2
+32L2
+(I − 1)
+I
+T
+X
+t=1
+η3
+t
+(a)
+≤ f(x̄1) − f∗
++
+bK
+64L2
+Ekē1k2
+η0
++
+3c2σ2
+64L2
+T
+X
+t=1
+η3
+t +
+c2ζ2
+32L2
+(I − 1)
+I
+T
+X
+t=1
+η3
+t
+(b)
+≤ f(x̄1) − f∗
++
+σ2
+64L2
+b
+Bη0
++
+3c2σ2
+64L2
+T
+X
+t=1
+η3
+t +
+c2ζ2
+32L2
+(I − 1)
+I
+T
+X
+t=1
+η3
+t . (19)
+where (a) follows from the fact that f∗ ≤ ΦT+1 and (b) results from application of Lemma A.3.
+First, let us consider the last term of the (19) above, we have from the definition of the stepsize ηt
+T
+X
+t=1
+η3
+t =
+T
+X
+t=1
+κ̄3
+wt + σ2t
+(a)
+≤
+T
+X
+t=1
+κ̄3
+σ2 + σ2t
+=
+κ̄3
+σ2
+T
+X
+t=1
+1
+1 + t
+(b)
+≤
+κ̄3
+σ2
+ln(T + 1). (20)
+where inequality (a) above follows from the fact that we have wt ≥ 2σ2 > σ2 and inequality (b) follows from
+the application of Lemma C.2.
+Substituting (20) in (19), dividing both sides by T and using the fact that ηt is non-increasing in t we have
+1
+T
+T
+X
+t=1
+Ek∇f(x̄t)k2
+≤
+2(f(x̄1) − f∗)
+ηT T
++
+1
+ηT T
+σ2
+32L2
+b
+Bη0
++
+1
+ηT T
+3c2κ̄3
+32L2
+log(T + 1)
++
+1
+ηT T
+c2κ̄3
+16L2
+ζ2
+σ2
+(I − 1)
+I
+log(T + 1)
+(a)
+≤
+2(f(x̄1) − f∗)
+ηT T
++
+1
+ηT T
+σ2
+32L2
+b
+Bη0
++
+1
+ηT T
+c2κ̄3
+4L2
+log(T + 1)
++
+1
+ηT T
+c2κ̄3
+4L2
+ζ2
+σ2
+(I − 1)
+I
+log(T + 1). (21)
+where (a) above utilizes the fact that 1/16 < 3/32 < 1/4.
+Now considering each term of (21) above separately and using the definition of ηt =
+κ̄
+(wt + σ2t)1/3
+we get
+from the coefficient of the first term:
+1
+ηT T
+=
+(wT + σ2T)1/3
+κ̄T
+(a)
+≤
+w
+1/3
+T
+κ̄T
++
+σ2/3
+κ̄T2/3
+(b)
+≤
+16LI
+T
++
+L
+(bK)2/3T2/3
+. (22)
+32
+where inequality (a) follows from identity (x + y)1/3 ≤ x1/3 + y1/3 and inequality (b) follows from the definition
+of κ̄ and wT
+wT = max
+
+2σ2
+, 4096L3
+I3
+κ̄3
+− σ2
+T,
+c3κ̄3
+4096L3I3
+
+≤ σ2
+max
+
+2, 4096I3
+(bK)2
+− T,
+512
+bKI3
+
+,
+where we used 4096L3
+I3
+κ̄3
+> 4096L3
+I3
+κ̄3
+−σ2
+T ≥ max
+
+2σ2
+,
+c3κ̄3
+4096L3I3
+
+. Note that this choice of wT captures
+the worst case guarantees for STEM.
+Now, let us consider the second term of (21), we have from the definition of η0 and ηT
+1
+ηT T
+σ2
+32L2
+b
+Bη0
+≤
+
+16LI
+T
++
+L
+(bK)2/3T2/3
+
+×
+σ2
+32L2
+×
+bw
+1/3
+0
+Bκ̄
+(a)
+≤
+
+16LI
+T
++
+L
+(bK)2/3T2/3
+
+×
+σ2
+32L2
+×
+16LIb
+B
+(b)
+≤
+8bI2
+BT
+σ2
++
+bI
+(bK)2/3BT2/3
+σ2
+2
+. (23)
+where inequality (a) follows from the identity (x + y)1/3 ≤ x1/3 + y1/3 and (b) follows from the definition of κ̄
+and using w0 ≤ 4096L3I3κ̄3 and wT ≤ 4096L3I3κ̄3 (Similar to the approach in (22) this choice of w0 and wT
+capture the worst case convergence guarantees for STEM.)
+Finally, considering the term 1
+ηT T
+c2κ̄3
+4L2 common to the last two terms in (21) above, we have from the
+definition of the stepsize, ηt,
+1
+ηT T
+c2κ̄3
+4L2
+≤
+
+16LI
+T
++
+L
+(bK)2/3T2/3
+
+×
+
+128L2
+bK
+2
+×
+(bK)2σ2
+L3
+×
+1
+4L2
+(a)
+≤ 2562
+σ2 I
+T
++ 642
+σ2 1
+(bK)2/3T2/3
+. (24)
+where inequality (a) follows from the identity (x + y)1/3 ≤ x1/3 + y1/3 and (b) again uses wT ≤ 4096L3I3κ̄3
+along with the definition of κ̄ and c.
+Finally, substituting the bounds obtained in (22), (23) and (24) into (21), we get
+Ek∇f(x̄a)k2
+≤
+
+32LI
+T
++
+2L
+(bK)2/3T2/3
+
+(f(x̄1) − f∗
+) +
+
+8bI2
+BT
++
+bI
+2(bK)2/3BT2/3
+
+σ2
++
+
+2562I
+T
++
+642
+(bK)2/3T2/3
+
+σ2
+log(T + 1) +
+
+2562I
+T
++
+642
+(bK)2/3T2/3
+
+ζ2 (I − 1)
+I
+log(T + 1).
+Hence, the theorem is proved.
+Next, using Theorem A.10 we prove Theorem 3.1.
+Theorem A.11 (Theorem 3.1: Trade-off: Local Updates vs Batch Sizes). With the parameters chosen
+according to Theorem A.10 and for any ν ∈ [0, 1] at each WN we set the total number of local updates as
+I = O (T/K2)ν/3
+
+, batch size, b = O (T/K2)1/2−ν/2
+
+, and the initial batch size, B = bI. Then STEM satisfies:
+(i) We have:
+Ek∇f(x̄a)k2
+= O
+
+f(x̄1) − f∗
+K2ν/3T1−ν/3
+
++ Õ
+
+σ2
+K2ν/3T1−ν/3
+
++ Õ
+
+(I − 1)
+I
+×
+ζ2
+K2ν/3T1−ν/3
+
+.
+33
+(ii) Sample Complexity: To achieve an -stationary point STEM requires at most O(−3/2) gradient computations.
+This implies that each WN requires at most O(K−1−3/2) gradient computations, thereby achieving linear
+speedup with the number of WNs present in the network.
+(iii) Communication Complexity: To achieve an -stationary point STEM requires at most O(−1) communication
+rounds.
+Proof. The proof of statement (i) follows from the statement of Theorem A.10 and substituting the values of
+parameters B, I and b in the expression. First, replacing B = bI in the statement of Theorem A.10 yields
+Ek∇f(x̄a)k2
+≤
+
+32LI
+T
++
+2L
+(bK)2/3T2/3
+
+(f(x̄1) − f∗
+) +
+
+8I
+T
++
+1
+2(bK)2/3T2/3
+
+σ2
++
+
+2562I
+T
++
+642
+(bK)2/3T2/3
+
+σ2
+log(T + 1) +
+
+2562I
+T
++
+642
+(bK)2/3T2/3
+
+ζ2 (I − 1)
+I
+log(T + 1).
+Then using the fact that I = O (T/K2)ν/3
+
+and b = O (T/K2)1/2−ν/2
+
+yields the expression of statement (i).
+Next, we compute the computation and communication complexity of the algorithm.
+• Sample Complexity [Theorem A.11(ii)]: From the statement of Theorem A.11(i), total iterations required
+to achieve an -stationary point are:
+Õ
+
+1
+K2ν/3T1−ν/3
+
+=  ⇒ T = Õ
+
+1
+K2ν/(3−ν)3/(3−ν)
+
+. (25)
+In each iteration, each WN computes 2b stochastic gradients, therefore, the total gradient computations at
+each WN are 2bT. Using b = O (T/K2)1/2−ν/2
+
+, we get the total gradient computations required at each
+WN as:
+bT = Õ
+
+T3/2−ν/2
+K1−ν
+
+(25)
+= Õ
+
+1
+K3/2
+
+This implies that the sample complexity is Õ(−3/2).
+• Communication Complexity [Theorem A.11(iii)]: The total rounds of communication to achieve an -stationary
+point are T/I, with I = O (T/K2)ν/3
+
+and T given in (25), therefore, we have the communication
+complexity as:
+T
+I
+= Õ T1−ν/3
+K2ν/3
+ (25)
+= Õ
+
+1
+
+
+.
+Hence, the theorem is proved.
+Corollary 2 (FedSTEM: Local Updates). With the choice of parameters given in Theorem A.10. At each WN,
+setting constant batch size, b ≥ 1, number of local updates, I = (T/b2K2)1/3, and the initial batch size, B = bI.
+Then STEM satisfies the following:
+(i) We have:
+Ek∇f(x̄a)k2
+= O
+
+f(x̄1) − f∗
+(bK)2/3T2/3
+
++ Õ
+
+σ2
+(bK)2/3T2/3
+
++ Õ
+
+ζ2
+(bK)2/3T2/3
+
+.
+(ii) Sample Complexity: To achieve an -stationary point FedSTEM requires at most Õ(−3/2) gradient computations
+while achieving linear speedup with the number of WNs.
+34
+(iii) Communication Complexity: To achieve an -stationary point FedSTEM requires at most Õ(−1) communication
+rounds.
+Proof. The proof of statement (i) follows from substituting the values of the parameters b, I and B as defined
+in the statement of the Corollary in the statement of Theorem A.10.
+Next, we compute the sample and communication complexity of the algorithm.
+• Sample Complexity: From the statement of Corollary 2(i), total iterations, T, required to achieve an
+-stationary point are:
+Õ
+
+1
+(bK)2/3T2/3
+
+=  ⇒ T = Õ
+
+1
+bK3/2
+
+. (26)
+At each iteration the algorithm computes 2b stochastic gradients. Therefore, the total number of gradient
+computations required at each WN are of the order of 2bT, which is Õ(K−1−3/2). Therefore, the sample
+complexity of the algorithm is Õ(−3/2).
+• Communication Complexity: Total rounds of communication to achieve an -stationary point is T/I,
+therefore we have from the choice of I that
+T
+I
+= Õ (bK)2/3
+T2/3
+ (26)
+= Õ
+
+1
+
+
+.
+Hence, the corollary is proved.
+An alternate design choice for the algorithm is to design large batch-size gradients and communicate more
+often. The next corollary captures this idea.
+Corollary 3 (Corollary 1: Minibatch STEM). With the choice of parameters given in Theorem A.10. At each
+WN, choosing the number of local updates, I = 1, the batch size, b = T1/2
+/K, and the initial batch size, B = bI.
+Then STEM satisfies:
+(i) We have:
+Ek∇f(x̄a)k2
+= O
+
+f(x̄1) − f∗
+T
+
++ Õ
+
+σ2
+T
+
+.
+(ii) Sample Complexity: To achieve an -stationary point Minibatch STEM requires at most Õ(−3/2) gradient
+computations while achieving linear speedup with the number of WNs.
+(iii) Communication Complexity: To achieve an -stationary point Minibatch STEM requires at most Õ(−1)
+communication rounds.
+Proof. The proof of statement (i) follows from substituting the values of the parameters b, I and B given in
+the statement of the Corollary in the statement of Theorem A.10.
+Next, we compute the sample and communication complexity of the algorithm.
+• Sample Complexity: From the statement of Corollary 3(i), total iterations, T, required to achieve an
+-stationary point are:
+Õ
+
+I
+T
+
+=  ⇒ T = Õ
+
+I
+
+
+. (27)
+35
+In each iteration, each WN computes 2b stochastic gradients, therefore, the total gradient computations at
+each WN are 2bT. Using the fact that b = O
+
+T1/2
+I3/2K
+
+. The total gradients computed at each WN to reach
+an -stationary point are:
+Õ
+
+I
+
+×
+I1/2
+1/2I3/2K
+
+= Õ
+
+1
+K3/2
+
+.
+Therefore, the communication complexity if Õ(−3/2).
+• Communication Complexity: The total rounds of communication required to reach an -stationary point
+are T/I, therefore we have
+T
+I
+(27)
+= Õ
+
+1
+
+
+.
+Hence, the corollary is proved.
+B Proofs of Convergence Guarantees for FedAvg
+In this section, we present the proofs for the FedAvg algorithm. Before stating the proofs in detail we first
+present some preliminaries lemmas which shall be used for proving the main results of the paper. We first fix
+some notations:
+We define t̄s := sI +1 with s ∈ [S]. Note from Algorithm 2 that at (s×I)th iteration, i.e., when t mod I = 0,
+the iterates, {x
+(k)
+t }K
+k=1 corresponding to t = (t̄s)th time instant are shared with the SN. We define the filtration
+Ft as the sigma algebra generated by iterates x
+(k)
+1 , x
+(k)
+2 , . . . , x
+(k)
+t as
+Ft = σ(x
+(k)
+1 , x
+(k)
+2 , . . . , x
+(k)
+t , for all k ∈ [K]).
+Also, throughout the section we assume Assumptions 1 and 2 to hold. Next, we present the proof of Theorem
+3.2. The proof follows in few steps which are discussed next.
+B.1 Proof of Main Results: FedAvg
+Lemma B.1. For ¯
+dt := 1
+K
+PK
+k=1 d
+(k)
+t where d
+(k)
+t for all k ∈ [K] and t ∈ [T] is chosen according to Algorithm 2,
+we have:
+E ¯
+dt −
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t )
+2
+≤
+σ2
+bK
+,
+where the expectation is w.r.t the stochasticity of the the algorithm.
+Proof. The proof follows from the same argument as in Lemma A.3.
+Next, we bound the error accumulated via the iterates generated by the local updates of Algorithm 2.
+Lemma B.2 (Error Accumulation from Iterates). For the choice of stepsize η ≤ 1
+9LI , the iterates x
+(k)
+t for each
+k ∈ [K] generated from Algorithm 2 satisfy:
+T
+X
+t=1
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+≤ 3η2
+(I − 1)σ2
+T + 5η2
+(I − 1)2
+ζ2
+T,
+where the expectation is w.r.t the stochasticity of the algorithm.
+36
+Proof. Note from Algorithm 2 and the definition of t̄s that at t = t̄s−1 with s ∈ [S], x
+(k)
+t = x̄t, for all k. This
+implies
+1
+K
+K
+X
+k=1
+kx
+(k)
+t̄s−1
+− x̄t̄s−1
+k2
+= 0.
+Therefore, the statement of the lemma holds trivially. Moreover, for t ∈ [t̄s−1 + 1, t̄s − 1], with s ∈ [S], we have
+from Algorithm 2: x
+(k)
+t = x
+(k)
+t−1 − ηd
+(k)
+t−1, this implies that:
+x
+(k)
+t = x
+(k)
+t̄s−1
+−
+t−1
+X
+`=t̄s−1
+ηd
+(k)
+` and x̄t = x̄t̄s−1
+−
+t−1
+X
+`=t̄s−1
+η ¯
+d`.
+This implies that for t ∈ [t̄s−1 + 1, t̄s − 1], with s ∈ [S] we have
+1
+K
+K
+X
+k=1
+kx
+(k)
+t − x̄tk2
+=
+1
+K
+K
+X
+k=1
+x
+(k)
+t̄s−1
+− x̄t̄s−1
+−
+ t−1
+X
+`=t̄s−1
+ηd
+(k)
+` −
+t−1
+X
+`=t̄s−1
+η ¯
+d`
+ 2
+(a)
+=
+η2
+K
+K
+X
+k=1
+t−1
+X
+`=t̄s−1
+d
+(k)
+` − ¯
+d`
+ 2
+(b)
+=
+η2
+K
+K
+X
+k=1
+t−1
+X
+`=t̄s−1
+
+1
+b
+X
+ξ
+(k)
+` ∈B
+(k)
+`
+∇f(k)
+(x
+(k)
+` ; ξ
+(k)
+` ) −
+1
+K
+K
+X
+j=1
+1
+b
+X
+ξ
+(j)
+` ∈B
+(j)
+`
+∇f(j)
+(x
+(j)
+` ; ξ
+(j)
+` )
+ 2
+(c)
+≤
+2η2
+K
+K
+X
+k=1
+t−1
+X
+`=t̄s−1
+
+1
+b
+X
+ξ
+(k)
+` ∈B
+(k)
+`
+∇f(k)
+(x
+(k)
+` ; ξ
+(k)
+` ) − ∇f(k)
+(x
+(k)
+` )
+
+−
+1
+K
+K
+X
+j=1
+
+1
+b
+X
+ξ
+(j)
+` ∈B
+(j)
+`
+∇f(j)
+(x
+(j)
+` ; ξ
+(j)
+` ) − ∇f(j)
+(x
+(j)
+` )
+ 2
++
+2η2
+K
+K
+X
+k=1
+t−1
+X
+`=t̄s−1
+
+∇f(k)
+(x
+(k)
+` ) −
+1
+K
+K
+X
+j=1
+∇f(j)
+(x
+(j)
+` )
+ 2
+(d)
+≤
+2η2
+K
+K
+X
+k=1
+t−1
+X
+`=t̄s−1
+
+1
+b
+X
+ξ
+(k)
+` ∈B
+(k)
+`
+∇f(k)
+(x
+(k)
+` ; ξ
+(k)
+` ) − ∇f(k)
+(x
+(k)
+` )
+ 2
++
+2η2
+K
+K
+X
+k=1
+t−1
+X
+`=t̄s−1
+
+∇f(k)
+(x
+(k)
+` ) −
+1
+K
+K
+X
+j=1
+∇f(j)
+(x
+(j)
+` )
+ 2
+, (28)
+where the equality (a) follows from the fact that x
+(k)
+t̄s−1
+= x̄t̄s−1
+for t = t̄s−1; (b) results from the definition
+of the stochastic gradient employed by FedAvg in Algorithm 2; (c) uses Lemma C.3 and (d) follows from the
+application of Lemma C.1.
+Taking expectation on both sides and let us next consider each term of (28) above separately, we have for
+37
+any k ∈ [K] from the first term of (28) above
+E
+t−1
+X
+`=t̄s−1
+
+1
+b
+X
+ξ
+(k)
+` ∈B
+(k)
+`
+∇f(k)
+(x
+(k)
+` ; ξ
+(k)
+` ) − ∇f(k)
+(x
+(k)
+` )
+ 2
+(a)
+=
+t−1
+X
+`=t̄s−1
+E
+1
+b
+X
+ξ
+(k)
+` ∈B
+(k)
+`
+∇f(k)
+(x
+(k)
+` ; ξ
+(k)
+` ) − ∇f(k)
+(x
+(k)
+` )
+2
+(b)
+=
+t−1
+X
+`=t̄s−1
+1
+b2
+X
+ξ
+(k)
+` ∈B
+(k)
+`
+E ∇f(k)
+(x
+(k)
+` ; ξ
+(k)
+` ) − ∇f(k)
+(x
+(k)
+` )
+2
+(c)
+≤
+(I − 1)
+b
+σ2
+(d)
+≤ (I − 1)σ2
+, (29)
+where (a) results from the fact that E
+h
+1
+b
+P
+ξ
+(k)
+` ∈B
+(k)
+`
+∇f(k)(x
+(k)
+` ; ξ
+(k)
+` )−∇f(k)(x
+(k)
+` ) F¯
+`
+i
+= 0 for any ¯
+` < `; (b) uses
+the fact that E
+
+∇f(k)(x
+(k)
+` ; ξ
+(k)
+` ) − ∇f(k)(x
+(k)
+` ) ∇f(k)(x
+(k)
+` ; ζ
+(k)
+` ) − ∇f(k)(x
+(k)
+` )
+
+= 0 for samples ξ
+(k)
+` , ζ
+(k)
+` ∼ D(k)
+chosen independent; (c) utilizes intra-node variance bound in Assumption 2(ii) and the fact that (t−1)−t̄s−1 ≤
+I − 1 for t ∈ [t̄s−1 + 1, t̄s − 1]; and finally, (d) uses the fact that b ≥ 1.
+Next, we consider the second term of (28) for any k ∈ [K], we have
+K
+X
+k=1
+E
+t−1
+X
+`=t̄s−1
+
+∇f(k)
+(x
+(k)
+` ) −
+1
+K
+K
+X
+j=1
+∇f(j)
+(x
+(j)
+` )
+ 2
+(a)
+≤ (I − 1)
+t−1
+X
+`=t̄s−1
+K
+X
+k=1
+E ∇f(k)
+(x
+(k)
+` ) −
+1
+K
+K
+X
+j=1
+∇f(j)
+(x
+(j)
+` )
+2
+(b)
+≤ (I − 1)
+t−1
+X
+`=t̄s−1
+
+4
+K
+X
+k=1
+E ∇f(k)
+(x
+(k)
+` ) − ∇f(k)
+(x̄`)
+2
++ 4
+K
+X
+k=1
+E ∇f(x̄`) −
+1
+K
+K
+X
+j=1
+∇f(x
+(j)
+` )
+2
++ 2
+K
+X
+k=1
+E ∇f(k)
+(x̄`) − ∇f(x̄`)
+2
+
+(c)
+≤ (I − 1)
+t−1
+X
+`=t̄s−1
+
+8L2
+K
+X
+k=1
+E x
+(k)
+` − x̄`
+2
++ 2
+K
+X
+k=1
+E ∇f(k)
+(x̄`) −
+1
+K
+K
+X
+j=1
+∇f(j)
+(x̄`)
+2
+(d)
+≤ 8L2
+(I − 1)
+t−1
+X
+`=t̄s−1
+K
+X
+k=1
+E x
+(k)
+` − x̄`
+2
++ 2K(I − 1)2
+ζ2
+, (30)
+where (a) utilizes the fact that (t − 1) − t̄s−1 ≤ I − 1 for t ∈ [t̄s−1 + 1, t̄s − 1]; (b) results from the application
+of Lemma C.3; (c) follows from Assumption 1; and (d) utilizes the inter-node variance Assumption 2 and the
+fact that (t − 1) − t̄s−1 ≤ I − 1 for t ∈ [t̄s−1 + 1, t̄s − 1].
+Substituting (29) and (30) in (28) and taking expectation on both sides we get
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+≤ 2η2
+(I − 1)σ2
++ 4η2
+(I − 1)2
+ζ2
++ 16L2
+(I − 1)η2
+t−1
+X
+`=t̄s−1
+1
+K
+k
+X
+k=1
+Ekx
+(k)
+` − x̄`k2
+.
+38
+Summing both sides from t = t̄s−1 to t̄s − 1, we get
+t̄s−1
+X
+t=t̄s−1
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+≤ 2η2
+(I − 1)σ2
+I + 4η2
+(I − 1)2
+ζ2
+I + 16L2
+(I − 1)η2
+t̄s−1
+X
+t=t̄s−1
+t−1
+X
+`=t̄s−1
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+` − x̄`k2
+(a)
+≤ 2η2
+(I − 1)σ2
+I + 4η2
+(I − 1)2
+ζ2
+I + 16L2
+(I − 1)η2
+t̄s−1
+X
+t=t̄s−1
+t̄s−1
+X
+`=t̄s−1
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+` − x̄`k2
+(b)
+≤ 2η2
+(I − 1)σ2
+I + 4η2
+(I − 1)2
+ζ2
+I + 16L2
+(I − 1)η2
+I
+t̄s−1
+X
+t=t̄s−1
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+,
+where (a) uses that fact that t ≤ t̄s − 1; (b) results from ts − ts−1 ≤ I for all s ∈ [S]. Finally, summing over
+s ∈ [S] and using T = SI we get
+T
+X
+t=1
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+≤ 2η2
+(I − 1)σ2
+T + 4η2
+(I − 1)2
+ζ2
+T + 16L2
+I2
+η2
+T
+X
+t=1
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+.
+Rearranging the terms, we get
+(1 − 16L2
+I2
+η2
+)
+T
+X
+t=1
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+≤ 2η2
+(I − 1)σ2
+T + 4η2
+(I − 1)2
+ζ2
+T.
+Finally, using the fact that η ≤ 1
+9LI we have 1 − 16L2I2η2 ≥ 4/5. Multiplying, both sides by 5/4 we get
+T
+X
+t=1
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+≤ 3η2
+(I − 1)σ2
+T + 5η2
+(I − 1)2
+ζ2
+T.
+Therefore, the lemma is proved.
+Lemma B.3 (Descent Lemma). For all t ∈ [t̄s−1, t̄s − 1] and s ∈ [S], with the choice of stepsizes η ≤ 1
+9LI , the
+iterates generated by Algorithm 2 satisfy:
+Ef(x̄t+1) ≤ Ef(x̄t) −
+η
+2
+Ek∇f(x̄t)k2
++
+ηL2
+2K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
++
+η2L
+bK
+σ2
+,
+where the expectation is w.r.t the stochasticity of the algorithm.
+39
+Proof. Using the smoothness of f (Assumption 1) we have:
+E[f(x̄t+1)] ≤ E
+h
+f(x̄t) + h∇f(x̄t), x̄t+1 − x̄ti +
+L
+2
+kx̄t+1 − x̄tk2
+i
+(a)
+= E
+h
+f(x̄t) − ηh∇f(x̄t), ¯
+dti +
+η2L
+2
+k ¯
+dtk2
+i
+(b)
+= E
+h
+f(x̄t) − η
+D
+∇f(x̄t),
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t )
+E
++
+η2L
+2
+k ¯
+dtk2
+i
+(c)
+= E
+
+f(x̄t) −
+η
+2
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t )
+2
+−
+η
+2
+k∇f(x̄t)k2
++
+η
+2
+∇f(x̄t) −
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t )
+2
++ η2
+L ¯
+dt −
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t )
+2
++ η2
+L
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t )
+2
+
+(d)
+≤ E
+
+f(x̄t) −
+η
+2
+− η2
+L
+ 1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t )
+2
+−
+η
+2
+k∇f(x̄t)k2
++
+ηL2
+2K
+K
+X
+k=1
+kx
+(k)
+t − x̄tk2
++
+η2L
+bK
+σ2
+
+(e)
+≤ E
+
+f(x̄t) −
+η
+2
+k∇f(x̄t)k2
++
+ηL2
+2K
+K
+X
+k=1
+kx
+(k)
+t − x̄tk2
++
+η2L
+bK
+σ2
+
+,
+where equality (a) follows from the iterate update given in Step 5 of Algorithm 2; (b) results from the fact that
+we have E[∇f(k)(x
+(k)
+t ; ξ
+(k)
+t )|Ft] = ∇f(k)(x
+(k)
+t ); (c) uses ha, bi = 1
+2[kak2 + kbk2 − ka − bk2] and Lemma C.3; (d)
+results from (31) below and Lemma B.1; and (e) results from the stepsize choice of η ≤ 1
+9LI .
+E
+1
+K
+K
+X
+k=1
+∇f(k)
+(x
+(k)
+t ) − ∇f(k)
+(x̄t)
+ 2
+≤
+1
+K
+K
+X
+k=1
+E ∇f(k)
+(x
+(k)
+t ) − ∇f(k)
+(x̄t)
+2
+≤
+L2
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+, (31)
+where the first inequality follows from Lemma C.3, and the second results from Assumption 1.
+Hence, the lemma is proved.
+B.1.1 Proof of Theorem 3.2
+The proof of Theorem 3.2 follows by replacing the choices of b and I given in (5) in the following result.
+Theorem B.4. Under Assumptions 1 and 2, with stepsize η =
+q
+bk
+T . Then for T ≥ 81L2I2bK with any choice
+of minibatch sizes, b ≥ 1, and number of local updates, I ≥ 1, the iterates generated from Algorithm 2 satisfy
+Ek∇f(x̄a)k2
+≤
+2(f(x̄t)) − f∗)
+(bk)1/2T1/2
++
+2L
+(bk)1/2T1/2
+σ2
++
+3L2bK(I − 1)
+T
+σ2
++
+5L2bK(I − 1)2
+T
+ζ2
+.
+Proof. Summing the result of Lemma B.3 for t = [T] and multiplying both sides by 2/ηT we get
+1
+T
+T
+X
+t=1
+Ek∇f(x̄t)k2
+≤
+2(f(x̄t) − f(x̄t+1))
+ηT
++
+2ηL
+bK
+σ2
++
+L2
+T
+T
+X
+t=1
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+≤
+2(f(x̄t) − f∗)
+ηT
++
+2ηL
+bK
+σ2
++
+L2
+T
+T
+X
+t=1
+1
+K
+K
+X
+k=1
+Ekx
+(k)
+t − x̄tk2
+40
+where the second inequality uses f(x̄t−1) ≥ f∗. Next, using Lemma B.2 we get
+1
+T
+T
+X
+t=1
+Ek∇f(x̄t)k2
+≤
+2(f(x̄t) − f∗)
+ηT
++
+2ηL
+bK
+σ2
++ 3L2
+η2
+(I − 1)σ2
++ 5L2
+η2
+(I − 1)2
+ζ2
+.
+Finally, using the definition of x̄a from Algorithm 2 and the choice of η =
+q
+bK
+T , we get
+Ek∇f(x̄a)k2
+≤
+2(f(x̄t) − f∗)
+(bK)1/2T1/2
++
+2L
+(bK)1/2T1/2
+σ2
++
+3L2bK(I − 1)
+T
+σ2
++
+5L2bK(I − 1)2
+T
+ζ2
+.
+Therefore, we have the theorem.
+Finally, substituting the choice of I and b given in (5) we get the statement of Theorem 3.2. Next two
+remarks characterize the behavior of FedAvg for two extreme choices of I and b.
+Remark 5 (FedAvg: multiple local updates). Choosing ν = 1 in Theorem 3.2 implies I = (T/b3K3)1/4 and
+b = O(1), we have
+Ek∇f(x̄a)k2
+= O
+
+f(x̄1) − f∗
+K1/2T1/2
+
++ O
+
+σ2
+K1/2T1/2
+
++ O
+
+ζ2
+K1/2T1/2
+
+,
+while the sample and communication complexities are still O(−2) and O(−3/2), respectively. Note that these
+are the same guarantees for FedAvg analyzed in [14,20].
+Remark 6 (FedAvg: large batch). Choosing ν = 0 in Theorem 3.2 implies I = O(1) > 1 (we allow multiple
+local updates, i.e. I > 1) and b = (T/I4K3)1/3, then we have
+Ek∇f(x̄a)k2
+= O
+
+f(x̄1) − f∗
+T2/3
+
++ O
+
+σ2
+T2/3
+
++ O
+
+ζ2
+T2/3
+
+.
+while the sample and communication complexities are again O(−2) and O(−3/2), respectively.
+Minibatch SGD: When the parameters are shared after each local update, for such case we have I = 1
+and for the choice of b = O(T/K) we have:
+Ek∇f(x̄a)k2
+= O
+
+f(x̄1) − f∗
+T
+
++ O
+
+σ2
+T
+
+.
+This implies that the sample and communication complexitiess are O(−2) and O(−1). Again, this result is
+independent of the heterogeniety parameter ζ (cf. Assumption 2) as the algorithm for I = 1 is essentially a
+centralized algorithm.
+C Useful lemmas
+Lemma C.1. For a finite sequence x(k) ∈ Rd for k ∈ [K] define x̄ := 1
+K
+PK
+k=1 x(k), we then have
+K
+X
+k=1
+kx(k)
+− x̄k2
+≤
+K
+X
+k=1
+kx(k)
+k2
+.
+41
+Proof. Using the notation x =
+h
+(x(1))
+T
+, (x(2))
+T
+, . . . , (x(K))
+T
+iT
+∈ RKd, denoting Id ∈ Rd×d and IKd ∈ RKd×Kd
+as identity matrices and representing 1 ∈ RK as the vector of all ones. We rewrite the left hand side of the
+statement as
+K
+X
+k=1
+kx(k)
+− x̄k2
+= x −
+
+I ⊗
+11T
+K
+
+x
+2
+=
+
+IKd −
+
+Id ⊗
+11T
+K
+
+x
+2
+(a)
+≤ kxk2
+=
+K
+X
+k=1
+kx(k)
+k2
+,
+where (a) follows from the fact that the induced matrix norm IKd −
+
+Id ⊗ 11T
+K
+
+≤ 1.
+Lemma C.2 (From [7]). Let a0 > 0 and a1, a2, . . . , aT ≥ 0. We have
+T
+X
+t=1
+at
+a0 +
+Pt
+i=t ai
+≤ ln
+
+1 +
+Pt
+i=1 ai
+a0
+
+.
+Lemma C.3. For X1, X2, . . . , Xn ∈ Rd, we have
+kX1 + X2 + . . . + Xnk2
+≤ nkX1k2
++ nkX2k2
++ . . . + nkXnk2
+.
+42
+

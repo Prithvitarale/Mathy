@@ -1,0 +1,2723 @@
+ExplainableAI (XAI) for PHM of IndustrialAsset:AState-of-The-Art,
+PRISMA-Compliant Systematic Review
+Ahmad Kamal BIN MOHD NOR, Srinivasa Rao PEDAPATI, Masdi MUHAMMAD,
+Mechanical Department, Universiti Teknologi Petronas, Malaysia.
+Email: ahmad_18002773@utp.edu.my
+ABSTRACT
+A state-of-the-art systematic review on XAI applied to Prognostic and Health Management (PHM)
+of industrial asset is presented. The work attempts to provide an overview of the general trend of XAI
+in PHM, answers the question of accuracy versus explainability, investigates the extent of human role,
+explainability evaluation and uncertainty management in PHM XAI. Research articles linked to PHM
+XAI, in English language, from 2015 to 2021 are selected from IEEE Xplore, ScienceDirect,
+SpringerLink, ACM Digital Library and Scopus databases using PRISMA guidelines. Data was
+extracted from 35 selected articles and examined using MS. Excel. Several findings were synthesized.
+Firstly, while the discipline is still young, the analysis indicates the growing acceptance of XAI in PHM
+domain. Secondly, XAI functions as a double edge sword, where it is assimilated as a tool to execute
+PHM tasks as well as a mean of explanation, in particular in diagnostic and anomaly detection. There
+is thus a need for XAI in PHM. Thirdly, the review shows that PHM XAI papers produce either good
+or excellent results in general, suggesting that PHM performance is unaffected by XAI. Fourthly, human
+role, explainability metrics and uncertainty management are areas requiring further attention by the
+PHM community. Adequate explainability metrics to cater for PHM need are urgently needed. Finally,
+most case study featured on the accepted articles are based on real, industrial data, indicating that
+available AI and XAI approaches are equipped to solve complex real-world challenges, increasing the
+confidence of AI model’s adoption in the industry. This work is funded by the Universiti Teknologi
+Petronas Foundation.
+Keywords: XAI, Explainable AI, Interpretable AI, Explainable Machine Learning, Prognostic and
+Health Management, PHM, PRISMA.
+1. INTRODUCTION
+1.1. General Progress in AI
+Artificial Intelligence (AI) continues its extensive penetration into emerging markets, fuelled by the
+need and favourable elements of the 21st
+century and the promise of prosperity backed by steady and
+sizeable investment. In the last few years, AI based research show much concentration in areas such as
+large-scale machine learning, deep learning, reinforcement learning, robotics, computer vision, natural
+language processing and internet of Thing (IoT) [1]. According to the first AI experts report in the One
+Hundred Year Study on Artificial Intelligence, AI ability will be heavily embodied in transportation,
+home robotics, healthcare, education, security and safety as well as entertainment in north American
+cities by the 2030’s [1]. The increasing data volume, breakthrough in machine learning, coupled with
+the pressing need to be efficient and more innovative democratize AI to the global scene. A survey done
+by McKinsey recorded an annual increase of 30% in AI investment from the 2010 to 2013 and 40%
+from the 2013 to 2016. In 2016 alone, the total global investment amounted to 26 to 39 billion dollars
+by tech firms and external investments [2]. [3] projected that AI could potentially add up to 9 trillion
+dollars thanks to automation, 6 trillion dollars in product innovation and 7 trillion dollars in global GDP
+cost reduction by the 2030. AI-driven technology will lead to incremental change in labour market
+requirement, where an increase in technological skill, together with higher cognitive and social-
+emotional skills are expected to support AI-based infrastructures whereas manual and basic cognitive
+skills will experience lesser demand [4].
+AI is a technical discipline defined as the science to make computers do things that would require
+intelligence if done by humans [5]. The reasoning of AI imitates natural law translated in working
+algorithms [6]. Some Important fields in AI research includes Expert System (ES) consisting of rule-
+based reasoning (RBR), case-based reasoning (CBR), and Fuzzy Systems (FL) and the realm of
+Machine Learning (ML) such as Neural Network (NN), Support Vectors, Deep Learning (DL) and
+Heuristic Algorithms [7]. Powerful nonlinear relationship modelling capability coupled with parallel
+Graphics Processing Unit (GPU) computing and open frameworks such as TensorFlow and Theano
+within reach by literally everyone opens the door to solve many technical challenges, sometimes
+surpassing human performance [8, 9]. These abilities and specialized tools make AI so appealing to
+technical oriented domains such as healthcare [5], computer vision [8], image processing [6] and
+reliability engineering [7].
+1.2. AI in PHM
+Machine learning in general, and more specifically deep learning, has played a part in reliability
+research landscape, in particular PHM of industrial asset, in the recent decades [10,11,12]. PHM
+provides guidelines and frameworks to safeguard the healthy state of assets. It minimizes risks,
+maintenance cost and workload, thus optimizing maintenance activities. PHM is defined in IEEE
+standard as “a maintenance and asset management approach utilizing signals, measurements, models,
+and algorithms to detect, assess, and track degraded health, and to predict failure progression” [13].
+Accordingly, 3 types of PHM activities are distinguished: failure prognostic, diagnostic, and anomaly
+detection. Prognostic is the action of determining the Remaining Useful Life (RUL) or the left-over
+operational time of an asset before failure [12]. Diagnostic is the action of classifying failure and, in
+some extend, discovering the detailed root cause of the failure [14] while anomaly detection consists of
+identifying unusual patterns going against the normal behaviour of operational indicators [15].
+Various literatures support the idea of AI as being at the forefront in PHM [10,15]. A Long Short-
+Term Memory (LSTM) neural network is employed in [16] with degradation image to estimate the RUL
+of rotating machinery. A regression tree is used to predict the RUL of central heating and cooling plant
+(CHCP) equipment in [17]. In [18], the combination of Logistic Regression (LR) with L2 Support
+Vector Machine (SVM) are proposed for gas circulator unit prognostic. Random Forest (RF) is
+employed to diagnose fault for semiconductor equipment failure in [19]. In [20], convolutional and fully
+connected layers with Softmax activation are proposed to diagnose rotating machine issues. Gradient
+Boosted Decision Tree (GBDT) is the best performing anomaly detection method in [21] compared to
+others in detecting anomalous data in hard drives.
+1.3. Black Box AI Problem
+Though very powerful, many AI methods are black box in nature [22, 23]. This means that the inner
+mechanism to produce output in these techniques are not known. Obviously, this opacity is an obstacle
+in AI penetration across many sensitive or high investment areas such as medical, banking, finance,
+defence, or the industry [24, 25] . The end user and experts of the domain in question need the assurance
+that the model’s inner process is understandable [26]. Additionally, the opaqueness adds risk, bias, or
+non-ethical outputs [27]. This non transparency discourage a responsible exploitation of AI methods
+decisions [28], model troubleshooting [29] and improvement [26]. Moreover, it further complicates the
+question of responsibility ownership in the case of wrong decision [30]. Finally, with the increasing
+scrutiny and regulation on AI usage, the need to make AI methods as transparent as possible is pressing.
+This includes the General Data Protection Regulation (GDPR) in the European Union (EU) and the
+Ethics Guidelines for Trustworthy Artificial Intelligence presented by the European Commission High-
+Level Expert Group on AI [31, 32, 33] .
+1.4. The Need for XAI
+XAI is a discipline dedicated in making AI methods more transparent, explainable, understandable
+to end user, stakeholders, non-experts, and non-stakeholders alike to nurture trust in AI while
+maintaining performance and effectively manage the emerging generation of artificially intelligent
+partners. Interest in XAI research is reflected by the spike of search term “Explainable AI” since the
+2016 and the increasing number of publications throughout the years [32]. DARPA developed the
+“Explainable AI (XAI) program” in 2017 while the Chinese government announced “The Development
+Plan for New Generation of Artificial Intelligence” in the same year, both promoting the dissemination
+of XAI [34].
+The general needs for XAI are as follows:
+1. Justify decision, detect problem, and improve AI models.
+2. Comply with the regulations, bias, ethics, reliability, accountability, safety, and security of AI
+use in timely manners.
+3. Enabling user to verify model's desirable properties, encouraging interactivity, gaining new
+insights on the model or the data and augment human intuition.
+4. Allow user’s task, effort, and resources to be more optimized and targeted.
+5. Important when the cost of error is high or when the AI system is not yet proven to be reliable.
+6. Foster the collaboration between experts, data scientists, users, and stakeholders.
+1.5. Review Motivation
+This paper presents a systematic review on XAI applications in PHM of industrial asset. Preferred
+Reporting Items for Systematic Reviews and Meta-analyses (PRISMA) guidelines is employed [35]. It
+is an evidence-based guidelines that ensure comprehensiveness, reducing bias, increasing reliability,
+transparency, and clarity of the review with minimum item [36, 37]. PRISMA is a 27 checklist
+guidelines that need to be satisfied as best as possible for best practice in systematic review redaction.
+However, items 12–15, 18-22, and 24 were omitted as they are not relevant to this systematic review.
+No protocol was registered for this study.
+Rationalities motivating the compilation of this review:
+1.a. Global interest in XAI: According to survey, general interest in XAI has surges since 2016 [9].
+Figure 1 show the search interest expressed for “Explainable AI” in Google with 100 as being
+the peak popularity for any term.
+Figure 1. Interest Shown for 'Explainable AI' Term in Google Search
+1.b. Specialized Reviews: In the early years of XAI, general reviews on XAI methods were written
+such as [32,34]. More recently, as the discipline grows, more specialized XAI review works can
+0
+20
+40
+60
+80
+100
+120
+2004-01
+2004-11
+2005-09
+2006-07
+2007-05
+2008-03
+2009-01
+2009-11
+2010-09
+2011-07
+2012-05
+2013-03
+2014-01
+2014-11
+2015-09
+2016-07
+2017-05
+2018-03
+2019-01
+2019-11
+2020-09
+Interest
+Over
+Time
+Year & Month
+XAI Search Trend in Google
+be found. [24],[27] and [30] present reviews on XAI in healthcare, [22] in pathology, [23] in
+psychology, [29] in fintech management, [33] in neurorobotics, [25] in drug discovery, and [31]
+in plant biology. It is thus urgent to compile and analyse XAI works in PHM domain which is
+still absent.
+1.c. PHM Nature & Regulation: PHM is normally related to high investment and safety sensitive
+industrial domains. Moreover, it is pressing to ensure the use of well-regulated AI in PHM. It is
+thus obvious for XAI to be promoted as much as possible and its know-how disseminated for
+the benefit of PHM actors.
+The objective of this review is to present an overview of XAI applications in PHM of industrial
+asset. This goal is achieved by addressing the following specific points:
+1.d. The general trend: Interest in PHM XAI, overview of the XAI approach employed, the
+repartition of the said methods according to PHM activities and the type of case study treated.
+1.e. Accuracy versus the explainability power reported in these works. According to DARPA,
+model’s accuracy performance is inversed to its explainability prowess [34].
+1.f. XAI role in burdening or assisting PHM tasks.
+1.g. The challenges in PHM XAI progress. For this, we do cross checks with the general challenges
+raised in [9, 26, 28, 32] and try to answer them in PHM perspective. Specifically:
+a. The lack of explanation evaluation metrics.
+b. Human role in XAI.
+c. Uncertainty management, readiness against adversarial example.
+This paper is organized as follow: In Section 2, the review method is introduced. Then, the literature
+review is described in Section 3, followed by the discussion of the mentioned goals in Section 4. Finally,
+concluding remarks are presented in last section.
+2. METHOD
+A single reviewer was associated with the search, the screening, and the data extraction of the
+articles. Thus, no disagreement occurred in all the steps mentioned. Only peer reviewed journal articles
+concerning PHM XAI of industrial asset between 2015 to 2021 in English language were selected.
+Searches were done in five publication databases consisting of ScienceDirect (until 17/02/21), IEEE
+Xplore (until 18/02/21), SpringerLink (until 22/02/21), ACM Digital Library (until 28/05/21) and
+Scopus (27/02/21). Advance search was used in each database but since each database features are
+different, specific strategy was adopted for each one. In IEEE Xplore, search was done in the Abstract
+and Document title fields only as these are the most relevant options. IEEE Xplore also authorises search
+within the obtained results in the Search within results field. Wildcard was not used in IEEE Xplore
+even though permitted. Searches in ScienceDirect and Scopus were done respectively by using the
+comprehensive keyword search in the title, abstract and keywords field: Title, abstract and author-
+specified keywords field for ScienceDirect and Search within Article title, Abstract, Keywords field for
+Scopus. However, contrary to Scopus, ScienceDirect does not support wildcard search, thus wildcard
+was used only in Scopus search. In SpringerLink, search was done in the with all the words field only,
+together with wildcards. In ACM, searches were done within both the ACM Full-Text collection and
+ACM Guide for Computing Literature areas using Search Within in the title, abstract and keywords
+options with wildcard. The full research strategy with keywords and filters are listed in Table 3. Once
+done, the screening of duplication was executed.
+Below screening steps were executed one after another for the rest of the result, with each screening
+step starting in the title, then the abstract and next the keywords:
+2.a. Verify again if article type is research article.
+2.b. Exclude non PHM articles by identifying absence of commonly employed PHM terms such as
+“prognostic”, “prognosis”, “remaining useful life”, “RUL”, “diagnostic”, “diagnosis”, “anomaly
+detection”, “failure”, “fault” or “degradation”.
+2.c. Exclude non XAI articles by identifying absence of commonly used XAI terms which are
+“explainable”, “interpretable” and “XAI”.
+2.d. Exclude non PHM XAI articles by identifying the absence of both PHM and XAI terms as
+respectively indicated in step 2.b. and 2.c.
+2.e. Exclude articles mentioning medical applications or network security management
+Finally, the context of the articles was examined on the remaining works for final screening to retain
+only PHM XAI of industrial asset publications.
+The data extracted from the articles is gathered in an Ms. Excel file. Directly retained variables are
+author, publication year, title, publisher, and publication/journal name. Once final selection is achieved,
+the article context analysis is performed, and further information is extracted:
+2.f. PHM activity category – Either anomaly detection, prognostic, or diagnostic. Structural damage
+detection as well as binary failure prediction are considered as diagnostic.
+2.g. XAI approach employed – The category of XAI method.
+2.h. Recorded performance – Reported accuracy of non XAI method or XAI method. Some papers
+clearly claim the comparability or the superiority of the proposed method over other tested
+methods. In the case where comparison is not done, the reported standalone accuracy result was
+evaluated and classified as either “good” or “satisfying” for a medium outcome or deemed “very
+good” or “excellent” if the accuracy is near perfect. When a method is superior to the rest, it is
+equal to “very good” unless detailed as only “good”. When mixed performance of good and very
+good are recorded for the same method, it is quantified as only “good”.
+2.i. XAI role in assisting PHM task – Here, XAI role in strengthening PHM ability is investigated.
+2.j. The existence of explainability evaluation metrics.
+2.k. Human role in PHM XAI works.
+2.l. Uncertainty management – Uncertainty management in either any of the stage of the PHM
+method or XAI approach increases the possibility for adoption by user due to additional surety.
+2.m. Case study type – real or simulated. Real is considered when data is coming from a real
+mechanical device. Simulated is considered when data is generated using simulation software.
+3. RESULTS
+3.1. Screening Results
+3048 papers were selected by the databases according to the applied keywords with their respective
+quantity as shown in Table 3. 288 articles were screened out as duplicates. Out of the 2760 remaining,
+25 papers had to be screened out as they are editorial or news documents. Then, 70 papers were selected
+according to criteria 2.a. - 2.e. from the remaining 2735 articles. Finally, only 35 papers were selected
+as 35 articles were deemed non relevant with the review topic after context verification. The final
+selection and the excluded articles with the rejection causes are disclosed respectively in Table 1 and
+Table 2. The PRISMA flow diagram of the selection and screening process is shown in Figure 2.
+The repartition of the selected articles domain as well as its publisher are presented in Figure 3 and
+Figure 4. The repartition of the excluded articles domain as well as its publisher are presented in Figure
+5 and Figure 6. As can be seen from Figure 3, diagnostic research dominates XAI PHM articles. Figure
+4 illustrates that IEEE and Elsevier as being the biggest source of the accepted XAI articles.
+Numerous unselected publications, though related to XAI, correspond to process monitoring PHM
+research as shown in Figure 5. These works were excluded as they are closely related to quality context
+rather than PHM. Some papers are concentrated on product rather than the industrial asset. Furthermore,
+the anomaly described is seldom associated with disturbance in industrial process rather than failure
+degradation. Studies concerning network security were also omitted. Here also, most of the excluded
+technical papers come from Elsevier and IEEE as confirmed by Figure 6, further showing that these
+publishers are the main sources of much XAI related technical papers.
+Figure 3. Accepted Article Topic Repartition
+PHM Topic on Accepted Articles Repartition
+Diagnostic Prognostic Anomaly Detection
+ScienceDirect
+01/01/15-17/02/21
+(n = 607)
+IEEE Xplore
+01/01/15-18/02/21
+(n = 144)
+SpringerLink
+01/01/15-22/02/21
+(n = 291)
+Scopus
+01/01/15-27/02/21
+(n = 1931)
+ACM Digital
+Library
+01/01/15-28/05/21
+(n = 75)
+Total citation(s)
+(n = 3048)
+Non-duplicate
+citation(s) (n = 2760)
+Application of Inclusion
+& Exclusion Criteria
+Application of Inclusion
+& Exclusion Criteria
+Included citation(s)
+(n = 70)
+Included citation(s)
+(n = 35)
+Exclusion Criteria:
+Criteria 2.a to 2.e in Title,
+Abstract and Keywords
+Excluded citation(s) (n = 2690)
+Exclusion Criteria:
+Non PHM-XAI of industrial
+asset in Full Text
+Excluded citation(s) (n = 35)
+Figure 2. PRISMA Flow Diagram for Selection and Screening
+Figure 4. Accepted Articles Publisher Repartition
+Figure 5. Excluded Articles Topic Repartition
+Figure 6. Excluded Articles Publisher Repartition
+Accepted Articles Publisher Repartition
+Elsevier IEEE MDPI
+Springer ACM ASTM
+Taylor & Francis Sage
+Topic on Excluded Article Repartition
+Process Monitoring Non PHM-XAI Medical
+Network Security Others
+Excluded Articles Publisher Repartition
+Elsevier IEEE MDPI ACS T&F Wiley ACM
+3.2. Literature Review
+3.2.1. Interpretable Approach
+3.2.1.1. Interpretable Model
+Interpretable models consist of structures that are easily interpretable. These structures are built a
+priori in the model, thus intrinsic in explainability, which enables a more transparent understanding of
+feature-output relationship by peeking directly into the model’s mechanism. Interpretability is achieved
+by using simple structures that are highly interpretable such as linear regression model, logistic
+regression, or decision tree. A linear regression for example, links a weighted sum of independent
+variables to the dependent variable. The change of one unit in an independent variable’s value will
+change the dependent variable by the concerning independent variable’s weight, while the rest of
+independent variables value remain fixed.
+In [38], an interpretable logistic regression model with elastic net regularization is employed in high
+pressure plunger pump anomaly detection. Data is first equally divided, and statistic measures are
+calculated on each division. A rolling window operation is then applied on the extracted features where
+flag is associated indicating if a failure will occur or not based on the statistical measure calculated
+before. The flagged representations, having the most relevant features associated with failure, serve as
+input to the regularized logistic regression. The relevance order of features to be included from the
+flagged representations is determined by considering the normal/failure feature distributions and
+measuring their Kolmogorov–Smirnov distance. The accuracy of the model is good and feature
+importance is exploited to improve model performance.
+[39] presents the Dynamic Structure–Adaptive Symbolic Approach (DSASA), a cross-domain life
+prediction model that is interpretable for slewing bearings RUL prediction. DSASA presents internal
+model structures visibly, takes historical run-to-failure data into account, and dynamically adapts real-
+time deterioration. In a nutshell, multi-signal-based health indicators are fed into three genetic
+programming algorithms for symbolic life modelling. Symbolic life models visually displayed the life
+modelling process in the manner of legible mapping relationships and obtained ideal RUL prediction
+results. Then, DSASA reconstructs original life expressions from the initial symbolic life model and
+uses dynamic coupling terms and its exponents to track the real-time asset deterioration. The recorded
+performance is better than previously employed method for the case study and contributed by XAI
+ability.
+An interpretable Structured-Effect Neural Network, 𝑆𝐸𝑁𝑁𝛩,which consist of a non-parametric
+baseline, a linear component of the current condition and a recurrent component is proposed in [40] for
+turbofan prognostic application. Eq. 1 represents the model. Here, the first component, 𝜆(𝑡) is the non-
+parametric part consisting of probabilistic lifetime model. The second component is the linear
+component that can be used with raw sensor readings, 𝑋𝑡, where the importance of features can be
+evaluated based on the linear coefficients. The third component, 𝑅𝑁𝑁𝛩, refers to recurrent neural
+network with weights Θ. The recurrent component thus needs to explain lesser variance of the data
+compared to pure neural network structure. The performance of the model surpassed other traditional
+machine learning methods except LSTM. However, XAI do not contribute to this performance.
+𝑆𝐸𝑁𝑁𝛩(𝑡; 𝑋𝑡, . . . 𝑋1) = 𝜆(𝑡) + 𝛽𝑇
+𝑋𝑡 + 𝑅𝑁𝑁𝛩 (𝑋𝑡, . . . 𝑋1, 𝑡) (1)
+A real-time damage localization model for mechanical structure based on interpretable physical-
+digital twin is proposed in [41]. The digital twin consists of a physic-based and a machine learning
+model. The physic-based model is a computational model that represents the physical twin. The physical
+twin translates the damaged structure, whose sensor data is available. It simulates the degradation of
+during online mode and produces synthetic training data for the machine learning classification model,
+here, quadratic discriminant model. Once trained, the data from the sensors and actuators of the physical
+twin in turn are fed to the digital twin. When degradation occurs, the machine learning model classifies
+the degradation class, while the physic-based model interprets the phenomenon. The method is applied
+to spring-mass system damage detection with good accuracy and XAI is used only for explanation
+purpose.
+In [42], the Generative Topographic Mapping (GTM) and Random Forest (RF) are tested as binary
+disruptive classification models for disruption prediction algorithms on DIII-D and JET Tokamaks,
+specifically in impurity accumulation phenomenon in both DIII-D and JET discharges. The GTM is an
+interpretable model while the RF output can be expressed as a sum of feature contributions. These
+methods are trained on DIII-D and tested on JET discharges data and vice-versa. Various Peaking
+factors are employed together with these models as indicators of the studied disruption precursors. The
+additional physic-based indicators improve interpretability by tracking early anomalies in real time
+monitoring. No performance comparison and quantitative result are recorded in this work and XAI is
+only employed here to interpret the prediction.
+Interpretable equation is presented in [43]. The interpretation of the boundary between disruptive
+and non-disruptive in Tokamaks operating zones is obtained by generating a physically relevant
+equation accomplished by applying Symbolic Regression (SR) via Genetic Programming (GP) to the
+outputs of Support Vector Machine (SVM) and Classification and Regression Trees (CART)
+ensembles. GP, with the help of a fitness function, help to choose the best mathematical expressions
+candidate that could solve the regression problem. The performance is good and comparable to other
+machine learning tools used previously but not due to XAI approach.
+3.2.1.2. Tree-Based Interpretability
+[44] presents a graphical diagnosis technique based on Convolutional Neural network (CNN) and
+extreme gradient boosting (XGBoost), applied on gas turbine failure problem. It replaces portions of
+the CNN architecture with XG-boost, a machine learning approach for classification and regression,
+and makes the CNN training model interpretable. XGBoost is a boosting method that combines several
+weak classifiers into a single strong classifier. The Classification and Regression Tree (CART) is the
+weak classifier utilised by XGBoost. CART is a binary tree that splits by looking for the best
+segmentation feature and cut point using the GINI coefficient as a criterion. The time series data are fed
+into the CNN. When comparable signals are clustered together, the local features will improve, allowing
+CNN to be more accurate. These signals may be sorted with XGBoost, improving feature order
+interpretability. To determine the accuracy, the original raw data obtained from the gas turbine is first
+fed into the CNN. The signal rankings from the initial raw data, as well as the accuracy gained by CNN,
+are then trained in XGBoost to produce tree models that can choose the optimal features-accuracy
+sorting combinations. The diagnostic accuracy obtained from this method is better than other tested
+techniques, contributed by the tree based interpretable method.
+3.2.1.3. Decision Rules & Knowledge-Based
+Knowledge based approach and decision rules are closely linked. Decision rules can be predefined
+by expert knowledge or automatically generated. The explanation can be intrinsic or post-hoc. These
+interpretable rules normally follow the if-then convention representing the input-output dynamic.
+[45] proposes the Fused-AI interpretabLe Anomaly Generation System (FLAGS) which combines
+both knowledge-driven (KD) and data-driven (DD) abilities for anomaly detection, failure recognition
+and root cause analysis of train. FLAGS consists of 3 stages. In the first phase, both KD and DD Fault
+Recognition (FR) & Root Cause Analysis (RCA) using data from Failure Mode and Effect Analysis
+(FMEA) and Fault Tree Analysis (FTA) are employed simultaneously. The data streams and case-
+specific context data are used as inputs. Faults from the KD or outliers from the DD are produced with
+interpretation of the detected anomalies and stored inside a knowledge graph (KG). In the second phase,
+the detected anomalies are shown in a dashboard (Dynamic Dashboard) complete with the raw data and
+interpretation. User modification is authorised. This is also stored in the KG. Finally, in the third phase,
+the information in the KG which are anomalies, the feedback, and all contextual meta-information, is
+used to improve the AD, FR & RCA techniques of both KD and DD. The reported accuracy is good for
+anomaly detection, better than other standalone DD methods, partly because of XAI approach.
+[46] presents a K-margin-based intErpretable lEarNing (KEEN) for interpretable aircraft structural
+damage diagnosis. This framework consists of a Residual Convolution Recurrent Neural Network
+(RCR-Net), a K-margin diagnostic method and a knowledge-directed interpretation approach. RCR-
+Net is a deep learning model that can automatically obtain features and deal with class skewness issues.
+As input, it accepts augmented data segments. After that, it divides the augmented segments into small
+fragments and outputs the segment's health-condition prognosis. The K-margin based diagnosis model
+is robust against noise. It focuses on the RCR-Net's most relevant segments automatically. Its health-
+condition detector uses segments with top-K confident to estimate the health status. Simultaneously, a
+knowledge-based interpretation approach automatically extracts features from the RCR-Net responsible
+for the fault. The performance result recorded is only satisfying while XAI is only used for explanation.
+[47] proposes a Knowledge-based Deep Belief Network (KBDBN) that extracts and transfers rules
+(confidence and classification) from an initial Deep Belief Network (DBN) to a new DBN. The DBN
+consists of numerous Restricted Boltzmann Machines (RBM) equipped with classification layer. The
+RBMs and the classification layer are used to derive the confidence rules and new classification rules,
+respectively. The initial DBN is firstly trained with some of the data. Then, the confidence rules
+describing the RBMs are extracted from the RBMs using a rule extraction algorithm (RBM_CRE). The
+new classification rules, on the other hand, are created using a mixture of the trained DBN classification
+rules and the extracted confidence rules using the Rule-INF algorithm. The data is transformed into
+beliefs through the inference of the first level of confidence rule. Finally, the belief is incorporated in
+the classification rules using Rule-INF algorithm. The method showed excellent performance and
+surpassed deep learning-based techniques due to XAI decision rule.
+In [48], a fuzzy Levenberg–Marquardt–GA technique is used to diagnose rotary kiln failure. The
+mean square error is firstly reduced and saved. Multiple chromosomes of the genetic algorithm are then
+encoded to get their relative fitness values based on the preliminary MSE results. The genetic algorithm
+produces new populations via crossings and mutations based on the fitness value of each chromosome.
+The evolution process yields a minimum mean square error combined with a better fitness value of
+fuzzy rules selection. Finally, the best rule subset can be obtained and used with Bayes decision rule for
+classification. The reported classification accuracy is very good due to XAI.
+A fuzzy extreme learning machine (F-ELM) is proposed in [49] for circulating water system failure
+diagnosis. The F-ELM consists of extreme learning machine (ELM) where fuzzy membership functions
+and rules are embedded into the hidden layer. The Fuzzy if-then rules are formulated by a rule-
+combination matrix, or C matrix. A Don’t Care (DC) matrix minimizes the number of produced rules.
+The standard deviation of the membership function, the C and DC matrices are randomly initialized.
+Finally, the output weights of the F-ELM are used to calculate the target class and confidence factor for
+each of the rules. The reported accuracy is good, contributed by the XAI decision rule ability.
+[50] considers the case where monotonicity relationship (increasing or decreasing) is assumed to be
+known in some features with the output class. For binary classification, two isotonic boosting
+procedures called Simple Isotonic LogitBoost (SILB) and Multiple Isotonic LogitBoost (MILB) based
+on Additive Logistic Regression (LogitBoost) are developed. In SILB, a weighted isotonic regression
+is introduced in the iterative function fitting step for variables that are assumed to have monotonic
+relation with the output. Meanwhile, in MILB, an additive weighted regression consisting of isotonic
+regression is fitted for monotonic features through backfitting algorithm. The produced rules follow
+monotonic relation between the features and output, thus easily interpretable. The author also developed
+boosting algorithms for multiclass classification following the same principle. Results from the
+proposed rule based XAI approach are good and comparable to other known methods.
+[51] presents K-PdM, a cluster-based hidden Markov model (cHMM) for turbofan engine RUL
+prediction based on multiple features. The method uncovers the fine-grained deteriorating modes of
+machines through each unlabelled feature data and learns a mapping between each deteriorating feature
+index and RULs. Accordingly, an overall deterioration estimation and RUL prediction are able to be
+achieved based on the combination of each feature’s deterioration estimation. Moreover, a set of
+interpretable semantic rules are set up to analyse the root cause of performance deterioration among
+features. The rules are extracted using (Semantic Web of Thing) SWoT framework. K-PdM leverages
+two HMM-based clustering methods, pattern-based (pHMM) and Multi-branch HMM (MB-HMM). A
+hidden Markov model (HMM) is a probabilistic model in which the state process is hidden and can only
+be disclosed by observation. Each KPI may be represented as an HMM to represent the fine-grained
+degrading mode. To begin with, each KPI time series is converted into a symbolic sequence using the
+clustering algorithms. The observation sequence of the HMM is then initialised using the symbolic
+sequence. Using the expanded Viterbi method, the optimum state sequence is then found. The total
+deterioration may be predicted using the estimation combination on each KPI once the fine-grained
+degrading mode is learnt. The prognostic result is better than most data driven methods except for
+LSTM and the rules are only used for explanation.
+3.2.1.4. Logic Analysis of Data (LAD)
+LAD is an interpretable classification method. LAD classifies data and extracts interpretable patterns
+and produce interpretable rules from the variable instances. The process of extracting pattern in LAD
+is long as every observation in the dataset needs to belong to at least one pattern. If the explainability
+obtained cannot be confirmed by experts, further pattern extraction will be needed. LAD also depends
+on labelled dataset to perform binarization, thus is purely supervised method.
+[52] presents a process diagnostic-explanation structure consisting of knowledge discovery in
+database (KDD) method and FTA. The KDD method, in specific LAD, extracts patterns from the
+process dataset and produces rule-based explanation describing the root cause of failure. This
+explanation is later translated into FTA logic reasoning. The ability of this method is demonstrated in
+an actuator system failure diagnosis. The reported diagnostic result is excellent, contributed by LAD.
+3.2.2. Extraction-Based Interpretability
+Interpretability could come from important features extracted by feature extraction or dimensionality
+reduction techniques such as encoder in Autoencoder or Principal Component Analysis (PCA).
+3.2.2.1. Autoencoder (AE)-Based Interpretability
+In principle, AE-based methods take the original input data via its encoder and compress it into
+smaller, latent representation. The latent representation contains important, interpretable information
+representing the data. Then the decoder is fed with the latent representation and try to reconstruct the
+original data. The quality of the reconstruction is measured through the reconstruction loss between the
+encoder and the decoder. The loss can also be used as anomaly indicator when the loss surpasses a
+defined threshold.
+The Spectrum Anomaly Detector with Interpretable Feature (SAIFE) is an Adversarial
+Autoencoders (AAE) based model applied on the problem of wireless spectrum anomaly detection [53].
+LSTM acts as the encoder for extracting interpretable features such as signal bandwidth, class, and
+centre frequency via a linear layer and classifying signal via a Softmax layer. A CNN acts as decoder
+for reconstructing the input data from the extracted features. The AAE architecture is trained in a semi-
+supervised fashion for learning interpretable features, while the reconstruction is fully unsupervised.
+The model learns the features during the semi-supervised training with partial data. During testing,
+anomaly is detected based on the reconstruction error, classification error and the loss from the
+discriminator which is part of AAE generator-discriminator adversarial architecture, Anomaly
+localization is achieved by plotting the absolute reconstruction error. SAIFE is reported to perform
+generally better than other tested methods with assistance of XAI.
+In [54], an autoencoder with explanation discriminator is employed for continuous batch washing
+(CBW) equipment anomaly detection. The autoencoder's reconstruction error, which is the anomaly
+indicator, is used by the discriminator to measure the precision and accuracy measurement of the
+anomaly detection task. The discriminator rescales the reconstruction error using a sigmoidal function
+giving value 0 as normal, 1 as anomaly and between 0 and 1 as warning. The performance of the
+proposed method is comparable to the best technique, isolation forest, previously employed for the
+problem, assisted by XAI approach.
+3.2.3. Filter Based Interpretability
+Filtering important features that will be fed to PHM models enables the connection between failure
+and root cause analysis.
+In [55], a SincNet interpretable neural network is proposed for electrical and mechanical motor
+failure diagnosis. SincNet consists of CNN with interpretable convolutional sinc bandpass filter in the
+first convolutional layer. This filter learns the low and high cut-off frequencies responsible for the fault
+from the raw signal. To visualize the features learned by the network, the learned filter kernels are
+shown in both time and frequency domains. The paper reported superiority of the proposed method over
+other tested approaches, and this is directly contributed by XAI technique.
+In [56], TScatNet is proposed for bearing and drive train failure diagnosis. TScatNet collects
+domain-invariant features utilising Morlet wavelet and uses these features for diagnosis purpose.
+TScatNet consists of a time-scattering (Scat) module of standard CNN having Morlet wavelets as
+convolutional filters and a Softmax module comprising of global averaging pooling (GAP) and Softmax
+layer. The Scat module transforms the input into scattering features maps. At testing phase, these maps
+are passed to the global averaging pooling (GAP) layer. The GAP layer aids in the simplification of
+testing processes and improves the stability of the derived scattering characteristic. The Softmax layer
+maps each scattering feature into the probability value of fault categories. TScatNet result surpassed
+other tested methods, aided by XAI ability.
+In [57], a Continuous Wavelet Transform (CWT) is used in the first convolutional layer of a CNN
+to extract the features representation responsible for the failure. The CWConv layer consists of wavelet
+kernels with different scale and translation parameters. It turns raw signal in the temporal domain into
+the time–frequency domain with a wavelet basis function. It performs the convolution operation with a
+predefined wavelet functions 𝜓𝑢,𝑠(𝑡) with time-domain expressions that only depends on two learnable
+parameters (𝑢 and 𝑠). The interpretability of the model is illustrated from the visualization of the feature
+map of the CWConv layer and its waveforms as well as signals matching. The method is applied to
+bearing, helical gear and aeroengine bevel gear failure dataset. XAI technique reportedly improve the
+accuracy of the CNN by 10%.
+3.2.4. Cluster based Interpretability
+Clustering is used to identify failure pattern consisting of a set of known failure features
+combination. The recognised failure pattern can thus be interpretable in this sense.
+[58] proposed an unsupervised fault diagnosis for rolling bearing by using the convolutional neural
+network (CNN) and Fuzzy C-means (FCM) clustering algorithm. CNN is first utilized to automatically
+extract features from rolling bearing vibration signals. Then, the principal component analysis (PCA)
+is used to reduce the dimension of the extracted features, thus extracting interpretable features, and the
+first two principal components are selected as the fault feature vectors and input to FCM. The FCM
+algorithm then clusters the data in the derived feature space, revealing the different fault types. Aiming
+at minimizing the Euclidean distance and the weighted sum of fuzzy membership of all data points and
+each clustering centre, FCM constantly modifies the clustering centre and classification matrix to meet
+the termination criteria and clusters data samples with similar characteristics into one class. Even though
+no comparison is done with traditional ML methods, the classification accuracy is very good,
+contributed by the extraction of interpretable features.
+Emission control system fault diagnosis method based on PCA clustering is presented in [59]. The
+sensor data is firstly treated with PCA for dimensionality reduction. This sensor data is mapped to
+relative air/fuel ratio target, which represents normal or degraded operation. The result of the PCA then
+undergo PCA-based clustering (Vectorized PCA-VPCA, Multilinear Principal Component Analysis-
+MPCA or Uncorrelated Multilinear PCA-UMPCA clustering). The PCA-based clusters isolate fault
+events in a restricted number of clusters (scenarios), each one described by a reference pattern. Once
+the data have been partitioned into clusters (scenarios), practitioners analyse cluster patterns to get more
+insight for fault diagnosis. This provides practitioners with an efficient and interpretable model of
+multichannel profile data in high-dimensional spaces to support the diagnosis and finding root cause.
+The recorded results of the PCA-based clustering are very good and contributed by the PCA-based
+feature extraction.
+3.2.5. Attention Mechanism
+Attention mimics the cognitive capability of human being in focusing on selective information of a
+larger context. In AI explainability, this involves projecting certain part of the input responsible in
+accomplishing the intended task, often in the form of heat map or saliency map.
+In [60], the self-monitoring, analysis, and reporting technology (SMART) is used to detect and
+predict failure in hard drives through SMART statistics in the Attention-augMENted Deep architecture
+(AMENDER) model. The SMART statistics daily record is incorporated into vectors through the
+feature integration layer. Then, these vectors are fed into the temporal dependency extraction layer
+consisting of gated recurrent unit (GRU) which output can be considered as a compact representation
+of the SMART temporal sequence of the observed days. The attention distribution is calculated from
+the healthy context vector and the SMART compact representation. The healthy context vector is
+considered to be the high-level feature representation of healthy hard drives. The resultant distribution,
+together with the GRU hidden state produces attentional hidden state of the corresponding days. This
+attention mechanism enables the model to focus on failure advancement. The attentional hidden state
+can then be used to determine the health of the hard drive for the associated day. The model performance
+is better than other tested methods in both hard drive health status classification and prognostic. The
+attention mechanism contributed to this performance, besides being the mechanism for diagnostic.
+Gradient Weighted Class Activation Map (Grad-CAM) visualizes where a convolutional neural
+network model is looking when classifying. It is capable of creating distinct visualizations for different
+classes of image presented together, thus, is a class specific approach. Grad-Cam can be used after any
+gradient-based method that is placed after the feature maps of the last convolutional layer of a CNN. In
+[61], classification of Linear Motion guide fault based on CNN applied to vibration signal and
+explainability with frequency domain-based Grad-CAM (FG-CAM) are proposed to analyse
+frequencies that have a significant impact on fault conditions. The reported classification accuracy is
+very good. XAI method is however only used as classification explanation in this paper. The same
+methodology is employed in [62] to visualize features influencing failure in bearings where the
+vibration signal is transformed into time-frequency spectra using short-time Fourier transform (STFT).
+Failure features detected using Grad-CAM are correctly validated using other AI models. No
+performance comparison is performed with other methods.
+CAM is different from Grad-Cam in the sense that it works directly after CNN. CAM is also class
+specific. Firstly, the average of each feature maps is calculated. These numbers are connected to the
+prediction classes by a fully connected layer whose weights for each connection shall be obtained after
+training. Finally, the heatmap for a specific class is obtained by the weighted combination of the feature
+maps whose weights are the learned fully connected layer weights. An automatic vision diagnostic
+technique using a combination of CNN and CAM for base-excited cantilever beam and water pump
+system fault diagnostic presented in [63]. While the CNN detect faults, the CAM localizes the faults.
+Additionally, CAM provides the diagnostic explainability, making the method a white box model. The
+model reportedly classified damage with a very good accuracy. The CAM however is just employed
+for explanation purpose.
+In [64], a CNN is used to diagnose failure in Ford Motor dataset and industrial case study of sapphire
+grinding. Then, CAM is employed to explain or diagnose the fault. Variational Autoencoder (VAE), in
+turn, acts as misclassification indicator for false fault detection occurring in the upstream stage. The
+VAE is trained with only the true positive (TP) and true negative (TN) outcomes produced in the fault
+detection and diagnosis process using CAM. After the VAE training, the latent variable containing the
+manifold of the CAM corresponding to the TP and TN is calculated using the encoder of the VAE to
+set the upper control limit UCLT
+2
+PCA and UCLQPCA of the PCA-based T2
+PCA and QPCA charts that will
+signal anomaly corresponding to false positive (FP) and false negative (FN) of the fault detection
+process. Finally, in the test phase, the CAM generated by means of the misclassification and
+misdiagnosis that may occur is subjected to post-processing by means of VAE-based PCA charts to do
+process monitoring. By doing this, misclassified generated CAM will be tagged as anomaly by the
+VAE. The performance is considered good as the method showed very good result on simulated data
+but only satisfying on real data. XAI is proven to improve the model’s accuracy in both of the case
+studies.
+3.2.6. Model Agnostic Explanation
+Model-agnostic explanation works by analysing trained black box AI model input and output. It is
+flexible, in the sense that it can be used to explain any type of machine learning models. As an external
+approach, model agnostic explanation does not directly add to the ability of PHM tasks.
+Local Interpretable Model-Agnostic Explanations (LIME) is a surrogate model approach that
+approximates the desired model using an interpretable one. The explanation is local as LIME is only
+developed to explain the behaviour of the classifier "around" the instance being predicted. LIME creates
+a new dataset from the permuted data samples and the outputs of the original model. Then LIME trains
+an interpretable model such as Lasso which approximates the original model, using the manipulated
+dataset. It creates local explanation by disturbing the neighbours of the interested input to see how the
+prediction of the interpretable model behaves. A fouling prediction in crossflow heat exchanger using
+feed-forward neural network architecture with LIME model agnostic explainability is presented in [65].
+The model is fed with operational data such as inlet fluid temperatures, ratio of fouled fluid flow rates
+to flow rates under clean conditions, and output fluid temperatures from the heat exchanger and predicts
+fouling resistances of the equipment. The predictive accuracy is very good.
+SHapley Additive exPlanations (SHAP), is a game theoretic approach to explain the output of any
+machine learning model. It evaluates the contribution of each feature to the prediction by using Shapley
+values. SHAP can be both global and local explainability approaches. Shapley values determine the
+importance of a single feature by considering the outcome of each possible combination of features. In
+other word, the Shapley value is the average expected marginal contribution of a feature across all
+possible combination of features. In [66], a deep-stacked convolutional bidirectional LSTM, equipped
+with SHAP explainability for turbofan engine prognostic is proposed. The prognostic accuracy is
+recorded better than other tested methods.
+A feed forward neural network (FFNN) together with SHAP (global) and LIME (local) are employed
+to predict and explain the damage of prismatic cantilever steel beam in [67]. The frequencies and
+associated damage percentage ranging from 0% to 75% are used as input features and the distance,
+corresponding to 194 positions of damage are used as target of the FFNN. The reported prediction result
+is very good. LIME is also used to improve the model.
+3.2.7. Layer-Wise Relevance Propagation (LRP)
+Layer Wise Relevance Propagation (LRP) is a technique to visualize the importance of input features
+of a deep learning prediction. Like attention, LRP explains the data processing. It traces back the
+contributions of input nodes to the final prediction by propagating backward the relevance measures
+from the output to the input through the nodes of the model. By doing so, a heatmap of features relevant
+to the output class can be constructed at the input space. LRP generally does not assist in improving
+model’s task.
+Diagnosis of induction motor fault using CNN and LRP is proposed in [68]. The vibration time
+series data segments used as input are transformed into time-frequency image using Continuous
+Wavelet Transform (CWT) with Morlet wavelet which is then processed by CNN for classification.
+LRP captures pixel-level representation of features contributing to the failure. Excellent accuracy
+diagnosis results are obtained using CNN but not contributed by LRP which only serves as explanation
+tool.
+3.2.8. Other Approaches
+Visually visible AI model can be beneficial as the inner working mechanism is transparent and can
+be analysed. [69] proposed a comprehensive visual explanation tool applied to turbofan engine
+prognostic. This online diagnostic, prognostic, and situation awareness system works with streaming
+data and is divided into numerous sections: Machine learning–based classifier, Visualization dashboard
+for health state monitoring, Cybersecurity command centre and High-performance local servers. The
+visualisation dashboard displays real-time predictive analytics to reveal potential flaws, risks, and
+harmful attacks. In the form of heat maps, users may view the input and output. One heat-map for each
+sensor input and related engine at each time step. The network weights of each layer may be examined
+by users to see how each feature contributes to the output of the following layer. The network weights
+are represented by the line thickness. The greater the weight values, the thicker the lines are. Users may
+also customise model hyper-parameters like the number of layers, hidden units, weights in each layer,
+regularizer types, and regularizer parameters to integrate their expertise into the learning process. No
+quantitative result is however presented in the paper.
+Prototype-based explanation is presented in [70]. ProtoSteer is a prototype based explainable
+diagnosis applied to vehicle fault diagnosis. ProtoSteer (Prototype Steering) is a flexible explainable
+ML system with ProSeNet (Prototype Sequence Network) at its core. The system consists of storage
+module for data and model, a model manager, an analytic module, a query module, and a user visual
+interface. ProSeNet consists of a sequence encoder, a prototype layer, and a fully connected layer with
+Softmax for classification. ProSeNet, an interpretable model, learns a small set of prototypes or cases
+from historical data of the interested system where it then constructs a small set of prototypical
+sequences. In the testing phase, new inputs are compared with the prototypes in a latent space for
+inference. ProtoSteer also provides user friendly interface of the prototypes to enable users to inspect,
+critique or refine the model by adding, deleting, or revising the prototypes. ProtoSteer is applied to
+vehicle fault prediction. There is however no quantitative result indicated in this work.
+An interpretable Stationary Subspaces-Vector Autoregressive with Exogenous Terms (SSVARX) is
+presented in [71] for prognostic of rolling and slewing bearings. Firstly, multi-channel vibration signals
+are transformed using Stationary Subspace Analysis (SSA) into stationary and non-stationary
+components. Then, the features time and frequency domains of the non-stationary signals are extracted
+before going through a double SSA treatment, where its stationary result's differential representation is
+used to extract endogenous (dependent) variable or variables and exogenous (independent) variables.
+Stationary test using augmented dickey fuller (ADF) and optimal lag order determination using Akaike
+Information Criterion (AIC) from the endogenous variable are executed next. Impulse response analysis
+is then executed to analyse the relationship between the endogenous variables. Finally, the SSVARX’s
+parameters are estimated using maximum likelihood estimation and the endogenous and exogenous
+variables. The result from the proposed method fare better than the rest of the tested techniques and
+comparable to previous published outcome. XAI plays a role in contributing to this performance.
+[72] presents a bearing fault diagnosis method with the interpretable frequency temporal logic (FTL)
+semantics language to alleviate the difficulty of understanding the decision process. FTL, a derivation
+of Signal temporal logic (STL) defines the time-frequency properties of time series signals. Bayesian
+neural networks together with Bayesian optimization are employed to find the structure and parameters
+of the FTL semantics, solving the fault diagnosis problem with limited computation cost. The method
+shows very good performance compared to other tested methods, assisted by XAI approach.
+4. DISCUSSION
+4.1. General Trend in PHM XAI
+As shown in Table 1 and summarized in Figure 7, accepted articles according to publication year
+shows an upward trend, with a major spike in 2020. This indicates a growing interest in XAI from the
+PHM domain researchers. The number of accepted articles is however still very small. This reflects the
+infancy state of XAI in PHM. Diagnostic domain occupies a majority share amongst the accepted works
+as presented in Figure 3. Looking at the “XAI Assist PHM” column in Table 1, it can be seen that XAI
+boosts diagnostic ability. Drawing a parallel between these two information from Figure 3 and Table 1,
+it can be deduced that XAI is particularly appealing to diagnostic as it can be applied as diagnostic tool
+directly or in addition to other methods. XAI could provide additional incentive to diagnostic whose
+main objective is to discover the features responsible for the failure as shown in Figure 8. This
+interesting point signifies that diagnostic task in these papers are dependent to XAI approach. XAI is
+thus not only an additional feature in diagnostic but has also become an indispensable tool, a need in
+PHM. The same phenomenon is observed in anomaly detection as presented in Figure 8. Knowing the
+cause of anomaly could potentially avoid false alarm, preventing resources wastage on error. XAI can
+thus be employed as a double-edged sword to execute PHM tasks and explains it. Additionally,
+interpretable model, rule & knowledge based as well as attention mechanism are the three most
+employed approaches as indicated in Figure 9.
+Figure 7. Accepted Articles According to Year
+0
+5
+10
+15
+20
+25
+2015 2018 2019 2020
+Quantity
+Year
+Accepted Articles According to Year
+Figure 8. PHM Contribution to PHM Tasks
+Figure 9. XAI Approach According to Type
+4.2. Accuracy vs Explainability
+Table 1 revealed that some XAI methods that are employed directly in PHM tasks achieved excellent
+performance. Furthermore, the recorded performance of both non XAI methods (works that depend on
+XAI for explanation only) or XAI methods are mostly very good for diagnostic and prognostic, as
+illustrated in Figure 10. In short, no bad results were found in all the PHM areas as confirmed by Figure
+10. Whether the results are contributed by XAI methods or not, we can safely conclude that
+explainability does not affect the accuracy in PHM tasks in the studied works.
+Figure 10. Accuracy of Methods
+0
+5
+10
+15
+20
+25
+Diagnostic Prognostic Anomaly detection
+PHM Contribution to PHM Task
+yes no
+0
+2
+4
+6
+Quantity
+XAI Approach Employed
+0
+5
+10
+15
+20
+25
+Diagnostic Prognostic Anomaly detection
+Accuracy in PHM Task
+Very Good Good
+4.3. Human Role in XAI & Explainability Metrics
+Very little role was played by human in the examined works as illustrated in Figure 11. In a more
+serious observation, the usage of explainability evaluation metrics is nearly non-existent as presented
+in Figure 12. Human participation is vital for evaluating the explanation of XAI approach. Human
+involvement is encouraged for the development of interactive AI, where expert opinion presents an
+additional guarantee in AI performance. Additionally, explainability metrics help researchers and users
+to evaluate the explanation quality. This element is obviously lacking in PHM XAI works. It is
+recommended that evaluation metrics adequate for PHM application explanation, considering security
+and safety risk, maintenance cost, time, and gain to be developed and adopted. [73] developed an
+overview of evaluation metrics and methods. [74] studies the effectiveness of explanation from experts
+to non-experts while [75] proposes a metric to assess the quality of medical explanation.
+Figure 11. Human Role Repartition
+Figure 12. Explainability Metrics Repartition
+4.4. Uncertainty Management
+Various types of uncertainty management approach had been adopted in the studied works as
+detailed in Table 1. Uncertainty management gives additional surety to users to adopt PHM XAI
+methods compared to point estimate methods. Furthermore, uncertainty quantification is vital to provide
+additional security to AI infrastructure against adversarial example, either unintentionally or motivated
+by attack. This measure could minimize the risk of wrong explanation being produced from unseen data
+due to adversarial example. It is observed in Figure 13 however, that much improvement is still required
+in this area.
+Human Role/Intervention Repartition
+Yes No
+Explainability Metrics Repartition
+Yes No
+Figure 13. Uncertainty Management Repartition
+4.5. Case Study Type
+It is observed that most case studies used to demonstrate the effectiveness of XAI methods are using
+real industrial data as reflected in Figure 14. This positive outlook proves that available XAI techniques
+are able to solve real world complex industrial challenges with at least a good performance, increasing
+the confidence for AI model’s adoption.
+Figure 14. Case Study Type Repartition
+4.6. Study Implications & Limitations
+4.6.1. Implications
+4.a XAI in PHM is still in its early years but gaining attention – Much unexplored opportunity
+is still available for PHM researchers to advance the assimilation of XAI in PHM.
+4.b Interpretable model, rule & knowledge based as well as attention mechanism are the most
+widely used XAI techniques – More research involving other approaches could give
+additional insight to the PHM community in term of performance, ease of use and flexibility
+of the XAI method.
+4.c XAI is used as a tool to execute PHM tasks by the majority of diagnostic and anomaly
+detection works, while simultaneously being an instrument of explanation – XAI could be
+preferred or required within PHM compared to standalone method.
+4.d PHM performance is uninfluenced by XAI – Increases the confidence of PHM practitioner
+and end user in AI model’s adoption.
+Uncertainty Management Repartition
+Yes No
+Case Study Type Repartition
+Real Simulated
+4.e Lack of development in human role, explainability metrics and uncertainty management –
+Future efforts need to be concentrated in these areas amongst other in the future.
+Furthermore, the development of evaluation metrics that can cater PHM needs is urgently
+recommended.
+4.f Mostly real, industrial case studies were tested in PHM XAI – Increases the confidence of
+PHM practitioner and end user in AI model’s adoption.
+4.6.2. Limitations
+4.g This review does not classify XAI methods in term of its nature : post-hoc, local or global
+explainability – New insight or pattern could potentially be uncovered by applying this
+categorization.
+4.h This review does not assess the various definitions of interpretability and its derivations that
+exist in PHM XAI works.
+4.i The classification of performance in qualitative form (“good”, “very good”) dilutes the
+information. A quantitative classification permits comparison especially when a common
+dataset is used —e.g., turbofan simulated dataset. Investigation in term of PHM tasks or
+type of reasoning —i.e., regression, classification, can also be done using quantitative
+assessment.
+5. CONCLUSION
+In this work, a state-of-the-art systematic review on XAI applications linked to PHM of industrial
+asset is compiled. The review follows the guidelines of PRISMA for best practice in systematic review
+reporting. 35 peer reviewed articles, in English language, from 2015 to 2021, treating the concerned
+subject were selected and examined to accomplish the review objectives. Several interesting findings
+are uncovered. Firstly, this review finds that XAI is attracting interest in PHM domain, with a spike in
+2020, though still in its infancy phase. Interpretable model, rule & knowledge based as well as attention
+mechanism are the most widely used XAI techniques applied in PHM works. Secondly, XAI is central
+to PHM, assimilated as a tool to execute PHM tasks by the majority of diagnostic and anomaly detection
+works, while simultaneously being an instrument of explanation. Thirdly, it is found that PHM
+performance is unaltered by XAI. As a matter of fact, the majority of PHM XAI works achieved
+excellent performance. In general, the evaluated works show either good to excellent results. There is
+however much work to be done in term of human participation, explainability metrics and uncertainty
+management which are nearly missing. Finally, this review discovered that mostly real, industrial case
+studies were tested to demonstrate the effectiveness of XAI, signifying the readiness of AI and XAI to
+solve real, complex industrial challenges.
+1
+Table 1. Selected Articles According to Year
+2
+No
+Authors &
+Year
+Title
+Publisher &
+Publication Name
+PHM
+Activity
+XAI
+Approach
+Performance
+XAI Assist
+PHM
+Metric
+Human
+Role
+Uncertainty
+Management
+Case Study
+1
+[49] Wong et
+al., 2015
+On equivalence of FIS
+and ELM for
+interpretable rule-based
+knowledge
+representation
+IEEE, IEEE
+Transactions On
+Neural Networks
+And Learning
+Systems
+Diagnostic
+Rule &
+Knowledge-
+based
+Good Yes No No No
+Real –
+Circulating
+water system
+2
+[51] Wu et
+al.,2018
+K-PdM: KPI-Oriented
+Machinery
+Deterioration
+Estimation Framework
+for Predictive
+Maintenance Using
+Cluster-Based Hidden
+Markov Model
+IEEE, IEEE
+Access
+Prognostic
+Rule &
+Knowledge-
+based
+Very Good No No No
+Probabilistic
+state transition
+model
+Simulated –
+Turbofan
+Engine
+3
+[59] Massimo
+et al., 2018
+Unsupervised
+classification of
+multichannel profile
+data using PCA: an
+application to an
+emission control system
+Elsevier,
+Computers &
+Industrial
+Engineering
+Diagnostic
+Cluster-
+based
+Very good Yes No Yes No
+Real –
+Emission
+Control
+System
+4
+[40] Mathias
+et al, 2019
+Forecasting remaining
+useful life: interpretable
+deep learning approach
+via variational bayesian
+inferences
+Elsevier,
+Decision Support
+Systems
+Prognostic
+Interpretable
+Model
+Better than
+other
+methods,
+except
+LSTM
+No No No
+Uncertainty in
+model
+parameters
+Simulated –
+Turbofan
+Engine
+5
+[48] Imene et
+al., 2019
+Fault isolation in
+manufacturing systems
+based on learning
+algorithm and fuzzy
+rule selection
+Springer, Neural
+Computing And
+Applications
+Diagnostic
+Rule &
+Knowledge-
+based
+Very good Yes No No
+Probabilistic
+classification
+by Bayes
+decision rule
+Real –
+Rotary Kiln
+6
+[52] Kerelous
+et al., 2019
+Interpretable logic tree
+analysis: A data-driven
+fault tree methodology
+for causality analysis
+Elsevier, Expert
+Systems With
+Applications
+Diagnostic LAD Very Good Yes No Yes
+FTA – Expert
+opinion
+Simulated –
+Actuator
+system
+7
+[53]
+Rajendran et
+al., 2019
+Unsupervised Wireless
+Spectrum Anomaly
+Detection With
+Interpretable Features
+IEEE, IEEE
+Transactions On
+Cognitive
+Communications
+And Networking
+Anomaly
+Detection Autoencoder
+Generally
+better than
+other tested
+methods
+Yes No No
+Probabilistic
+classification
+error by
+discriminator
+Real –
+Software
+Defined
+Radio
+Spectrum
+Simulated –
+Synthetic
+Data
+8
+[60] Wang et
+al., 2019
+An Attention-
+augmented Deep
+Architecture for Hard
+Drive Status Monitoring
+in Large-scale Storage
+Systems
+ACM, ACM
+Transactions On
+Storage
+Prognostic,
+Diagnostic
+Attention
+Mechanism
+Generally,
+better than
+other
+methods in
+prognostic.
+No
+comparison
+in
+diagnostic
+Diagnostic
+Yes
+Prognostic
+No
+No No No
+Real –
+Hard drive
+9
+[69] Le et al.,
+2019
+Visualization and
+explainable machine
+learning for efficient
+manufacturing and
+system operations
+ASTM, Smart
+And Sustainable
+Manufacturing
+Systems
+Diagnostic Others N/A1
+Yes No Yes No
+Simulated –
+Turbofan
+10
+[38] Langone
+et al., 2020
+Interpretable Anomaly
+Prediction: Predicting
+anomalous behavior in
+industry 4.0 settings via
+regularized logistic
+regression tools
+Elsevier, Data &
+Knowledge
+Engineering
+Anomaly
+Detection
+Interpretable
+Model
+Good Yes No No
+Statistical
+feature
+extraction
+Real –
+High
+pressure
+plunger
+pump
+11
+[39] Peng et
+al., 2020
+A dynamic structure-
+adaptive symbolic
+approach for slewing
+bearings’ life prediction
+under variable working
+conditions
+Sage, Structural
+Health
+Monitoring
+Prognostic
+Interpretable
+Model
+Better than
+previous
+methods
+Yes No No No
+Real –
+Slewing
+Bearings
+12
+[41] Ritto et
+al., 2020
+Digital twin, physics-
+based model, and
+machine learning
+Elsevier,
+Mechanical
+Systems And
+Signal Processing
+Diagnostic
+Interpretable
+Model
+Good No No No No
+Not
+specified –
+1
+N/A = Item not included in the studied work
+applied to damage
+detection in structures
+Spring Mass
+System
+13
+[42] Rea et
+al., 2020
+Progress toward
+interpretable machine
+learning based
+disruption predictors
+across tokamaks
+Taylor & Francis,
+Fusion Science
+And Technology
+Diagnostic
+Interpretable
+model
+N/A No No No
+Physic-based
+indicator
+Real DIII –
+D and JET
+Tokamaks
+14
+[43] Murari et
+al., 2020
+Investigating the
+physics of tokamak
+global stability with
+interpretable machine
+learning tools
+MDPI, Applied
+Sciences
+Anomaly
+Detection
+Mathematic
+equation
+Good No No No No
+Type
+unspecified -
+Tokamak
+15
+[44] Zhou et
+al., 2020
+Fault diagnosis of gas
+turbine based on partly
+interpretable
+convolutional neural
+networks
+Elsevier, Energy Diagnostic Tree-Based
+Better than
+other tested
+methods
+Yes No No No
+Simulated–
+Gas Turbine
+Model
+16
+[46] Zhou et
+al., 2020
+Addressing Noise and
+Skewness in
+Interpretable Health-
+Condition Assessment
+by Learning Model
+Confidence
+MDPI, Sensors Diagnostic
+Rule &
+Knowledge-
+based
+Good No No No No
+Real –
+Aircraft
+structure
+17
+[47] Jianbo et
+al., 2020
+Knowledge extraction
+and insertion to deep
+belief network for
+gearbox fault diagnosis
+Elsevier,
+Knowledge-Based
+Systems
+Diagnostic
+Rule &
+Knowledge-
+based
+Very Good Yes No No No
+Real –
+Gearbox
+18
+[50] Conde et
+al., 2020
+Isotonic boosting
+classification rules
+Springer,
+Advances In Data
+Analysis And
+Classification
+Diagnostic
+Rule &
+Knowledge-
+based
+Good and
+comparable
+to other
+methods
+Yes No No No
+Real –
+Induction
+motor
+19
+[54] Antonio
+et al., 2020
+Using an autoencoder in
+the design of an
+anomaly detector for
+smart manufacturing
+Elsevier, Pattern
+Recognition
+Letters
+Anomaly
+Detection
+Autoencoder
+Same as the
+previous
+best method
+Yes No No
+No
+Simulated –
+Continuous
+batch
+washing
+equipment
+20
+[55] Abid et
+al., 2020
+Robust interpretable
+deep learning for
+intelligent fault
+IEEE, IEEE
+Transactions On
+Diagnostic Filter-Based
+Better than
+other tested
+methods and
+Yes No No No
+Real –
+Electrical
+and
+diagnosis of induction
+motors
+Instrumentation
+And Measurement
+previous
+works
+mechanical
+motor
+21
+[56] Liu et al.,
+2020
+Tscatnet: an
+interpretable cross-
+domain intelligent
+diagnosis model with
+antinoise and few-shot
+learning capability
+IEEE, IEEE
+Transactions On
+Instrumentation
+And Measurement
+Diagnostic Filter-based
+Better than
+other tested
+methods
+Yes No No No
+Real –
+Bearing,
+Drive train
+22
+[57] Li et al.,
+2020
+Waveletkernelnet: an
+interpretable deep
+neural network for
+industrial intelligent
+diagnosis.
+IEEE, IEEE
+Transactions On
+Systems, Man,
+And Cybernetics:
+Systems
+Diagnostic Filter-based
+Better than
+other tested
+methods
+Yes No No No
+Real –
+Bearing,
+Drive train
+23
+[61] Kim et
+al., 2020
+An explainable
+convolutional neural
+network for fault
+diagnosis in linear
+motion guide
+IEEE, IEEE
+Transactions On
+Industrial
+Informatics
+Diagnostic
+Attention
+Mechanism
+Very good No No No No
+Real –
+Linear
+motion guide
+24
+[62] Chen et
+al., 2020
+Vibration signals
+analysis by explainable
+artificial intelligence
+(XAI) approach:
+application on bearing
+faults diagnosis
+IEEE, IEEE
+Access
+Diagnostic
+Attention
+Mechanism
+N/A No No No No
+Real –
+Rolling
+Bearing
+25
+[63] Sun et
+al., 2020
+Vision-based fault
+diagnostics using
+explainable deep
+learning with class
+activation maps
+IEEE, IEEE
+Access
+Diagnostic
+Attention
+Mechanism
+Very Good No No No No
+Real –
+Base-excited
+cantilever
+beam, water
+pump system
+26
+[64] Oh et al.,
+2020
+VODCA: Verification
+of diagnosis using
+CAM-based approach
+for explainable process
+monitoring
+MDPI, Sensors Diagnostic
+Attention
+Mechanism
+Good Yes No No
+True Positive
+(TP) and True
+Negative (TN)
+indicators
+Simulated –
+Ford motor
+and Real –
+Sapphire
+grinding
+27
+[65] Sreenath
+et al., 2020
+Fouling modeling and
+prediction approach for
+heat exchangers using
+deep learning
+Elsevier,
+International
+Journal Of Heat
+Failure
+Prediction
+Model
+Agnostic
+Very Good No No No No
+Simulated –
+Heat
+Exchanger
+Model
+And Mass
+Transfer
+28
+[66] Hong et
+al., 2020
+Remaining useful life
+prognosis for turbofan
+engine using
+explainable deep neural
+networks with
+dimensionality
+reduction
+MDPI, Sensors Prognostic
+Model
+Agnostic
+Very Good No No No No
+Simulated –
+Turbofan
+Engine
+29
+[68] Grezmak
+et al., 2020
+Interpretable
+Convolutional Neural
+Network through
+Layer-wise Relevance
+Propagation for
+Machine Fault
+Diagnosis
+IEEE,
+IEEE Sensors
+Journal
+Diagnostic LRP Very Good No No No No
+Real –
+Induction
+motor
+30
+[70] Ming et
+al., 2020
+ProtoSteer: Steering
+Deep Sequence Model
+with Prototypes
+IEEE, IEEE
+Transactions On
+Visualization And
+Computer
+Graphics
+Diagnostic Others N/A Yes No Yes No
+Real –
+Vehicle fault
+log
+31
+[72] Chen et
+al., 2020
+Frequency-temporal-
+logic-based bearing
+fault diagnosis and fault
+interpretation using
+Bayesian optimization
+with Bayesian neural
+networks
+Elsevier,
+Mechanical
+Systems and
+Signal Processing
+Diagnostic Others
+Better than
+other tested
+methods
+Yes No No No
+Real –
+Bearings
+32
+[45]
+Steenwinckel
+et al., 2021
+FLAGS: A
+methodology for
+adaptive anomaly
+detection and root cause
+analysis on sensor data
+streams by fusing expert
+knowledge with
+machine learning
+Elsevier, Future
+Generation
+Computer
+Systems
+Anomaly
+Detection,
+Diagnostic
+Rule &
+Knowledge-
+based
+Good in
+anomaly
+detection
+No result for
+diagnostic
+Yes for both No Yes
+FMEA & FTA
+– Expert
+opinion
+Real – Train
+33
+[58] Zhang et
+al., 2021
+A New Interpretable
+Learning Method for
+Fault Diagnosis of
+Rolling Bearings
+IEEE, IEEE
+Transactions On
+Instrumentation
+And Measurement
+Diagnostic
+Cluster-
+based
+Very Good Yes No No No
+Real –
+Rolling
+bearing
+34
+[67] Onchis et
+al., 2021
+Stable and explainable
+deep learning damage
+prediction for prismatic
+cantilever steel beam
+Elsevier,
+Computers In
+Industry
+Diagnostic
+Model
+Agnostic
+Very good Yes
+Stability-
+fit
+compens
+ation
+index
+(SFC) -
+Quality
+indicator
+of the
+explanati
+ons
+No Yes
+Real –
+Prismatic
+cantilever
+steel beam
+35
+[71] Ding et
+al., 2021
+Stationary subspaces-
+vector autoregressive
+with exogenous terms
+methodology for
+degradation trend
+estimation of rolling
+and slewing bearings
+Elsevier,
+Mechanical
+Systems And
+Signal Processing
+Prognostic Others
+Better than
+other tested
+methods and
+comparable
+to previous
+works
+Yes No No No
+Real –
+Rolling and
+slewing
+bearings
+3
+Table 2. Excluded Articles According to Year
+4
+No. Authors, Date Title Publisher, Publication Name Exclusion Reason
+1 [76] Kumar et al., 2016
+Adaptive cluster tendency visualization and anomaly
+detection for streaming data
+ACM, ACM Transactions On Knowledge
+Discovery From Data
+Non PHM-XAI implementation/case study
+2 [77] Bao et al., 2016
+Improved fault detection and diagnosis using sparse
+global-local preserving projections
+Elsevier, Journal Of Process Control Process monitoring & anomaly detection
+3 [78] Kozjek et al., 2017
+Interpretative identification of the faulty conditions
+in a cyclic manufacturing process
+Elsevier, Journal Of Manufacturing Systems Process monitoring & diagnosis
+4 [79] Ragab et al., 2017
+Fault diagnosis in industrial chemical processes
+using interpretable patterns based on logical analysis
+of data
+Elsevier, Expert Systems With Applications Process monitoring & fault diagnosis
+5 [80] Tang et al., 2018
+Fisher discriminative sparse representation based on
+dbn for fault diagnosis of complex system
+MDPI, Applied Science Process monitoring & fault diagnosis
+6 [81] Luo et al., 2018
+Knowledge-data-integrated sparse modeling for
+batch process monitoring
+Elsevier, Chemical Engineering Science Process anomaly detection & diagnosis
+7 [82] Puggini et al., 2018
+An enhanced variable selection and Isolation Forest
+based methodology for anomaly detection with oes
+data
+Elsevier, Engineering Applications Of Artificial
+Intelligence
+Process anomaly detection & diagnosis
+8 [83] Cheng et al., 2018
+Monitoring influent measurements at water resource
+recovery facility using data-driven soft sensor
+approach
+IEEE, IEEE Sensors Journal Process anomaly detection
+9 [84] Zhang et al., 2018
+Weakly correlated profile monitoring based on
+sparse multi-channel functional principal component
+analysis
+T&F, IISE Transactions Process monitoring
+10 [85] Luo et al., 2018
+Industrial process monitoring based on knowledge-
+data integrated sparse model and two-level deviation
+magnitude plots
+ACS, Industrial & Engineering Chemistry
+Research
+Process monitoring, anomaly detection &
+diagnosis
+11 [86] Vojíř et al., 2018
+EasyMiner.eu: web framework for interpretable
+machine learning based on rules and frequent
+itemsets
+Elsevier, Knowledge-Based Systems
+Only development version offers anomaly
+detection
+12 [87] Du et al., 2019
+A condition change detection method for solar
+conversion efficiency in solar cell manufacturing
+processes
+IEEE, IEEE Transactions On Semiconductor
+Manufacturing
+Process monitoring & anomaly detection
+13 [88] Keneniet et al., 2019
+Evolving rule-based explainable artificial
+intelligence for unmanned aerial vehicles
+IEEE, IEEE Access
+Interpret why agent (UAV) deviate from its
+mission, not because of system failure
+14 [89] Wang et al., 2019
+Dynamic soft sensor development based on
+convolutional neural networks
+ACS, Industrial & Engineering Chemistry
+Research
+Process modelling
+15 [90] Wang et al., 2019
+Explicit and interpretable nonlinear soft sensor
+models for influent surveillance at a full-scale
+wastewater treatment plant
+Elsevier, Journal Of Process Control Process monitoring & variable prediction
+16 [91] Liu et al., 2019
+Intelligent online catastrophe assessment and
+preventive control via a stacked denoising
+autoencoder
+Elsevier, Neurocomputing Black Box
+17 [92] Bukhsh et al., 2019
+Predictive maintenance using tree-based
+classification techniques: a case of railway switches
+Elsevier, Transportation Research Part C
+Predict maintenance need, activity type and
+maintenance trigger status
+18 [93] Ragab et al., 2019
+Deep understanding in industrial processes by
+complementing human expertise with interpretable
+patterns of machine learning
+Elsevier, Expert Systems With Applications Process monitoring & fault diagnosis
+19 [94] Luo et al., 2019
+Sparse robust principal component analysis with
+applications to fault detection and diagnosis
+ACS, Industrial & Engineering Chemistry
+Research
+Process monitoring, fault detection &
+diagnosis
+20 [95] Jie et al., 2020
+Process abnormity identification by fuzzy logic rules
+and expert estimated thresholds derived certainty
+factor
+Elsevier, Chemometrics And Intelligent
+Laboratory Systems
+Process anomaly diagnosis
+21 [96] Sajedi et al., 2020
+Dual bayesian inference for risk-informed vibration-
+based diagnosis
+Wiley, Computer-Aided Civil And Infrastructure
+Engineering
+Uncertainty interpretation, not model's
+interpretation
+22 [97] Sun et al., 2020
+ALVEN: algebraic learning via elastic net for static
+and dynamic nonlinear model identification
+Elsevier, Computers & Chemical Engineering Process monitoring & variable prediction
+23
+[98] Henriques et al.,
+2020
+Combining k-means and xgboost models for
+anomaly detection using log datasets
+MDPI, Electronics Anomaly in project, not engineered system
+24
+[99] Gorzałczany et al.,
+2020
+A modern data-mining approach based on
+genetically optimized fuzzy systems for interpretable
+and accurate smart-grid stability prediction
+MDPI, Energies
+Electrical grid demand stability in financial
+perspective
+25 [100] Müller et al., 2020
+Data or interpretations impacts of information
+presentation strategies on diagnostic processes
+Wiley, Human Factors And Ergonomics In
+Manufacturing & Service Industries
+Experiment with operator effectivity
+following quality of interpretability
+26 [101] Shriram et al., 2020
+Least squares sparse principal component analysis
+and parallel coordinates for real-time process
+monitoring
+ACS, Industrial & Engineering Chemistry
+Research
+Process monitoring & diagnosis
+27
+[102] Alshraideh et al.,
+2020
+Process control via random forest classification of
+profile signals: an application to a tapping process
+Elsevier, Journal Of Manufacturing Processes Process monitoring & anomaly detection
+28
+[103] Minghua et al.,
+2020
+Diagnosing root causes of intermittent slow queries
+in cloud databases
+ACM, Proceedings Of The VLDB Endowment
+Diagnosing slow query due to lack of
+resources, not failure
+29 [104] Shaha et al., 2020
+Performance prediction and interpretation of a refuse
+plastic fuel fired boiler
+IEEE, IEEE Access Performance prediction
+30 [105] Kovalev et al., 2020
+SurvLIME: a method for explaining machine
+learning survival models
+Elsevier, Knowledge-Based Systems Medical survival model
+31 [106] Kovalev et al., 2020
+A robust algorithm for explaining unreliable
+machine learning survival models using the
+kolmogorov–smirnov bounds
+Elsevier, Neural Networks Medical survival model
+32 [105] Karn et al., 2021
+Cryptomining detection in container clouds using
+system calls and explainable machine learning
+IEEE, IEEE Transactions On Parallel And
+Distributed Systems
+Network attack
+33 [106] Gyula et al., 2021
+Decision trees for informative process alarm
+definition and alarm-based fault classification
+Elsevier, Process Safety And Environmental
+Protection
+Process monitoring & anomaly detection
+34 [107] Zaman et al., 2021
+Fuzzy heuristics and decision tree for classification
+of statistical feature-based control chart patterns
+MDPI, Symmetry Process monitoring & diagnosis
+35 [108] Li et al., 2021
+DTDR–ALSTM: extracting dynamic time-delays to
+reconstruct multivariate data for improving
+attention-based lstm industrial time series prediction
+models
+Elsevier, Knowledge-Based Systems Process monitoring & variable prediction
+5
+Database &
+Date
+Extracted
+Paper
+Qty
+Search Field & Keywords
+Filters
+Applied
+IEEE
+Xplore
+18/02/21
+144
+Using ‘Document Title’:
+1. Document Title: explainable OR Document Title: interpretable, Search within results: diagnostic
+2. Document Title: explainable OR Document Title: interpretable, Search within results: prognostic
+3. Document Title: explainable OR Document Title: interpretable, Search within results: diagnosis
+4. Document Title: explainable OR Document Title: interpretable, Search within results: prognosis
+5. Document Title: explainable OR Document Title: interpretable, Search within results: anomaly detection
+6. Document Title: explainable OR Document Title: interpretable, Search within results: RUL
+7. Document Title: explainable OR Document Title: interpretable, Search within results: remaining useful life
+8. Document Title: explainable AI OR Document Title: explainable machine learning OR Document Title: explainable deep learning OR
+Document Title: XAI, Search within results: prognostic
+Journals,
+Early Access
+Article,
+Specify Year
+Range:
+2015-2021
+9. Document Title: explainable AI OR Document Title: explainable machine learning OR Document Title: explainable deep learning OR
+Document Title: XAI, Search within results: diagnostic
+10. Document Title: explainable AI OR Document Title: explainable machine learning OR Document Title: explainable deep learning OR
+Document Title: XAI, Search within results: diagnosis
+11. Document Title: explainable AI OR Document Title: explainable machine learning OR Document Title: explainable deep learning OR
+Document Title: XAI, Search within results: prognosis
+12. Document Title: explainable AI OR Document Title: explainable machine learning OR Document Title: explainable deep learning OR
+Document Title: XAI, Search within results: anomaly detection
+13. Document Title: explainable AI OR Document Title: explainable machine learning OR Document Title: explainable deep learning OR
+Document Title: XAI, Search within results: RUL
+14. Document Title: explainable AI OR Document Title: explainable machine learning OR Document Title: explainable deep learning OR
+Document Title: XAI, Search within results: remaining useful life
+15. Document Title: interpretable AI OR Document Title: interpretable machine learning OR Document Title: interpretable deep learning OR
+Document Title: XAI, Search within results: diagnostic
+16. Document Title: interpretable AI OR Document Title: interpretable machine learning OR Document Title: interpretable deep learning OR
+Document Title: XAI, Search within results: prognostic
+17. Document Title: interpretable AI OR Document Title: interpretable machine learning) OR Document Title: interpretable deep learning
+OR Document Title: XAI, Search within results: prognosis
+18. Document Title: interpretable AI OR Document Title: interpretable machine learning) OR Document Title: interpretable deep learning
+OR Document Title: XAI, Search within results: diagnosis
+19. Document Title: interpretable AI OR Document Title: interpretable machine learning) OR Document Title: interpretable deep learning
+OR Document Title: XAI, Search within results: anomaly detection
+20. Document Title: interpretable AI OR Document Title: interpretable machine learning) OR Document Title: interpretable deep learning
+OR Document Title: XAI, Search within results: RUL
+21. Document Title: interpretable AI OR Document Title: interpretable machine learning) OR Document Title: interpretable deep learning
+OR Document Title: XAI, Search within results: remaining useful life
+Using ‘Abstract’:
+22. Abstract: explainable AI OR Abstract: explainable machine learning OR Abstract: explainable deep learning OR Abstract: XAI
+, Search within results: prognostic
+23. Abstract: explainable AI OR Abstract: explainable machine learning OR Abstract: explainable deep learning OR Abstract: XAI
+, Search within results: diagnostic
+24. Abstract: explainable AI OR Abstract: explainable machine learning OR Abstract: explainable deep learning OR Abstract: XAI
+, Search within results: diagnosis
+25. Abstract: explainable AI OR Abstract: explainable machine learning OR Abstract: explainable deep learning OR Abstract: XAI
+, Search within results: prognosis
+26. Abstract: explainable AI OR Abstract: explainable machine learning OR Abstract: explainable deep learning OR Abstract: XAI
+, Search within results: anomaly detection
+27. Abstract: explainable AI OR Abstract: explainable machine learning OR Abstract: explainable deep learning OR Abstract: XAI
+, Search within results: RUL
+28. Abstract: explainable AI OR Abstract: explainable machine learning OR Abstract: explainable deep learning OR Abstract: XAI
+, Search within results: remaining useful life
+29. Abstract: interpretable AI OR Abstract: interpretable machine learning) OR Abstract: interpretable deep learning OR Abstract: XAI,
+Search within results: prognostic
+30. Abstract: interpretable AI OR Abstract: interpretable machine learning) OR Abstract: interpretable deep learning OR Abstract: XAI,
+Search within results: diagnostic
+31. Abstract: interpretable AI OR Abstract: interpretable machine learning) OR Abstract: interpretable deep learning OR Abstract: XAI,
+Search within results: prognosis
+32. Abstract: interpretable AI OR Abstract: interpretable machine learning) OR Abstract: interpretable deep learning OR Abstract: XAI,
+Search within results: diagnosis
+33. Abstract: interpretable AI OR Abstract: interpretable machine learning) OR Abstract: interpretable deep learning OR Abstract: XAI,
+Search within results: anomaly detection
+34. Abstract: interpretable AI OR Abstract: interpretable machine learning) OR Abstract: interpretable deep learning OR Abstract: XAI,
+Search within results: RUL
+35. Abstract: interpretable AI OR Abstract: interpretable machine learning) OR Abstract: interpretable deep learning OR Abstract: XAI,
+Search within results: remaining useful life
+Science
+Direct
+17/02/21
+607
+Using ‘Title, abstract or author-specified keywords’:
+36. ("explainable" OR "interpretable") AND ("prognostic" OR "diagnostic" OR "prognosis" OR "diagnosis" OR "anomaly detection" OR "RUL"
+OR "remaining useful life")
+37. ("explainable AI" OR "explainable machine learning" OR "explainable deep learning" OR "XAI") AND ("prognostic" OR "diagnostic" OR
+"anomaly detection" OR "RUL" OR "remaining useful life")
+38. ("explainable AI" OR "explainable machine learning" OR "explainable deep learning" OR "XAI") AND ("prognosis" OR "diagnosis" OR
+"anomaly detection" OR "RUL" OR "remaining useful life")
+39. ("interpretable AI" OR "interpretable machine learning" OR "interpretable deep learning" OR "XAI") AND ("prognostic" OR "diagnostic"
+OR "anomaly detection" OR "RUL" OR "remaining useful life")
+40. ("interpretable AI" OR "interpretable machine learning" OR "interpretable deep learning" OR "XAI") AND ("prognosis" OR "diagnosis" OR
+"anomaly detection" OR "RUL" OR "remaining useful life")
+Article type:
+Research
+Articles,
+Subject
+areas:
+Engineering &
+Computer
+Science,
+Year(s): 2015-
+2021
+Springer
+Link
+22/02/21
+291
+Using ‘With all the words’:
+41. "explainable" OR "interpretable" AND "prognos"
+42. "explainable" OR "interpretable" AND "prognos"
+43. "explainable" OR "interpretable" AND "diagnos"
+44. "explainable" OR "interpretable" AND "diagnos"
+45. "explainable" OR "interpretable" AND "RUL"'
+46. "explainable" OR "interpretable" AND "RUL"
+47. "explainable" OR "interpretable" AND "remaining useful life"
+48. "explainable" OR "interpretable" AND "remaining useful life"
+49. "explainable" OR "interpretable" AND "anomaly detection"
+50. "explainable" OR "interpretable" AND "anomaly detection"
+Content
+Type: Article,
+Discipline:
+Computer
+Science or
+Engineering,
+Language:
+English,
+Show
+documents
+published:
+2015-2021
+ACM
+Digital
+Library
+75
+Using ‘Publication Title, Abstract & Keywords’:
+51. Publication Title: explainable or interpretable AND Publication Title: (prognos OR diagnos OR "anomaly detection" OR RUL OR
+"remaining useful life"
+Publications:
+Journal,
+Content
+28/05/21 52. Abstract: explainable or interpretable AND Abstract: (prognos OR diagnos OR "anomaly detection" OR RUL OR "remaining useful
+life"
+53. Keywords: explainable or interpretable AND Keywords: (prognos OR diagnos OR "anomaly detection" OR RUL OR "remaining useful
+life"
+Type:
+Research
+Article,
+Publication
+Date:
+2015-2021
+Scopus
+27/02/21
+1931
+54. (“explainable" OR "interpretable") AND (“prognostic” OR “diagnostic” OR "prognosis” OR "diagnosis” OR “anomaly detection” OR
+“RUL” OR “remaining useful life" )
+Limit to:
+Document
+type: Article,
+Publication
+stage: Final,
+Subject
+Area:
+Engineering &
+Computer
+Science,
+Language:
+English,
+Exclude:
+Medical,
+Published
+from:
+2015-2021
+6
+AKNOWLEDGEMENT
+7
+This work is financed by Universiti Teknologi Petronas Foundation.
+8
+DECLARATION OF COMPETING INTEREST
+9
+The authors declare that they have no known competing interest in any form that could influence the work.
+10
+11
+References
+12
+1. Peter Stone, Rodney Brooks, Erik Brynjolfsson, Ryan Calo, Oren Etzioni, Greg Hager, Julia
+13
+Hirschberg, Shivaram Kalyanakrishnan, Ece Kamar, Sarit Kraus, Kevin Leyton-Brown, David
+14
+Parkes, William Press, AnnaLee Saxenian, Julie Shah, Milind Tambe, and Astro
+15
+Teller. "Artificial Intelligence and Life in 2030." One Hundred Year Study on Artificial
+16
+Intelligence: Report of the 2015-2016 Study Panel, Stanford University, Stanford, CA,
+17
+September 2016. Doc: http://ai100.stanford.edu/2016-report. Accessed: September 6, 2016.
+18
+2. Bughin, J., Eric Hazan, S. Ramaswamy, Michael Chui, Tera Allas, Peter Dahlstrom, Nicolaus
+19
+Henke and Monica Trench. “Artificial intelligence: the next digital frontier?” (2017).
+20
+3. The International Telecommunication Union (ITU), (2018), Assessing the Economic Impact of
+21
+Artificial Intelligence, Artificial Intelligence in Service of Business: Creating a Competitive
+22
+Advantage, St. Petersburg International Economic Forum 2018
+23
+4. Ernst, Ekkehard & Merola, Rossana & Samaan, Daniel. (2018). The economics of artificial
+24
+intelligence: Implications for the future of work. 10.13140/RG.2.2.29802.57283.
+25
+5. Rigla M, García-Sáez G, Pons B, Hernando ME. Artificial Intelligence Methodologies and
+26
+Their Application to Diabetes. J Diabetes Sci Technol. 2018 Mar;12(2):303-310. doi:
+27
+10.1177/1932296817710475. Epub 2017 May 25. PMID: 28539087; PMCID: PMC5851211.
+28
+6. Zhang, Xin & Dahu, Wang. (2019). Application of Artificial Intelligence Algorithms in Image
+29
+Processing. Journal of Visual Communication and Image Representation. 61.
+30
+10.1016/j.jvcir.2019.03.004.
+31
+7. Xu, Zhaoyi & Saleh, Joseph. (2020). Machine Learning for Reliability Engineering and Safety
+32
+Applications: Review of Current Status and Future Opportunities.
+33
+8. Voulodimos, Athanasios & Doulamis, Nikolaos & Doulamis, Anastasios & Protopapadakis,
+34
+Eftychios. (2018). Deep Learning for Computer Vision: A Brief Review. Computational
+35
+Intelligence and Neuroscience. 2018. 1-13. 10.1155/2018/7068349.
+36
+9. Linardatos, P.; Papastefanopoulos, V.; Kotsiantis, S. Explainable AI: A Review of Machine
+37
+Learning Interpretability Methods. Entropy 2021, 23, 18. https://doi.org/10.3390/e23010018
+38
+10. S. Zhang, S. Zhang, B. Wang and T. G. Habetler, "Deep Learning Algorithms for Bearing Fault
+39
+Diagnostics—A Comprehensive Review," in IEEE Access, vol. 8, pp. 29857-29881, 2020, doi:
+40
+10.1109/ACCESS.2020.2972859.
+41
+11. S. Lu, H. Chai, A. Sahoo and B. T. Phung, "Condition Monitoring Based on Partial Discharge
+42
+Diagnostics Using Machine Learning Methods: A Comprehensive State-of-the-Art Review," in
+43
+IEEE Transactions on Dielectrics and Electrical Insulation, vol. 27, no. 6, pp. 1861-1888,
+44
+December 2020, doi: 10.1109/TDEI.2020.009070.
+45
+12. A. L. Ellefsen, V. Æsøy, S. Ushakov and H. Zhang, "A Comprehensive Survey of Prognostics
+46
+and Health Management Based on Deep Learning for Autonomous Ships," in IEEE
+47
+Transactions on Reliability, vol. 68, no. 2, pp. 720-740, June 2019, doi:
+48
+10.1109/TR.2019.2907402.
+49
+13. J. W. Sheppard, M. A. Kaufman and T. J. Wilmer, "IEEE Standards for Prognostics and Health
+50
+Management," in IEEE Aerospace and Electronic Systems Magazine, vol. 24, no. 9, pp. 34-41,
+51
+Sept. 2009, doi: 10.1109/MAES.2009.5282287.
+52
+14. J. Zhou, L. Zheng, Y. Wang and C. Gogu, "A Multistage Deep Transfer Learning Method for
+53
+Machinery Fault Diagnostics Across Diverse Working Conditions and Devices," in IEEE
+54
+Access, vol. 8, pp. 80879-80898, 2020, doi: 10.1109/ACCESS.2020.2990739.
+55
+15. Khan, S. and Yairi, T., “A review on the application of deep learning in system health
+56
+management”, <i>Mechanical Systems and Signal Processing</i>, vol. 107, pp. 241–265,
+57
+2018. doi:10.1016/j.ymssp.2017.11.024.
+58
+16. G. Aydemir and K. Paynabar, "Image-Based Prognostics Using Deep Learning Approach," in
+59
+IEEE Transactions on Industrial Informatics, vol. 16, no. 9, pp. 5956-5964, Sept. 2020, doi:
+60
+10.1109/TII.2019.2956220.
+61
+17. J. J. A. Costello, G. M. West and S. D. J. McArthur, "Machine Learning Model for Event-Based
+62
+Prognostics in Gas Circulator Condition Monitoring," in IEEE Transactions on Reliability, vol.
+63
+66, no. 4, pp. 1048-1057, Dec. 2017, doi: 10.1109/TR.2017.2727489.
+64
+18. C. Yang, B. Gunay, Z. Shi and W. Shen, "Machine Learning-Based Prognostics for Central
+65
+Heating and Cooling Plant Equipment Health Monitoring," in IEEE Transactions on
+66
+Automation Science and Engineering, vol. 18, no. 1, pp. 346-355, Jan. 2021, doi:
+67
+10.1109/TASE.2020.2998586.
+68
+19. S. -K. S. Fan, C. -Y. Hsu, D. -M. Tsai, F. He and C. -C. Cheng, "Data-Driven Approach for
+69
+Fault Detection and Diagnostic in Semiconductor Manufacturing," in IEEE Transactions on
+70
+Automation Science and Engineering, vol. 17, no. 4, pp. 1925-1936, Oct. 2020, doi:
+71
+10.1109/TASE.2020.2983061.
+72
+20. X. Li, W. Zhang, N. Xu and Q. Ding, "Deep Learning-Based Machinery Fault Diagnostics With
+73
+Domain Adaptation Across Sensors at Different Places," in IEEE Transactions on Industrial
+74
+Electronics, vol. 67, no. 8, pp. 6785-6794, Aug. 2020, doi: 10.1109/TIE.2019.2935987.
+75
+21. Q. Yang, X. Jia, X. Li, J. Feng, W. Li and J. Lee, "Evaluating Feature Selection and Anomaly
+76
+Detection Methods of Hard Drive Failure Prediction," in IEEE Transactions on Reliability, vol.
+77
+70, no. 2, pp. 749-760, June 2021, doi: 10.1109/TR.2020.2995724.
+78
+22. Tosun AB, Pullara F, Becich MJ, Taylor DL, Fine JL, Chennubhotla SC. Explainable AI (xAI)
+79
+for Anatomic Pathology. Adv Anat Pathol. 2020 Jul;27(4):241-250. doi:
+80
+10.1097/PAP.0000000000000264. PMID: 32541594.
+81
+23. Taylor, J.E.T., Taylor, G.W. Artificial cognition: How experimental psychology can help
+82
+generate explainable artificial intelligence. Psychon Bull Rev 28, 454–475 (2021).
+83
+https://doi.org/10.3758/s13423-020-01825-5
+84
+24. Markus, Aniek & Kors, Jan & Rijnbeek, Peter. (2020). The role of explainability in creating
+85
+trustworthy artificial intelligence for health care: a comprehensive survey of the terminology,
+86
+design choices, and evaluation strategies.
+87
+25. Jiménez-Luna, J., Grisoni, F. & Schneider, G. Drug discovery with explainable artificial
+88
+intelligence. Nat Mach Intell 2, 573–584 (2020). https://doi.org/10.1038/s42256-020-00236-4
+89
+26. Alejandro Barredo Arrieta, Natalia Díaz-Rodríguez, Javier Del Ser, Adrien Bennetot, Siham
+90
+Tabik, Alberto Barbado, Salvador Garcia, Sergio Gil-Lopez, Daniel Molina, Richard
+91
+Benjamins, Raja Chatila, Francisco Herrera, Explainable Artificial Intelligence (XAI):
+92
+Concepts, taxonomies, opportunities and challenges toward responsible AI, Information
+93
+Fusion, Volume 58, 2020, Pages 82-115, ISSN 1566-2535,
+94
+https://doi.org/10.1016/j.inffus.2019.12.012.
+95
+27. Payrovnaziri SN, Chen Z, Rengifo-Moreno P, Miller T, Bian J, Chen JH, Liu X, He Z.
+96
+Explainable artificial intelligence models using real-world electronic health record data: a
+97
+systematic scoping review. J Am Med Inform Assoc. 2020 Jul 1;27(7):1173-1185. doi:
+98
+10.1093/jamia/ocaa053. PMID: 32417928; PMCID: PMC7647281.
+99
+28. Stepin, Ilia & Alonso, Jose & Catala, Alejandro & Pereira-Farina, Martin. (2021). A Survey of
+100
+Contrastive and Counterfactual Explanation Generation Methods for Explainable Artificial
+101
+Intelligence. IEEE Access. 9. 11974-12001. 10.1109/ACCESS.2021.3051315.
+102
+29. Bussmann, Niklas & Giudici, Paolo & Marinelli, Dimitri & Papenbrock, Jochen. (2020).
+103
+Explainable AI in Fintech Risk Management. Frontiers in Artificial Intelligence. 3.
+104
+10.3389/frai.2020.00026.
+105
+30. Tjoa E, Guan C. A Survey on Explainable Artificial Intelligence (XAI): Toward Medical XAI.
+106
+IEEE Transactions on Neural Networks and Learning Systems. 2020 Oct;PP. DOI:
+107
+10.1109/tnnls.2020.3027314.
+108
+31. Streich, Jared & Romero, Jonathon & Gazolla, João & Kainer, David & Cliff, Ashley & Prates,
+109
+Erica & Brown, James & Khoury, Sacha & Tuskan, Gerald & Garvin, Michael & Jacobson,
+110
+Dan & Harfouche, Antoine. (2020). Can exascale computing and explainable artificial
+111
+intelligence applied to plant biology deliver on the United Nations sustainable development
+112
+goals?. Current Opinion in Biotechnology. 61. 217-225. 10.1016/j.copbio.2020.01.010.
+113
+32. Adadi, Amina & Berrada, Mohammed. (2018). Peeking Inside the Black-Box: A Survey on
+114
+Explainable Artificial Intelligence (XAI). IEEE Access. PP. 1-1.
+115
+10.1109/ACCESS.2018.2870052.
+116
+33. Chen, Kexin et al. “Neurorobots as a Means Toward Neuroethology and Explainable AI.”
+117
+Frontiers in neurorobotics vol. 14 570308. 19 Oct. 2020, doi:10.3389/fnbot.2020.570308
+118
+34. Xu, Feiyu & Uszkoreit, Hans & Du, Yangzhou & Fan, Wei & Zhao, Dongyan & Zhu, Jun.
+119
+(2019). Explainable AI: A Brief Survey on History, Research Areas, Approaches and
+120
+Challenges. 10.1007/978-3-030-32236-6_51.
+121
+35. Page MJ, McKenzie JE, Bossuyt PM, Boutron I, Hoffmann TC, Mulrow CD, et al. The
+122
+PRISMA 2020 statement: an updated guideline for reporting systematic reviews. PLOS
+123
+Medicine 2021;18(3):e1003583. doi: 10.1371/journal.pmed.1003583
+124
+36. Xing, Meng & Yan, Xiaoning & Sun, Xiaoying & Wang, Shoumei & Zhou, Mi & Zhu, Bo &
+125
+Kuai, Le & Liu, Liu & Luo, Ying & Li, Xin & Li, Bin. (2019). Fire needle therapy for moderate-
+126
+severe acne: A PRISMA systematic review and meta-analysis of randomized controlled trials.
+127
+Complementary Therapies in Medicine. 44. 10.1016/j.ctim.2019.04.009.
+128
+37. Li, Ting & Hua, Fang & Dan, Shiqi & Zhong, Yuxin & Levey, Colin & Song, Yaling. (2020).
+129
+Reporting quality of systematic review abstracts in operative dentistry: An assessment using
+130
+the PRISMA for Abstracts guidelines. Journal of dentistry. 102. 103471.
+131
+10.1016/j.jdent.2020.103471.
+132
+38. Langone, Rocco & Cuzzocrea, Alfredo & Skantzos, Nikolaos. (2020). Interpretable Anomaly
+133
+Prediction: Predicting anomalous behavior in industry 4.0 settings via regularized logistic
+134
+regression tools. Data & Knowledge Engineering. 130. 101850. 10.1016/j.datak.2020.101850.
+135
+39. Ding, Peng & Jia, Minping & Wang, Hua. (2020). A dynamic structure-adaptive symbolic
+136
+approach for slewing bearings’ life prediction under variable working conditions. Structural
+137
+Health Monitoring. 20. 10.1177/1475921720929939.
+138
+40. Kraus, Mathias & Feuerriegel, Stefan. (2019). Forecasting remaining useful life: Interpretable
+139
+deep learning approach via variational Bayesian inferences. Decision Support Systems. 125.
+140
+113100. 10.1016/j.dss.2019.113100.
+141
+41. Ritto, T.G. & Rochinha, Fernando. (2020). Digital twin, physics-based model, and machine
+142
+learning applied to damage detection in structures.
+143
+42. Rea, C & Montes, K & Pau, Alessandro & Granetz, R & Sauter, O.. (2020). Progress Toward
+144
+Interpretable Machine Learning- Based Disruption Predictors Across Tokamaks Progress
+145
+Toward Interpretable Machine Learning-Based Disruption Predictors Across Tokamaks.
+146
+Fusion Science and Technology. 76. 10.1080/15361055.2020.1798589.
+147
+43. Murari A, Peluso E, Lungaroni M, Rossi R, Gelfusa M, Contributors J. Investigating the
+148
+Physics of Tokamak Global Stability with Interpretable Machine Learning Tools. Applied
+149
+Sciences. 2020; 10(19):6683. https://doi.org/10.3390/app10196683
+150
+44. Dengji Zhou, Qinbo Yao, Hang Wu, Shixi Ma, Huisheng Zhang, Fault diagnosis of gas turbine
+151
+based on partly interpretable convolutional neural networks, Energy, Volume 200, 2020,
+152
+117467, ISSN 0360-5442, https://doi.org/10.1016/j.energy.2020.117467.
+153
+45. Bram Steenwinckel, Dieter De Paepe, Sander Vanden Hautte, Pieter Heyvaert, Mohamed
+154
+Bentefrit, Pieter Moens, Anastasia Dimou, Bruno Van Den Bossche, Filip De Turck, Sofie Van
+155
+Hoecke, Femke Ongenae, FLAGS: A methodology for adaptive anomaly detection and root
+156
+cause analysis on sensor data streams by fusing expert knowledge with machine learning,
+157
+Future Generation Computer Systems, Volume 116, 2021, Pages 30-48, ISSN 0167-739X,
+158
+https://doi.org/10.1016/j.future.2020.10.015.
+159
+46. Zhou Y, Hong S, Shang J, Wu M, Wang Q, Li H, Xie J. Addressing Noise and Skewness in
+160
+Interpretable Health-Condition Assessment by Learning Model Confidence. Sensors. 2020;
+161
+20(24):7307. https://doi.org/10.3390/s20247307
+162
+47. Yu, Jianbo & Liu, Guoliang. (2020). Knowledge extraction and insertion to deep belief network
+163
+for gearbox fault diagnosis. Knowledge-Based Systems. 197. 105883.
+164
+10.1016/j.knosys.2020.105883.
+165
+48. Djelloul, Imene & Sari, Zaki & Souier, Mehdi. (2019). Fault isolation in manufacturing systems
+166
+based on learning algorithm and fuzzy rule selection. Neural Computing and Applications. 31.
+167
+10.1007/s00521-017-3169-3.
+168
+49. S. Y. Wong, K. S. Yap, H. J. Yap, S. C. Tan and S. W.
+169
+Chang, "On Equivalence of FIS and ELM for Interpretable Rule-Based Knowledge
+170
+Representation," in IEEE Transactions on Neural Networks and Learning Systems, vol. 26, no.
+171
+7, pp. 1417-1430, July 2015, doi: 10.1109/TNNLS.2014.2341655.
+172
+50. Conde, D., Fernández, M.A., Rueda, C. et al. Isotonic boosting classification rules. Adv Data
+173
+Anal Classif 15, 289–313 (2021). https://doi.org/10.1007/s11634-020-00404-9
+174
+51. Z. Wu et al., "K-PdM: KPI-Oriented Machinery Deterioration Estimation Framework for
+175
+Predictive Maintenance Using Cluster-Based Hidden Markov Model," in IEEE Access, vol. 6,
+176
+pp. 41676-41687, 2018, doi: 10.1109/ACCESS.2018.2859922.
+177
+52. Waghen, Kerelous & Ouali, Mohamed-Salah. (2019). Interpretable Logic Tree Analysis: A
+178
+Data-Driven Fault Tree Methodology for Causality Analysis. Expert Systems with
+179
+Applications. 136. 10.1016/j.eswa.2019.06.042.
+180
+53. S. Rajendran, W. Meert, V. Lenders and S. Pollin, "Unsupervised Wireless Spectrum Anomaly
+181
+Detection With Interpretable Features," in IEEE Transactions on Cognitive Communications
+182
+and Networking, vol. 5, no. 3, pp. 637-647, Sept. 2019, doi: 10.1109/TCCN.2019.2911524.
+183
+54. Antonio L. Alfeo, Mario G.C.A. Cimino, Giuseppe Manco, Ettore Ritacco, Gigliola Vaglini,
+184
+Using an autoencoder in the design of an anomaly detector for smart manufacturing, Pattern
+185
+Recognition Letters, Volume 136, 2020, Pages 272-278, ISSN 0167-8655,
+186
+https://doi.org/10.1016/j.patrec.2020.06.008.
+187
+55. F. B. Abid, M. Sallem and A. Braham, "Robust Interpretable Deep Learning for Intelligent
+188
+Fault Diagnosis of Induction Motors," in IEEE Transactions on Instrumentation and
+189
+Measurement, vol. 69, no. 6, pp. 3506-3515, June 2020, doi: 10.1109/TIM.2019.2932162.
+190
+56. C. Liu, C. Qin, X. Shi, Z. Wang, G. Zhang and Y. Han, "TScatNet: An Interpretable Cross-
+191
+Domain Intelligent Diagnosis Model With Antinoise and Few-Shot Learning Capability," in
+192
+IEEE Transactions on Instrumentation and Measurement, vol. 70, pp. 1-10, 2021, Art no.
+193
+3506110, doi: 10.1109/TIM.2020.3041905.
+194
+57. T. Li et al., "WaveletKernelNet: An Interpretable Deep Neural Network for Industrial
+195
+Intelligent Diagnosis," in IEEE Transactions on Systems, Man, and Cybernetics: Systems, doi:
+196
+10.1109/TSMC.2020.3048950.
+197
+58. D. Zhang, Y. Chen, F. Guo, H. R. Karimi, H. Dong and Q. Xuan, "A New Interpretable
+198
+Learning Method for Fault Diagnosis of Rolling Bearings," in IEEE Transactions on
+199
+Instrumentation and Measurement, vol. 70, pp. 1-10, 2021, Art no. 3507010, doi:
+200
+10.1109/TIM.2020.3043873.
+201
+59. Pacella, Massimo. (2018). Unsupervised
+202
+Classification of Multichannel Profile Data using PCA: an application to an Emission Control
+203
+System. Computers & Industrial Engineering. 122. 10.1016/j.cie.2018.05.029.
+204
+60. Ji Wang, Weidong Bao, Lei Zheng, Xiaomin Zhu, and Philip S. Yu. 2019. An Attention-
+205
+augmented Deep Architecture for Hard Drive Status Monitoring in Large-scale Storage
+206
+Systems. ACM Trans. Storage 15, 3, Article 21 (August 2019), 26 pages.
+207
+DOI:https://doi.org/10.1145/3340290
+208
+61. M. S. Kim, J. P. Yun and P. Park, "An Explainable Convolutional Neural Network for Fault
+209
+Diagnosis in Linear Motion Guide," in IEEE Transactions on Industrial Informatics, doi:
+210
+10.1109/TII.2020.3012989.
+211
+62. H. -Y. Chen and C. -H. Lee, "Vibration Signals Analysis by Explainable Artificial Intelligence
+212
+(XAI) Approach: Application on Bearing Faults Diagnosis," in IEEE Access, vol. 8, pp.
+213
+134246-134256, 2020, doi: 10.1109/ACCESS.2020.3006491.
+214
+63. K. H. Sun, H. Huh, B. A. Tama, S. Y. Lee, J. H. Jung and S. Lee, "Vision-Based Fault
+215
+Diagnostics Using Explainable Deep Learning With Class Activation Maps," in IEEE Access,
+216
+vol. 8, pp. 129169-129179, 2020, doi: 10.1109/ACCESS.2020.3009852.
+217
+64. Oh, C.; Jeong, J. VODCA: Verification of
+218
+Diagnosis Using CAM-Based Approach for Explainable Process Monitoring. Sensors 2020,
+219
+20, 6858. https://doi.org/10.3390/s20236858
+220
+65. Sundar, Sreenath & C. Rajagopal, Manjunath & Zhao, Hanyang & Kuntumalla, Gowtham &
+221
+Meng, Yuquan & Chang, Ho & Shao, Chenhui & Ferreira, Placid & Miljkovic, Nenad & Sinha,
+222
+Sanjiv & Salapaka, Srinivasa. (2020). Fouling modeling and prediction approach for heat
+223
+exchangers using deep learning. International Journal of Heat and Mass Transfer. 159. 120112.
+224
+10.1016/j.ijheatmasstransfer.2020.120112.
+225
+66. Hong CW, Lee C, Lee K, Ko M-S, Kim DE, Hur K. Remaining Useful Life Prognosis for
+226
+Turbofan Engine Using Explainable Deep Neural Networks with Dimensionality Reduction.
+227
+Sensors. 2020; 20(22):6626. https://doi.org/10.3390/s20226626
+228
+67. Onchis, Darian & Gillich, Gilbert-Rainer. (2021).
+229
+Stable and explainable deep learning damage prediction for prismatic cantilever steel beam.
+230
+Computers in Industry. 125. 103359. 10.1016/j.compind.2020.103359.
+231
+68. J. Grezmak, J. Zhang, P. Wang, K. A. Loparo and R. X. Gao, "Interpretable Convolutional
+232
+Neural Network Through Layer-wise Relevance Propagation for Machine Fault Diagnosis," in
+233
+IEEE Sensors Journal, vol. 20, no. 6, pp. 3172-3181, 15 March15, 2020, doi:
+234
+10.1109/JSEN.2019.2958787.
+235
+69. Le, Dy & Vung, Pham & Nguyen, Huyen & Dang, Tommy. (2019). Visualization and
+236
+Explainable Machine Learning for Efficient Manufacturing and System Operations. 3.
+237
+20190029. 10.1520/SSMS20190029.
+238
+70. Y. Ming, P. Xu, F. Cheng, H. Qu and L. Ren, "ProtoSteer: Steering Deep Sequence Model with
+239
+Prototypes," in IEEE Transactions on Visualization and Computer Graphics, vol. 26, no. 1, pp.
+240
+238-248, Jan. 2020, doi: 10.1109/TVCG.2019.2934267.
+241
+71. Peng Ding, Minping Jia, Xiaoan Yan, Stationary subspaces-vector autoregressive with
+242
+exogenous terms methodology for degradation trend estimation of rolling and slewing bearings,
+243
+Mechanical Systems and Signal Processing, Volume 150, 2021, 107293, ISSN 0888-3270,
+244
+https://doi.org/10.1016/j.ymssp.2020.107293.
+245
+72. Chen, Gang & Liu, Mei & Chen, Jin. (2020). Frequency-temporal-logic-based bearing fault
+246
+diagnosis and fault interpretation using Bayesian optimization with Bayesian neural networks.
+247
+Mechanical Systems and Signal Processing. 145. 106951. 10.1016/j.ymssp.2020.106951.
+248
+73. Zhou J, Gandomi AH, Chen F, Holzinger A. Evaluating the Quality of Machine Learning
+249
+Explanations: A Survey on Methods and Metrics. Electronics. 2021; 10(5):593.
+250
+https://doi.org/10.3390/electronics10050593
+251
+74. Martin, K., Liret, A., Wiratunga, N. et al. Evaluating Explainability Methods Intended for
+252
+Multiple Stakeholders. Künstl Intell (2021). https://doi.org/10.1007/s13218-020-00702-6
+253
+75. Holzinger, A., Carrington, A. & Müller, H. Measuring the Quality of Explanations: The System
+254
+Causability Scale (SCS). Künstl Intell 34, 193–198 (2020). https://doi.org/10.1007/s13218-
+255
+020-00636-z
+256
+EXCLUDED ARTICLES
+257
+76. Kumar, Dheeraj & Bezdek, James & Rajasegarar, Sutharshan & Palaniswami, Marimuthu &
+258
+Leckie, Christopher & Chan, Jeffrey & Gubbi, Jayavardhana. (2016). Adaptive Cluster
+259
+Tendency Visualization and Anomaly Detection for Streaming Data. ACM Transactions on
+260
+Knowledge Discovery from Data. 11. 1-40. 10.1145/2997656.
+261
+77. Bao, Shiyi & Luo, Lijia & Mao, Jianfeng. (2016). Improved fault detection and diagnosis using
+262
+sparse global-local preserving projections. Journal of Process Control. 47.
+263
+10.1016/j.jprocont.2016.09.007.
+264
+78. Kozjek, Dominik & Vrabič, Rok & Kralj, David & Butala, Peter. (2017). Interpretative
+265
+identification of the faulty conditions in a cyclic manufacturing process. Journal of
+266
+Manufacturing Systems. 43. 10.1016/j.jmsy.2017.03.001.
+267
+79. Ragab, Ahmed & El Koujok, Mohamed & Poulin, Bruno & Amazouz, Mouloud & Yacout,
+268
+Soumaya. (2017). Fault Diagnosis in Industrial Chemical Processes Using Interpretable
+269
+Patterns Based on Logical Analysis of Data. Expert Systems with Applications. 95.
+270
+10.1016/j.eswa.2017.11.045.
+271
+80. Tang Q, Chai Y, Qu J, Ren H. Fisher Discriminative Sparse Representation Based on DBN for
+272
+Fault Diagnosis of Complex System. Applied Sciences. 2018; 8(5):795.
+273
+https://doi.org/10.3390/app8050795
+274
+81. Luo, Lijia & Bao, Shiyi. (2018). Knowledge-data-integrated sparse modeling for batch process
+275
+monitoring. Chemical Engineering Science. 189. 10.1016/j.ces.2018.05.055.
+276
+82. Puggini, Luca & Mcloone, Sean. (2018). An enhanced variable selection and Isolation Forest
+277
+based methodology for anomaly detection with OES data. Engineering Applications of
+278
+Artificial Intelligence. 67. 126-135. 10.1016/j.engappai.2017.09.021.
+279
+83. Cheng, Tuoyuan & Harrou, Fouzi & Sun, Ying & Leiknes, Torove. (2018). Monitoring Influent
+280
+Measurements at Water Resource Recovery Facility Using Data-Driven Soft Sensor Approach.
+281
+IEEE Sensors Journal. PP. 1-1. 10.1109/JSEN.2018.2875954.
+282
+84. Zhang, Chen & Yan, Hao & Lee, Seungho & Shi, Jianjun. (2018). Weakly Correlated Profile
+283
+Monitoring Based on Sparse Multi-channel Functional Principal Component Analysis. IISE
+284
+Transactions. 50. 1-29. 10.1080/24725854.2018.1451012.
+285
+85. Industrial Process Monitoring Based on Knowledge–Data Integrated Sparse Model and Two-
+286
+Level Deviation Magnitude Plots, Lijia Luo, Shiyi Bao, Jianfeng Mao, and Zhenyu Ding,
+287
+Industrial & Engineering Chemistry Research 2018 57 (2), 611-622, DOI:
+288
+10.1021/acs.iecr.7b02150
+289
+86. Vojíř, Stanislav & Zeman, Václav & Kuchař, Jaroslav & Kliegr, Tomáš. (2018). EasyMiner.eu:
+290
+Web Framework for Interpretable Machine Learning based on Rules and Frequent Itemsets.
+291
+Knowledge-Based Systems. 150. 10.1016/j.knosys.2018.03.006.
+292
+87. J. Du, X. Zhang and J. Shi, "A Condition Change Detection Method for Solar Conversion
+293
+Efficiency in Solar Cell Manufacturing Processes," in IEEE Transactions on Semiconductor
+294
+Manufacturing, vol. 32, no. 1, pp. 82-92, Feb. 2019, doi: 10.1109/TSM.2018.2875011.
+295
+88. B. M. Keneni et al., "Evolving Rule-Based Explainable Artificial Intelligence for Unmanned
+296
+Aerial Vehicles," in IEEE Access, vol. 7, pp. 17001-17016, 2019, doi:
+297
+10.1109/ACCESS.2019.2893141.
+298
+89. "Dynamic Soft Sensor Development Based on Convolutional Neural Networks”, Kangcheng
+299
+Wang, Chao Shang, Lei Liu, Yongheng Jiang, Dexian Huang, and Fan Yang, Industrial &
+300
+Engineering Chemistry Research, 2019 58 (26), 11521-11531 DOI: 10.1021/acs.iecr.9b02513
+301
+90. Wang, Xiaodong & Kvaal, Knut & Ratnaweera, Harsha. (2019). Explicit and interpretable
+302
+nonlinear soft sensor models for influent surveillance at a full-scale wastewater treatment plant.
+303
+Journal of Process Control. 77. 1-6. 10.1016/j.jprocont.2019.03.005.
+304
+91. Liu, Yangyang & Zhai, Mingyu & Jin, Jiahui & Song, Aibo & Lin, Jikeng & Wu, Zhiang &
+305
+Zhao, Yixin. (2019). Intelligent Online Catastrophe Assessment and Preventive Control via a
+306
+Stacked Denoising Autoencoder. Neurocomputing. 380. 10.1016/j.neucom.2019.10.090.
+307
+92. Bukhsh, Zaharah & Saeed, Aaqib & Stipanovic, Irina & Dorée, André. (2019). Predictive
+308
+maintenance using tree-based classification techniques: A case of railway switches.
+309
+Transportation Research Part C Emerging Technologies. 101. 35-54.
+310
+10.1016/j.trc.2019.02.001.
+311
+93. Ragab, Ahmed & El Koujok, Mohamed & Ghezzaz, Hakim & Amazouz, Mouloud & Ouali,
+312
+Mohamed-Salah & Yacout, Soumaya. (2019). Deep Understanding in Industrial Processes by
+313
+Complementing Human Expertise with Interpretable Patterns of Machine Learning. Expert
+314
+Systems with Applications. 10.1016/j.eswa.2019.01.011.
+315
+94. "Sparse Robust Principal Component Analysis with Applications to Fault Detection and
+316
+Diagnosis”, Lijia Luo, Shiyi Bao, and Chudong Tong, Industrial & Engineering Chemistry
+317
+Research 2019 58 (3), 1300-1309, DOI: 10.1021/acs.iecr.8b04655"
+318
+95. jie, Yuan & shumei, Zhang & shu, Wang & fuli, Wang & luping, Zhao. (2020). Process
+319
+abnormity identification by fuzzy logic rules and expert estimated thresholds derived certainty
+320
+factor. Chemometrics and Intelligent Laboratory Systems. 209. 104232.
+321
+10.1016/j.chemolab.2020.104232.
+322
+96. Sajedi, S, Liang, X. Dual Bayesian inference for risk-informed vibration-based damage
+323
+diagnosis. Comput Aided Civ Inf. 2020; 1– 17. https://doi.org/10.1111/mice.12642
+324
+97. Sun, Weike & Braatz, Richard. (2020). ALVEN: Algebraic learning via elastic net for static
+325
+and dynamic nonlinear model identification. Computers & Chemical Engineering. 143.
+326
+107103. 10.1016/j.compchemeng.2020.107103.
+327
+98. Henriques J, Caldeira F, Cruz T, Simões P. Combining K-Means and XGBoost Models for
+328
+Anomaly Detection Using Log Datasets. Electronics. 2020; 9(7):1164.
+329
+https://doi.org/10.3390/electronics9071164
+330
+99. Gorzałczany MB, Piekoszewski J, Rudziński F. A Modern Data-Mining Approach Based on
+331
+Genetically Optimized Fuzzy Systems for Interpretable and Accurate Smart-Grid Stability
+332
+Prediction. Energies. 2020; 13(10):2559. https://doi.org/10.3390/en13102559
+333
+100. Müller, R, Gögel, C, Bönsel, R. Data or interpretations: Impacts of information presentation
+334
+strategies on diagnostic processes. Hum Factors Man. 2020; 30: 266– 281.
+335
+https://doi.org/10.1002/hfm.20838
+336
+101. Least squares sparse principal component analysis and parallel coordinates for real-time
+337
+process monitoring, Shriram Gajjar, Murat Kulahci, and Ahmet Palazoglu, Industrial &
+338
+Engineering Chemistry Research 2020 59 (35), 15656-15670, DOI: 10.1021/acs.iecr.0c01749
+339
+102. Alshraideh, Hussam & del Castillo, Enrique & Gil Del Val, Alain. (2020). Process control via
+340
+random forest classification of profile signals: An application to a tapping process. Journal of
+341
+Manufacturing Processes. 58. 736-748. 10.1016/j.jmapro.2020.08.043.
+342
+103. Minghua Ma, Zheng Yin, Shenglin Zhang, Sheng Wang, Christopher Zheng, Xinhao Jiang,
+343
+Hanwen Hu, Cheng Luo, Yilin Li, Nengjun Qiu, Feifei Li, Changcheng Chen, and Dan Pei.
+344
+2020. Diagnosing root causes of intermittent slow queries in cloud databases. Proc. VLDB
+345
+Endow. 13, 8 (April 2020), 1176–1189. DOI:https://doi.org/10.14778/3389133.3389136
+346
+104. P. Shaha, M. S. Singamsetti, B. K. Tripathy, G. Srivastava, M. Bilal and L. Nkenyereye,
+347
+"Performance Prediction and Interpretation of a Refuse Plastic Fuel Fired Boiler," in IEEE
+348
+Access, vol. 8, pp. 117467-117482, 2020, doi: 10.1109/ACCESS.2020.3004156.
+349
+105. Maxim S. Kovalev, Lev V. Utkin, Ernest M. Kasimov, SurvLIME: A method for explaining
+350
+machine learning survival models, Knowledge-Based Systems, Volume 203, 2020, 106164,
+351
+ISSN 0950-7051, https://doi.org/10.1016/j.knosys.2020.106164."
+352
+106. Kovalev, Maxim & Utkin, Lev. (2020). A robust algorithm for explaining unreliable machine
+353
+learning survival models using the Kolmogorov-Smirnov bounds.
+354
+107. R. R. Karn, P. Kudva, H. Huang, S. Suneja and I. M. Elfadel, "Cryptomining Detection in
+355
+Container Clouds Using System Calls and Explainable Machine Learning," in IEEE
+356
+Transactions on Parallel and Distributed Systems, vol. 32, no. 3, pp. 674-691, 1 March 2021,
+357
+doi: 10.1109/TPDS.2020.3029088.
+358
+108. "Gyula Dorgo, Ahmet Palazoglu, Janos Abonyi, Decision trees for informative process alarm
+359
+definition and alarm-based fault classification, Process Safety and Environmental Protection,
+360
+Volume 149, 2021, Pages 312-324, ISSN 0957-5820,
+361
+https://doi.org/10.1016/j.psep.2020.10.024."
+362
+109. Zaman, Munawar & Hassan, Adnan. (2021). Fuzzy Heuristics and Decision Tree for
+363
+Classification of Statistical Feature-Based Control Chart Patterns. Symmetry. 13. 110.
+364
+10.3390/sym13010110.
+365
+110. Li, Jince & Yang, Bo & Li, Hongguang & Wang, Yongjian & Qi, Chu & Liu, Yi. (2021).
+366
+DTDR–ALSTM: Extracting dynamic time-delays to reconstruct multivariate data for
+367
+improving attention-based LSTM industrial time series prediction models. Knowledge-Based
+368
+Systems. 211. 106508. 10.1016/j.knosys.2020.106508.
+369
+

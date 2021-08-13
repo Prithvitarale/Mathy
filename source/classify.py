@@ -44,30 +44,35 @@ class classify:
         self.cv_y = []
 
     def process_data(self, data_dir, concept):
-        print("processing data")
         jj=0
         for j, dir_path in enumerate(glob.glob(data_dir)): #mathy, non_mathy
+            print(dir_path)
             if concept in dir_path:
+                print("processing data")
                 print(dir_path)
                 dir_path = os.path.join(dir_path, "*")
                 for k, dirr in enumerate(glob.glob(dir_path)): #test, train
-                    dirr = os.path.join(dirr, "*")
-                    for l, pdf in enumerate(glob.glob(dirr)): #txts
-                        pdf = open(pdf, "r", encoding="utf8")
-                        pdf_text = pdf.read()
-                        pdf.close()
-                        embedding_vector = None
-                        r = range(0, len(pdf_text), self.chunk_size)
-                        n = len(r)
-                        for i in r:#txt-content
-                            inputs = self.tokenizer(pdf_text[i:i+self.chunk_size], return_tensors="pt")
-                            outputs = self.model(**inputs)
-                            if embedding_vector is None:
-                                embedding_vector = outputs.last_hidden_state[0][0]
-                            else:
-                                embedding_vector += outputs.last_hidden_state[0][0]
-                        embedding_vector /= n
-                        self.data[jj][k].append([embedding_vector.detach().numpy(), jj])
+                    if dirr != "embeddings_"+concept:
+                        dirr = os.path.join(dirr, "*")
+                        for l, pdf in enumerate(glob.glob(dirr)): #txts
+                            pdf = open(pdf, "r", encoding="utf8")
+                            pdf_text = pdf.read()
+                            pdf.close()
+                            embedding_vector = None
+                            r = range(0, len(pdf_text), self.chunk_size)
+                            n = len(r)
+                            for i in r:#txt-content
+                                inputs = self.tokenizer(pdf_text[i:i+self.chunk_size], return_tensors="pt")
+                                outputs = self.model(**inputs)
+                                if embedding_vector is None:
+                                    embedding_vector = outputs.last_hidden_state[0][0]
+                                    if embedding_vector is None:
+                                        print("true")
+                                else:
+                                    embedding_vector += outputs.last_hidden_state[0][0]
+                            print(n)
+                            embedding_vector /= n
+                            self.data[jj][k].append([embedding_vector.detach().numpy(), jj])
                 jj+=1
         self.mathy_test = self.data[0][0]
         self.mathy_train = self.data[0][1]
@@ -85,20 +90,24 @@ class classify:
         print("non_mathy_test: "+str(len(self.non_mathy_test)))
         print("non_mathy_train: "+str(len(self.non_mathy_train)))
         print()
-        print("saving data: ")
-        os.mkdir(".\\embeddings"+concept)
-        np.save(".\\embeddings"+concept+"\\train_x.npy", self.train_x)
-        np.save(".\\embeddings"+concept+"\\train_y.npy", self.train_y)
-        np.save(".\\embeddings"+concept+"\\test_x.npy", self.test_x)
-        np.save(".\\embeddings"+concept+"\\test_y.npy", self.test_y)
+        print("saving data...")
+        concept_path = os.path.join(data_dir, concept)
+        os.mkdir(os.path.join(concept_path, "embeddings_"+concept))
+        embeddings_path = os.path.join(concept_path, "embeddings_"+concept)
+        np.save(os.path.join(embeddings_path, "train_x.npy"), self.train_x)
+        np.save(os.path.join(embeddings_path, "train_y.npy"), self.train_y)
+        np.save(os.path.join(embeddings_path, "test_x.npy"), self.test_x)
+        np.save(os.path.join(embeddings_path, "test_y.npy"), self.test_y)
         print("data saved")
         print()
 
-    def load_embeddings(self, concept):
-        self.train_x = np.load(".\\embeddings"+concept+"\\train_x.npy")
-        self.train_y = np.load(".\\embeddings"+concept+"\\train_y.npy")
-        self.test_x = np.load(".\\embeddings"+concept+"\\test_x.npy")
-        self.test_y = np.load(".\\embeddings"+concept+"\\test_y.npy")
+    def load_embeddings(self, data_dir, concept):
+        concept_path = os.path.join(data_dir, concept)
+        embeddings_path = os.path.join(concept_path, "embeddings_"+concept)
+        self.train_x = np.load(os.path.join(embeddings_path, "train_x.npy"))
+        self.train_y = np.load(os.path.join(embeddings_path, "train_y.npy"))
+        self.test_x = np.load(os.path.join(embeddings_path, "test_x.npy"))
+        self.test_y = np.load(os.path.join(embeddings_path, "test_y.npy"))
 
         # t, c = train_test_split(list(zip(self.train_x, self.train_y)), test_size=0.20)
         # self.train_x, self.train_y = zip(*t)
@@ -172,65 +181,43 @@ class classify:
                 train_score_train[j] = new_model.score(train_x_subset, train_y_subset)
                 test_score_train[j] = new_model.score(test_x, test_y)
 
-            # print(model.class_weight)
-            # print(new_model.score(test_x, test_y))
-
-            # train_score /= len(seeds)
-            # test_score /= len(seeds)
-            # train_scores[i] = train_score_train.mean()
-            # test_scores[i] = test_score_train.mean()
             train_scores_stds[i] = train_score_train.std()
             test_scores_stds[i] = test_score_train.std()
             train_scores[i] = train_score_train.mean()
             test_scores[i] = test_score_train.mean()
-            # train_scores[i] = train_score_train
-            # test_scores[i] = test_score_train
-        # print(test_scores)
-        # data_train = [[sizes[i], list(train_scores[i][:])] for i in range(len(sizes))]
-        # df_tr = pd.DataFrame(data_train, columns=["x", "y"])
-        # data_test = [[sizes[i], list(test_scores[i][:])] for i in range(len(sizes))]
-        # df_te = pd.DataFrame(data_test, columns=["x", "y"])
-        # plt.grid()
-        #
-        # df_train = pd.DataFrame(dict(sizes=sizes, train_scores=train_scores))
-        # df_test = pd.DataFrame(dict(sizes=sizes, train_scores=test_scores))
-        # s.relplot(x="sizes", y="train_scores", kind="line", data=df_train)
-        # s.relplot(x="sizes", y="test_scores", kind="line", data=df_test)
 
-        # s.lineplot(x=sizes, y=train_scores, ci=95)
-        # s.lineplot(x=sizes, y=test_scores, ci=95)
-        # s.lineplot(x="x", y="y", data=df_tr, ci=95)
-        # s.lineplot(x="x", y="y", data=df_te, ci=95)
-        # #err_kws=matplotlib.axes.Axes.fill_between()
-        # # plt.savefig(output)
-
-        # train_scores_mean = train_scores.mean()
-        # test_scores_mean = test_scores.mean()
-        # train_scores_std = 1.96*(train_scores.std()/train_scores_mean)
-        # test_scores_std = 1.96*(test_scores.std()/test_scores_mean)
+        train_ci = [1.96*(j / np.sqrt(len(train_score_train))) for i, j in zip(train_scores, train_scores_stds)]
+        test_ci = [1.96*(j / np.sqrt(len(test_score_train))) for i, j in zip(test_scores, test_scores_stds)]
+        print(train_ci)
+        print(test_ci)
+        print(train_scores_stds)
+        print(test_scores_stds)
 
         # have to replace with seaborn
         plt.grid()
-        plt.fill_between(sizes, train_scores-((train_scores_stds*1.96)),
-                         train_scores+((train_scores_stds*1.96)), color="green", alpha=0.1)
-        plt.fill_between(sizes, test_scores-((test_scores_stds*1.96)),
-                         test_scores+((test_scores_stds*1.96)), color="red", alpha=0.1)
-        print(test_scores+((test_scores_stds*1.96)))
-        print(((test_scores_stds*1)/np.sqrt(len(seeds))))
-        print(test_scores-((test_scores_stds*1)/np.sqrt(len(seeds))))
-        plt.plot(sizes, train_scores, color="g", label="training scores")
-        plt.plot(sizes, test_scores, color="r", label="test scores")
-        plt.ylabel("Score (Average accuracy)")
+        plt.fill_between(sizes, train_scores-train_ci,
+                         train_scores+train_ci, color="green", alpha=0.1)
+        plt.fill_between(sizes, test_scores-test_ci,
+                         test_scores+test_ci, color="red", alpha=0.1)
+        plt.plot(sizes, train_scores, color="g", label="training scores", marker="o")
+        plt.plot(sizes, test_scores, color="r", label="test scores", marker="x")
+        plt.ylabel("Score (average accuracy)")
         plt.xlabel("Number of Training Examples")
-        plt.title(concept+" concept")
-        plt.legend(loc="best")
+        plt.title(concept.capitalize() + " concept")
+        plt.legend(loc="lower left")
         # print(len(train_scores))
         plt.xlim(5, sizes[len(sizes)-1])
         plt.ylim(0.5, 1.01)
-        # # plt.show()
+        # # # plt.show()
+        # s.lineplot(sizes, train_scores, ci=95)
+        # s.lineplot(sizes, test_scores, ci=95)
+        # plt.show()
         plt.savefig(output)
-        return train_scores, test_scores, sizes
 
+        return train_scores, test_scores, sizes
+# research qs
+# voc refinement algorithm
+# look at limeade
 
 def main():
     parser = argparse.ArgumentParser()
@@ -251,14 +238,14 @@ def main():
         print("You need to specify an output file for the learning curve")
         exit()
     if args.report:
-        c.load_embeddings(args.concept)
+        c.load_embeddings(args.concept, args.concept)
         c.train(model)
         model_test = c.get_test_performance_for_model(model)
         print(f"model performance: {model_test}")
         print()
         c.get_model_report(model)
     if args.learning_curve:
-        c.load_embeddings(args.concept)
+        c.load_embeddings(args.data_dir, args.concept)
         c.learning_curve_new(c.train_x, c.train_y, model, args.learning_curve_output, args.concept)
     if args.process_data:
         c.process_data(args.data_dir, args.concept)

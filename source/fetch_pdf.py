@@ -15,7 +15,10 @@ def load_data(url_file, out_dir):
     for i, link in enumerate(links):
         print(link.strip())
         path = os.path.join(out_dir, f"{i}.pdf")
-        urlretrieve(link.strip(), path)
+        try:
+            urlretrieve(link.strip(), path)
+        except:
+            print(f"Invalid link: {link.strip()}")
 
 # print(sys.argv)
 # os.mkdir(".\\papers_raw")

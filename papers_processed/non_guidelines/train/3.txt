@@ -1,0 +1,1073 @@
+The MultiBERTs: BERT Reproductions for Robustness Analysis
+Thibault Sellam∗
+, Steve Yadlowsky∗
+, Jason Wei†
+, Naomi Saphra‡
+,
+Alexander D’Amour, Tal Linzen, Jasmijn Bastings, Iulia Turc,
+Jacob Eisenstein, Dipanjan Das, Ian Tenney, Ellie Pavlick
+{tsellam, yadlowsky, iftenney, epavlick}@google.com
+Google Research
+Abstract
+Experiments with pretrained models such as
+BERT are often based on a single checkpoint.
+While the conclusions drawn apply to the arti-
+fact (i.e., the particular instance of the model),
+it is not always clear whether they hold for the
+more general procedure (which includes the
+model architecture, training data, initialization
+scheme, and loss function). Recent work has
+shown that re-running pretraining can lead to
+substantially different conclusions about per-
+formance, suggesting that alternative evalua-
+tions are needed to make principled statements
+about procedures. To address this question,
+we introduce MultiBERTs: a set of 25 BERT-
+base checkpoints, trained with similar hyper-
+parameters as the original BERT model but dif-
+fering in random initialization and data shuf-
+fling. The aim is to enable researchers to draw
+robust and statistically justified conclusions
+about pretraining procedures. The full release
+includes 25 fully trained checkpoints, as well
+as statistical guidelines and a code library im-
+plementing our recommended hypothesis test-
+ing methods. Finally, for five of these mod-
+els we release a set of 28 intermediate check-
+points in order to support research on learning
+dynamics.
+1 Introduction
+Contemporary natural language processing (NLP)
+relies heavily on pretrained language models,
+which are trained using large-scale unlabeled data.
+BERT (Devlin et al., 2019) is a particularly popu-
+lar choice: it has been widely adopted in academia
+and industry, and aspects of its performance have
+been reported in thousands of research papers (see
+e.g., Rogers et al., 2020, for an overview). Be-
+cause pretraining large language models is compu-
+∗
+Equal contribution.
+†
+Work done as a Google AI resident.
+‡
+Work done during an internship at Google.
+tationally expensive (Strubell et al., 2019), the ac-
+cessibility of this line of research has been greatly
+facilitated by the release of model checkpoints
+through libraries such as HuggingFace Transform-
+ers (Wolf et al., 2020), which enable researchers to
+build on large-scale language models without re-
+producing the work of pretraining. Consequently,
+most published results are based on a small num-
+ber of publicly released model checkpoints.
+While this reuse of model checkpoints has low-
+ered the cost of research and facilitated head-to-
+head comparisons, it limits our ability to draw gen-
+eral scientific conclusions about the performance
+of this class of models (Dror et al., 2019; D’Amour
+et al., 2020; Zhong et al., 2021). The key issue
+is that reusing model checkpoints makes it hard
+to generalize observations about the behavior of a
+single model artifact to statements about the un-
+derlying pretraining procedure which generated it.
+Pretraining such models is an inherently stochas-
+tic process which depends on the initialization of
+the parameters and the ordering of training ex-
+amples. In fact, D’Amour et al. (2020) report
+substantial quantitative differences across multi-
+ple checkpoints of the same model architecture on
+several “stress tests” (Naik et al., 2018; McCoy
+et al., 2019). It is therefore difficult to know how
+much of the success of a model based on the origi-
+nal BERT checkpoint is due to BERT’s design, and
+how much is due to idiosyncracies of a particular
+run. Understanding this difference is critical if we
+are to generate reusable insights about deep learn-
+ing for NLP, and improve the state-of-the-art going
+forward (Zhou et al., 2020; Dodge et al., 2020).
+This paper describes MultiBERTs, an effort to
+facilitate more robust research on the BERT model.
+Our primary contributions are:
+• We release MultiBERTs, a set of 25 BERT
+checkpoints to facilitate studies of robust-
+arXiv:2106.16163v1
+[cs.CL]
+30
+Jun
+2021
+ness to parameter initialization. The release
+also includes an additional 140 intermediate
+checkpoints, captured during training for 5 of
+these runs (28 checkpoints per run), to facil-
+itate studies of learning dynamics. Releas-
+ing these models preserves the benefits of
+a single checkpoint release (low cost of ex-
+periments, apples-to-apples comparisons be-
+tween studies based on these checkpoints),
+while enabling researchers to draw more gen-
+eral conclusions about the BERT pretraining
+procedure (§2).
+• We provide recommendations for how to re-
+port results with MultiBERTs and and present
+the Multi-Bootstrap, a non-parametric
+method to quantify the uncertainty of experi-
+mental results based on multiple pretraining
+seeds. To help researchers follow these
+recommendations, we release a software
+implementation of the procedure (§4).
+• We document several challenges with re-
+producing the behavior of the widely-used
+original BERT release (Devlin et al., 2019).
+These idiosyncrasies underscore the impor-
+tance of reproducibility analyses and of dis-
+tinguishing conclusions about training proce-
+dures from conclusions about particular arti-
+facts (§5).
+Our checkpoints and statistics libraries are avail-
+able at: http://goo.gle/multiberts.
+2 Release Description
+Overview. All the checkpoints are trained fol-
+lowing the code and procedure of Devlin et al.
+(2019), with minor hyperparameter modifica-
+tions necessary to obtain comparable results on
+GLUE (Wang et al., 2019) (see detailed discus-
+sion in §5). We use the BERT-base architecture,
+with 12 layers and embedding size 768. The
+model is trained on the masked language model-
+ing (MLM) and next sentence prediction (NSP)
+objectives. The MLM objective maximizes the
+probability of predicting randomly masked tokens
+in an input passage. The NSP objective maxi-
+mizes the probability of predicting the next “sen-
+tence” (text segment) given the current one. The
+model is trained using only words in the sentence
+as features. BERT is trained on a combination
+of BooksCorpus (Zhu et al., 2015) and English
+Wikipedia. Since the exact dataset used to train
+the original BERT is not available, we used a more
+recent version that was collected by Turc et al.
+(2019) with the same methodology.
+Checkpoints. We release 25 models trained for
+two million steps each. For each of the five of
+these models, we release 28 additional check-
+points captured over the course of pretraining (ev-
+ery 20,000 training steps up to 200,000, then every
+100,000 steps, where each step involves a batch of
+256 sequences). In total, we release 165 check-
+points, which is about 68 GB.
+Training Details. As in the original BERT pa-
+per, we used batch size 256 and the Adam opti-
+mizer (Kingma and Ba, 2014) with learning rate
+1e-4 and 10,000 warm-up steps. We used the de-
+fault values for all the other parameters, except the
+number of steps and sequence length that we set to
+512 from the beginning with 80 predictions per se-
+quence.1 The BERT code initializes the layers with
+the truncated Normal distribution, using mean 0
+and standard deviation 0.02. We train using the
+same configuration as Devlin et al. (2019), with
+each run taking about 4.5 days on 16 Cloud TPU
+v2 chips.
+Environmental Statement. We estimate com-
+pute costs at around 1728 TPU-hours for each pre-
+training checkpoint, and around 208 GPU-hours
+plus 8 TPU-hours for associated fine-tuning ex-
+periments (including hyperparameter search and
+5x replication). Using the calculations of Lacoste
+et al. (2019)2, we estimate this as about 250 kg
+CO2e for each of our 25 models. Counting the
+additional experiments of §5, this gives a total of
+about 6.2 tons CO2e before accounting for off-
+sets or clean energy. Patterson et al. (2021) re-
+ports that Google Iowa (us-central1) runs on 78%
+carbon-free energy, and so we estimate that re-
+producing these experiments in the public Cloud
+environment3 would emit closer to 1.4t CO2e, or
+1
+Specifically, we pretrain for 2M steps and keep the se-
+quence length constant (the paper uses 128 tokens for 90%
+of the training then 512 for the remaining 10%) to expose
+the model to more tokens and simplify the implementation.
+As we were not able to reproduce original BERT exactly us-
+ing either 1M or 2M steps (see Section 5 for discussion), we
+release MultiBERTs trained with 2M steps under the assump-
+tion that higher-performing models are more interesting ob-
+jects of study.
+2
+https://mlco2.github.io/impact/
+3
+Experiments were run in a Google data center with sim-
+ilar or lower carbon emissions.
+CoLA (acc) MNLI (acc) MRPC (acc) QNLI_v2 (acc) QQP (acc) RTE (acc) SST−2 (acc) STS−B (pear.)
+79 80 81 82 83 84.0
+84.2
+84.4
+84.6
+84.8
+86.0
+86.5
+87.0
+87.5
+88.0
+90.9
+91.2
+91.5
+91.8
+90.8
+90.9
+91.0
+91.1
+91.2
+60.0
+62.5
+65.0
+67.5
+70.0
+91.5
+92.0
+92.5
+93.0
+88.50
+88.75
+89.00
+89.25
+89.50
+0
+2
+4
+6
+8
+10
+#
+checkpoints
+Figure 1: Distribution of the performance on GLUE dev sets, averaged across finetuning runs for each checkpoint.
+The dashed line indicates the performance of the original BERT release.
+squad v1 (f1) squad v2 (best f1)
+0.885 0.890 0.895 0.900 0.76 0.77 0.78 0.79
+0
+2
+4
+6
+8
+#
+checkpoints
+Figure 2: Distribution of the performance on the dev
+sets of SQuAD v1.1 and v2.0.
+slightly more than one passenger taking a round-
+trip flight between San Francisco and New York.
+By releasing the trained checkpoints publicly,
+we aim to enable many research efforts on re-
+producibility and robustness without requiring this
+cost to be incurred for every subsequent study.
+3 Performance Benchmarks
+GLUE Setup. We report results on the develop-
+ment sets of CoLA (Warstadt et al., 2018), MNLI
+(matched) (Williams et al., 2018), MRPC (Dolan
+and Brockett, 2005), QNLI (v2) (Rajpurkar et al.,
+2016; Wang et al., 2019), QQP (Chen et al., 2018),
+RTE (Bentivogli et al., 2009), SST-2 (Socher et al.,
+2013), and SST-B (Cer et al., 2017), using the
+same modeling and training approach as Devlin
+et al. (2019). For each task, we fine-tune BERT
+for 3 epochs using a batch size of 32. We run a
+parameter sweep on learning rates [5e-5, 4e-5, 3e-
+5, 2e-5] and report the best score. We repeat the
+procedure five times and average the results.
+SQuAD Setup. We report results on the devel-
+opment sets of SQuAD version 1.1 and 2.0, using
+a setup similar to (Devlin et al., 2019). For both
+sets of experiments, we use batch size 48, learning
+rate 5e-5, and train for 2 epochs.
+Results. Figures 1 and 2 show the distribution of
+the MultiBERTs checkpoints’ performance on the
+development sets of GLUE (Wang et al., 2019) and
+SQuAD (Rajpurkar et al., 2016), in comparison
+to the performance of the original BERT check-
+point.4 On most tasks, original BERT’s perfor-
+mance falls within the same range as MultiBERTs
+(i.e., original BERT is between the minimum and
+maximum of the MultiBERTs’ scores). Original
+BERT outperforms MultiBERTs on QQP, and it un-
+derperforms on SQuAD. The discrepancies may
+be explained by both randomness and differences
+in training setups, as explored further in Section 5.
+Instance-Level Agreement. Table 1 shows per-
+example agreement rates on GLUE predictions be-
+tween pairs of models pretrained with a single
+seed (“same”) and pairs pretrained with different
+seeds (“diff”); in all cases, models are fine-tuned
+with different seeds. With the exception of RTE,
+we see high agreement (over 90%) on test ex-
+amples drawn from the same distribution as the
+training data, and note that agreement is 1-2%
+lower on average when comparing predictions of
+models pretrained on different seeds, compared
+to models pretrained on the same seed. How-
+ever, this discrepancy becomes significantly more
+pronounced if we look at out-of-domain “chal-
+lenge sets” which feature a different data distribu-
+tion from the training set. That is, evaluating our
+MNLI models on the anti-sterotypical examples
+from HANS (McCoy et al., 2019), we see agree-
+4
+We used https://storage.googleapis.
+com/bert_models/2020_02_20/uncased_
+L-12_H-768_A-12.zip, as linked from https:
+//github.com/google-research/bert
+ment drop from 88% to 82% when comparing
+across pretraining seeds. Figure 3 shows how this
+can affect overall accuracy, which can vary over a
+range of nearly 20% depending on the pretraining
+seed. Such results underscore the need to evaluate
+multiple pretraining runs, especially when evalu-
+ating a model’s ability to generalize outside of its
+training distribution.
+Same Diff. Same - Diff.
+CoLA 91.5% 89.7% 1.7%
+MNLI 93.6% 90.1% 3.5%
+HANS (all) 92.2% 88.1% 4.1%
+HANS (neg) 88.3% 81.9% 6.4%
+MRPC 91.7% 90.4% 1.3%
+QNLI 95.0% 93.2% 1.9%
+QQP 95.0% 94.1% 0.9%
+RTE 74.3% 73.0% 1.3%
+SST-2 97.1% 95.6% 1.4%
+STS-B 97.6% 96.2% 1.4%
+Table 1: Average per-example agreement between
+model predictions on each task. This is computed as
+the average “accuracy” between the predictions of two
+runs for classification tasks, or Pearson correlation for
+regression (STS-B). We separate pairs of models that
+use the same pretraining seed but different finetuning
+seeds (Same) and pairs that differ both in their pretrain-
+ing and finetuning seeds (Diff). HANS (neg) refers to
+only the anti-stereotypical examples (non-entailment),
+which exhibit significant variability between models
+(McCoy et al., 2020).
+Figure 3: Accuracy of MNLI models on the anti-
+stereotypical (non-entailment) examples from HANS
+(McCoy et al., 2020), grouped by pretraining seed.
+Each column shows the distribution of five fine-tuning
+runs based on the same initial checkpoint.
+4 Hypothesis Testing Using Multiple
+Checkpoints
+The previous section compared MultiBERTs with
+the original BERT, finding some similarities as
+well as differences in some cases, such as SQuAD.
+But to what extent can these results be explained
+by random noise? More generally, how can we
+quantify the uncertainty of a set of experimental
+results? A primary goal of MultiBERTs is to en-
+able more principled and standardized methods to
+compare training procedures. To this end, we rec-
+ommend a non-parametric bootstrapping proce-
+dure (which we refer to as the “Multi-Bootstrap”),
+described below, and implemented as a library
+function alongside the MultiBERTs release. The
+procedure enables us to make inferences about
+model performance in the face of multiple sources
+of randomness, including randomness due to pre-
+training seed, fine-tuning seed, and finite test data,
+by using the average behavior over seeds as a
+means of summarizing expected behavior in an
+ideal world with infinite samples.
+4.1 Interpreting Statistical Results
+The advantage of using the Multi-Bootstrap is
+that it provides an interpretable summary of the
+amount of remaining uncertainty when summariz-
+ing the performance over multiple seeds. The fol-
+lowing notation will help us state this precisely.
+We assume access to model predictions f(x) for
+each instance x in the evaluation set. We consider
+randomness arising from:
+1. The choice of pretraining seed S ∼ M
+2. The choice of finetuning seed T ∼ N
+3. The choice of test sample (X, Y ) ∼ D
+The Multi-Bootstrap procedure allows us to ac-
+count for all of the above. The contribution of
+MultiBERTs that it enables us to estimate (1), the
+variance due to pretraining seed, which is not pos-
+sible given only a single artifact. Note that multi-
+ple finetuning runs are not required in order to use
+Multi-Bootstrap.
+For each pretraining seed s, let fs(x) denote
+the learned model’s prediction on input features
+x and let L(s) denote the expected performance
+metric of fs on a test distribution D over features
+X and labels Y . For example, the accuracy would
+be L(s) = E[1{Y = fs(X)}]. We can use the test
+sample to estimate the performance for each of the
+seeds in MultiBERT, which we denote as b
+L(s).
+The performance L(s) depends on the seed, but
+we are interested in summarizing the model over
+all seeds. A natural summary is the average over
+seeds, ES∼M [L(S)]. We will denote this by θ, us-
+ing the Greek letter to emphasize that it is an un-
+known quantity that we wish to estimate. Then,
+we can compute an estimate b
+θ as
+b
+θ =
+1
+ns
+ns
+X
+j=1
+b
+L(Sj).
+Because b
+θ is computed under a finite evaluation
+set and finite number of seeds, it is necessary to
+quantify the uncertainty of the estimate. The goal
+of Multi-Bootstrap is to estimate the distribution
+of the error in this estimate, b
+θ − θ. With this, we
+can compute confidence intervals for θ and test hy-
+potheses about θ, such as whether it is above 0 or
+another threshold of interest.
+Below, we summarize a few common experi-
+mental designs that can be studied using this dis-
+tribution.
+Comparison to a Fixed Baseline. We might
+seek to summarize the performance or behavior of
+a proposed model. Examples include:
+• Does BERT encode information about syn-
+tax (e.g., as compared to feature-engineered
+models)? (Tenney et al., 2019; Hewitt and
+Manning, 2019)
+• Does BERT encode social stereotypes (e.g.,
+as compared to human biases)? (Nadeem
+et al., 2020)
+• Does BERT encode world knowledge (e.g.,
+as compared to explicit knowledge bases)?
+(Petroni et al., 2019)
+• Does another model such as RoBERTa (Liu
+et al., 2019) outperform BERT on tasks like
+GLUE and SQuAD?
+In some of these cases, we might compare against
+some exogenously-defined baseline of which we
+only have a single estimate (e.g., random or human
+performance) or against an existing model that is
+not derived from the MultiBERT checkpoints. In
+this case, we treat the baseline as fixed, and jointly
+bootstrap over seeds and examples in order to es-
+timate variation in the MultiBERTs and test data.
+Paired samples. Alternatively, we might seek
+to assess the effectiveness of a specific interven-
+tion on model behavior. In such studies, an in-
+tervention is proposed (e.g., representation learn-
+ing via a specific intermediate task, or a spe-
+cific architecture change) which can be applied to
+any pretrained BERT checkpoint. The question
+is whether such an intervention results in an im-
+provement over the original BERT pretraining pro-
+cedure. That is, does the intervention reliably pro-
+duce the desired effect, or is the observed effect
+due to the idiosyncracies of a particular model ar-
+tifact? Examples of such studies include:
+• Does intermediate tuning on NLI after pre-
+training make models more robust across
+language understanding tasks (Phang et al.,
+2018)?
+• Does pruning attention heads degrade model
+performance on downstream tasks (Voita
+et al., 2019)?
+• Does augmenting BERT with information
+about semantic roles improve performance
+on benchmark tasks (Zhang et al., 2020)?
+We will refer to studies like the above as paired
+since each instance of the baseline model fs
+(which does not receive the intervention) can be
+paired with an instance of the proposed model f0
+s
+(which receives the stated intervention) such that
+fs and f0
+s are based on the same pretrained check-
+point produced using the same seed. Denoting θf
+and θf0 as the expected performance defined above
+for the baseline and intervention model respec-
+tively, our goal is to understand the difference be-
+tween the estimates b
+δ = b
+θf0 −b
+θf and δ = θf0 −θf .
+In a paired study, Multi-Bootstrap allows us to
+estimate both of the errors b
+θf −θf and b
+θf0 −θf0 , as
+well as the correlation between the two. Together,
+these allow us to estimate the overall error b
+δ −δ =
+(b
+θf − b
+θf0 ) − (θf − θf0 ).
+Unpaired samples. Finally, we might seek to
+compare a number of seeds in both the interven-
+tion and baseline models, but may not expect them
+to be aligned in their dependence on the seed. For
+example, the second model may be a different ar-
+chitecture so that they do not share checkpoints,
+or they may be generated from an entirely sepa-
+rate initialization scheme. We refer to such stud-
+ies as unpaired. Like in a paired study, the Multi-
+Bootstrap allows us to estimate the errors b
+θf − θf
+and b
+θf0 − θf0 ; however, in an unpaired study, we
+cannot estimate the correlation between the er-
+rors. Thus, we assume that the correlation is zero.
+This will give a conservative estimate of the error
+(b
+θf − b
+θf0 ) − (θf − θf0 ), as long as b
+θf − θf and
+b
+θf0 − θf0 are not negatively correlated. There is
+little reason to believe that the random seeds used
+for two different models would induce a negative
+correlation between the models’ performance, so
+this assumption is relatively safe.
+Hypothesis Testing. With the measured uncer-
+tainty, we recommend testing whether or not the
+difference is meaningfully different from some ar-
+bitrary predefined threshold (i.e., 0 in the typical
+case). Specifically, we are often interested in re-
+jecting the null hypothesis that the intervention
+does not improve over the baseline model, i.e.,
+H0 : δ ≤ 0 (1)
+in a statistically rigorous way. This can be done
+using the Multi-Bootstrap procedure described be-
+low.
+4.2 Multi-Bootstrap Procedure
+The Multi-Bootstrap procedure is a non-
+parametric bootstrapping procedure that allows us
+to estimate the distribution of the error b
+θ − θ over
+the seeds and test instances. Our Multi-Bootstrap
+procedure supports both paired and unpaired
+study designs, differentiating the two settings only
+in the way the sampling is performed.
+To keep the presentation simple, we will assume
+that the performance L(s) is an average over a per-
+example metric `(fs(x), y), and b
+L(s) is similarly
+an empirical average with the observed test exam-
+ples,
+L(s) = E[`(Y, fs(X))], and
+b
+L(s) =
+1
+nx
+nx
+X
+i=1
+`(fs(Xi), Yi).
+Our discussion here generalizes to any perfor-
+mance metric which behaves asymptotically like
+an average, including the accuracy, AUC, BLEU
+score, and expected calibration error.
+While there is a rich literature on bootstrap
+methods (e.g., Efron and Tibshirani, 1994), the
+Multi-Bootstrap is a new bootstrap method for
+handling the structure of the way that randomness
+from the seeds and test set creates error in the es-
+timate b
+θ. The statistical underpinnings of this ap-
+proach share theoretical and methodological con-
+nections to inference procedures for two-sample
+tests (Van der Vaart, 2000), where the samples
+from each population are independent. However,
+in those settings, the test statistics naturally differ
+as a result of the scientific question at hand.
+In this procedure, we generate a bootstrap sam-
+ple from the full sample with replacement sep-
+arately over both the randomness from the pre-
+training seed s and from the test set (X, Y ).
+That is, we generate a sample of pretrain-
+ing seeds (S∗
+1, S∗
+2, . . . , S∗
+ns
+) with each S∗
+j drawn
+randomly with replacement from the pretrain-
+ing seeds, and we generate a test set sample
+((X∗
+1 , Y ∗
+1 ), (X∗
+2 , Y ∗
+2 ), . . . , (X∗
+nx
+, Y ∗
+nx
+)) with each
+(X, Y ) pair drawn randomly with replacement
+from the full test set. Then, we compute the boot-
+strap estimate b
+θ∗ as
+b
+L∗
+(s) =
+1
+nx
+nx
+X
+i=1
+`(fs(Xi), Yi),
+b
+θ∗
+=
+1
+ns
+ns
+X
+j=1
+b
+L(Sj).
+It turns out that when nx and ns are large enough,
+the distribution of the estimation error b
+θ − θ is ap-
+proximated well by the distribution of b
+θ∗ − b
+θ over
+re-draws of the bootstrap samples.
+For nested sources of randomness (i.e., if for
+each pretraining seed s, we have estimates from
+multiple finetuning seeds), we average over all of
+the inner samples (finetuning seeds) in every boot-
+strap sample, motivated by the recommendations
+for bootstrapping clustered data recommended by
+Field and Welsh (2007).
+Paired Design. In a paired design, the Multi-
+Bootstrap procedure can additionally tell us the
+joint distribution between b
+θf0 − θf0 and b
+θf − θf .
+To do so, one must use the same bootstrap sam-
+ples of the seeds (S∗
+1, S∗
+2, . . . , S∗
+ns
+) and test ex-
+amples ((X∗
+1 , Y ∗
+1 ), (X∗
+2 , Y ∗
+2 ), . . . , (X∗
+nx
+, Y ∗
+nx
+)) for
+both models. Then, the correlation between the
+errors b
+θf0 − θf0 and b
+θf − θf is well approximated
+by the correlation between the bootstrap errors
+b
+θ∗
+f0 − θ∗
+f0 and b
+θ∗
+f − θ∗
+f .
+In particular, recall that we defined the differ-
+ence in performance between the intervention f0
+and the baseline f to be δ, and defined its esti-
+mator to be b
+δ. With the Multi-Bootstrap, we can
+estimate the bootstrapped difference
+b
+δ∗
+= b
+θ∗
+f0 − b
+θf .
+With this, the distribution of the estimation error
+b
+δ − δ, is well approximated by the distribution of
+b
+δ∗ − b
+δ over bootstrap samples.
+Unpaired Design. For studies that do not
+match the paired format, we adapt the Multi-
+Bootstrapping procedure so that, rather than sam-
+pling a single pretraining seed that is shared be-
+tween f and f0, we sample pretraining seeds for
+each independently. The remainder of the algo-
+rithm proceeds as in the paired case. Relative to
+the paired design discussed above, this addition-
+ally assumes that the errors due to differences in
+pretraining seed between b
+θf0 −θf0 and b
+θf −θf are
+independent.
+P-Values. A valid P-value for the hypothesis
+test described in Equation 1 is the fraction of boot-
+strap samples from the above procedure for which
+the estimate b
+δ is negative.
+Handling single seeds for the baseline. Often,
+we do not have access to multiple estimates of
+L(s), for example, when the baseline f against
+which we are comparing is an estimate of human
+performance for which only one experiment was
+run, or when f is the performance of a previously-
+published model for which there only exists a sin-
+gle artifact or for which we do not have direct ac-
+cess to model predictions. When we have only
+a point estimate of L(S) for the baseline f, we
+recommend still using Multi-Bootstrap in order to
+compute a confidence interval around L(S) for
+f0, and simply reporting where the given estimate
+of baseline performance falls within that distribu-
+tion. An example of this is given in Figure 1,
+in which the distribution of MultiBERTs perfor-
+mance is compared to that from the single check-
+point of the original BERT release. In general such
+results should be interpreted conservatively, as we
+cannot make any claims about the variance of the
+baseline model.
+5 Application of Multi-Bootstrap:
+Reproducing Original BERT
+We now discusses challenges in reproducing the
+performance of the original BERT checkpoint,
+using the Multi-Bootstrap procedure presented
+above.
+The performance of the original
+bert-base-uncased checkpoint appears
+to be an outlier when viewed against the distri-
+bution of scores obtained using the MultiBERTs
+reproductions. Specifically, in reproducing the
+training recipe of Devlin et al. (2019), we found
+it difficult to simultaneously match performance
+on all tasks using a single set of hyperparameters.
+Devlin et al. (2019) reports training for 1M steps.
+However, as shown in Figure 1 and 2, models
+pretrained for 1M steps matched the original
+checkpoint on SQuAD but lagged behind on
+GLUE tasks; if pretraining continues to 2M steps,
+GLUE performance matches the original check-
+point but SQuAD performance is significantly
+higher.
+The above observations suggest two separate
+but related hypotheses (below) about the BERT
+pretraining procedure. In this section, we use the
+proposed Multi-Bootstrap procedure to test these
+hypotheses.
+1. On most tasks, running BERT pretraining
+for 2M steps produces better models than
+1M steps. We test this using paired Multi-
+Bootstrap (§5.1).
+2. The MultiBERTs training procedure out-
+performs the original BERT procedure on
+SQuAD. We test this using unpaired Multi-
+Bootstrap (§5.2).
+5.1 How many steps to pretrain?
+To test our first hypothesis, we use the proposed
+Multi-Bootstrap, letting f be the predictor induced
+by the BERT pretraining procedure using the de-
+fault 1M steps, and letting f0 be the predictor re-
+sulting from the proposed intervention of training
+to 2M steps. From a glance at the histograms in
+Figure 5, we can see that MNLI appears to be a
+case where 2M is generally better, while MRPC
+and RTE appear less conclusive. Multi-Bootstrap
+allows us to test this quantitatively using samples
+over both the seeds and the test examples. Results
+are shown in Table 2. We find that MNLI conclu-
+sively performs better (δ = 0.007 with p < 0.001)
+with 2M steps; for RTE and MRPC we cannot re-
+ject the null hypothesis of no difference (p = 0.14
+and p = 0.56 respectively).
+As an example of the utility of this procedure,
+Figure 4 shows the distribution of individual sam-
+ples of L for the intervention f0 and baseline f
+from this bootstrap procedure (which we denote
+MNLI RTE MRPC
+θf (1M steps) 0.837 0.644 0.861
+θf0 (2M steps) 0.844 0.655 0.860
+δ = θf0 − θf 0.007 0.011 -0.001
+p-value
+(H0 that δ ≤ 0) < 0.001 0.141 0.564
+Table 2: Expected scores (accuracy), effect sizes,
+and p-values from Multi-Bootstrap on selected GLUE
+tasks. We pre-select the best fine-tuning learning rate
+by averaging over runs; this is 3e-5 for checkpoints at
+1M steps, and 2e-5 for checkpoints at 2M pretraining
+steps. All tests use 1000 bootstrap samples, in paired
+mode on the five seeds for which both 1M and 2M steps
+are available.
+as L0 and L, respectively). The distributions over-
+lap significantly, but the samples are highly corre-
+lated due to the paired sampling, and we find that
+individual samples of the difference (L0 − L) are
+nearly always positive.
+Figure 4: Distribution of estimated performance on
+MNLI across boostrap samples, for runs with 1M
+or 2M steps. Individual samples of L(S, (X, Y ))
+and L0
+(S, (X, Y )) on the left, deltas L0
+(S, (X, Y )) −
+L(S, (X, Y )) shown on the right. Bootstrap experi-
+ment is run as in Table 2, which gives δ = 0.007 with
+p < 0.001.
+5.2 Does the MultiBERTs procedure
+outperform original BERT on SQuAD?
+To test our second hypothesis, i.e., that the
+MultiBERTs procedure outperforms original
+BERT on SQuAD, we must use the unpaired
+Multi-Bootstrap procedure. In particular, we are
+limited to the case in which we only have a point
+estimate of L0(S), because we only have a single
+estimate of the performance of our baseline model
+f0 (the original BERT checkpoint). However,
+the Multi-Bootstrap procedure still allows us to
+Figure 5: Distribution of the performance on GLUE
+dev sets, showing only runs with the best selected
+learning rate for each task. Each plot shows 25 points
+(5 finetuning x 5 pretraining) for each of the 1M and
+2M-step versions of each of the pretraining runs for
+which we release intermediate checkpoints (§2).
+estimate variance across our MultiBERTs seeds
+and across the examples in the evaluation set. On
+SQuAD 2.0, we find that the MultiBERTs models
+trained for 2M steps outperform original BERT
+with a 95% confidence range of 1.9% to 2.9% and
+p < 0.001 for the null hypothesis, corroborating
+our intuition from Figure 2.
+We include notebooks for the above analyses in
+our code release.
+6 Conclusion
+To make progress on language model pretrain-
+ing, it is essential to distinguish between the
+performance of specific model artifacts and the
+impact of the training procedures that generate
+those artifacts. To this end, we have presented
+two resources: MultiBERTs, a set of 25 model
+checkpoints to support robust research on BERT,
+and the Multi-Bootstrap, a non-parametric statis-
+tical method to estimate the uncertainty of model
+comparisons across multiple training seeds. We
+demonstrated the utility of these resources by
+showing that pretraining for a longer number of
+steps leads to a significant improvement when
+fine-tuning on MNLI, but not on two smaller
+datasets. We hope that the release of multiple
+checkpoints and the use of principled hypothesis
+testing will become standard practices in research
+on pretrained language models.
+Acknowledgments
+The authors wish to thank Kellie Webster and
+Ming-Wei Chang for their feedback and sugges-
+tions.
+References
+Luisa Bentivogli, Ido Dagan, Hoa Trang Dang, Danilo
+Giampiccolo, and Bernardo Magnini. 2009. The
+fifth PASCAL recognizing textual entailment chal-
+lenge.
+Daniel Cer, Mona Diab, Eneko Agirre, Iñigo Lopez-
+Gazpio, and Lucia Specia. 2017. SemEval-2017
+task 1: Semantic textual similarity multilingual and
+crosslingual focused evaluation. In Proceedings
+of the 11th International Workshop on Semantic
+Evaluation (SemEval-2017), pages 1–14, Vancou-
+ver, Canada. Association for Computational Lin-
+guistics.
+Zihan Chen, Hongbo Zhang, Xiaoji Zhang, and Leqi
+Zhao. 2018. Quora question pairs. University of
+Waterloo.
+Alexander D’Amour, Katherine Heller, Dan Moldovan,
+Ben Adlam, Babak Alipanahi, Alex Beutel,
+Christina Chen, Jonathan Deaton, Jacob Eisen-
+stein, Matthew D Hoffman, et al. 2020. Un-
+derspecification presents challenges for credibil-
+ity in modern machine learning. arXiv preprint
+arXiv:2011.03395.
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and
+Kristina Toutanova. 2019. BERT: Pre-training of
+deep bidirectional transformers for language under-
+standing. In Proceedings of the 2019 Conference
+of the North American Chapter of the Association
+for Computational Linguistics: Human Language
+Technologies, Volume 1 (Long and Short Papers),
+pages 4171–4186, Minneapolis, Minnesota. Associ-
+ation for Computational Linguistics.
+Jesse Dodge, Gabriel Ilharco, Roy Schwartz, Ali
+Farhadi, Hannaneh Hajishirzi, and Noah Smith.
+2020. Fine-tuning pretrained language models:
+Weight initializations, data orders, and early stop-
+ping. arXiv preprint arXiv:2002.06305.
+William B. Dolan and Chris Brockett. 2005. Automati-
+cally constructing a corpus of sentential paraphrases.
+In Proceedings of the Third International Workshop
+on Paraphrasing (IWP2005).
+Rotem Dror, Segev Shlomov, and Roi Reichart. 2019.
+Deep dominance - how to properly compare deep
+neural models. In Proceedings of the 57th Annual
+Meeting of the Association for Computational Lin-
+guistics, pages 2773–2785, Florence, Italy. Associa-
+tion for Computational Linguistics.
+Bradley Efron and Robert J Tibshirani. 1994. An intro-
+duction to the bootstrap. CRC Press.
+Christopher A Field and Alan H Welsh. 2007. Boot-
+strapping clustered data. Journal of the Royal Sta-
+tistical Society: Series B (Statistical Methodology),
+69(3):369–390.
+John Hewitt and Christopher D. Manning. 2019. A
+structural probe for finding syntax in word repre-
+sentations. In Proceedings of the 2019 Conference
+of the North American Chapter of the Association
+for Computational Linguistics: Human Language
+Technologies, Volume 1 (Long and Short Papers),
+pages 4129–4138, Minneapolis, Minnesota. Associ-
+ation for Computational Linguistics.
+Diederik P Kingma and Jimmy Ba. 2014. Adam: A
+method for stochastic optimization. arXiv preprint
+arXiv:1412.6980.
+Alexandre Lacoste, Alexandra Luccioni, Victor
+Schmidt, and Thomas Dandres. 2019. Quantifying
+the carbon emissions of machine learning. arXiv
+preprint arXiv:1910.09700.
+Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Man-
+dar Joshi, Danqi Chen, Omer Levy, Mike Lewis,
+Luke Zettlemoyer, and Veselin Stoyanov. 2019.
+Roberta: A robustly optimized bert pretraining ap-
+proach. arXiv preprint arXiv:1907.11692.
+R. Thomas McCoy, Junghyun Min, and Tal Linzen.
+2020. BERTs of a feather do not generalize to-
+gether: Large variability in generalization across
+models with similar test set performance. In Pro-
+ceedings of the Third BlackboxNLP Workshop on
+Analyzing and Interpreting Neural Networks for
+NLP, pages 217–227, Online. Association for Com-
+putational Linguistics.
+Tom McCoy, Ellie Pavlick, and Tal Linzen. 2019.
+Right for the wrong reasons: Diagnosing syntactic
+heuristics in natural language inference. In Proceed-
+ings of the 57th Annual Meeting of the Association
+for Computational Linguistics, pages 3428–3448,
+Florence, Italy. Association for Computational Lin-
+guistics.
+Moin Nadeem, Anna Bethke, and Siva Reddy.
+2020. Stereoset: Measuring stereotypical bias
+in pretrained language models. arXiv preprint
+arXiv:2004.09456.
+Aakanksha Naik, Abhilasha Ravichander, Norman
+Sadeh, Carolyn Rose, and Graham Neubig. 2018.
+Stress test evaluation for natural language inference.
+In Proceedings of the 27th International Conference
+on Computational Linguistics, pages 2340–2353,
+Santa Fe, New Mexico, USA. Association for Com-
+putational Linguistics.
+David Patterson, Joseph Gonzalez, Quoc Le, Chen
+Liang, Lluis-Miquel Munguia, Daniel Rothchild,
+David So, Maud Texier, and Jeff Dean. 2021. Car-
+bon emissions and large neural network training.
+arXiv preprint arXiv:2104.10350.
+Fabio Petroni, Tim Rocktäschel, Sebastian Riedel,
+Patrick Lewis, Anton Bakhtin, Yuxiang Wu, and
+Alexander Miller. 2019. Language models as
+knowledge bases? In Proceedings of the 2019 Con-
+ference on Empirical Methods in Natural Language
+Processing and the 9th International Joint Confer-
+ence on Natural Language Processing (EMNLP-
+IJCNLP), pages 2463–2473, Hong Kong, China. As-
+sociation for Computational Linguistics.
+Jason Phang, Thibault Févry, and Samuel R Bowman.
+2018. Sentence encoders on stilts: Supplementary
+training on intermediate labeled-data tasks. arXiv
+preprint arXiv:1811.01088.
+Pranav Rajpurkar, Jian Zhang, Konstantin Lopyrev, and
+Percy Liang. 2016. SQuAD: 100,000+ questions for
+machine comprehension of text. In Proceedings of
+the 2016 Conference on Empirical Methods in Natu-
+ral Language Processing, pages 2383–2392, Austin,
+Texas. Association for Computational Linguistics.
+Anna Rogers, Olga Kovaleva, and Anna Rumshisky.
+2020. A primer in BERTology: What we know
+about how BERT works. Transactions of the Asso-
+ciation for Computational Linguistics, 8:842–866.
+Richard Socher, Alex Perelygin, Jean Wu, Jason
+Chuang, Christopher D. Manning, Andrew Ng, and
+Christopher Potts. 2013. Recursive deep models
+for semantic compositionality over a sentiment tree-
+bank. In Proceedings of the 2013 Conference on
+Empirical Methods in Natural Language Process-
+ing, pages 1631–1642, Seattle, Washington, USA.
+Association for Computational Linguistics.
+Emma Strubell, Ananya Ganesh, and Andrew McCal-
+lum. 2019. Energy and policy considerations for
+deep learning in NLP. In Proceedings of the 57th
+Annual Meeting of the Association for Computa-
+tional Linguistics, pages 3645–3650, Florence, Italy.
+Association for Computational Linguistics.
+Ian Tenney, Dipanjan Das, and Ellie Pavlick. 2019.
+BERT rediscovers the classical NLP pipeline. In
+Proceedings of the 57th Annual Meeting of the Asso-
+ciation for Computational Linguistics, pages 4593–
+4601, Florence, Italy. Association for Computa-
+tional Linguistics.
+Iulia Turc, Ming-Wei Chang, Kenton Lee, and Kristina
+Toutanova. 2019. Well-read students learn better:
+On the importance of pre-training compact models.
+arXiv preprint arXiv:1908.08962.
+Aad W Van der Vaart. 2000. Asymptotic statistics, vol-
+ume 3. Cambridge University Press.
+Elena Voita, David Talbot, Fedor Moiseev, Rico Sen-
+nrich, and Ivan Titov. 2019. Analyzing multi-head
+self-attention: Specialized heads do the heavy lift-
+ing, the rest can be pruned. In Proceedings of the
+57th Annual Meeting of the Association for Com-
+putational Linguistics, pages 5797–5808, Florence,
+Italy. Association for Computational Linguistics.
+Alex Wang, Amanpreet Singh, Julian Michael, Felix
+Hill, Omer Levy, and Samuel R. Bowman. 2019.
+GLUE: A multi-task benchmark and analysis plat-
+form for natural language understanding. In the Pro-
+ceedings of ICLR.
+Alex Warstadt, Amanpreet Singh, and Samuel R. Bow-
+man. 2018. Neural network acceptability judg-
+ments. arXiv preprint 1805.12471.
+Adina Williams, Nikita Nangia, and Samuel Bowman.
+2018. A broad-coverage challenge corpus for sen-
+tence understanding through inference. In Proceed-
+ings of the 2018 Conference of the North American
+Chapter of the Association for Computational Lin-
+guistics: Human Language Technologies, Volume
+1 (Long Papers), pages 1112–1122, New Orleans,
+Louisiana. Association for Computational Linguis-
+tics.
+Thomas Wolf, Lysandre Debut, Victor Sanh, Julien
+Chaumond, Clement Delangue, Anthony Moi, Pier-
+ric Cistac, Tim Rault, Rémi Louf, Morgan Funtow-
+icz, Joe Davison, Sam Shleifer, Patrick von Platen,
+Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu,
+Teven Le Scao, Sylvain Gugger, Mariama Drame,
+Quentin Lhoest, and Alexander M. Rush. 2020.
+Transformers: State-of-the-art natural language pro-
+cessing. In Proceedings of the 2020 Conference on
+Empirical Methods in Natural Language Process-
+ing: System Demonstrations, pages 38–45, Online.
+Association for Computational Linguistics.
+Zhuosheng Zhang, Yuwei Wu, Hai Zhao, Zuchao Li,
+Shuailiang Zhang, Xi Zhou, and Xiang Zhou. 2020.
+Semantics-aware bert for language understanding.
+In Proceedings of the AAAI Conference on Artificial
+Intelligence, volume 34, pages 9628–9635.
+Ruiqi Zhong, Dhruba Ghosh, Dan Klein, and Jacob
+Steinhardt. 2021. Are larger pretrained language
+models uniformly better? comparing performance at
+the instance level. arXiv preprint arXiv:2105.06020.
+Xiang Zhou, Yixin Nie, Hao Tan, and Mohit Bansal.
+2020. The curse of performance instability in analy-
+sis datasets: Consequences, source, and suggestions.
+arXiv preprint arXiv:2004.13606.
+Y. Zhu, R. Kiros, R. Zemel, R. Salakhutdinov, R. Ur-
+tasun, A. Torralba, and S. Fidler. 2015. Aligning
+books and movies: Towards story-like visual expla-
+nations by watching movies and reading books. In
+2015 IEEE International Conference on Computer
+Vision (ICCV), pages 19–27.
+

@@ -11,14 +11,17 @@ from sklearn.model_selection import train_test_split
 def process_pdf(input_dir, output_dir):
     files = []
     for i, pdf_file in enumerate(glob.glob(input_dir)):
-        print(str(pdf_file))
-        pdf = open(pdf_file, "rb")
-        text = pdftotext.PDF(pdf, raw=True)
-        pdf.close()
-        pdfintext = ""
-        for page in text:
-            pdfintext += page
-        files.append(pdfintext)
+        try:
+            print(str(pdf_file))
+            pdf = open(pdf_file, "rb")
+            text = pdftotext.PDF(pdf, raw=True)
+            pdf.close()
+            pdfintext = ""
+            for page in text:
+                pdfintext += page
+            files.append(pdfintext)
+        except:
+            print(f"Invalid link: {pdf_file.strip()}")
     x_train, x_test = train_test_split(files, test_size=0.20)
     write_to_disk("train", output_dir, x_train)
     write_to_disk("test", output_dir, x_test)
