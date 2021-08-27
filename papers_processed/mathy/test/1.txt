@@ -1,1 +1,284 @@
-GreedyBiddingStrategiesforKeywordAuctionsMatthewCaryUniversityofWashingtonAparnaDasBrownUniversityBenEdelmanHarvardUniversityIoannisGiotisUniversityofWashingtonKurtisHeimerlUniversityofWashingtonAnnaR.KarlinUniversityofWashingtonClaireMathieuBrownUniversityMichaelSchwarzYahoo!ResearchABSTRACTHowshouldplayersbidinkeywordauctionssuchasthoseusedbyGoogle,Yahoo!andMSN?Weconsidergreedybid-dingstrategiesforarepeatedauctiononasinglekeyword,whereineachround,eachplayerchoosessomeoptimalbidforthenextround,assumingthattheotherplayersmerelyrepeattheirpreviousbid.Westudytherevenue,conver-genceandrobustnesspropertiesofsuchstrategies.Mostinterestingamongtheseisastrategywecallthebalancedbiddingstrategy(bb):itisknownthatbbhasauniquefixedpointwithpaymentsidenticaltothoseoftheVCGmecha-nism.Weshowthatifallplayersusethebbstrategyandupdateeachround,bbconvergeswhenthenumberofslotsisatmost2,butdoesnotalwaysconvergefor3ormoreslots.Ontheotherhand,wepresentasimplevariantwhichisguaranteedtoconvergetothesamefixedpointforanynumberofslots.Inamodelinwhichonlyonerandomlychosenplayerupdateseachroundaccordingtothebbstrat-egy,weprovethatconvergenceoccurswithprobability1.Wecomplementourtheoreticalresultswithempiricalstud-ies.CategoriesandSubjectDescriptorsH.4.0[InformationSystemsApplications]:General;G.0[MathematicsofComputing]:GeneralGeneralTermsAlgorithms,economics,theoryKeywordsKeywordauctions,biddingstrategies1.INTRODUCTIONOnlinesearchengineadvertisingisanappealingapproachtohighlytargetedadvertising,andisthemajorsourceofrevenueformodernwebsearchenginessuchasGoogleandPermissiontomakedigitalorhardcopiesofallorpartofthisworkforpersonalorclassroomuseisgrantedwithoutfeeprovidedthatcopiesarenotmadeordistributedforprofitorcommercialadvantageandthatcopiesbearthisnoticeandthefullcitationonthefirstpage.Tocopyotherwise,torepublish,topostonserversortoredistributetolists,requirespriorspecificpermissionand/orafee.EC’07,June11–15,2007,SanDiego,CA.Copyright2007ACM978-1-59593-653-0/07/0006...$5.00.Yahoo!.Thebasicsetupisasfollows:whenapersonper-formsaqueryatasearchengine,hereceivesapageofresultsthatcontainsthelinksthesearchenginehasdeemedrele-vanttothesearch,togetherwithsponsoredlinks,i.e.,paidadvertisements.Fromtheadvertiser’sperspective,thisap-proachoffersagreatbenefit:theycanpreciselytargettheiradsbasedonusers’searchterms.Forexample,ifatravelagent“buys”thesearchterm“Tahiti,”thenwhensearchingontheword“Tahiti”,ausermightbeshownalinktothewebpageforthattravelagentoffering,say,planeticketstoTahiti.Iftheuseractuallyclicksonthislink,hewillbetransferredtotheaforementionedwebpage.Foreachsuchclick,inwhichtheadvertiserreceivesapotentialcustomer,theadvertiserpaysthesearchengine.Theprocessofdeterminingwhichadsgetassignedtowhichkeywords(searchterms)andhowmucheachadver-tiserpaysisresolvedviakeywordauctions.Advertiserschoosewhichkeywordstheywanttobidonandparticipateinauctionsforthosekeywords.Forakeywordofinterest,eachadvertisersubmitsabidstatingthemaximumamountitiswillingtopayforaclick.Whenausersubmitsaqueryonthatkeyword,aninstantaneousauctionisruntode-terminewhichoftheadvertiserscurrentlybiddingonthatkeywordareallocatedadvertisingslots.Intheabsenceofbudgetconstraints,thereisoneandonlyonetruthfulauctionthatcaninprinciplebeused:theVickrey-Clarke-GrovesorVCGmechanism[12,3,7].Thismechanismhasthepropertythatitisinthebestinterestoftheparticipatingadvertiserstobidtheirtruevaluationofaclick.DespitethisappealingpropertyoftheVCGmecha-nism,nosearchengineusestheVCGmechanism.Rather,themostwidelyusedauctionisthenon-truthfulGeneralizedSecondPriceorGSPauction(describedinSection2).ThefactthattheGSPmechanismisnottruthfulmeansthattheparticipatingadvertisersareforcedtoundertakethecomplicatedtaskofchoosingabiddingstrategy.As-demir[1]andEdelmanetal.[4]observethatinstabilityandbiddingwarscanresultfromtheuseoftheGSPmechanism.Tomakemattersworse,onatypicalsearchpage,thereisroomformultiplesponsoredlinks.Thepositioningofthesesponsoredlinksaffectsthechancesthatasponsoredlinkwillbeclickedonandthustheseadvertisingslotshavevaryingdesirabilityfromtheperspectiveofadvertisers.Thissearchtermstotargetandcompeteinapotentiallylargenumberofkeywordauctionsforthoseterms.Atthesametime,advertisershavetheopportunitytoupdatetheirbids.Thisistypicallydoneautomaticallyviasoftwarerobots[9].InthisequilibriumofGSP.GSPalsohasNashequilibriainwhichtherevenuetothesearchengineiseitherhigherorlowerthanthatintheVCGequilibrium(see,forexample,Var-ian[11]orTheorem16inthispaper).Itisnotclearwhetheranyoftheseequilibriaareactuallyreachedinrealkeywordauctions.Itisalsonotclearwhatbiddingstrategyplayersmightemploytoreachaparticularequilibrium.Oneofthegoalsofthispaperistogainsomeinsightintotheseissues.Weconsiderarepeatedkeywordauction,withafixedsetofnplayersandkslots.Theparticipantsintherepeatedauctionhavetheopportunitytoupdatetheirbidsinbe-tweensuccessiverounds.Howshouldplayersbid?Natu-rally,aplayer’smainobjectiveistomaximizehisownex-pectedutilityovermultipleroundsoftheauction.However,withoutanyrealinsightintothebiddingstrategiesfollowedbytherestoftheplayers,itisdifficultforoneplayertomakepredictionsaboutthefuturebidsofotherplayersandhencechooseanoptimalbiddingstrategy.Thus,anaturalapproachistoassumethattheimmediatepastisthebestpredictorofthefuture.Thisleadstoanaturalgreedy-likebiddingschemewhereaplayerassumesthatalltheotherbidswillremainfixedinthenextround.Underthisas-sumption,therationalchoiceforaplayerjistobidsoastowinaslotsthatmaximizeshisutilityuj=θs(vj−ps).Thisleadstothefollowingdefinition.Definition3.GreedyBiddingStrategiesAgreedybiddingstrategyforaplayerjistochooseabidforthenextroundofarepeatedkeywordauctionroundsoastomaximizehisutilityuj,assumingthebidsofallotherplayersb−jinthenextroundwillremainfixedtotheirvaluesinthepreviousround.Givenb−j,denotebyp−j(s)thepaymentplayerjwouldmakeifhebidssoastowinslots.Lets∗betheslotthegreedybidderjwilltarget.Thenifplayerjisgreedy,hewillbidb0∈(p−j(s∗−1),p−j(s∗)).Asb0isnotfullyspecified,thisdefinesaclassofstrategiesthataredistinguishedbythechoiceofb0withintheallowedrange.Advertisersparticipatinginakeywordauctionareoftenbusinesscompetitors.Oneofthemostcommonlyobservedsecondaryobjectivesbesidesgainingtheoptimalslotisthedesireto“push”thepricespaidbyotheradvertisershigher.Thisisnaturallydonebybiddinginthehighendoftherangementionedearlier.However,thereistheriskthatachangeinotherplayers’bidscouldresultinpayingahigherpricethanexpected.Balancingtheseobjectivesleadstothefollowingbiddingstrategy.Definition4.BalancedBiddingTheBalancedgreedybiddingstrategybbisthestrategyforaplayerjthat,givenb−j•nexttargetstheslots∗jwhichmaximizeshisutility(greedybiddingchoice),thatis,s∗j=argmaxs{θs(vj−p−j(s))}.•choosesitsbidb0forthenextroundsoastosatisfythefollowingequation:θs∗j`vj−p−j(s∗j)´=θs∗j−1`vj−b0´.Ifs∗jisthetopslot,we(arbitrarily)chooseb0=(vj+p−j(1))/2.Wecanthusdealwithallslotsuniformlybydefiningθ0=2θ1.Theintuitionbehindthebidselectionisthattheplayerbidshighenoughtoforcethepricespaidbyhiscompetitorstorise,butnotsohighthatifoneofhiscompetitorsweretojustundercuthim,hewouldmindgettingahigherslotatapricejustbelowhisownbidofb0.Thebbstrategyisanappealingstrategyforthefollowingreason.Theorem5.[5]Ifalltheplayersarefollowingthebbstrategyinanauctionwithalldistinctθs,thenthesystemhasauniquefixedpoint.Inthisfixedpoint,therevenueoftheauctioneer(andpaymentsofeachplayer)isequaltothatoftheVCGequilibrium.Theequilibriumbidsb∗joftheplay-ersinthefixedpointofbbsatisfythefollowingequations:b∗j=vjifj≥k+1andγjb∗j+1+(1−γj)vjif2≤j≤k.(1)whereγj=θj/θj−1.3.CONVERGENCEPROPERTIESOFTHEBBSTRATEGYWestudytheconvergencepropertiesofthebbstrategyinarepeatedkeywordauctionundertwomodels.Werefertoourstandardmodel,whereallplayerssimultaneouslyup-datetheirbidsoneachroundasthesynchronousmodel.Intheasynchronousmodel,ineachround,exactlyoneplayerupdatesherbid,whiletheotherplayersmerelyrepeattheirpreviousbids.Weconsiderboththecaseinwhichtheplayerperformingtheupdateisarbitraryandthecasewheretheplayerperformingtheupdateischosenatrandom.Thishasbeenstudied,forexampleinZhang[14].Theasynchronousmodelisclosertoactualpracticeinsponsoredsearch,al-thoughthesynchronousmodelappliesinon-linesettingswherebidsareupdatedinbatches.Theorem6.Considerarepeatedkeywordauctionwhereallplayersareusingthebbstrategystartingwitharbitraryinitialbids.Wehave:1.A2-slotauctionsystemalwaysconvergestoitsfixedpointinboththesynchronousandasynchronousmod-els.ThenumberofroundsuntilconvergenceinthesynchronousmodelisO(log((v2−v3)/v3)),wheretheconstantdependsontheclick-throughratesθ1andθ2.2.Thereexistsa3-slotauctionsystemandsetofinitialbidswhichdoesnotconvergeinthesynchronousmodel.3.Thereexistsa3-slotauctionsystem,asetofinitialbids,andanorderinwhichtheplayersupdatewhichdoesnotconvergeintheasynchronousmodel.4.Intheasynchronousmodelwhereplayersbidinran-domorder,nomatterhowmanyslotsthereare,thesystemalwaysconvergestoitsfixedpoint.ProofofPart1:Lemma7.Ateveryroundtsuchthatt>t1=2Proof.Letbdenotethethirdhighestbid.Bythesecondround,bcanneverbemorethanv3.Supposeforsomeroundthatbislessthanv3.Takeaplayeriin{1,2,3}.Inthenextround,iwillbidhervalueortargetsomeslotj∈{1,2}andbidb0i=(1−γj)vi+γjpj≥(1−γ∗)v3+γ∗b=b+(1−γ∗)(v3−b).Ineithercase,(v3−b0i)≤γ∗(v3−b).Initiallyv3−b≤v3.Ittakesatatmostr=logγ∗((1−γ∗)(v2−v3)/v3)beforev3−b<(1−γ∗)(v2−v3).(Recallthatγ∗<1astheθi’saredecreasing.)Inroundr+1,biddersi∈{1,2}willeachbideithervi>v3ortargetaslotj∈{1,2}andbidb0i=(1−γj)vi+γjpj≥(1−γ∗)v2+γ∗b=b+(1−γ∗)(v2−b)>b+(1−γ∗)(v2−v3)>v3,henceineithercasetheirbidsarebothabovev3.Inroundr+2,player3willthenbidv3whileplayers1and2keeponbiddingabovev3;thisconcludestheproofofthelemma.OncetheconditionsofLemma7hold,thepriceofslot2isfixedatp2=v3.LetT2=b∗2=(1−θ2/θ1)v2+(θ2/θ1)p2andT1=(1−θ2/θ1)v1+(θ2/θ1)p2.Ifthelastbidsofplayers1and2wereb1andb2then,inthenextround,theirbidsare:b01=T1ifb2>T1,(v1+b2)/2otherwise.(2)b02=T2ifb1>T2,(v2+b1)/2otherwise.Letbmin=min(b1,b2)betheminimumofthetwobids.Lemma8.Afteratmostt2rounds,wehavebmin≥T2,wheret2≤t1+2θ1−θ2θ2.Proof.Assumethatattimet>t1,wehavebmin<T2.Thenitiseasytocheckthatatthenextroundwehaveb0min≥(v2+bmin)/2.Thisimpliesb0min−bmin≥v2−bmin2≥v2−T22=θ2θ1v2−p22=δ.Sinceattimet1wehavebmin≥v3,wewillreachb0min≥T2afteranadditionalnumberofroundsboundedby(T2−v3)/δ.Finally,sinceatroundt2wehavebmin≥T2,attimet2+1wewillhaveb02=T2<T1,andthereforeattimet2+2wewillhaveb002=T2=b∗2andb001=(v1+T2)/2=b∗1;wehavereachedequilibrium.ThisprovesPart1oftheTheoreminthesynchronousmodel.Theproofofconvergenceintheasynchronousmodelissimilar,butcomplicatedbytherandomorderofbidding.Lemma7holdswithaconstantfactorincreaseint1toallowforallbidderstomakeabid.Lemma8iseasiertocheckasinthiscaseonlythetoptwoplayersaltertheirbids,thereforeaftert2bidalternationswereachthesameoutcome.ProofofPart2:Unfortunately,anauctionsystemwherealltheplayersfollowthebbstrategyisnotguaranteedtoconvergewhentherearemorethan2slots.Wewillshowthiswiththefollowingcounterexample.Lettherebethreeslotswithθ1=1,θ2=2/3,θ3=1/3andfourplayerswithvalues161,160,159and100.Lettheinitialbidsof130.5,130,129.5and100,respectively.Thenthebiddingevolvesasbelow;inparticularitisnotconvergent.RoundBidderValue123161130.5145.5130.5160130145.25130159129.5144.75129.5100100100100Thereisoneinactivebidder,withthelowestvalue,whowillneverbeabletobidforaslotasthepricesareallabovehisutility.Itthefirstround,theremainingbiddersalltargetthelowestslot.Thebidfromthehighest-valuedplayerislowenoughsothatforthenextround,allthreetopbidderstargetthefirstslot.Withthesehighbids,thepriceforanyplayerforthetopslotistoohighwhencomparedwiththepriceofthelastslot.Thusforthethirdroundallthreetopplayerstargetthelastslot,andthecyclecontinues.Inthisexampletheclick-throughratesfollowasimplege-ometricsequence,similartothoseobservedinpractice[6].Notethatinthisexamplethebidsarewell-behaved,inthesensethatthebidsareinthesameorderastheplayers’val-ues.Hencesuchregularityisnotsufficientforconvergence.Finally,eventhoughweusedourconventionofθ0=2,asimilarexamplecanbeconstructedwheretheplayersarecyclingwhiletargetingintermediateslots.Thisconcludestheproofofpart2.ProofofPart3:Considerthefollowingthreeslotexamplewithθ1=1,θ2=0.1andθ3=0.09andthetopthreebiddersalternatinginsequence.RoundValue123456710219.280.880.880.819.219.219.210119.119.190.990.990.919.119.110059.659.659.695.4595.4595.4559.61010101010101010ProofofPart4:AproofsketchisgiventheAppendix.Notes•Theexampleaboveshowingthatfor3slots,bbdoesn’tconvergeinthesynchronousmodelisnotanomalous.InSection5,weshowexperimentallythatinasignifi-cantfractionofinstances,bbdoesnotconvergeinthesynchronousmodel.•Theboundwegiveonthetimetoconvergenceofbbintherandomasynchronousmodelisextremelyloose.Wehaverunsimulationstostudythespeedofconver-genceinthissettingandhavefoundexperimentallythatconvergenceisactuallyquitefast,certainlynomorethanapolynomialinn,thenumberofbidders.4.CONVERGENCEPROPERTIESOFTHERESTRICTED-BBSTRATEGYWewillnowexamineavariantaslotoflowerclick-throughratethantheonetheycurrentlyhave.Therbbstrategyisdesignedsothatithasthesameuniquefixedpointasbb.However,byrestrictingthedegreetowhichaplayercanbegreedy,wewillbeabletoshowthateveninthesynchronousmodel,rbbalwaysconvergestotheVCGequilibrium.Definition9.TheRestrictedBalancedBidding(rbb)biddingstrategyisthestrategywheregivenb−jfromthepre-viousround,playerj•targetstheslots∗jwhichmaximizeshisutilityamongtheslotswithnohigherclick-throughratethanhiscurrentslotsj,thatis,s∗j=argmax{θs(vj−p−j(s)):s≥sj}.•choosesherbidb0forthenextroundsoastosatisfythefollowingequation:θs∗j`vj−p−j(s∗j)´=θs∗j−1`vj−b0´.Tomakesurethisiswell-definedforthefirstslot,wedefineθ0=2θ1.Theorem10.1.ThesystemdefinedbyarepeatedkeywordauctioninwhichalltheplayersarefollowingtherbbstrategyhasauniquefixedpointatwhichplayersarebiddingaccordingtotheVCGequilibrium,i.e.theequilibriumbidsb∗jaregivenbyEquation(1).2.Inthesynchronousmodeltherbbstrategyalwayscon-vergestoitsfixedpoint.Thenumberofstepsuntilconvergenceis2ktimesO„k+log(1−γ∗)logγ∗+log(1/γ∗)v1−vk+1min1≤i≤k(vi−vi+1)«,whereγ∗=maxiθi/θi−1.Proof.TheproofofPart1oftheTheoremisverysimi-lartothatofTheorem5.(SeeEdelmanetal.[5].)ToprovePart2,wefirstboundthenumberofstepsuntilthepriceofslotkandthesetofplayerswhowillbeallocatedslotshaveconverged.Asbefore,wedefineγi=θi/θi−1.Lemma11.Playerppreferstotargetslotjratherthanslotj−1ifandonlyif(1−γj)vp+γjpj<pj−1.TheproofofthisLemmaissimplealgebraandisomitted.Lemma12.Ateveryroundtsuchthatt>t1=2+logγ∗((1−γ∗)(vk−vk+1)/vk+1),whereγ∗=maxi>0θi/θi−1,wehave:bi>vk+1∀i≤k,bi=vi∀i≥k+1.Proof.Letbdenotethe(k+1)sthighestbid.Bydefini-tion,bcanneverbemorethanvk+1.Supposeforsomeroundthatbislessthanvk+1.Takeanyplayeriin{1,2,...,k+1}.Inthenextround,iwilleitherbidhervalueortargetsomeslotj∈{1,...k}andbidb0i=(1−γj)vi+γjpj≥(1−γ∗)vk+1+γ∗b≥b+(1−γ∗)(vk+1−b).Ineithercase,(vk+1−b0i)≤γ∗(vk+1−b).Initiallyvk+1−b≤vk+1.Howmanyroundsdoesittakebeforevk+1−b<(1−γ∗)(vk−vk+1)?Atmostr≤logγ∗((1−γ∗)(vk−vk+1)/vk+1).Inroundr+1,biddersi∈{1,...k}willeachbideithervi>vk+1orbidatleastb0i=(1−γj)vi+γjpj≥(1−γ∗)vk+γ∗b≥b+(1−γ∗)(vk−b)>b+(1−γ∗)(vk−vk+1)>vk+1,henceineithercasetheirbidsareabovevk+1.Inroundr+2,playerk+1willthenbidvk+1whileplayers1,2,...,kcontinuetobidabovevk+1;theotherplayersdon’tgetaslot,sotheybidtheirvalue,andthisconcludestheproof.Wenowneedtoprovethattheallocationofthekslotsplayerstothesekplayersconvergestoafixedpoint.Atanytime,foranyi∈[1,k],considertheplayersal-locatedslots[i+1,k].TheyarecalledstableiftheirbidsandpricessatisfyEquation(1),thatis,theallocationisinorderofdecreasingvalues,andifπ(j)istheplayercurrentlyallocatedslotj,thenthelastbidsofthoseplayerssatisfied:bπ(j)=γjbπ(j+1)+(1−γj)vπ(j),foreveryj∈[i+1,k].Iftheplayersallocatedallslots[1,k]formastableset,thenwehavereachedthefixedpointoftherbbstrategy.Assumethatthecurrentsettingisnot(yet)afixedpointoftherbbstrategy.LetAbethemaximumstableset,withassociatedi≥2,andletBbethesetofplayersinslots[1,i].LetbmindenotetheminimumbidfromplayersofB.Wedefineapartialorderoversetsofplayers.WesaythatA0AifeitherA⊂A0andA6=A0,oriftheplayerofminimumvalueinthesymmetricdifferenceofAandA0belongstoA02.Thiswillbeourmeasureofprogress.Inthenextround,observethat,followingtherbbstrat-egy,playersinAstillbidinthesamewayasbefore.Letb0minbethenewminimumbidfromplayersofB,andpbetheplayerofBwhosebidisb0min.Therearethreecasestoconsider.1.pbidsbelowpi.Letj∈[i+1,k]betheslotwhichwastargetedbyp.Bydefinition,pprefersslotjtoslotj−1,andso,byLemma11,thebidofpislessthanpj−1.Bydefinition,thebidis(1−γj)vp+γjpj>pj,thusitfallsintheinterval(pj−1,pj)andpwillbeallocatedslotj.Recallthatπ(j)∈Adenotestheplayerwhowasinslotjinthepreviousround.SincesetAisstable,bydefinitionwehavepj−1=(1−γj)vπ(j)+γjpj.Sincethisisgreaterthanthebidofp,itfollowsthatvπ(j)>vp.Moreover,sincepprefersslotjtoslotj+1,byLemma11again,wemusthave(1−γj+1)vp+γj+1pj+1>pj=(1−γj+1)vπ(j+1)+γj+1pj+1,andsovp>vπ(j+1).ThusA0={p0∈A:vp0<vp}∪{p}isastableset,andA0A.2.ptargetedsloti.Thenpisallocatedsloti,A0=A∪{p}isastableset,andA0A.3.ptargetedsomeslotj≤i−1.ThenAisstillastableset,andbmin=pi−1hasincreased:b0min=(1−γj)vp+γjpj≥bmin+(1−γ∗)(vp−bmin).2ThiscorrespondsWewillprovethatCase3canonlyhappenaboundednumberxoftimes,(wherexdependsontheθj’sandthevj’sbutnotonthebids)beforeCase1or2mustoccur.1.8.6.4.200.50.550.60.650.70.750.80.850.90.951Pr(Converge)δ15355575510152025Rate(Bidsperplayer)#players(a)Synchronousconvergencefraction(b)11.21.41.600.10.20.30.40.50.60.70.80.91RevenueδMaxdebt-averseequilibriumbids=valuescbFigure3:ComparingrevenuefromCBwiththeVCGrevenue(VCG=1)00.20.40.60.8100.60.8100.10.20.30.40.50.60.70.80.91RevenueδabMinNashequilibriumFigure5:ABtotalrevenue(VCG=1)1.91.61.31.7.400.20.40.60.81RevenueδTheseexamplesrelyonplayervaluesthatarearbitrar-ilyseparated.ThesecondexamplewasconstructedusingthefollowingexpressionfromVarian[11],whichgivesthepaymentsthatachievethemaximumNashrevenue.θipi=Xj>i
+Closing the Learning-Planning Loop with
+Predictive State Representations
+(Extended Abstract)
+Byron Boots
+Machine Learning Department
+Carnegie Mellon University
+Pittsburgh, PA 15213
+beb@cs.cmu.edu
+Sajid M. Siddiqi
+∗
+Robotics Institute
+Carnegie Mellon University
+Pittsburgh, PA 15213
+siddiqi@google.com
+Geoffrey J. Gordon
+Machine Learning Department
+Carnegie Mellon University
+Pittsburgh, PA 15213
+ggordon@cs.cmu.edu
+ABSTRACT
+A central problem in artificial intelligence is to plan to maximize
+future reward under uncertainty in a partially observable environ-
+ment. Models of such environments include Partially Observable
+Markov Decision Processes (POMDPs) [4] as well as their general-
+izations, Predictive State Representations (PSRs) [9] and Observ-
+able Operator Models (OOMs) [7]. POMDPs model the state of
+the world as a latent variable; in contrast, PSRs and OOMs repre-
+sent state by tracking occurrence probabilities of a set of future
+events (called tests or characteristic events) conditioned on past
+events (called histories or indicative events). Unfortunately, exact
+planning algorithms such as value iteration [14] are intractable for
+most realistic POMDPs due to the curse of history and the curse of
+dimensionality [11]. However, PSRs and OOMs hold the promise
+of mitigating both of these curses: first, many successful approx-
+imate planning techniques designed to address these problems in
+POMDPs can easily be adapted to PSRs and OOMs [8, 6]. Second,
+PSRs and OOMs are often more compact than their corresponding
+POMDPs (i.e., need fewer state dimensions), mitigating the curse
+of dimensionality. Finally, since tests and histories are observable
+quantities, it has been suggested that PSRs and OOMs should be
+easier to learn than POMDPs; with a successful learning algorithm,
+we can look for a model which ignores all but the most important
+components of state, reducing dimensionality still further.
+In this paper we take an important step toward realizing the above
+hopes. In particular, we propose and demonstrate a fast and statis-
+tically consistent spectral algorithm which learns the parameters
+of a PSR directly from sequences of action-observation pairs. We
+then close the loop from observations to actions by planning in the
+learned model and recovering a policy which is near-optimal in the
+original environment. Closing the loop is a much more stringent
+test than simply checking short-term prediction accuracy, since the
+quality of an optimized policy depends strongly on the accuracy of
+the model: inaccurate models typically lead to useless plans.
+Categories and Subject Descriptors
+I.2.6 [Computing Methodologies]: Artificial Intelligence
+∗now at Google Pittsburgh
+Cite as: Closing the Learning-Planning Loop with Predictive State Repre-
+sentations (Extended Abstract), Byron Boots, Sajid M. Siddiqi and Geoffrey
+J. Gordon, Proc. of 9th Int. Conf. on Autonomous Agents and Mul-
+tiagent Systems (AAMAS 2010), van der Hoek, Kaminka, Lespérance,
+Luck and Sen (eds.), May, 10–14, 2010, Toronto, Canada, pp. XXX-XXX.
+Copyright c 2010, International Foundation for Autonomous Agents and
+Multiagent Systems (www.ifaamas.org). All rights reserved.
+General Terms
+Algorithms, Theory
+Keywords
+Machine Learning, Predictive State Representations, Planning
+Closing the Learning-Planning Loop with PSRs
+We propose a novel algorithm for learning a variant of PSRs [12]
+directly from execution traces. Our algorithm is closely related to
+subspace identification for linear dynamical systems (LDSs) [15]
+and spectral algorithms for Hidden Markov Models (HMMs) [5]
+and reduced-rank HMMs [13]. We then use the algorithm to learn a
+model of a simulated high-dimensional, vision-based mobile robot
+planning task, and compute a policy by approximate point-based
+planning in the learned model [6]. Finally, we show that the learned
+state space compactly captures the essential features of the environ-
+ment, allows accurate prediction, and enables successful and effi-
+cient planning.
+By comparison, previous POMDP learners such as Expectation-
+Maximization (EM) [1] do not avoid local minima or scale to large
+state spaces; recent extensions of approximate planning techniques
+for PSRs have only been applied to models constructed by hand [8,
+6]; and, although many learning algorithms have been proposed for
+PSRs (e.g. [16, 3]) and OOMs (e.g. [10]), none have been shown to
+learn models that are accurate enough for lookahead planning. As a
+result, there have been few successful attempts at closing the loop.
+Our learning algorithm starts from PH, PT ,H, and PT ,ao,H, ma-
+trices of probabilities of one-, two-, and three-tuples of observa-
+tions conditioned on present and future actions. (For additional
+details see [2].) We show that, for a PSR with true parameters
+m1, m∞, and Mao (the initial state, the normalization vector, and
+a transition matrix for each action-observation pair), the matrices
+PT ,H and PT ,ao,H are low-rank, and can be factored using smaller
+matrices of test predictions R and S:
+PT ,H = RSdiag(PH) (1a)
+PT ,ao,H = RMaoSdiag(PH) (1b)
+Next we prove that the true PSR parameters may be recovered, up
+to a linear transform, from the above matrices and an additional
+matrix U that obeys the condition that UT
+R is invertible:
+b1 ≡ UT
+PT ,H1k = (UT
+R)m1 (2a)
+bT
+∞ ≡ PT
+H(UT
+PT ,H)†
+= mT
+∞(UT
+R)−1
+(2b)
+Bao ≡ UT
+PT ,ao,H(UT
+PT ,H)†
+= (UT
+R)Mao(UT
+R)−1
+(2c)
+Learned Subspace Value Function
+Policies Executed in
+Learned Subspace
+−8 −4 0 4 8
+x 10
+−3
+−4
+0
+4
+x 10
+−3
+−8 −4 0 4 8
+x 10
+−3
+−4
+0
+4
+x 10
+−3
+−8 −4 0 4 8
+x 10
+−3
+−4
+0
+4
+x 10
+−3
+A. B. C. D. E. F.
+Outer Walls
+Inner Walls
+Agent Environment
+Paths Taken in
+Geometric Space
+13.9
+18.2
+507.8
+Learned
+Random
+*
+0 50 100
+0
+.5
+1
+~
+~
+Mean # of
+# of Actions
+Optimal
+Cumulative
+Density
+Actions
+Opt. Rnd.
+Learned
+Figure 1: Experimental results. (A) Simulated robot domain and sample images from two positions. (B) Training histories embed-
+ded into learned subspace. (C) Value function at training histories (lighter indicates higher value). (D) Paths executed in learned
+subspace. (E) Corresponding paths in original environment. (F) Performance analysis.
+Our learning algorithm works by building empirical estimates b
+PH,
+b
+PT ,H, and b
+PT ,ao,H of PH, PT ,H, and PT ,ao,H by repeatedly sam-
+pling execution traces of an agent interacting with an environment.
+We then pick b
+U by singular value decomposition of b
+PT ,H, and
+learn the transformed PSR parameters by plugging b
+U, b
+PH, b
+PT ,H,
+and b
+PT ,ao,H into Eq. 2. As we include more data in our estimates
+b
+PH, b
+PT ,H, and b
+PT ,ao,H, the law of large numbers guarantees that
+they converge to their true expectations. So, if our system is truly a
+PSR of finite rank, the resulting parameters b
+b1, b
+b∞, and b
+Bao con-
+verge to the true parameters of the PSR up to a linear transform—
+that is, our learning algorithm is consistent.
+Fig. 1 shows our experimental domain and results. A simulated
+robot uses visual sensing to traverse a square domain with multi-
+colored walls and a central obstacle (1A). We collect data by run-
+ning short trajectories from random starting points, and then learn
+a PSR. We visualize the learned state space by plotting a projec-
+tion of the learned state for each history in our training data (1B),
+with color equal to the average RGB color in the first image in
+the highest probability test. We give the robot high reward for ob-
+serving a particular image (facing the blue wall), and plan using
+point-based value iteration; (1C) shows the resulting value func-
+tion. To demonstrate the corresponding greedy policy, we started
+the robot at four positions (facing the red, green, magenta, and yel-
+low walls); (1D) and (1E) show the resulting paths in the state space
+and in the original environment (in red, green, magenta, and yellow,
+respectively). Note that the robot cannot observe its position in the
+original environment, yet the paths in E still appear near-optimal.
+To support this intuition, we sampled 100 random start positions
+and recorded statistics of the resulting greedy trajectories (1F): the
+bar graph compares the mean number of actions taken by the op-
+timal solution found by A* search in configuration space (left) to
+the greedy policy (center; the asterisk indicates that this mean was
+only computed over the 78 successful paths) and to a random pol-
+icy (right). The line graph illustrates the cumulative density of the
+number of actions given the optimal, learned, and random policies.
+To our knowledge this is the first research to combine several
+benefits which have not previously appeared together: our learner
+is computationally efficient and statistically consistent; it handles
+high-dimensional observations and long time horizons by work-
+ing from real-valued features of observation sequences; and finally,
+our close-the-loop experiments provide an end-to-end practical test.
+See the long version [2] for further details.
+Acknowledgements
+SMS was supported by the NSF under grant number 0000164, by
+the USAF under grant number FA8650-05-C-7264, by the USDA
+under grant number 4400161514, and by a project with Mobile-
+Fusion/TTC. BB was supported by the NSF under grant number
+EEEC-0540865. BB and GJG were supported by ONR MURI
+grant number N00014-09-1-1052.
+References
+[1] J. Bilmes. A gentle tutorial on the EM algorithm and its
+application to parameter estimation for Gaussian mixture and
+hidden Markov models. Technical Report, ICSI-TR-97-021,
+1997.
+[2] B. Boots, S. Siddiqi, and G. Gordon. Closing the
+learning-planning loop with predictive state representations.
+http://arxiv.org/abs/0912.2385, 2009.
+[3] M. Bowling, P. McCracken, M. James, J. Neufeld, and
+D. Wilkinson. Learning predictive state representations using
+non-blind policies. In Proc. ICML, 2006.
+[4] A. R. Cassandra, L. P. Kaelbling, and M. R. Littman. Acting
+optimally in partially observable stochastic domains. In Proc.
+AAAI, 1994.
+[5] D. Hsu, S. Kakade, and T. Zhang. A spectral algorithm for
+learning hidden Markov models. In COLT, 2009.
+[6] M. T. Izadi and D. Precup. Point-based planning for
+predictive state representations. In Proc. Canadian AI, 2008.
+[7] H. Jaeger. Observable operator models for discrete stochastic
+time series. Neural Computation, 12:1371–1398, 2000.
+[8] M. R. James, T. Wessling, and N. A. Vlassis. Improving
+approximate value iteration using memories and predictive
+state representations. In AAAI, 2006.
+[9] M. Littman, R. Sutton, and S. Singh. Predictive
+representations of state. In Advances in Neural Information
+Processing Systems (NIPS), 2002.
+[10] M. Zhao and H. Jaeger and M. Thon. A bound on modeling
+error in observable operator models and an associated
+learning algorithm. Neural Computation, 2009.
+[11] J. Pineau, G. Gordon, and S. Thrun. Point-based value
+iteration: an anytime algorithm for POMDPs. In Proc.
+IJCAI, 2003.
+[12] M. Rosencrantz, G. J. Gordon, and S. Thrun. Learning low
+dimensional predictive representations. In Proc. ICML, 2004.
+[13] S. M. Siddiqi, B. Boots, and G. J. Gordon. Reduced-rank
+hidden Markov models. http://arxiv.org/abs/0910.0902,
+2009.
+[14] E. J. Sondik. The optimal control of partially observable
+Markov processes. PhD. Thesis, Stanford University, 1971.
+[15] P. Van Overschee and B. De Moor. Subspace Identification
+for Linear Systems: Theory, Implementation, Applications.
+Kluwer, 1996.
+[16] E. Wiewiora. Learning predictive representations from a
+history. In Proc. ICML, 2005.
+

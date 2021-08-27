@@ -1,619 +1,543 @@
-Steps to take before
-Intelligent User Interfaces become real
-Kristina Höök
-SICS
-Box 1263, S-164 28 Kista, Sweden
-+46-(0)8-752 15 17
-kia@sics.se, http://www.sics.se/~kia/
-ABSTRACT
-Intelligent user interfaces have been proposed as a means to overcome some of the problems that direct-
-manipulation interfaces cannot handle, such as: information overflow problems; providing help on how
-to use complex systems; or real-time cognitive overload problems. Intelligent user interfaces are also
-being proposed as a means to make systems individualised or personalised, thereby increasing the sys-
-tems flexibility and appeal.
-Unfortunately, there are a number of problems not yet solved that prevent us from creating good intelli-
-gent user interface applications: there is a need for methods for how to develop them; there are demands
-on better usability principles for them; we need a better understanding of the possible ways the interface
-can utilise intelligence to improve the interaction; and finally, we need to design better tools that will
-enable an intelligent system to survive the life-cycle of a system (including updates of the database,
-system support, etc.). We define these problems further and start to outline their solutions.
-Keywords
-Intelligent user interfaces, user modelling, authoring tools, usability
-1. INTRODUCTION
-“Why should people have to adapt to systems, systems should adapt to people instead?” is a slogan that
-seems intuitively appealing to many users, as well as to researchers in the field of intelligent user inter-
-faces. Unfortunately, the slogan may lead both users and researchers astray, making them believe that an
-intelligent interface should behave like a fellow human being, smoothly changing its behaviour to fit
-with users’ knowledge, abilities and preferences, usually with advanced dialogue (and multimodal), ca-
-pabilities. Contrary to that the very few intelligent user interfaces that have succeeded commercially
-have done either very simple adaptations based on simple knowledge of the user, or created its adapta-
-tions based on what other users do rather than some kind any complex inferred model of user. (The most
-well known examples of commercial success stories are perhaps FireFly1
-and Microsoft agent Lumiere
-[Horvitz, 1997] – they exemplify these two approaches.) Slowly, these new minimalistic intelligent sys-
-tems are starting to show that they can help users to tackle information overflow/filtering problems, pro-
-vide help on how to use complex systems, or take on tasks from users so that they can handle cognitive
+This report is the result of studies performed at Lincoln Laboratory, a federally funded research and
+development center operated by Massachusetts Institute of Technology. This material is based upon work
+supported by the Under Secretary of Defense for Research and Engineering under Air Force Contract No.
+FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material
+are those of the author(s) and do not necessarily reflect the views of the Under Secretary of Defense for
+Research and Engineering.
+© 2021 MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS Part 252.227-7013 or 7014
+(Feb 2014). Notwithstanding any copyright notice, U.S. Government rights in this work are defined by
+DFARS 252.227-7013 or DFARS 252.227-7014 as detailed above. Use of this work other than as
+specifically authorized by the U.S. Government may violate any copyrights that exist in this work.
+This page intentionally left blank.
+EXECUTIVE SUMMARY
+The Department of Defense (DoD) has significantly increased its investment in the design,
+evaluation, and deployment of Artificial Intelligence and Machine Learning (AI/ML) capabilities to
+address national security needs [1,2]. While there are numerous AI/ML successes in the academic
+and commercial sectors, many of these systems have also been shown to be brittle and nonrobust [3].
+In a complex and ever-changing national security environment, it is vital that the DoD establish a
+sound and methodical process to evaluate the performance and robustness of AI/ML models before
+these new capabilities are deployed to the field [4].
+Without an effective evaluation process, the DoD may deploy AI/ML models that are assumed
+to be effective given limited evaluation metrics but actually have poor performance and robustness
+on operational data. Poor evaluation practices lead to loss of trust in AI/ML systems by model
+operators and more frequent—often costly—design updates needed to address the evolving security
+environment. In contrast, an effective evaluation process can drive the design of more resilient
+capabilities, flag potential limitations of models before they are deployed, and build operator trust
+in AI/ML systems.
+This paper reviews the AI/ML development process, highlights common best practices for
+AI/ML model evaluation, and makes the following recommendations to DoD evaluators to ensure
+the deployment of robust AI/ML capabilities for national security needs:
+• Develop testing datasets with sufficient variation and number of samples to effectively measure
+the expected performance of the AI/ML model on future (unseen) data once deployed,
+• Maintain separation between data used for design and evaluation (i.e., the test data is not
+used to design the AI/ML model or train its parameters) in order to ensure an honest and
+unbiased assessment of the model’s capability,
+• Evaluate performance given small perturbations and corruptions to data inputs to assess the
+smoothness of the AI/ML model and identify potential vulnerabilities, and
+• Evaluate performance on samples from data distributions that are shifted from the assumed
+distribution that was used to design the AI/ML model to assess how the model may perform
+on operational data that may differ from the training data.
+By following the recommendations for evaluation presented in this paper, the DoD can fully take
+advantage of the AI/ML revolution, delivering robust capabilities that maintain operational feasi-
+bility over longer periods of time, and increase warfighter confidence in AI/ML systems.
+iii
+This page intentionally left blank.
+TABLE OF CONTENTS
+Page
+Executive Summary iii
+List of Figures vii
+1. INTRODUCTION 1
+2. STANDARD AI/ML EVALUATION PRACTICES 2
+2.1 Training-Validation-Test Paradigm 2
+2.2 The AI/ML Development Process 3
+2.3 AI/ML Development and Evaluation in the DoD 3
+3. PRINCIPLES AND PRACTICES FOR DoD AI/ML MODEL EVALUATORS 5
+3.1 Selecting a Representative Data Distribution 5
+3.2 Evaluation of Generalization Capability 6
+3.3 Evaluation of Robustness to Sample Uncertainty 8
+3.4 Evaluation of Robustness to Distribution Uncertainty 11
+4. SUMMARY AND RECOMMENDATIONS 14
+References 16
+v
+This page intentionally left blank.
+LIST OF FIGURES
+Figure
+No. Page
+1 AI/ML model development process. 4
+2 Illustration of how sample diversity and sample size impact the bias and
+variance of the estimated out-of-sample performance metric. 6
+3 Notional performance as a function of model complexity. 8
+4 Notional depiction of models that are more robust and less robust to sample
+uncertainty. 9
+5 Notional performance as a function of a distance measure between training
+and test data. 10
+6 Depiction of the best practices for AI/ML model evaluation presented in this
+paper. 13
+vii
+This page intentionally left blank.
+1. INTRODUCTION
+Recent years have seen major academic and industry breakthroughs in the field of Artificial
+Intelligence and Machine Learning (AI/ML), and the Department of Defense (DoD) has identified
+the need to harness these advances to improve our national security and maintain a strategic
+advantage [2]. Despite numerous successes in AI/ML, many of these new technologies have been
+shown to be brittle, uninterpretable, and easily fooled [3]. The DoD recognizes the need to improve
+existing evaluation practices to measure and improve the resiliency, robustness, and reliability of
+AI/ML models before such models are deployed as an operational capability [1,4].
+We share the urgency to improve DoD AI/ML evaluation processes. We have observed that in
+many cases, the defense community has not adhered to best practices from the AI/ML community in
+evaluating model performance and robustness. Without proper evaluation practices, understanding
+of the capabilities of AI/ML models is biased, often assuming a larger capability than is warranted.
+Such a mismatch between predicted and operational performance can lead to warfighter distrust of
+AI/ML systems. Additionally, poor evaluation practices may in turn be incentivizing poor design
+approaches. For example, if the primary metric for evaluation is accuracy on a known set of testing
+data, a solution that memorizes that data may be selected over one that works against the full
+range of potential real-world variations of that data.
+In this paper, we discuss the AI/ML development process and provide recommendations on
+how the DoD can encourage the design of robust AI/ML models through its evaluation procedures.
+To be considered robust, an AI/ML model should exhibit the following properties:
+1. Generalization: An AI/ML model should be able to achieve good performance on data
+that is drawn from the same distribution as the training data but not used explicitly during
+training (i.e., generalize to unseen data).
+2. Robustness: An AI/ML model should maintain performance, with graceful degradation, as
+the unseen test data becomes increasingly different from the training data due to:
+(a) Sample Uncertainty: small perturbations or corruptions applied to the data, and
+(b) Distribution Uncertainty: variations between the expected and observed distribu-
+tions of the data, e.g., due to unanticipated changes in the scenario once deployed or the
+evolution of threat capabilities.
+An AI/ML model that exhibits these properties will perform well against expectations while
+being robust to unexpected variations once deployed operationally. Other concepts such as the
+ability to detect outliers and the ability to autonomously adapt once the model is deployed are
+also important for AI/ML model robustness, but are out of scope for this paper. Note that these
+properties apply whether we are assessing robustness of an entire AI/ML system involving many
+components, or a single component of that system that applies AI/ML. We adopt common termi-
+nology in referring to this system or algorithm as an AI/ML model, and provide some tools in this
+paper for model evaluators to apply in assessing the quality of these models.
 1
-http://ww..firefly.com/
-overload in real-time stressful situations. Intelligent user interfaces are also being proposed as a means
-to make systems individualised or personalised, thereby increasing the systems flexibility and appeal.
-Even with these minimalistically intelligent interfaces, many human-computer interaction researchers
-are sceptical to the whole concept of intelligent user interfaces and personal assistants/agents, see
-[Shneiderman, 1997, Suchman, 1997]. Partly, the scepticism stems from experiences of previous artifi-
-cial intelligence promises that have failed, but also from a fear that intelligence at the interface will vio-
-late usability principles and obscure the issue of responsibility. My claim is that the main problem is not
-whether or not intelligence at the interface is possible or desirable – this depends a lot on the task to be
-solved and the design of the total solution (with both adaptive and non-adaptive parts). Instead, I can see
-a number of problems not yet solved that prevent us from creating good applications. There is a need to
-develop:
-• usability principles for intelligent interfaces (rather than direct-manipulation systems) that do not
-lead users’ expectations astray
-• reliable and cost-efficient intelligent user interface development methods
-• a better understanding of how and when intelligence can substantially improve the interaction (de-
-sign practice)
-• authoring tools that enable easy development and maintenance of the intelligent parts of the system
-Once we get a better grip on these problems, we shall be able to create commercially acceptable and
-useful (to the users) intelligent user interfaces that do not imitate human-human communication but in-
-stead aid the computer-human interaction process.
-Below I discuss each of the problems in some more detail and I outline some potential solutions to these
-problems.
-2. USABILITY PRINCIPLES
-Recently the intelligent user interface community has started to worry about usability issues. This is ex-
-emplified by the discussions and panels at the latest intelligent user interface conference, [IUI’97], and
-also by the work on usable intelligent agents (or personal assistants). The attention has lead to the emer-
-gence of better problem definitions and some design criteria.
-Control transparency and predictability
-The problem with intelligence at the user interface is that it may violate many of the good usability prin-
-ciples developed for direct-manipulation systems. Those principles include giving the user control over
-the system, making the system predictable so that it always gives the same response given the same in-
-put, and making the system transparent so that the user can understand something of its inner workings.
-Systems that adapt to their users and changes their behaviour to better fit users’ needs will by necessity
-violate, at least, the principle of predictability and possibly also not be transparent and may hinder users’
-control over the system.
-Within the field of user modelling and intelligent interfaces, some approaches to tackling these problems
-have been proposed.
-Understanding how adaptivity works (transparency) does not necessarily mean that the system has to
-explain exactly what it is doing in all its details. In our work, the PUSH project, we have applied the
-metaphor of a “black box in a glass box” [Höök, 1996, Höök et al. 1996]. In the PUSH system we hide
-the complex inferencing of users’ goals (in the black box) and show a quite simplified view on what is
-going on (in the glass box) to the user. The user sees a straightforward relation between inferred goal (as
-unobtrusively presented to the user) and choice of adaptation, providing a sense of predictability. What
-the user does not see is exactly how the goal is inferred from his/her actions at the interface – in our
-system this is a quite complex relation.
-John Seely Brown, (1989), talks about three different glass box levels in the context of tutoring/learning
-systems:
-”The goal of design of any tool or device, therefore, should be to produce ‘glass boxes’,
-which, first and foremost, connect users to the real world. Further, in response to examina-
-tion and investigation, they should allow users to build adequate mental models and provide
-useful focus for collaborative discussions and the social construction of knowledge. Essen-
-tially, the current opaque technology or ”black boxes” must become ”transparent” to the
-user, allowing him or her to see ”through” the tool (”domain transparency”) or ”into” the
-tools (”internal transparency”), or to see the relationship of the technology and its users in
-the larger context of the interaction between the user and the tool (”embedding transpar-
-ency”). ”
-By domain transparency we understand tools that allow the user/learner to see through the tool and see
-the domain behind it. For example, a tool that helps an auto mechanic service the ignition should allow
-the mechanic to see the ignition system through the tool. Or even work as a magnifying glass bringing
-the working of the domain into coherent focus.
-Internal transparency is concerned with the tool itself and how the user can see through the tool’s inter-
-face into its internal workings. So the auto mechanic would not only see through the tool into the igni-
-tion, but also be allowed to learn parts of how the diagnostic aid itself reasons. This is the same perspec-
-tive put forth by du Boulay, O’Shea, and Monk, (1980), when they utilise the glass box metaphor for
-programming languages: the programmer must be allowed to understand the execution mechanism of a
-programming language at some level of abstraction, in order to become a good programmer.
-Finally, the embedding transparency refers to the whole environment in which the tool is going to be
-used. As John Seely Brown puts it:
-”Technology design must concern itself with ways to remain connected with the world so
-that the interactions with the technology take place within the context of on-going interac-
-tions between the user and the world”.
-The same principle basically applies to any computer application, we never see the whole picture of
-what is going on within a system. For intelligent interface, the big issue becomes what to place in the
-glass box and what to place in the black box(es). The glass box may well be a metaphor used to convey
-the state inside the adaptive system, as done with, for example, Patti Maes’ cartoon drawings of an agent
-watching the user work, [Kozierok and Maes, 1993].
-Giving users control over the adaptivity can be done other ways too. Cook and Kay, (1994), proposes
-that users should be allowed to inspect and alter the user model in the system. Depending upon the indi-
-vidual user’s experience of computer systems and, in particular, user models this may of course be more
-or less difficult. It is not always obvious what aspect of the adaptivity that is changed when ha parameter
-in the user model is changed. An example is the adaptive prompts system by Kühme et al. (1993). This
-design allows a user, or a program analyst, to tailor the mechanisms for adaptivity, but in order to do
-this, the user must learn a new, complex vocabulary which distinguishes between sets of terms such as
-e.g. ”goal”, ”action”, and ”interaction”. Using these concepts, the user is supposed to construct a set of
-rules rudimentary guided by an interface. Apart from having to understand the meaning of concepts as
-goal, action , etc., users will have to predict the effects of this tailoring, as the different parameters and
-rules interact in a complex way to achieve adaptiveness.
-Allowing the user to change the user model also introduced another potential problem in that it diverts
-the users’ attention from their primary task and forces them to build a (sometime complex) model of the
-system’s adaptive behaviour. Still, this kind of solution is useful in certain circumstances, e.g. when the
-model holds the user’s preferences and those are expressed in a language that makes sense to the user
-community. In general, we know that few users spend time adapting their systems, so expecting them to
-spend time adapting the adaptivity is often unrealistic.
-Another way of providing control to the user is through making the adaptivity part of the total design
-already from the start and making sure that there are means for the user to directly or indirectly correct
-the system’s choices for adaptation. If, for example, the system is filtering information, it may do well in
-making the rejected information pieces available (somehow) for the user to look at. They can, for exam-
-ple, be greyed, or placed further down on the priority list, and available to the user if s/he wants to ac-
-cess it. This model was applied in the PUSH project [Höök, 1996, Höök et al. 1996, Höök, 1997].
-In addition, many intelligent user interface designs split the interface into one part which is predictable
-and one part which is adaptive and unpredictable. The adaptive part is not allowed to manipulate the
-non-adaptive parts of the system, but only suggest possible actions or provide relevant information. This
-approach is used by, for example, the Letizia system [Lieberman,1995] that filters web-information.
-Letizia will not interfere with users web browsing, but will present interesting links in another window.
-The same approach is used in Alexa2
-, Patti Maes systems [Kozierok and Maes, 1993], MS Office As-
-sistant [Horvitz, 1997], among others.
-Privacy and Trust
-Apart from finding (roundabout) ways to give users a sense of control, through making the system
-seemingly predictable or transparent, we also need to tackle a couple of other problems that become
-more acute in this field than in general interface/system design. One is the privacy issue. All systems
-containing a user model forces users to accept that the system holds a representation of (some aspect of)
-them. Some of the intelligent user interface systems require furthermore that users are willing to share
-their preferences with a user community. Depending upon how anonymous we allow the user to be, this
-can be more or less of a problem. Let me provide two examples to illustrate that it is sometimes a prob-
-lem and sometimes not.
-In the FireFly application users are required to share their preferences for music or movies. Based on
-those preferences, the system can recommend new music or movies. The system provides its recom-
-mendations based on clustering of the preferences provided by the users. Users are allowed to be
-anonymous and they willingly provide their preferences for music to this system. In the Doppelgänger
-system on the other hand, providing a personalised newspaper [Orwant, 1994], the situation is somewhat
-different. Here the user can configure their newspaper through a user model that they can inspect and
-alter. They can ask the system to provide them with the same kind of news that, for example, a colleague
-of theirs is reading. This system was not acceptable to users - they did not want to share their user model
-with each other. (That this is an issue that must be dealt with seriously can be seen in, for example, the
-WiseWire privacy policy3
-.) The difference between these two systems lies in two aspects: one is the
-anonymity of the user and the other is in how touchy the subject area is – music preferences do not seem
-as important as what we decide to read or not read of the news.
+2. STANDARD AI/ML EVALUATION PRACTICES
+The goal in a supervised AI/ML problem is to take a set of data examples containing labeled
+input-output pairs (e.g., images to class labels, audio signals to text transcriptions) that have been
+sampled from some data distribution and design an AI/ML model (e.g., neural network, decision
+tree) that can predict outputs given the inputs. The parameters of the model (e.g., weights of
+neural network, thresholds of decision tree) are typically learned through an optimization procedure
+using this set of training data. Note that the data inputs are often measurements collected by a
+sensor (e.g., camera, microphone), and the observations may contain both the signal of interest as
+well as other background signals and noise. An AI/ML model must learn to extract the relevant
+information from the noisy observations.
+2.1 TRAINING-VALIDATION-TEST PARADIGM
+Ideally, the learned AI/ML model is a close approximation of the true model from which the
+data is generated. The true model is almost always unknown, but given sample points (input-
+output pairs) in the training set, the predicted output by the learned model is compared with the
+true output for each sample to compute an estimate of the model’s performance. The error rate
+on the training set is called the in-sample error or training error. It is this error rate (or a similar
+measure computed on the training set) that is directly minimized via the optimization procedure.
+Matching the true model on this training set is not enough; the real objective is for the
+learned model to match the true model across the entire data distribution, so that it performs well
+on any operational data encountered once the model is deployed. The goal is to minimize the error
+rate on the full data distribution, called the out-of-sample error; however, this error rate cannot
+be computed via a fixed set of samples. Furthermore, since the model and its parameters can
+be adjusted based on observed performance on the training data, the measured in-sample error is
+often biased and does not reflect the expected performance on unseen data. Efforts to reduce the
+error on the training set may even increase the out-of-sample error, a phenomenon referred to as
+overfitting.
+The out-of-sample error can instead be estimated (before the model is deployed) with the use
+of test data, which is a set of samples that are drawn from the data distribution but are not part of
+the training set or used in any portion of the training process. The test error is the error rate on
+these previously-unseen data samples. The training and testing sets are both subject to sampling
+bias, since the true data distribution may not be completely known. As long as the test set is not
+also included in the model training process, however, there is no additional bias when estimating
+the out-of-sample error with a test set.
+Estimating the out-of-sample error is important, but the ultimate goal is to minimize this
+value. Knowing the perils of using the training set performance to solely predict an AI/ML model’s
+ability to generalize to unseen data, it is common to withhold a portion of the training data
+(typically 10-20%), called the validation data, from the training process. The learning algorithm
+uses the training data to search over the hypothesis space of models that minimize the validation
+error. Instead of selecting a fixed validation set, the model developer may choose to use an approach
 2
-http://www.alexa.com
+called cross-validation, where the training set is repeatedly split into different disjoint training-
+validation subsets, and average validation error across these subsets is used as a prediction for the
+test error. These approaches are useful for training models that are able to generalize to new data
+rather than memorize the training set.
+This training-validation-test paradigm is a practice that is standard in the AI/ML community
+and should be fully embraced by the DoD. Additional practices are beginning to emerge in the
+AI/ML community that are aimed at evaluating model robustness to small perturbations of the
+data samples and larger shifts of the data distribution. These practices will also be useful for DoD
+to evaluate AI/ML model robustness, and are discussed further in Sections 3.3 and 3.4.
+2.2 THE AI/ML DEVELOPMENT PROCESS
+In Figure 1, we illustrate the training-validation-test paradigm within the AI/ML development
+process, which consists of three phases: design, evaluation, and deployment. During the design
+phase, the model developer designs an AI/ML model aimed at meeting the requirements established
+and verified by a separate model evaluator during the evaluation phase. The model developer uses
+training and validation data to design the model and predict its performance while the model
+evaluator verifies performance using a set of test data that is unseen by the developer. After a
+model is evaluated, the developer may have the opportunity to make additional updates to the
+model, after which it undergoes a new evaluation. This process is repeated until the evaluator is
+satisfied with the performance, at which point the model enters the deployment phase, where it
+becomes operational. The performance of the deployed model on operational data is then monitored
+by model operators, and further design updates and subsequent evaluations are conducted when
+deemed necessary.
+2.3 AI/ML DEVELOPMENT AND EVALUATION IN THE DoD
+In the defense industry, the model operator is the end user of the AI/ML system (e.g., military
+service members in the field). The model developer is often a defense contractor, a government
+research lab, or a team within the government itself. In some programs, there may even be multiple
+groups competing to develop the best model according to the evaluation criteria. The model
+evaluator is often a government team or an outside independent entity. The model evaluator’s goal
+is to determine the effectivity of the model against the types of data the model may encounter when
+it is deployed. The model developer has the goal of designing a model that performs well when
+deployed, but is very strongly motivated by the need to meet the evaluation criteria set forth by
+the evaluator. Though the developer may provide its own assessment of model performance, this
+should not replace the verification done by the model evaluator. A knowledgeable and independent
+model evaluator plays a vital role in ensuring the robustness of the AI/ML system.
+The remainder of this paper focuses on the evaluation stage of the development process. DoD
+model evaluators must recognize the ways in which assumptions made during the evaluation phase
+can influence the design phase for better or for worse. Such assumptions include the expected
+properties of the unseen data or specific requirements and scoring metrics that favor certain types
 3
-http://ww7.firefly.com/
-Judy Kay has proposed a means to overcome this problem by splitting the user model into two parts: one
-public and one private [Cook and Kay, 1994]. So in applications where single users may feel that their
-privacy is threatened or may be misused, they can keep certain facts about themselves private and others
-public. Depending on the application the division between private and public can either be preset or de-
-termined by the user interacting with the model. Again, in many situations, the user can’t be bothered to
-make these choices and so the preset solution is to be preferred.
-Trust in the system is yet another problem that needs to be tackled by intelligent user interface designers.
-This problem is most prominent in the situations where the system takes on tasks from the user. If the
-system starts sorting our mail, filtering our news, retrieving information for us on the web, selling and
-buying goods on our behalf, etc., it will be of crucial importance that we can trust the system [Maes,
-1995]. These problems have very little to gain from traditional solutions to security such as encryption
-algorithms, etc. Within the multi-agent community solutions are proposed that rely on “social” protocols
-as a means to find out who can be trusted. For example, before my agent buys something from another
-agent, my agent can be allowed to check which other agents the selling agent has traded with before, and
-in turn, check if those agents can be trusted4
-. For agents that interact with the user, the same kinds of
-interactive, social, solutions can be envisioned: the user can be notified at certain crucial points when the
-agent adds knowledge or rules about the user or applies a rules for the first time, etc. So rather than re-
-lying on the system handling security, some responsibility will be laid on the user to react on “warnings”
-from the system.
-Unfortunately, we know that if an adaptive system gives the wrong advice just once, users’ trust in the
-system will go down drastically, and they may not use the system for a long time. Partly, this can be a
-question of culture. Once we get used to having adaptive systems around us, we will also gradually build
-models of how they work and when they can be trusted.
-Treating Systems as Fellow Beings
-There are also other, secondary, effects of using intelligence in systems. They may change the users’
-understanding of computers as stupid machines, and shift users’ perception of responsibility from users
-to systems. Shneiderman [1997] and Lanier [1996] argue against antropomorphic agents since they give
-users the impression that the system will be able to take responsibility for its actions and that they will
-act rationally, similar to another human being.
-In my view, it is of crucial importance that the design of the intelligent agent (or personal assistant) is
-such that it creates the right expectations in the user: neither too high nor too low. Here we must be care-
-ful of imitating human-human communication and assuming that that would be the best model of per-
-formance. Agents or adaptive systems should be implemented so that they become an integral part of an
-otherwise well-designed system. Furthermore, the design must be such that their interaction is most
-beneficial to the tasks that the system and the user are attempting to solve together.
-Suchman [1987, 1997] proposes that the term “interaction” might best be reserved to describe what goes
-on between persons, rather than extended to encompass relations between people and machines. Her ar-
-gument is based on the assumption that any conceptual model that a designer will build into an interac-
-tive system will have its limitations and in many cases, will not at all reflect what users actually use the
-system for. So any agent or adaptive system that makes any assumptions on what tasks the user will be
+Figure 1. AI/ML model development process. (Left) Design Phase: model developers use training data
+to optimize model parameters and validation data to estimate performance. (Middle) Evaluation Phase:
+model evaluators verify performance and robustness of the delivered model using test data that was not seen
+by developers during the training process. (Right) Deployment Phase: model transitions to an operational
+capability and its performance on operational data is monitored by model operators. Updates to the design
+are made when the model is not performing as desired in either the evaluation or deployment phase.
+of solutions. While model developers have the ultimate responsibility of designing an AI/ML
+model to solve a particular problem for the model operators, the model evaluator can establish an
+evaluation process that motivates good design practices by the developers and increases the chance
+of a robust model being deployed. Additionally, model evaluators must clearly communicate any
+assumptions made during the evaluation process to model operators so that warfighters know under
+which conditions a model has been tested and is thus expected to have performance.
+It is easy, especially when faced with concerns about cost and schedule, to take shortcuts in
+the creation of test sets and the establishment and verification of requirements. It is critical for the
+DoD to realize that poor AI/ML evaluation processes may have significant negative effects on the
+robustness of a deployed model. We encourage model evaluators in the DoD to carefully consider
+their current assumptions and practices, and make improvements where necessary to ensure the
+robustness properties described in the intro of this paper are being properly evaluated and improved.
 4
-A solution along these lines has been proposed by ??. His agents will collect signatures from other
-agents that are content with their interaction with them. By following the links from these signatures
-onwards to those agents, their signatures can be checked in turn.
-attempting to solve and that tries to interact with the user from these assumptions will fail. Her proposal
-is instead to make machines that are “readable”, i.e. where the user can read the system’s state and inter-
-pret those himself/herself and then act.
-Suchman’s criticisms stems from her experiences with early artificial intelligence research at Xerox, and
-though her criticism may be quite valid for early expert systems design it does not seem as valid when
-we talk about, for example, recommender systems [Recommender Systems, CACM, 1997]. Recom-
-mender systems will not base recommendations to a particular user on some designer-constructed con-
-ceptual model with invented “rules”, but instead on single user or whole user population’s behaviour. It
-is in fact users’ choices that will constitute the advice. The most interesting future for intelligent user
-interfaces lies in finding the best way of extracting people’s preferences and intelligent behaviour and
-using this as the basis for adaptation. It does not have to be based only on large user population behav-
-iour (as in [Lashkari et al. 1994]), but can also draw on single, expert, user’s behaviour (as in [Höök et
-al. 1997]). Most importantly, it must be constructed to be flexible and able to change over time as user
-behaviour changes.
-Even if we can find examples of intelligent user interfaces that will fulfil the “readable”-criteria dis-
-cussed by Suchman, a main point with many intelligent user interfaces and in particular, agent systems,
-is the fact that they reintroduce the dialogue between user and system. These intelligent user interfaces
-move away from direct-manipulation, and instead are manipulated indirectly. In some sense, it is a move
-back to the time when we had command-based interfaces, only this time the system response is sup-
-posed to be adapted to the user. In my view, the interactivity or dialogue capability of an intelligent user
-interface is not necessarily a bad thing if it can sensibly convey its limitations. A dialogue with a com-
-puter should not look or feel like a dialogue with a person. Any assumptions of users’ tasks should be
-transparent to users.
-I believe that the fear of alienating users through not providing them with insight into how the system
-works, is not a problem that is unique to intelligent user interface’s. Most computer applications func-
-tion like this - at least for those who are not computer scientists or particularly knowledgeable in how
-the system works. As pointed out by Patti Maes, (1997), the same argument could be made against
-driving cars when you do not have a complete model of how the engine or the brakes work. The point is
-that people do drive around in cars and manage really well without these complete models. When the car
-breaks down, they willingly hand over the car to a car mechanic agent whom they have to trust to have
-the necessary skills for fixing it. The point is that the main task for the driver is to use the car the get
-somewhere - they can’t be bothered with a complete model of the car’s internal workings. The same
-goes for computer systems - if they can provide me with, for example, high-quality relevant information,
-I would not necessarily be bothered by exactly how it is done (just as I do not (usually) bother myself
-with how the journalists of my daily newspaper find the information).
-In summary, usability of intelligent user interface is an important and crucial problem to be addressed by
-the research community. The attempts to tackle the problem are promising but they require a new way of
-addressing usability, sometimes quite different from the usability principles outlined for direct-
-manipulation systems. To the list of problems, we also need to add privacy, trust, and responsibility, is-
-sues that have not been much addressed in the human-computer interaction research community before.
-3. METHODS
-When designing, in particular, adaptive help systems, it is quite common to discover that many problems
-could be overcome through redesigning the target system [Breuker, 1990]. In my view, this problem
-points at the necessity to make the adaptive (or intelligent) parts of the system into an integral part of a
-good total design of the system. The whole system design should meet users’ needs - the adaptivity
-should not fix a bad design. As phrased by Eric Horvitz (in a panel at Intelligent User Interface’97
-[1997]):
-“We must remain alert to attempts to use sophisticated inference simply to get around poor design, or in
-lieu of better design combined with simple automation techniques.”
-This means that the issue of whether or not some part of a system should be adaptive or intelligent must
-be part of the design process already from the start. This is rarely the case in system design as it is done
-today – and it will not be until we provide efficient methods for how to integrate these ideas into the de-
-sign process.
-Also, as pointed out by, among others, David Kurlander, it is critical to weigh the advantages of using
-artificial intelligence techniques versus the benefits of doing things traditionally. Intelligent interfaces
-often make mistakes and they may be slow. We must be able to say when and how intelligent solutions
-fit into designs.
-As long as intelligent user interface’s are developed by highly skilled academics the need for methods is
-not crucial. But as soon as we want to move the design of these systems out into industry the availability
-of methods, tools and standards will be the crucial test that determines whether they will succeed or not.
-Unfortunately, methodology for domain analysis from the adaptive systems’ perspective remains largely
-a field in its infancy [Benyon, 1993]. Researchers in adaptive systems often make claims about user
-needs that have very little to do with what will actually be of real help to users. A proper analysis of us-
-ers, their tasks and needs, is therefore a necessary part of any development of an adaptive system.
-Benyon discusses five analysis phases that need to be considered when designing adaptive systems:
-• functional analysis aims to establish the main functions of the system.
-• data analysis is concerned with understanding and representing the meaning and structure of data in
-the application. Data analysis and functional capabilities go hand in hand to describe the information
-processing capabilities.
-• task knowledge analysis focuses on the cognitive characteristics required of users by the system, e.g.
-the search strategy required, cognitive loading, the assumed mental model, etc. This analysis is de-
-vice dependent and hence requires some design to have been completed before it can be undertaken.
-• user analysis determines the scope of the user population that the system is to respond to. It is con-
-cerned with obtaining attributes of users that are relevant to the application such as the required in-
-tellectual capability, cognitive processing ability, and prerequisite knowledge required. The antici-
-pated user population will be analysed and categorised according to aspects of the application de-
-rived from task, functional, data and environment analysis.
-• environment analysis covers the environment within which the system is to operate. This includes
-physical aspects of the environment and ‘softer’ features such as the amount and type of user support
-that is needed.
-As pointed out by Benyon there are few attempts to providing methods for user- and environment analy-
-sis. The latter might potentially benefit from approaches such as situated cognition [Suchman, 1987] or
-activity theory [Nardi, 1996]. In those approaches, ethnographic or anthropological methods are used to
-study users in their normal working environment. Unfortunately, those are quite time-consuming (sev-
-eral months of study may be required), and as of yet they have not proven that the cost is worth the ef-
-fort.
-User analysis is of course crucial when we design systems that maintain a user model. A user analysis
-should preferably arrive at a characterisation of the targeted user group that can be linked to the prob-
-lems the designer hopes to solve through an adaptive behaviour. Furthermore, the relevant characteris-
-tics found in the user community must be inferable from their interaction with the system. That is, if the
-system shall utilise indirect inference of user characteristics from their interaction with the system. If, on
-the other hand, designers want to query users and directly get the sought characteristics, they must make
-sure that the queries will in fact render reliable results. (As pointed out already by Rich, (1979), users
-are not always a good source of information about themselves.)
-What we get is a circular problem: we must identify a problem that would be solved by adaptivity, we
-must identify characteristics in the user group that would remedy the problem as well as be inferable
-from their actions at the system, and finally, we must identify an adaptation technique that will render
-the right kind of adaptive behaviour, see Figure 1. As pointed out by Opperman, [1994], this is a design
-process that requires a bootstrapping method: first some initial design of the adaptive behaviour is im-
-plemented which is then tested with users, revised, tested again, etc. The reason is that it is very hard to
-foresee how users’ actions should be linked to particular adaptations.
-Furthermore, the adaptations must be found to be of real use. Parts of this bootstrapping procedure may
-be automated using some machine learning technique, but not all of it since is the alternations you may
-want to do to the design might well be much more fundamental than just adjustments between user ac-
-tions and corresponding adaptation. You may want to change which adaptations should be possible,
-which user actions should be monitored, etc.
-A major problem with task analysis is called the “paradox of change” [Downs et al. 1988]:
-“Current practice in a task analysis is frequently tied to the existing technology employed in the task and
-it is therefore difficult to produce a creative, novel solution to system design based on such methods.”
-So, in order to apply task analysis, there must be a tool that is used by a user population that we can
-study. If there is, our solutions might be too influenced by the existing organisation of work, tools used,
-etc.
-Bootstrapping
-Identify
-“hard”
-problems
-Find user
-characteristics
-related to the
-hard problems
-Find ways of
-inferring
-characteristics from
-interaction
-Find an appropriate
-adaptation!
-Figure 1. Bootstrapping the adaptive system.
-In our experience, the best approach is to combine the user and task analysis into one step. In the user
-analysis, it is important that the designer has an open mind in searching for the relevant user characteris-
-tics. Preferably, aspects of both users’ knowledge, users’ goals (or tasks), users’ preferences, and users’
-cognitive abilities and personality should be analysed. These must then be linked to the problem isolated
-that is in need for an adaptive solution.
-Cognitive Task Analysis
-A source of inspiration in the development of methods for intelligent user interfaces is the Cognitive
-Task Analysis (CTA) method developed by Roth and Woods, (1989). CTA was developed as a reaction
-against the iterative refinement process that was the most prominent method for development of knowl-
-edge-based systems in the eighties. The iterative refinement process starts out from a few example
-problems as defined by some expert in the field. It analyses how the expert solves those, quickly at-
-tempts to implement a prototype tested with new cases and shown to the experts. This provokes another
-round of refinement of the prototype to cover more example problems. The goal is to end up with a sys-
-tem that covers all the possible problems.
-Apart from the obvious problem that the iterative process will take quite some time, Roth and Woods
-point to the danger of it causing the designer of the knowledge-based system to make faulty decisions
-too early on in the development. If the identification of the most prominent problems to solve, the sys-
-tem design, the knowledge representation and other design decision are made based on a few examples
-given by the expert initially, the solution might not scale up to the whole problem scenario.
-Roth and Woods also point at the fact that the expert’s problem solving behaviour might not be optimal.
-It might be the case that there is a lack of information, which causes the expert to behave in a certain
-manner. Given a better basis for making decisions, the expert might perform much better. So, in some
-cases, the underlying system / environment / information source must be changed first, before it is pos-
-sible to find the optimal problem solving process in the domain.
-Going back to the figure shown above, Figure 1, we can see that intelligent user interface development
-runs the same risk as knowledge-based systems did. It is easy to imagine how we develop some adaptive
-behaviour based on early assumptions on what will be of use to our users, perhaps based on some initial
-interviews with users. The early decisions made at this point may then misguide the whole intelligent
-user interface design process.
-For example, rather than implementing the Microsoft Office Assistant [Horvitz, 1997] as is, a proper
-analysis of the environment, tasks and users of MS Office might have revealed that a whole other design
-with more integrated help facilities and scaled down functionality, is needed.
-Don’t Diagnose What You Cannot Treat
-A proper analysis of users and their characteristics will reveal many individual differences that we
-should not necessarily use as the basis for adaptive behaviour in the system.
-According to Karen Sparck-Jones, (1991), modelling the user can be done in a strong sense where char-
-acteristics not necessarily relevant to the functional task for which the system is designed are modelled,
-and modelling in a more restricted sense limited to those characteristics that are relevant to the system’s
-task. What I would like to propose with the model outlined in Figure 1 is even more restricted since I
-only want to model such characteristics that can help us solve really hard problems where non-adaptive
-solutions fail.
-Our approach here follows what John Self has put forth in the area of student modelling in intelligent
-tutoring systems (1988). Self expresses his critique as ”don’t diagnose what you cannot treat’”. His cri-
-tique comes from the fact that so much research effort was put into trying to infer rich and complex
-models of learners’ understanding of some domain, and not enough effort was spent on figuring out
-what to do in order to tutor learners based on the diagnosed problems. We can paraphrase this in the area
-of user modelling as ”don’t model user characteristics that do not (profoundly) affect interaction”, or
-perhaps even ”only model such characteristics of the user which cannot be catered for by other means”.
-If we can find ways by which users can control and alter e.g. a provided explanation so that it fits with
-their knowledge just by making the interface interactive and flexible, that is probably better than making
-the system guess at users’ knowledge or other characteristics and be adaptive.
-Unreliable User Characteristics
-I proposed above that when performing the user analysis the designer should look for important individ-
-ual differences linked to the problem to be solved. I divided those user characteristics into users’ knowl-
-edge, users’ goals (or tasks), users’ preferences, and users’ cognitive abilities and personality. These
-categories are quite different in terms of stability over time, how easily they can be inferred from the
-interaction with a user or user group, the reliability of the inferred knowledge, etc.
-When modelling users’ knowledge the reliability of the information inferred is a crucial factor. A user’s
-knowledge is not static – it keeps changing, we learn, we forget, and we make mistakes for other reasons
-than lack of knowledge (like getting tired or being distracted by other tasks). Most models of users’
-knowledge will be unreliable [Kay, 1994]. The methods available for extracting a particular users’
-knowledge have two main deficiencies.
-First, as pointed out by Yvonne Wærn and colleges, (1990), is that the interaction with users has to be
-very rich (using natural language and other interaction means), if we are going to be able to infer any-
-thing from their interactions. Given limited communication channels, very few inferences can be made.
-Annika Wærn (1996) also points out that the actions of users are frequently at a very low level compared
-to what the system wants to infer about them.
-Second, a common underlying assumption behind the classification of users’ knowledge is that users
-tend to learn domain knowledge in a predictable order. Unfortunately, this is not true for all domains.
-For some domains, most of the information would be learnt only if needed. For others, knowledge may
-very well be learnt in several different ways. Furthermore, most classifications of domain knowledge is
-only based on classifying concepts, not on more complex aspects of knowledge, such as how different
-concepts interact or can be applied. Finding the order by which knowledge is acquired by a “normal”
-user is very difficult and time consuming. That in itself is a clear signal that this route of modelling us-
-ers’ knowledge will be difficult to follow, in particular in industrial settings where users are busy and
-cannot be bothered with extensive studies during the design of the adaptive system5
-. This is probably
-part of the explanations as to why we do not see many such systems in use.
-Stereotypical models of users’ expertise seem to be providing more mileage to system builders, but
-those are on the other hand blunt tools that often make faulty assumptions.
-Unfortunately, the same unreliability as with models of users’ knowledge is true for models of users’
+3. PRINCIPLES AND PRACTICES FOR DoD AI/ML MODEL
+EVALUATORS
+In the following section, we present a set of principles and practices for model evaluators to
+appropriately assess and motivate the design of robust AI/ML models. These practices include
+selecting a representative data distribution, evaluating performance on unseen data, evaluating
+robustness to perturbations, and evaluating robustness to shifts in the data distribution. Model
+evaluators in the defense industry are encouraged to follow the lead of the AI/ML community in
+applying these evaluation practices.
+3.1 SELECTING A REPRESENTATIVE DATA DISTRIBUTION
+The purpose of the test set is to assess the performance of the model against unseen data and
+to provide an estimate of the out-of-sample error. Given that the true data distribution is often
+unknown and information about the make-up of the distribution is limited due to the nature of the
+contested security environments for the DoD, the following properties of a test set are necessary to
+provide a trustworthy estimate of the out-of-sample error:
+• Sample Diversity and Distribution: In order to achieve an unbiased estimate of the out-
+of-sample error, the model evaluator should develop a test set that represents a diverse set of
+the important characteristics of the data distribution and the likelihood of such characteristics
+being realized. This may include potential physical characteristics of targets of interest (e.g.,
+size, color, material), characteristics of the sensor (e.g., location, bandwidth, sensitivity),
+and environmental conditions (e.g., background clutter, time of day, weather). The actual
+range and distribution of potential inputs may not be fully known, and the bias from poorly
+estimating either of these components is difficult to quantify. It is important to reassess and
+adjust test set distributions if understanding and/or expectations about the real world threat
+change. Additionally, performance can be measured on different subsets of the full test set
+in order to gain insight into performance under different input conditions, even though the
+relative likelihood of those conditions may be uncertain. These efforts will allow the test error
+to be a more reliable and less biased indication of how the model will perform once deployed.
+• Sample Size: Even if the test set distribution were perfectly known, model performance on
+two different test sets drawn from that distribution would not be expected to be identical.
+The test dataset must be large enough that the expected fluctuations in performance due
+to random sampling are sufficiently small, providing confidence that the estimated error
+represents the expected performance once the model is deployed. Large fluctuations of the
+performance error on new sets of test data might be an indication that the test dataset is too
+small or that the model is not robust.
+Figure 2 shows an example of how sample diversity and size relate with regard to estimating
+the true out-of-sample error. Poor sampling (shown in orange and purple on the top and bottom,
+respectively) leads to large biases in the estimate of the true error, while improved sampling across
 5
-I am here disregarding the whole field of intelligent tutoring systems (see e.g. Wenger, 1987), where it
-has indeed been proven that it is possible to design tutoring systems that will hold a fairly reliable
-model of learners’ knowledge. But those systems are built for very limited domains, and are usually
-designed to be used within educational systems rather than as aids in other contexts where users have
-more diverse backgrounds. Furthermore, the same problem concerning the time it takes to study users
-and find out about their development of knowledge holds for intelligent tutoring systems.
-goals and plans. The emerging theories of situated cognition, constructive cognition, and distributed
-cognition, challenge both the goal-plan-oriented view on human behaviour and the previously held sym-
-bolic view on cognition [Suchman, 1987]. Users may not be as goal-oriented and rational, as some of the
-adaptive features of proposed systems require. People will act based on the situation they are in right
-now, so their goals and plans keep changing in response to how the situation changes and develops. If
-the adaptive system assumes a too rigid and static model of the user’s plans and goals, it will not be able
-to capture the ”continuous improvisation” that people are involved in [Suchman, 1987]. There are some
-promising attempts to create less static models, and also to make the plan recognition more integrated
-with direct-manipulation interfaces, e.g. [Waern, 1996].
-Inferring users’ personality or cognitive abilities is a potentially fruitful, but, so far, little explored area.
-Some of these characteristics are quite stable, such as users spatial ability [Benyon and Murray, 1993]
-while others are less stable. Furthermore, these characteristics are quite hard to infer from users’ inter-
-actions with the system.
-Finally, modelling and adapting to users’ preferences seems to be the most successful approach. Even if
-preferences are just as hard to infer from users’ interactions with system, it is possible to ask users’
-about them and get reliable answers. Still many questions remain unsolved when it comes to distin-
-guishing between long-term interests (such as those a researcher may have in a particular research field)
-and short-term interests (such as searching for information on where to go on vacation this year).
-So, the problem of identifying user characteristics that are related to the problems that the adaptiveness
-of the system aims to solve, must also consider that some of the characteristics of people are neither sta-
-ble nor easy to infer from users’ interactions with the system. Again, if the adaptive parts of the system
-are designed in parallel with the design of the whole system, we stand a much better chance to succeed.
-We can then make sure that the allowed users’ interactions with the system are such that the adaptive
-system can (without bothering users too much) infer what is needed.
-4. DESIGN PRACTICE
-One of the most important challenges for intelligent user interfaces is to prove that their adaptive be-
-haviour does in fact improve the interaction with the user. Only through designing useful adaptations
-and then evaluating them with users can we be sure that we are solving the right problem. If we had
-many such studies showing that certain adaptations work, we could start to extract general principles for
-design. But evaluating systems is a difficult task, and it becomes even more difficult when the system is
-adaptive, and very few such studies have been performed so far.
-When studying an adaptive system it is of crucial importance to be able to distinguish the adaptive fea-
-tures of the system from the general usability of the designed tool. This is probably why most studies of
-adaptive systems are comparisons of the system with and without adaptivity [Boyle and Encarnacion,
-1994, Brusilovsky and Pesin, 1994, Kaplan et al. 1992, Meyer 1994, Höök 1997]. The problem with
-those studies is obvious: the non-adaptive system may not have been designed ’optimally’ for the task.
-At least this should be the case since adaptivity should preferably be an inherent and natural part of a
-system – when taken out the system is not complete. Still, it is very hard to prove that it is actually the
-adaptivity that makes the system better unless that condition can be compared with one without adaptiv-
-ity.
-In fact, several of the few studies made fail to prove that the main activity that the systems are supposed
-to support is improved by the adaptive behaviour. Instead these studies measure other, perhaps not as
-crucial factors as task completion time, number of errors, or (in hypermedia) number of revisited nodes.
-Just as with direct-manipulation interfaces, it is not always the task completion time that is most impor-
-tant to measure [Gilmore, 1995]. Or, in the case of educational hypermedia, it might very well be bene-
-ficial to the learner to keep revisiting concept explanations from different contexts as they thereby repeat
-the information and learn it. So measuring the number of revisited nodes and claiming that the fewer re-
-visited nodes the better might very well be misleading. If the adaptive system is aimed at an educational
-purpose, then learning and the learning process is what should be measured. Or if the system should do
-information filtering, then we must check whether subjects find the most relevant information with the
-adaptive system and not necessarily whether they find it fast. This is not to say that the traditional meas-
-urements are always wrong – this of course depends upon the task that user and (adaptive) system
-should solve together.
-But even when if we would succeed in creating many good adaptive applications that are properly
-evaluated, this would not necessarily give us the best basis for extracting good design practice. Most in-
-telligent user interfaces, such as e.g. user agents, are designed with the aim of being of use in the long
-run – not only during a short, controlled, user study. Proper evaluations of whether the system supports
-users’ real tasks must include an analysis of the organisational setting, users’ activities and cooperation
-with each other, usage of other tools, etc. Activity theory might give us some of the tools needed to
-analyse this complex situation [Nardi, 1996, Cole, 1996].
-So, the real test for intelligent user interfaces is whether they continue to be used after the initial excite-
-ment is gone.
-5. SCALE UP!
-The problem of scalability of artificial intelligence systems has been known for a long time [Schank,
-1991]. Artificial intelligence systems have typically been developed by academics who make them work
-for a couple of examples, and then those systems cannot be scaled up to the cover the whole problem.
-The reason lies partly in the lack of tools for adding more knowledge to the system, but also in that arti-
-ficial intelligence systems have not always tackled the right problems. As such systems are put to use,
-they turn out not to solve the real problems in the domain.
-The new trend, known as new artificial intelligence, with intelligent agents and using machine learning
-and other techniques that moves us away from the issues of knowledge representation, inferencing, etc.
-have come to represent a possible way out of the scalability problem. These systems can supposedly
-learn and extend their coverage by themselves. But, in fact, some of the scalability problem remains as
-discussed above: since we use the iterative refinement method to design the relation between user char-
-acteristics and adaptation, we might early on get stuck in a design that will only cover certain of the
-problems that users needs to be aided in solving.
-Another problem with scalability is the ability to take new user interests, preferences, knowledge, etc.,
-into account. The same problem goes for when the system that the intelligent user interface is built on
-top of is redesigned, or, in intelligent information retrieval, when new kinds of information is entered,
-etc. In the area of information filtering, I believe that the solution lies in finding new combinations of
-human and machine intelligence in order to evaluate the relative importance of new information, [Höök
-et al. 1997]. In other areas, I think that good authoring tools that allows the designer to access the inter-
-nals of the intelligent user interface without having to understand every detail of it, is needed.
-So, the problem of scalability does not solve itself just because we use machine learning techniques. We
-still need to provide authoring tools that makes it possible to maintain, update and keep intelligent user
-interface’s alive throughout the whole software development cycle – not only through the design phase.
-We must also consider the need for an interaction between human and machine intelligence in order to
-achieve high quality services that also can cover new areas.
-6. SUMMARY
-We have discussed four different challenges that we believe must be met before intelligent user inter-
-face’s will be widespread: usability, development methods, useful adaptations, and maintainability.
-Some aspects of these problems must be investigated as the substantial research problems they are, and
-some may be solved if the intelligent user interface technology is properly transferred to industry.
-These problems are not such that we should be discouraged to develop intelligent user interface’s on
-these grounds, since there are a number of reasons why they will indeed be very useful. The widespread
-use of information technology means that the design of systems must meet many different user groups
-needs. Systems are getting to be more and more complex and users experience great difficulty with
-keeping up with the recurrent releases of software and the new possibilities offered. Another problem is
-the information overload that has come with the increased use of, for example, Internet. Yet another area
-where intelligence may be of help is in real-time critical applications. These are real problems not only
-to academics but also to all sorts of users around the world. We already have evidence that intelligent
-user interface’s will be able to tackle some of these problems, we now need to focus our efforts in mak-
-ing it probable that the solutions rendered actually solve the problems they claim to solve.
-REFERENCES
-1. Benyon, David (1993) Adaptive Systems: A Solution to Usability Problems, Journal of User Model-
-ling and User-Adapted Interaction, Kluwer, 3(1), pp. 1 -22.
-2. Benyon, David R., and Murray, Diane (1993). Developing Adaptive Systems to Fit Individual Apti-
-tudes, In W.D. Gray, W. E., Helfley and Murray, D. (eds.), Proceedings of the 1993 International
-Workshop on Intelligent User Interfaces, (pp. 115 – 122) Orlando, FL., New York, ACM Press.
-3. Breuker, J. (ed.) (1990) EUROHELP: Developing Intelligent Help Systems, EC, Report on P280
-ESPRIT Project EUROHELP.
-4. Brusilovsky, P. and Pesin, L. (1994). ISIS-Tutor: An adaptive hypertext learning environment In H.
-Ueono & V. Stefanuk (eds.), Proceedings of JCKBSE’94, Japanese-CIS Symposium on knowledge-
-based software engineering, Tokyo: EIC.
-5. Boyle, Craig, and Encarnacion, Antonio O. (1994). MetaDoc: An Adaptive Hypertext Reading Sys-
-tem, User Models and User Adapted Interaction, (UMUAI) 4, pp. 1 - 19.
-6. Cole, Michael, (1996) Cultural Psychology: a once and future discipline, Harvard University Press.
-7. Cook, R. and Kay, J. (1994) The Justified User Model: A Viewable, Explained User Model, Pro-
-ceedings of the Fourth International Conference on User Modeling, Hyannis, Mass., The Mitre Corp.
-8. Downs, E., Clare, P., and Coe, I. (1988) Structured Systems Analysis and Design Method: Applica-
-tion and Context, London, Prentice-Hall.
-9. Horvitz, Eric (1997) Agents With Beliefs: Reflections on Bayesian Methods for User Modeling, In-
-vited talk at Sixth International Conference on User Modeling, Chia Laguna, Sardinia, 2-5 June
-1997.
-10. Horvitz, Eric (1997) Compelling Intelligent User Interfaces: How Much AI is Enough?, Position
-statement, Proceedings of 1997 International Conference on Intelligent User Interfaces, (eds.)
-Johanna Moore, Ernest Edmonds, and Angel Puerta, ACM, Orlando, Florida, 1997.
-11. Höök, K. (1996) A Glass Box Approach to Adaptive Hypermedia, Ph.D. Thesis, SICS Dissertation
-Series 23, ISBN: 91-7153-510-1, Stockholm, Sweden.
-12. Höök, K. (1997) Evaluating the Utility and Usability of an Adaptive Hypermedia System, Proceed-
-ings of 1997 International Conference on Intelligent User Interfaces, (eds.) Johanna Moore, Ernest
-Edmonds, and Angel Puerta, ACM, Orlando, Florida, 1997.
-13. Höök, K., Karlgren, J., Waern, A., Dahlbäck, N., Jansson, C-G., Karlgren, K. and Lemaire, B.
-(1996) A Glass Box Approach to Adaptive Hypermedia, Journal of User Modeling and User-
-Adaptive Interaction, UMUAI 6.
-14. Höök, K., Rudström, Å., Waern, A. (1997) Edited Adaptive Hypermedia: Combining Human and
-Machine Intelligence to Achieve Filtered Information, presented at the Flexible Hypermedia work-
-shop held in conjunction with the Hypertext conference, Southhampton, April, 1997.
-15. Intelligent User Interface’97, International Conference on Intelligent User Interfaces Hilton at Walt
-Disney World Village, Orlando, Florida - January 6-9 1997.
-16. Kaplan, Craig, Justine Fenwick and James Chen. (1993). Adaptive Hypertext Navigation Based On
-User Goals and Context, User Modeling and User-Adapted Interaction 3, pages 193-220.
-17. Kozierok, R. and Maes, P. A Learning Interface Agent for Scheduling Meetings, Proceedings of the
-ACM-SIGGHI International Workshop on Intelligent User Interfaces, pp. 81-88, New York, ACM
-Press, January 1993.
-18. Kühme, T., Malinowski, U., and Foley, J.D. (1993). Adaptive Prompting, Technical Report GIT-
-GVU-93-05, Georgia Institute of Technology.
-19. Lanier, Jaron, (1996) My problems with agents, Wired, 1996.
-20. Lashkari, Y. , Metral, M., and Maes, P. Collaborative Interface Agents, Proceedings of the Twelfth
-National Conference on Artificial Intelligence, Vol. 1, AAAI Press, Seattle, WA, August 1994.
-21. Lieberman, Henry, (1995) Letizia: An Agent That Assists Web Browsing Proceedings of the Inter-
-national Joint Conference on Artificial Intelligence, Montreal, August 1995.
-22. Maes, P. (1995) Intelligent Software: Programs that can act independently will ease the burdens that
-computers put on people, Scientific American, Vol. 273, No. 3, pp. 84-86, Scientific American, Inc.,
-September 1995.
-23. Maes, P. (1997) Direct Manipulation vs. Interface Agents, Position statement, Proceedings of 1997
-International Conference on Intelligent User Interfaces, (eds.) Johanna Moore, Ernest Edmonds, and
-Angel Puerta, ACM, Orlando, Florida, 1997.
-24. Meyer, B. (1994). Adaptive Performance Support: User Acceptance of a Self-Adapting System,
-Fourth International Conference on UM Hyannis, MA.
-25. Nardi, B. (1996) Context and Consciousness: Activity Theory and Human-Computer Interaction,
-edited by Bonnie A. Nardi, The MIT Press, Cambridge, Massachusetts, London, England
-26. Opperman, Reinhard (1994) Adaptively Supported Adaptability, International Journal of Human-
-Computer Studies, 40:455-472.
-27. Orwant, J. (1994) Appraising the User of User Models: Doppelgänger’s interface, In A. Kobsa and
-D. Litman (eds.), Proceedings of the 4thInternational Conference on User Modeling, pp. 73 - 78,
-Hyannis, Massachusetts, Mitre Corp.
-28. Rich, Elaine (1979) User Modeling via Stereotypes, Cognitive Science 3, pp. 329 -354.
-29. Recommender Systems, Communications of the ACM, March 1997 – Volume 40, no 3.
-30. Roth, Emilie M., and Woods, David D. (1989). Cognitive Task Analysis: An Approach to Knowl-
-edge Acquisition for Intelligent System Design, G. Guida and C. Tasso (eds.) "Topics in Expert
-System Design", Elsevier Science Publishers. B.V. (North-Holland), 1989.
-31. Schank, R. (1991) Where’s the AI?, AI Magazine, 12(4), pp. 38-48.
-32. Shneiderman, B. (1997) Direct Manipulation for Comprehensible, Predictable and Controllable User
-Interfaces, Proceedings of 1997 International Conference on Intelligent User Interfaces, (eds.)
-Johanna Moore, Ernest Edmonds, and Angel Puerta, ACM, Orlando, Florida, 1997.
-33. Sparck-Jones, Karen,
-34. Suchman, L. A. (1987) Plans and Situated Actions: The problem of human-machine communication,
-Cambridge University Press.
-35. Suchman, L. A. (1997) From Interactions to Integrations, Proc. of Human-Computer Interaction
-INTERACT’97, S. Howard, J. Hammond, and G. Lindegaard (eds.), Chapman & Hall.
-36. Wærn, Annika (1996). Recognising Human Plans: Issues for Plan Recognition in Human-Computer
-Interaction, Ph.D. Thesis, ISBN 91-7153-456-3, SICS Dissertation Series 20, Stockholm, Sweden.
-37. Wærn, Yvonne, Hägglund, Sture, Löwgren, Jonas, Rankin, Ivan, Sokolnicki, Tomas, and Steine-
-mann, Anne, (1990). Communication Knowledge for Knowledge Communication, Research report,
-LiTH-IDA-R-90-17, Linköpings University, Sweden.
-38. Wenger, Etienne (1987). Artificial Intelligence and Tutoring Systems: Computational and Cognitive
-Approaches to the Communication of Knowledge, Morgan Kaufmann Publ., Los Altos, CA.
+the data distribution (shown in blue in the middle) lowers that bias. Increasing the number of
+samples in the test set reduces the variance (shaded regions) around the mean of the estimate
+(solid lines).
+Improving data variability, distribution, and sample size might take the form of gathering
+and labeling more real data across a wider variety of environmental conditions, consulting with
+experts and reviewing intelligence to determine the likelihood of observing various inputs, or gener-
+ating more simulation data that represent additional potential scenarios. The cost associated with
+collecting or generating more data samples and evaluating performance on these larger datasets
+is application-dependent, and in some situations this process has been considered cost-prohibitive.
+Given improvements in compute power, the ability to develop large datasets and analyze perfor-
+mance on those datasets has increased over time and will continue to increase. A balance always
+needs to be found between the added cost and the potential benefit of better performance, lower
+uncertainty, and more robustness.
+Figure 2. Illustration of how sample diversity and sample size impact the bias and variance of the estimated
+out-of-sample performance metric. If the data distribution for the test set is sampled with lower diversity
+(top/orange and bottom/purple), the performance metric is likely to be biased away from the true error in
+an unknown direction. More sample diversity (middle/blue) reduces this bias. Increasing the number of test
+data samples reduces the variance (shaded regions) on the estimate of the performance metric (solid lines).
+3.2 EVALUATION OF GENERALIZATION CAPABILITY
+In the training-validation-test paradigm that is ubiquitous in AI/ML model design, separating
+training data from testing data is fundamental. In some DoD applications, the cost of collecting or
+generating data can be high, and it can be tempting to ignore this principle and use all available data
+for training. However, if test data is provided and used during training, the reported performance
+6
+is a biased estimate of the true out-of-sample error rate. In this situation, the generalization error
+appears artificially low, leading to a misunderstanding about the actual capability of the model
+and loss of operator trust.
+Requiring performance against a test set that is truly unseen by the model developer en-
+courages a design approach that is not solely focused on optimization against the training set. It
+motivates the use of techniques that both improve test set performance and help to predict that
+performance, such as validation, cross-validation, and variants of cross-validation where entire cat-
+egories of the training data are held out instead of random subsets. These improved, stable AI/ML
+models reduce risk for model developers in the evaluation process and help model evaluators and
+operators build confidence in system performance metrics. Evaluators should also encourage model
+developers to report on their predictions of model performance during the design phase, even if
+there are no specific requirements for their predicted test set error to be close to the actual test set
+error.
+Note that the specific mechanics of performing the evaluation may impact future evaluations.
+If a model developer is ever provided the test data in order to perform their own evaluation and
+report performance, that data is no longer “unseen” and should not be used for future tests. If
+a test set is used to optimize model parameters in any way, it is considered training data and
+reintroduces bias into the estimate of out-of-sample error. Whenever possible, such a situation
+should be avoided. The model evaluator may trust the model developer to not use test data for
+anything but the evaluation, but a better practice is to provide a completely new test set for
+evaluation at the next test event or program milestone. In some cases, it may be possible for the
+evaluator to provide the model developer with an unlabeled test set, and have the developer return
+a set of predicted labels to the evaluator for scoring. Alternatively, the model evaluator may require
+a deliverable model, allowing them to perform the evaluation without sharing the test data with
+the developer, making future reuse of that test set possible.
+Figure 3 illustrates how generalization properties can be measured during the design and
+evaluation stages. Here, the model developer evaluates training (green) and validation (purple)
+errors across different model architectures of varying complexity (e.g., number of parameters or
+neural network layers) in order to select the model with the smallest validation error. The model
+evaluator then uses the delivered model to measure performance at a specific point along the test
+error curve (yellow line), which is an estimate of the true unknown error curve (black dashed
+line). A model based on minimizing the validation error (blue circle) is likely to be more robust
+and perform better against unseen data than a model based on minimizing the training error (red
+circle).
+7
+Figure 3. Notional performance as a function of model complexity (e.g., number of neural network layers,
+number of features used in a decision tree). The model developer uses the training and validation data to
+select a model with the appropriate complexity to perform well against unseen data. The model evaluator
+then tests this model to determine the test error (yellow line), which is an estimate of the true unknown error
+(black dashed line). To minimize this true error, the model complexity should not be too low (underfitting) or
+too high (overfitting). Since training error (green line) almost always decreases as model complexity increases,
+a model chosen based on minimizing this error will tend to be less robust when testing on unseen data (red
+circle). The validation error curve (purple line) more closely tracks the true error, and a model chosen based
+on minimizing this error will likely be more robust (blue circle).
+3.3 EVALUATION OF ROBUSTNESS TO SAMPLE UNCERTAINTY
+The AI/ML community has found that evaluating performance on a withheld test set is
+not sufficient for fully characterizing a model’s performance against unseen data. Many AI/ML
+models have been shown to suffer significant drops in performance when presented with slightly
+perturbed data inputs due to common corruptions such as blurring in images [5], background noise
+in audio [6], and targeted manipulation of the inputs by an optimization procedure, often referred
+to as adversarial examples [3].
+A robust AI/ML model should be able to maintain performance in the presence of small
+changes in the data samples and performance should gracefully degrade as those changes become
+larger. In other words, if two inputs are considered close for a given domain, their corresponding
+outputs produced by the model should also be close. This property is sometimes referred to as
+smoothness, stability, or robustness to perturbations; in this paper, we refer to it as robustness to
+sample uncertainty.
+8
+Refer to Figure 4 for a depiction of this property. In this example, the less robust model
+incorrectly classifies the image after the background pixels of the image have been perturbed by a
+small amount. In contrast, the more robust model has learned a different feature representation
+of the input space such that this small perturbation does not cause the sample to be classified
+incorrectly. AI/ML models that are robust to sample uncertainty are not easily fooled by adversarial
+examples and do not suffer significant performance loss in the face of common input corruptions.
+Figure 4. Notional depiction of models that are more robust (right) and less robust (middle) to sample
+uncertainty, which is represented as a small perturbation to the pixels of the image of the number 7. The less
+robust model has learned a feature space and classification boundary where a small perturbation in the data
+space corresponds to a large perturbation in the feature space, causing the perturbed sample to be misclassified.
+The more robust model instead learns a feature representation and classification boundary that tolerates this
+perturbation.
+To assess robustness to sample uncertainty, we recommend creating robustness curves, which
+plot a model’s performance as a function of perturbation size. See Figure 5 for an example. A
+robust model has graceful degradation in performance as the size of perturbations applied to the
+testing samples is increased (blue curve in the figure). While such a model may sacrifice lower error
+on the original test set (distance = 0), it is preferred to a model where error rates quickly increase
+when encountering data that is slightly perturbed (red curve).
+9
+Figure 5. Notional performance as a function of a distance measure between training and test data (e.g., size
+of perturbations applied to training samples or distance between original and out-of-distribution data) for a
+more robust (blue) and less robust (red) ML model. While the more robust model may see small increases
+in error rates on the original test set (distance = 0), it tolerates much larger changes in test data before
+error rates increase above the notional performance threshold. Robust models have an increased operational
+capability and present a greater challenge to potential adversaries.
+There are many different ways a set of data samples can be perturbed for robustness assess-
+ment. For example, a perturbation can be applied in a linear, additive manner (e.g., increasing or
+decreasing the values of individual image pixels), or by passing the input through a nonlinear trans-
+formation function (e.g., rotating or compressing the resolution of an image). A model evaluator
+may need to create multiple separate tests by perturbing different aspects of the data to get a good
+understanding of the model’s overall sensitivity to perturbations. A few additional considerations
+when generating perturbed test sets include:
+• Perturbing Measurements vs. Real-World Phenomena: Model inputs are typically
+measurements of some real-world phenomena collected by a sensor. Robustness of an AI/ML
+model can be assessed by perturbing those measurements, or it can be assessed at the system
+level by perturbing the real phenomena directly. For example in an audio system, a pertur-
+bation to the audio signal could be applied using Gaussian noise, while a perturbation to the
+real phenomena could be emulated by having a human speaker repeat the same phrase with
+varying levels of background noise. In many applications, it is easier and less costly to assess
+robustness to uncertainty in measurements compared to real phenomena. It may be difficult,
+10
+however, to tie perturbations applied to measurements back to the underlying, real phenom-
+ena. Thus, when possible, performance should also be evaluated against perturbations to real
+phenomena.
+• Random vs. Worst-Case Perturbations: Model-agnostic perturbations can be applied
+randomly to estimate a model’s average robustness to common data corruptions such as sensor
+noise and environmental factors [5]. Alternatively, worst-case perturbations (i.e., those most
+likely to lead to performance degradation) for a specific model can be computed for each
+individual input via an optimization procedure [7]. Robustness curves computed using these
+optimized perturbations represent a lower bound or worst-case robustness for the model. This
+worst-case perturbation approach is becoming increasingly common in the AI/ML literature
+(often referred to as adversarial robustness), and is encouraged even when manipulation of
+inputs by an adversary is assumed to be unlikely, as it may reveal potential vulnerabilities of
+the model. Model evaluators should report performance given both average and worst-case
+perturbations.
+• Measure of Perturbation Size: Creating robustness curves requires not only producing
+the perturbed test sets and computing performance on those sets, but also measuring the
+distance between the perturbed and unperturbed samples. The distance metric will vary
+depending on the type of data being perturbed and the perturbation method. For example,
+when assessing the sensitivity of a model to rotations of an input image, the distance measure
+is simply the angle of rotation that was applied to the image. For perturbations to image
+pixels, a common distance measure is the Euclidean norm. When perturbing real phenomena,
+specialized measures may need to be designed to represent the size of perturbations between
+targets of interest and varying environmental conditions.
+Model evaluators will need to decide how to balance the cost of generating perturbed datasets
+with the valuable insight gained from assessing robustness to sample uncertainty. Upfront invest-
+ment in such evaluations will enable evaluators to identify any vulnerabilities in the model before
+it is made operational and reduce the risk of dangerous and costly model failures in deployment.
+Additionally, assessing robustness to sample uncertainty is not only useful to model evaluators, but
+also to developers as they make design decisions. The DoD should encourage and, when appropri-
+ate, require robustness curves like those depicted in Figure 5 to be reported on during the evaluation
+phase, and should prioritize models that can tolerate larger perturbations before dropping below a
+desired performance threshold. Such models, with demonstrated robustness to sample uncertainty,
+will be less sensitive to noise and more difficult for an adversary to fool.
+3.4 EVALUATION OF ROBUSTNESS TO DISTRIBUTION UNCERTAINTY
+So far, we have discussed measures and recommendations for assessing performance of AI/ML
+models under the assumption that the data in the evaluation set is sampled from the same data
+distribution as the training set and small perturbations of those samples. When a model is deployed,
+the operational data is often from a slightly (or entirely) different distribution than the one assumed
+during model training. This out-of-distribution data may be due to a variety of factors, including
+11
+incorrect assumptions made during the design and evaluation stage and unexpected changes in the
+scenario once the model is deployed.
+To have a better understanding of how a model may perform given distribution uncertainty in
+the evaluation stage, the model evaluator should also attempt to estimate the model’s performance
+given out-of-distribution data. A robust model should gracefully degrade in performance as the out-
+of-distribution data becomes increasingly different from the distribution assumed during the model
+design phase. Similar to the previous section, this robustness property can be assessed by creating
+robustness curves, where the horizonal axis of Figure 5 now reflects the distance between the original
+and out-of-distribution datasets. This distance can be computed using common distance metrics
+for distributions, such as the Kullback-Leibler divergence [8], or hand-crafted measures designed
+by domain experts.
+To create a collection of test sets for such an assessment, the model evaluator needs to leverage
+domain expertise, intelligence information, and knowledge of the original training and testing data
+distribution to identify new datasets that represent realistic and feasible out-of-distribution data.
+For example, new distributions can be created using data from a new sensor, which may have
+different noise properties, or for a new threat that was not previously included in the training and
+testing datasets. Model evaluators also need to decide what level of performance to require on these
+more challenging datasets. For example, if the data in the new set is from sensors or threats that
+are significantly different from those assumed during model design, the accuracy requirement may
+be more lenient compared to a dataset that represents only a small deviation from the training set.
+Assessing robustness given distribution uncertainty may require significant upfront investment
+to create the additional testing sets and define appropriate requirements and distance measures.
+While it may not be necessary for all applications, it is useful in any domain where the true data
+distribution remains uncertain or is likely to evolve over time. Such an assessment may reveal
+potential vulnerabilities in the design that can be fixed before the AI/ML model is deployed, and
+increase operator confidence that the system will perform as desired during the entirety of its
+operation. AI/ML models that are shown to perform well in the presence of distribution shift
+during the evaluation stage will likely require fewer updates during the deployment stage.
+The principles and practices for DoD AI/ML model evaluators presented in the previous few
+sections are illustrated in Figure 6. The true and assumed data distributions (for training and
+generalization evaluation) are represented at the top. The bottom row depicts examples of how the
+different evaluation practices presented in this paper relate to the data distribution. Generalization
+is a measure of performance on new independently-drawn samples from the same data distribution
+(lower left). Robustness is a measure of performance degradation when perturbations are applied to
+individual data samples (lower middle) or when the test distribution shifts away from the assumed
+training distribution (lower right).
+12
+Figure 6. Depiction of the best practices for AI/ML model evaluation presented in this paper. (Top) An
+illustration of the unknown, true data distribution and the assumed distribution from which training and
+test data are drawn, for an example AI/ML application of handwritten digit classification. The bottom row
+illustrates how the robustness properties outlined in this paper relate to the data distribution used for training
+and testing. (Lower left) Generalization is a measure of performance on unseen, or test data that is similar
+to the training data but independently sampled from the assumed distribution. Robustness is a measure
+of performance degradation when (lower middle) perturbations are applied to individual data samples, e.g.,
+injecting noise to samples or applying adversarial perturbations, and when (lower right) the test distribution
+shifts away from the assumed distribution during training, e.g., black and white images to color.
+13
+4. SUMMARY AND RECOMMENDATIONS
+This paper provides an overview of the fundamental concepts needed for the DoD to improve
+existing processes to evaluate the performance and robustness of AI/ML models. There are three
+major phases of development for AI/ML: design of a model for a desired function, the verification
+of the model performance during evaluation, and transition to a deployed operational capability.
+Evaluation helps avoid deploying models that appear to meet a desired performance threshold
+but, in fact, have limited capability in operational settings. An effective evaluation process helps
+build trust between developers and operators in the field, discover important limitations of a given
+model for iterations of the design, and drive design of a more robust and resilient AI/ML model
+before deploying as an operational capability. Robust AI/ML models are more likely to maintain
+operational feasibility for longer periods of time without the need for costly updates.
+Below we provide a list of recommended best practices for developing a process to evaluate
+models and drive designs toward more robust AI/ML capabilities. These recommendations are
+only a subset of possible approaches, but by implementing these recommended practices the DoD
+should be able to better estimate and improve the robustness of AI/ML models before deploying
+operationally. The recommendations are:
+• Develop large testing datasets with sufficient diversity to better represent the
+distribution of future, unseen data. The true data distribution is not typically known,
+thus test datasets have inherent assumptions that can result in biased and potentially varying
+estimates of the model’s true performance. Therefore, developing an appropriate sampling
+procedure to define the testing sets is essential to proper evaluation of the out-of-sample error.
+• Maintain separate testing and training datasets to ensure an honest and unbi-
+ased assessment against unseen data. Keeping the test set independent of the design
+process helps limit the bias in the estimate of the model’s true out-of-sample error. Given
+the iterative nature of the design and evaluation phase, vary the testing dataset (e.g., by
+randomizing) so the developer cannot utilize feedback on the test set performance to tune the
+model. Also, consider comparing the model developer’s predicted performance based on the
+training/validation data during the design phase to the evaluated performance on the test
+data. A large gap between these values is an indication of possible overfitting of the training
+data. Requiring the developer to provide an estimate of the expected performance on the
+unseen test set encourages a more robust model design before the model is delivered to the
+model evaluator.
+• Assess a model’s sensitivity to small input changes (corruptions and perturba-
+tions, random and worst-case). A robust model should be able to maintain performance
+in the presence of small changes in the data samples and performance should gracefully de-
+grade as those changes become larger. This type of assessment also verifies that the model has
+certain properties expected for a given application, such as invariance to rotation or scaling in
+image classification. It will be necessary to develop methods to generate these perturbations
+in order to perform these robustness tests.
+14
+• Assess a model’s capability against out-of-distribution data with respect to the
+training and test data. The expectation is that the model maintains performance on data
+that is similar, but out-of-distribution, and degrades gracefully as the data appears more
+dissimilar. This out-of-distribution data may be due to a variety of factors, including having
+an insufficient representation of the true distribution due to incorrect assumptions or modeling
+challenges, or unexpected changes in the scenario. Whenever possible, evaluate the model
+on data from new threats, sensors, or environmental conditions to build confidence that the
+model will perform as expected and require fewer updates once deployed.
+Model evaluators can motivate better design practices and create more robust systems by
+taking the proper approach to evaluation. Decisions about evaluation processes should be given
+careful consideration, and deviations from these best practices should be made only with a full
+understanding of the potential loss of capability and robustness. AI/ML evaluation processes in
+existing DoD programs should be assessed to determine any gaps between the status quo and the
+ideal. The next steps to address these gaps may depend on the application, in some cases requiring
+creative solutions depending on the status of current contracts. As evaluation processes improve, it
+is essential for the DoD to appropriately invest in tools and techniques that help model developers
+fully take advantage of the AI/ML revolution and devise robust solutions to our national security
+problems.
+15
+REFERENCES
+[1] Department of Defense, “Summary of the 2018 Department of Defense Artificial Intelligence
+Strategy,” Department of Defense (2018).
+[2] National Security Commission on Artificial Intelligence, “National Security Commis-
+sion on AI (NSCAI) Interim Report,” (2019), URL https://www.epic.org/foia/
+epic-v-ai-commission/AI-Commission-Interim-Report-Nov-2019.pdf.
+[3] C. Szegedy, W. Zaremba, I. Sutskever, J. Bruna, D. Erhan, I. Goodfellow, and R. Fergus,
+“Intriguing properties of neural networks,” arXiv preprint arXiv:1312.6199 (2013).
+[4] Defense Innovation Board, “AI Principles: Recommendations on the Ethical Use of Artificial
+Intelligence by the Department of Defense,” (2019), URL https://media.defense.gov/2019/
+Oct/31/2002204458/-1/-1/0/DIB_AI_PRINCIPLES_PRIMARY_DOCUMENT.PDF.
+[5] D. Hendrycks and T. Dietterich, “Benchmarking neural network robustness to common corrup-
+tions and perturbations,” arXiv preprint arXiv:1903.12261 (2019).
+[6] J. Li, L. Deng, Y. Gong, and R. Haeb-Umbach, “An overview of noise-robust automatic speech
+recognition,” IEEE/ACM Transactions on Audio, Speech, and Language Processing 22(4), 745–
+777 (2014).
+[7] A. Madry, A. Makelov, L. Schmidt, D. Tsipras, and A. Vladu, “Towards deep learning models
+resistant to adversarial attacks,” arXiv preprint arXiv:1706.06083 (2017).
+[8] S. Kullback and R.A. Leibler, “On information and sufficiency,” The annals of mathematical
+statistics 22(1), 79–86 (1951).
+16
 

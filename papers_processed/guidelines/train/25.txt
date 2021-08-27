@@ -1,2615 +1,852 @@
-A LiveCoMS Best Practices Guide
-Best practices for constructing,
-preparing, and evaluating
-protein-ligand binding aﬃnity
-benchmarks [Article v0.1]
-David F. Hahn1*, Christopher I. Bayly2, Hannah E. Bruce Macdonald3,4, John D.
-Chodera3, Antonia S. J. S. Mey5, David L. Mobley6, Laura Perez Benito1, Christina E.
-M. Schindler7, Gary Tresadern1, Gregory L. Warren8
-1
-Computational Chemistry, Janssen Research & Development, Turnhoutseweg 30, Beerse B-2340,
-Belgium; 2
-OpenEye Scientiﬁc Software, 9 Bisbee Court, Suite D, Santa Fe, NM 87508 USA;
-3
-Computational and Systems Biology Program, Sloan Kettering Institute, Memorial Sloan
-Kettering Cancer Center, New York, NY 10065 USA; 4
-MSD, The Francis Crick Institute, 1 Midland
-Road, London, NW1 1AT, United Kingdom; 5
-EaStCHEM School of Chemistry, David Brewster Road,
-Joseph Black Building, The King’s Buildings, Edinburgh, EH9 3FJ, UK; 6
-Departments of
-Pharmaceutical Sciences and Chemistry, University of California, Irvine, CA USA; 7
-Computational
-Chemistry & Biology, Merck KGaA, Frankfurter Str. 250, 64289 Darmstadt, Germany; 8
-DeepCure,
-131 Dartmouth St, Boston, MA 02116 USA
-This LiveCoMS document is
-maintained online on
-GitHub at
-https://github.com/ope
-nf orcefield/FE-Benchm
-arks-Best-Practices; to
-provide feedback,
-suggestions, or help
-improve it, please visit the
-GitHub repository and
-participate via the issue
-tracker.
-This version dated May 17,
-2021
-Abstract Free energy calculations are rapidly becoming indispensable in structure-enabled
-drug discovery programs. As new methods, force ﬁelds, and implementations are developed,
-assessing their expected accuracy on real-world systems (benchmarking) becomes critical to pro-
-vide users with an assessment of the accuracy expected when these methods are applied within
-their domain of applicability, and developers with a way to assess the expected impact of new
-methodologies. These assessments require construction of a benchmark—a set of well-prepared,
-high quality systems with corresponding experimental measurements designed to ensure the re-
-sulting calculations provide a realistic assessment of expected performance when these meth-
-ods are deployed within their domains of applicability. To date, the community has not yet
-adopted a common standardized benchmark, and existing benchmark reports suffer from a myr-
-iad of issues, including poor data quality, limited statistical power, and statistically deﬁcient anal-
-yses, all of which can conspire to produce benchmarks that are poorly predictive of real-world
-performance. Here, we address these issues by presenting guidelines for (1) curating experi-
-mental data to develop meaningful benchmark sets, (2) preparing benchmark inputs according
-to best practices to facilitate widespread adoption, and (3) analysis of the resulting predictions
-to enable statistically meaningful comparisons among methods and force ﬁelds. We highlight
-challenges and open questions that remain to be solved in these areas, as well as recommen-
-dations for the collection of new datasets that might optimally serve to measure progress as
-methods become systematically more reliable. Finally, we provide a curated, versioned, open,
-standardized benchmark set adherent to these standards (protein-ligand-benchmark) and an
-open source toolkit for implementing standardized best practices assessments (arsenic) for
-the community to use as a standardized assessment tool. While our main focus is free en-
-ergy methods based on molecular simulations, these guidelines should prove useful for assess-
-ment of the rapidly growing ﬁeld of machine learning methods for aﬃnity prediction as well.
-*For correspondence:
-dhahn3@its.jnj.com (DFH)
-1 of 31
-arXiv:2105.06222v1
-[q-bio.BM]
-13
-May
-2021
-A LiveCoMS Best Practices Guide
-1 Overview
-This guide focuses on recommended best practices for
-benchmarking the accuracy of small molecule binding free
-energy (FE) calculations. Here, we deﬁne benchmarking as
-the assessment of expected real-world performance relative
-to experiment. We contrast this with the assessment of
-methods or tools intended to arrive at the same target free
-energy, which we refer to as validation (Figure 1), the com-
-parison of the computational eﬃciency or speed of these
-methods, or mapping of effort-accuracy trade offs, all of
-which also play essential roles in dictating real-world usage.
-Importantly, validation calculations are often performed on
-systems selected for tractability, rather than intended to be
-representative of real-world applications [1–3].
-As illustrated in Figure 1, benchmarking against exper-
-iment would ideally be performed on high quality data
-in order to provide an accurate assessment of expected
-performance under conditions where structure or assay
-deﬁciencies do not limit performance. In good benchmark
-sets, the potential pitfalls and complications in the data
-are well understood, but these systems may still challenge
-methodologies to produce reproducible, consistent predic-
-tions due to conformational sampling timescales—unlike
-simpler systems selected for methodology validation. We
-also differentiate benchmarking from application (Figure 1),
-where one is often constrained by the availability of exper-
-imental data and limited to a particular target, which may
-not always fall within the domain of applicability of the
-methodology. We aim to construct benchmarks that provide
-a good predictor of the expected accuracy in applications
-that fall squarely within the domain of applicability and for
-which good experimental data is available.
-Organization: This best practices guide is organized as fol-
-lows: First, we give a brief overview of protein-ligand bind-
-ing free energy methods and their use with the goal of high-
-lighting key concepts that guide the construction of a mean-
-ingful benchmark. Next, we discuss recommendations for
-the construction of a high-quality experimental benchmark
-dataset, which must consider the availability of high-quality
-structural and bioactivity data as well as the expected do-
-main of applicability. Next we provide recommendations on
-preparing structures for free energy calculations in a man-
-ner that will enable the benchmark dataset to be widely and
-readily usable by practitioners and developers, incorporating
-best practices for carrying out free energy calculations. We
-then discuss recommendations for the statistical analysis of
-both retrospective benchmarks and blind prospective chal-
-lenges in order to derive robust conclusions about the accu-
-racy of these methods and insights into where they fail. To
-address the absence of a standard community-wide bench-
-mark, we provide a curated, versioned, open, standardized
-benchmark set adherent to these standards (protein-ligand-
-benchmark). In addition, we provide an open source toolkit
-that implements standardized best practices for assessment
-and analysis of free energy calculations (arsenic). Finally, we
-conclude with recommendations for data collection and cura-
-tion to guide the systematic improvement of available bench-
-mark sets and drive the expansion of the domain of applica-
-bility of free energy methods.
-2 Introduction
-The quantitative prediction of protein ligand binding aﬃnity
-is a key task in computer-aided drug discovery (CADD).
-Accurate predictions of ligand aﬃnity can signiﬁcantly
-accelerate early stages of drug discovery programs when
-used to prioritize compounds for synthesis with the goal of
-improving or maintaining potency [4, 5]. Binding free energy
-calculations—particularly alchemical binding free energy
-calculations—have emerged as arguably the most promising
-tool [6]. Alchemical methods, which include a multitude of
-approaches such as free energy perturbation (FEP) [7, 8] and
-thermodynamic integration (TI) [9–11], have a substantial
-legacy, with the original theory dating back many decades.
-Seminal work in the 1980’s and 90’s demonstrated that
-molecular dynamics (MD) and Monte Carlo (MC) simulation
-packages could carry out these calculations for practical
-applications in organic and biomolecular systems [12–18].
-Alchemical perturbations in binding free energy calcula-
-tions involve the transformation of one chemical species into
-another, or its complete creation or deletion, via a chemically
-unrealistic pathway (alchemical) that can only be achieved in
-silico by manipulating its interactions in a deﬁned way. This
-is achieved by changing an atom from one element identity
-to another. Alchemical calculations are often classiﬁed as
-either relative (RBFE) or absolute (ABFE) binding free energy
-calculations. While the underlying theory is similar, the im-
-plementation differs in how the thermodynamic cycle is con-
-structed and which quantities can be computed: In relative
-calculations (RBFEs), a generally modest alchemical transfor-
-mation of the chemical substructures that differ between to
-ligands is performed to compute the difference in free en-
-ergy of binding between two related ligands (∆∆G). By con-
-trast, absolute calculations (ABFEs) alchemically remove an
-entire ligand, enabling the absolute binding free energy of
-a ligand (∆G) to be computed and directly compared to ex-
-periment. A detailed review of commonly-used alchemical
-methodologies and best practices for their use is provided in
-a separate best practices guide [19].
-In drug discovery, lead optimization (LO) typically involves
-the synthesis of hundreds of close analogues, often differ-
-2 of 31
-A LiveCoMS Best Practices Guide
-Figure 1. Illustration of the deﬁnitions of Validation, Application, and Benchmarking used in this guide. For each term, the deﬁnition,
-advantages (green) and potential short-comings (red) in terms of method evaluation are listed in the three panels. Validation (top left panel)
-uses systems that will conﬁdently converge, the expected results are known, and the underlying issues are well understood. Validation
-sets allows robust development and improvement of methods. Application (bottom left panel) of a method, on the other hand, uses real-
-world systems and enables methods to be continuously evaluated on real-world applications of interest. Because the systems may not be
-well understood, it is possible for methods to fail in new ways that are diﬃcult to detect. Benchmarking (right panel) bridges validation and
-application by aiming to assess the accuracy of real-world applications relative to experiment in cases where experimental data quality is not
-limiting and the method is known to be applied within its domain of applicability. Compared to validation, the size and complexity of the
-system may introduce challenges to producing robust, repeatable results.
-ing by only small structural modiﬁcations, in order to iden-
-tify the optimal leads that show a good balance of target po-
-tency and other properties. This makes it an ideal scenario
-for RBFE, where small differences in structure are well suited
-to alchemical perturbation.
-A number of recent studies have highlighted the good
-performance of RBFE for LO tasks. An early inﬂuential
-publication from Schrödinger [20] reported mean unsigned
-errors of < 1.2 kcal/mol on a curated set of 8 protein
-targets, 199 ligands, and 330 perturbations using their
-commercial implementation of FEP. Minimal discussion was
-devoted to how these targets were selected, other than
-their diversity and the availability of published structural
-and bioactivity data for a congeneric series for each target;
-notably, some ligands appearing in the published studies
-from which the data were curated were omitted due to
-the presence of presumed changes in net charge and the
-potential for multiple binding modes that would fall outside
-the domain of applicability. Schrödinger utilized the same
-benchmark set to assess subsequent commercial force ﬁeld
-releases (OPLS3 [21] and OPLS3e [22]). In the absence of
-other signiﬁcant efforts to curate benchmark sets, this set
-(often called the "Schrödinger JACS set") has become the
-de facto dataset for most large scale RBFE reports, used to
-compare the performance of Amber/TI calculations [23],
-Flare’s FEP (a collaboration between Cresset and the Michel
-group) [24], and PMX/Gromacs [25], as well as machine
-learning studies [26, 27]. By contrast, ABFE calculations
-have not been studied on datasets of similar scale to date,
-although individual reports have shown success accurately
-predicting binding aﬃnities [28, 29].
-Despite the reported success of RBFE calculations on
-these benchmark sets, there are many reports demonstrat-
-ing that RBFE calculations still struggle in scenarios [30]
-such as with scaffold modiﬁcations [31], ring expansion [32],
-water displacement [33–36], protein ﬂexibility [37–39], ap-
-plications to GPCRs [40, 41], and the modelling of cofactors
-such as metal ions or heme [42, 43]. This is manifested in
-a large-scale study of FEP applied to active drug discovery
-projects at Merck KGaA, in which Schindler et al. reported
-3 of 31
-A LiveCoMS Best Practices Guide
-several cases of disappointing outcomes [44].
-In addition, new methods and implementation im-
-provements for FE calculations continue to emerge, for
-instance the efforts on lambda dynamics [45, 46], and non-
-equilibrium RBFE calculations [25, 47]. Furthermore, there
-are many other methodologies such as end-point binding
-FE calculations (for instance MMGBSA, MMPBSA) or pathway
-based FE calculations that continue to be developed and
-applied. [48] Therefore, we must balance the increased
-conﬁdence that simulation-based FE calculations can impact
-drug discovery, with the need to further understand, test,
-and overcome limitations of the current methods.
-In brief, the issues mentioned above are related to three
-challenges for FE calculations, (1) an accurate representation
-of the biological system, (2) an accurate force ﬁeld, and (3)
-suﬃcient sampling. Therefore, despite the importance of FE
-methods to drug discovery and chemical biology it is surpris-
-ing that there are no benchmark sets or standard benchmark
-methodologies that allow calculation approaches to be com-
-pared in a manner that will reﬂect their future performance.
-The Drug Design Data Resource [49] (D3R) and Statistical
-Assessment of the Modeling of Proteins and Ligands [50]
-(SAMPL) prospective challenges have demonstrated the
-utility of focusing the community on common benchmark
-systems and using common methods to analyze perfor-
-mance [51–60]. Mobley and Gilson discussed the need
-for well-chosen validation datasets and how this will have
-multiple beneﬁts to understanding and expanding the
-domain of applicability of FE methods [1]. They focused
-on validation systems that will conﬁdently converge, and
-where the underlying issues are well understood. The aim
-was to describe systems that could be used only to assess
-method performance in a robust manner. As mentioned
-above, here we deﬁne benchmarking as assessing accuracy
-relative to experiment. This has implications that will be
-discussed in more detail throughout this article, for instance,
-the reliability of the underlying experimental data (structure
-and bioactivities), the conﬁdence in the system setup such as
-protein and ligand preparation, the suitability of alchemical
-perturbations for FE, the statistical power of the dataset,
-the ability of the datasets to capture challenging real-world
-applications, and recommendations for analysing results.
-Essentially, we seek to understand what performance can
-be achieved when all these variables are handled to the best
-of our abilities.
-Here, our proposed benchmark set augments existing
-datasets while recommending cleaning up or removing
-entirely some protein-ligand sets. We highlight key consid-
-erations in the construction of a useful set of protein-ligand
-benchmarks and the preparation of these systems for use
-as a community-wide benchmark. These recommendations
-are mirrored in a living benchmark set, which can be used
-to reliably launch future studies [61]. We seek to to improve
-the initial version of this benchmark set in the future with
-help of the whole community. We welcome any contribution
-either to improve the existing set or to expand the set with
-new protein-ligand sets, if they meet the requirements
-established in here. We also recommend statistical analyses
-for assessing and comparing the accuracy of different meth-
-ods and provide a set of open source tools that implement
-our recommendations [62]. We hope these materials will
-become a common standard utilized by the community for
-assessing performance and comparing methodologies.
-3 Prerequisites
-We assume a basic familiarity with molecular dynamics (MD)
-simulations, as well as alchemical free energy protocols. If
-you are unfamiliar with both of these concepts we suggest
-the best practices guides by Braun et al. [63] on molecular
-simulations and Mey et al. [19] on alchemical free energy cal-
-culations as a starting point.
-4 Dataset selection
-Details of our criteria for the construction of good bench-
-mark datasets will follow throughout the rest of the
-manuscript. Here, we examine the purpose of protein-
-ligand benchmark datasets, and the rationale for expanding
-these sets. We propose a core of robust datasets that
-match our suggested optimal criteria for benchmarking,
-but emphasize the need to supplement this core with new
-datasets which explore increasingly diﬃcult challenges in
-order to continue to expand the domain of applicability
-of predictive methods. A variety of parameters can guide
-future datasets.
-4.1 Protein Selection
-The selection of target proteins in the benchmark set is gener-
-ally dependent on the availability of experimental data and
-whether the applied methods are applicable to the speciﬁc
-targets. A good benchmark system (consisting of a protein
-target and small molecules with available experimental bind-
-ing data) should ideally be representative of classical drug dis-
-covery targets and chemistry; a good benchmark set should
-also be diverse in terms of targets and chemistry. Expansion
-of this set to include additional systems should ideally reﬂect
-the evolution of drug discovery and the emergence of new
-target families and chemistries. While binding free energy
-calculations are agnostic to protein classiﬁcation, there can
-be a pragmatic value in expanding benchmark sets to new
-protein families that may present unexpected inherent diﬃ-
-culties (see Section 4.3).
-4 of 31
-A LiveCoMS Best Practices Guide
-To merit inclusion in a good benchmark set, the available
-structural data must meet certain quality thresholds to
-merit inclusion (Section 4.4), and the structure should be
-adequately prepared for molecular simulation to enable the
-benchmark to be broadly and readily useful (Section 5.1).
-4.2 Ligand Selection
-While some methods (such as machine learning and GBSA
-rescoring) can make rapid predictions of aﬃnity, free energy
-methods are generally relatively costly in terms of compu-
-tational effort. In order to make statistically meaningful
-comparisons among methods, however, a suﬃcient number
-of reliable experimental measurements (Section 4.5) will be
-necessary for a benchmark set. These measurements also
-need to cover an adequate dynamic range, i.e. the activity
-range should be suﬃciently large. Such a set enables a
-statistical analysis with suﬃcient power to distinguish how
-methods are expected to perform on larger test sets for
-the same targets (Section 6). In addition, the set of ligands
-should be both unambiguously speciﬁed (with resolved
-stereochemistry or ambiguous tautomeric or protonation
-states) and have chemistries that fall within the domain of
-applicability of the particular free energy method used. In
-order for standardized benchmark sets to be broadly appli-
-cable to a range of methodologies and software packages,
-we recommend annotating systems in terms of common
-challenges that may exclude their assessment by certain
-methods or packages. For relative free energy calculations,
-these labels should denote transformations that include (1)
-charge changes, (2) change of the location of a charge, (3)
-ring breaking, (4) changes in ring size, (5) linker modiﬁcations,
-(6) change in binding mode, and (7) irreversible (covalent)
-inhibitors. Several of these issues are illustrated in Figure 2.
-If the ligand sets are suﬃciently large, they can then be split
-into separate subsets (subsets with e.g., different ring sizes
-or different charges).
-Adequately sampling ligand conformers can pose a
-challenge for some methods, especially if the ligands con-
-tain many rotatable bonds, invertible stereocenters, or
-macrocycles. Aromatic rings with asymmetric substitution
-will usually sample dihedral rotations freely in solvent, but
-in complex can become trapped in protein pockets during
-short simulations [64, 65]. Barriers to inversion of pyramidal
-centers can sometimes be long compared to typical simu-
-lation timescales [66]. Macrocycles present more extreme
-challenges for ligand sampling, and likely require special
-consideration to ensure their conformation spaces are
-adequately sampled [67–69].
-The chemical diversity of ligands considered for inclusion
-in a benchmark set also needs to be suitable for the given
-free energy method. Single RBFEs rely on common struc-
-A
-B
-C
-D
-E
-Figure 2. Five ligand pairs (A, B) for different targets (with each
-pair for a single target) having structural differences which can
-be challenging to simulate. (A) Eg5: charge change, (B) SHP2:
-charge move, (C) PDE10: linker change, (D) HIF2α: ring creation, (E)
-CDK8: ring size change.
-tural elements between the molecules being compared, and
-are hence more appropriate for a congeneric series of lig-
-ands. ABFEs are more amenable for comparing sets of small
-molecules that differ more substantially in scaffold, or where
-the common structural elements are minimal. In both kinds
-of calculations, the size of the structural elements that differ
-between ligands within a congeneric series is also important
-to consider, since larger changes may also affect the bind-
-ing mode of the ligand; the quality and availability of crystal
-structures for representative ligands of this system becomes
-critical in assessing these assumptions.
-5 of 31
-A LiveCoMS Best Practices Guide
-4.3 Addressing speciﬁc challenges
-Besides the challenges mentioned in Sections 4.1 and 4.2,
-there are speciﬁc challenges which can be addressed by a
-benchmark set. These include water displacement in bind-
-ing sites, the presence of cofactors in the binding site, slow
-motions of ligands (e.g. rotatable bonds) and proteins, and
-activity cliffs. We recommend annotating these challenging
-cases in the benchmark set.
-4.4 Structural Data
-A successful free energy calculation requires a well-prepared,
-experimentally accurate model of the system to be simu-
-lated, with structure(s) representative of the equilibrium
-state of the system. Just as choices made selecting binding
-data are critical, the choices made when selecting a protein
-model will impact benchmarking.
-Often structural studies use shorter constructs that
-might be missing several domains compared to the full-
-length protein. To facilitate crystallization or expression,
-mutations might have been introduced. In addition, parts of
-the protein might not be resolved or modelled in available
-structures. Ideally, such deviations should be kept to a
-minimum in a benchmark dataset.
-Figure 3. The PDB structure validation report percentile score
-panels for the Jnk1 structures PDB IDs 2GMX and 3ELJ from the
-RCSB PDB. (A) Note that 2GMX is a poorly ranked structure relative
-to all and structures of similar resolution in the PDB. (B) In contrast
-3ELJ is as good or better than structures of similar resolution or all
-structures in the PDB.
-Starting structures are typically obtained from experi-
-mentally constrained models, most commonly from X-ray
-diffraction data. Other sources include cryo-EM, NMR or
-homology models [6, 29, 44]. As free energy calculations are
-usually run at atomic resolution, the input structure needs to
-provide the coordinates of all atoms, with those coordinates
-ideally determined by the experimental model. For X-ray
-and cryo-EM structures, this requirement is only met by
-high quality structures. The evaluation criteria deﬁned by
-OpenEye Iridium [70] can guide the assessment of X-ray
-structures. The lower the Iridium score, the better the qual-
-ity of the structure. The Iridium classiﬁcation categorizes
-each structure into not trustworthy (NT), mildly trustworthy
-(MT) and highly trustworthy (HT) categories. It is important
-to note that the Iridium criteria were designed to assess
-structures for benchmarking docking and not necessarily
-for free energy calculations. As such there is one important
-criterion missing – completeness of the model – which is
-likely to be far more important for free energy calculations
-than docking.
-Any protein structural assessment should be done using
-two ﬁlters; overall (global) and local. Traditionally, overall
-quality of the structure (global) had been assessed using X-
-ray or cryo-EM resolution as it is easily accessible. However,
-this metric provides a theoretical limit and does not assess
-the quality of the model. Therefore, it is not a good met-
-ric for accuracy, completeness or quality and should only be
-used alongside other metrics. Iridium, by design, does not
-set a resolution limit but suggests a resolution threshold of
-< 3.5 Å [70] because it is diﬃcult to model side chain atoms
-precisely above that threshold. Stricter thresholds have been
-suggested (i.e. < 2.0 Å in a recent benchmark [44]).
-More meaningful metrics for X-ray structures are R, Rfree
-and the coordinate error. Currently, equivalent metrics for
-cryo-EM structures either do not exist or are less well under-
-stood. As a result the rest of the discussion will focus on crite-
-ria for structures determined using X-ray or neutron diffrac-
-tion data. It should be noted that cryo-EM maps can still be
-visualized with the model to get a idea of the agreement be-
-tween the model and the data. The R-factor is a measure
-for the difference between the predicted data (by the model)
-and the measured data. A smaller R-factor indicates an ex-
-perimentally consistent model. A complication with R-factor
-is that it is a non-normalized metric. For a given dataset the
-model with the lowest R-factor is best ﬁt to the data. Unfor-
-tunately, for different datasets, even for the same protein,
-lowest R-factor may not be the highest quality model. The
-Rfree-factor is calculated the same way, but uses only a held
-out randomly selected subset of the measured data. Thus,
-it can be used to identify overﬁt models as these result in a
-larger difference between R-factor and Rfree (typically more
-than 0.05). Both R-factors are easily accessible for reported
-crystallographic data, e.g. in the protein data bank (PDB) [96].
-The coordinate error, while more diﬃcult to ﬁnd or calculate,
-provides the best way to assess the precision and quality of
-6 of 31
-A LiveCoMS Best Practices Guide
-Table 1. Evaluation of the quality of structural and activity experimental data of the proposed benchmark set. The structures listed
-in "Used structure" are those used in the initial version of this dataset, which is drawn in part from previous studies. However, alternate
-available structures may be superior. In these cases, we provide a PDB ID of a higher quality structure and its quality measures, in the
-"Alternate structure" ﬁeld. The alternate structures are sorted according to best structure (lowest Iridium score) ﬁrst. The footnotes "b"
-denote structures with similar ligands as the used structure. For each structure, the PDB ID is followed with the Iridium classiﬁcation and
-Iridium score in the brackets. The Iridium classiﬁcation categorizes each structure into not trustworthy (NT), mildly trustworthy (MT) and
-highly trustworthy (HT) categories. The lower the Iridium score, the better the structure [70]. For the used structures, also the diffraction-
-component precision indeces (DPI) is listed. We deﬁne a high ligand similarity as the OpenEye TanimotoCombo (Shape and Color Tanimoto,
-range from 0 to 2) being larger than 1.4 (standard cutoff). Regarding activity data ("Ligand Information"), the following metrics are given: The
-number of ligands N, the dynamic range DR (DR = max(∆G) – min(∆G)), and a simulated RMSE . For the calculation of the simulated RMSE,
-predicted ∆G data was drawn from a Gaussian distribution around the experimental value with a standard deviation of σ = 1 kcal mol–1, taking
-also the experimental error into account. The numbers in the brackets are the 95% conﬁdence intervals, obtained by bootstrapping using
-1000 bootstrap samples. The quality metrics are color coded to highlight ideal quality (dark green), minimum quality (light green) and low
-quality (red). The ideal and minimum quality codes correspond to the minimal and ideal requirements of the checklist "Minimal requirements
-for a dataset".
-Target Used structure Alternate structures Ligand Information
-PDB DPI N DR RMSE
-[kcal mol–1
-]
-BACE[71, 72] 4DJW (HT, 0.32) 0.11 6UWP (HT, 0.28)
-3TPP (HT, 0.28)a
-4DJV (HT, 0.31)b
-3INH (HT, 0.33)b
-3INF (HT, 0.33)b
-3IN3 (HT, 0.36)a,b
-3LHG (HT, 0.36)b
-36 3.9 0.98 [0.78,1.18]
-BACE_HUNT[73–75] 4JPC (HT, 0.32) 0.12 6UWP (HT, 0.28)
-3TPP (HT, 0.28)a
-4JP9 (HT, 0.31)a,b
-4JOO (HT, 0.33)b
-4RRO (HT, 0.33)b
-4JPE (HT, 0.35)b
-32 4.9 0.97 [0.73,1.19]
-BACE_P2[75, 76] 3IN4 (HT, 0.59) 0.28 6UWP (HT, 0.28)
-3TPP (HT, 0.28)a
-4DJV (HT, 0.31)b
-3INF (HT, 0.33)b
-3IN3 (HT, 0.36)a,b
-3LHG (HT, 0.36)b
-12 0.9 1.00 [0.59,1.33]
-CDK2[72, 77] 1H1Q (MT, 0.87) 0.28 3DDQ (HT, 0.31)a
-4EOR (HT, 0.39)a,b
-16 4.3 1.00 [0.67,1.29]
-CDK8[44, 78] 5HNB (MT, 0.74) 0.22 5XS2 (HT, 0.33)
-5IDN (HT, 0.36)c
-4CRL (HT, 0.42)a
-33 5.7 0.96 [0.73,1.18]
-EG5[44, 79] 3L9H (MT, 0.88) 0.18 2X7C (HT, 0.32)
-3K5E (HT, 0.35)a
-3K3B (HT, 0.41)c
-28 3.5 0.98 [0.72,1.22]
-Galectin[80, 81] 5E89 (MT, 1.04) 0.07 5NF7 (HT, 0.30)
-1KJR (HT, 0.30)a
-5ODY (MT, 0.33)b, e, g
-4BM8 (MT, 0.38)a, d,b
-5OAX (HT, 0.54)b
-8 2.7 1.04 [0.55,1.42]
-HIF2a[44, 82] 5TBM (HT, 0.35) 0.17 3H82 (HT, 0.30)a
-6D09 (HT, 0.35)b
-5UFB (HT, 0.36)b
-42 4.6 1.03 [0.79,1.27]
-Jnk1[72, 83] 2GMX (NT, -)f
-0.77 3ELJ (MT, 0.31)a
-3V3V (MT, 1.5)b, e
-21 3.4 0.98 [0.68,1.26]
-MCL1[72, 84] 4HW3 (HT, 0.41) 0.26 6O6F (HT, 0.30)
-4ZBF (HT, 0.35)b
-3WIX (HT, 0.37)a, c
-4WMU (HT, 0.41)b
-4ZBI (HT, 0.45)b
-42 4.2 1.01 [0.80,1.21]
-P38(MAPK14) [72, 85] 3FLY (HT, 0.6) 0.12 6SFI (HT, 0.30)
-3FMK (HT, 0.30 )a, b
-3FLN (HT, 0.33)
-3FMH (HT, 0.43)a, b
-34 3.8 0.99 [0.76,1.22]
-PDE2[86, 87] 6EZF (MT, 0.3) 0.07 6C7E (HT, 0.29)
-5TYY (HT, 0.30)a
-6B97 (HT, 0.46)c
-21 3.2 1.05 [0.75,1.32]
-PFKFB3[44, 88] 6HVI (HT, 0.31) 0.11 6HVH (HT, 0.36)a, b
-40 3.7 1.04 [0.82,1.25]
-PTP1B[72, 89] 2QBS (MT, 0.33) 0.15 2HB1 (HT, 0.32)a
-2ZMM (MT, 0.33)b, d
-2QBR (HT, 0.65)b, a
-16 4.3 0.95 [0.67,1.21]
-SHP2[44, 90] 5EHR (MT, 0.32) 0.1 5EHP (MT, 0.33)b, g
-6MDD (HT, 0.35)a
-6MD7 (HT, 0.35) 26 4.3 1.06 [0.76,1.34]
-SYK[44, 91] 4PV0 (MT, 0.69) 0.19 4PX6 (HT, 0.3)a
-4FYO (HT, 0.40)c
-44 6.0 1.01 [0.81,1.21]
-Thrombin[72, 92] 2ZFF (HT, 0.3) 0.06 5JZY (HT, 0.27)b
-3QX5 (HT, 0.28)a, b
-11 1.7 0.97 [0.63,1.28]
-TNKS2[93] 4UI5 (HT, 0.29) 0.08 4PC9 (HT, 0.27)a
-4BU9 (HT, 0.29)a, b
-4UVZ (HT, 0.29)b
-27 4.3 1.04 [0.78,1.28]
-TYK2[72, 94, 95] 4GIH (HT, 0.5) 0.15 3LXP (HT, 0.31)a
-5WAL (MT, 0.48)c, g
-16 4.3 0.97 [0.60,1.30]
-a
-structure was already available 6 month prior to publication of ﬁrst benchmark study. b
-ligand similarity > 1.4.
-c
-ligand considerably similar > 0.8. d
-crystal contacts. e
-packing. f
-Fig. 3. g
-alternate conformations. h
-ligand density: 0.79.
-the model:
-coordinate error =
-2.22Rfree
-q
-N3
-i
-√
-Va
-n5/6
-obs
-, (1)
-where Ni is the number of heavy atoms with occupancy of 1,
-Va is the volume of the asymmetric unit cell and nobs is the
-number of non-Rfree reﬂections used during reﬁnement. A
-high-quality structure should have a coordinate error < 0.7.
-Recent PDB entries usually include a coordinate error esti-
-7 of 31
-A LiveCoMS Best Practices Guide
-mate which can be found by searching for ESU Rfree, Cruick-
-shank or Blow Density Precision Index (DPI). The coordinate
-error (as shown in Equation 1) is
-√
-3 · BlowDPI.
-While understanding the global quality of a structure is
-important, it is the local active site or ligand binding site that
-will have the largest impact on benchmarking performance.
-Therefore special care should be taken to assess the ligand
-and surrounding active site residues. Of highest priority is to
-identify all unmodeled residues and side chain atoms within
-6 to 8 Å of any ligand atom. When multiple structures with
-similar coordinate error are available, the structure with no
-missing residues or side chain atoms that meets subsequent
-criteria should be used. The electron density around the lig-
-and should cover at least 90% of the ligand atom centers,
-which can be checked visually or by checking for a real space
-correlation coeﬃcient (RSCC) value > 0.90. Examples for a
-poor ligand density are shown in Figures 4A (in comparison
-to Figure 4B with a good density) and 4C. Ligand atoms where
-there are crystal packing atoms within 6 Å should be identi-
-ﬁed (see Figure 4D), as such packing atoms may affect the
-observed binding mode. All ligand and active site atoms with
-occupancy < 1.0 should be identiﬁed. If there is only par-
-tial density for the ligand and the active site residue atoms,
-these partial-density atoms should be identiﬁed (see Figure
-4A). If alternate conformations for the ligand or active site
-residues are available, the selected conformation should be
-determined based on the electron density (see Figure 4E). Lo-
-cal metrics such as electron density support for individual
-atoms (EDIA) [97] or a number of RSCC [98] calculators can in-
-dicate if the electron density is suﬃcient to support the crys-
-tallographic placement of a given atom. Covalently bound
-ligands should be identiﬁed and appropriately modelled.
-Additional aspects should be considered beyond the qual-
-ity of the model and the data (see also structure preparation,
-Section 5.1). The structure of a complex could be deformed
-due to crystal contacts or by experimental conditions like ad-
-ditives, pressure or temperature. These conditions might not
-be representative for the biological environment and there-
-fore biologically active conformation of the complex (see Fig-
-ure 4D). Other factors could play an important role in de-
-termining active conformations, such as crystal waters, co-
-factors or co-binders. These should usually be included to
-model the natural environment of the protein (see Figure 4F
-and 5C). It is also important to remember that for X-ray data,
-modeling water (versus amino acids or organic compounds)
-is less precise than for other atoms particularly when the
-crystal is formed in a high salt environment. The ligand in the
-experimental structure should be suﬃciently close to the lig-
-and to be simulated to have a model of the correct binding
-mode.
-The criteria for selecting high-quality protein-ligand struc-
-tures are summarized in the checklist "Choose Suitable Pro-
-tein Structures for Benchmarking". A use case for these selec-
-tion criteria to score and select structures from prior bench-
-marking datasets is found in Table 1.
-A choice of the simulation conditions like temperature,
-ion concentration, other additives like co-factors or mem-
-branes require additional considerations. Ideally, these
-conditions are close to those for the structural experiment,
-the aﬃnity measurements and physiological conditions.
-Most likely, a trade-off between all of these has to be found.
-Where possible select structures where data was collected
-at room temperature that were crystallized using non-salt
-precipitants. Be aware that room temperature data will have
-lower precision and more conformational heterogeneity.
-If these requirements are not met, it does not necessar-
-ily mean that the data is not usable and the results will be
-bad. A structure not meeting the requirements may suﬃce
-after more manual intervention by the user, ideally an expe-
-rienced one. Unresolved areas can be modelled with current
-tools and knowledge about atom interactions, though this
-can be a cause for concern if these are near the binding site.
-This concern has been validated, at least anecdotally, in a re-
-cent publication where different protein preparation proce-
-dures where shown to have a substantial effect on the accu-
-racy of the free energy predictions [99].
-Collective intelligence could be a way to mitigate the in-
-ﬂuence of individuals on the prepared input structures of a
-benchmark set. On a platform, other scientists could sug-
-gest changes to structures and updated versions could be
-deposited, increasing the quality of the benchmark set. En-
-dorsement and rating of deposited structures could increase
-the level of trust given to speciﬁc structures and the database
-in general.
-4.5 Experimental binding aﬃnity data
-Choosing high-quality experimental data is crucial for con-
-structing meaningful benchmarks of methods that predict lig-
-and binding aﬃnities. Evaluating whether experimental data
-merits inclusion requires an in-depth understanding of the
-biological system and the particular experimental assay that
-assesses protein-ligand aﬃnity. While a detailed overview
-of all experimental aﬃnity measurement techniques is be-
-yond the scope of this review, this section aims to summarize
-general aspects that should be considered when evaluating
-whether an experimental dataset is suitable for benchmark-
-ing purposes. We note that, in practice, it is often diﬃcult
-to identify datasets that meet all the recommendations dis-
-cussed below.
-Overall, it is necessary that the experimental data used in
-benchmarks intended to measure the accuracy of reproduc-
-ing experimental data are consistent, reliable, correspond
-8 of 31
-A LiveCoMS Best Practices Guide
-Figure 4. Examples of common challenges encountered when using X-ray crystal structures. The protein is shown in green and the
-ligand in orange. If not stated differently, the 2Fo-Fc maps are illustrated as grey isomesh at 2σ level. (A) PDB ID 4PV0 shows poor density
-(at 3σ) for residues in the active site. The beta sheet loop at the top of the active site has residue side chains modeled with no density to
-support the conformation and the end of the loop has residues that are not modeled. (B) The recommended structure PDB ID 4PX6 for the
-same protein has complete density (and modeled atoms) for the whole loop (at 3σ). (C) PDB ID 5E89 shows poor ligand density, especially for
-the m-Cl-phenyl (left) and the hydroxymethyl (center). This means that the ligand conformation, as shown, is not speciﬁed by the data, and
-thus should not be used as input to a computational study unless there is additional data supporting this binding mode. (D) The ligand of
-PDB ID 1SNC has crystal contacts with the residues K70 and K71 (blue) of the neighboring unit that directly interact with the ligand, potentially
-affecting the binding mode relative to a solution environment. (E) PDB ID 3ZOV has two alternate side chain conformations. Residue R368 in
-the B conformation (magenta) has clearly more density (0.75 σ) than the A conformation (blue). The B conformation interacts with the ligand
-(distance 3.2 Å) whereas the A conformation does not interact with the ligand (distance 6.5 Å). If the user does not look at both conformations
-and chooses A (by default), this would likely be incorrect and miss a potentially important protein-ligand interaction. (F) In PDB ID 5HNB, there
-is an excipient (formic acid) that interacts directly with the ligand (2.7 Å O-O distance shown in black). The formic acid could be replacing a
-bridging water. From the data it is not possible to determine how the excipient is affecting the ligand/protein conformation, but for a study
-of ligand binding in the absence of formic acid, this should be removed.
-9 of 31
-A LiveCoMS Best Practices Guide
-Figure 5. Examples of challenges encountered for ligand mod-
-elling using X-ray crystal structures. The protein is shown in green
-and the ligand in orange. If not stated differently, the 2Fo-Fc maps
-are illustrated as grey isomesh at 2σ level. In some panels, the differ-
-ence density Fo-Fc map is illustrated as cyan isomesh at +3σ level. (A)
-In PDB ID 3FLY, there is signiﬁcant difference density, likely indicat-
-ing that the ligand conformation is not modeled correctly. It is sus-
-pected that there is a low occupancy alternate conformation that is
-not modeled. (B) The suggested alternate structure of the same pro-
-tein, PDB ID 6SFI, has no difference density. (C) PDB ID 2ZFF shows
-unexplained electron density in the binding pocket (difference map,
-bottom, center, cyan). This could be either water or a Na+ ion, as Na+
-is present and modeled in other sites.
-well to the model system that is used in the simulations, al-
-lowing robust conclusions on accuracy to be drawn.
-4.5.1 Deriving free energies from experimental
-aﬃnities
-Binding of a ligand to a receptor protein can be described as
-an equilibrium between unbound and bound states with the
-equilibrium constant of the dissociation Kd as
-Kd =
-[P][L]
-[PL]
+This is a repository copy of Preferred reporting items for systematic review and meta-
+analysis protocols (PRISMA-P) 2015 statement.
+White Rose Research Online URL for this paper:
+https://eprints.whiterose.ac.uk/90044/
+Version: Published Version
+Article:
+Moher, David, Shamseer, Larissa, Clarke, Mike et al. (32 more authors) (2015) Preferred
+reporting items for systematic review and meta-analysis protocols (PRISMA-P) 2015
+statement. Systematic Reviews. ISSN 2046-4053
+https://doi.org/10.1186/2046-4053-4-1
+eprints@whiterose.ac.uk
+https://eprints.whiterose.ac.uk/
+Reuse
+Items deposited in White Rose Research Online are protected by copyright, with all rights reserved unless
+indicated otherwise. They may be downloaded and/or printed for private study, or other acts as permitted by
+national copyright laws. The publisher or other rights holders may allow further reproduction and re-use of
+the full text version. This is indicated by the licence information on the White Rose Research Online record
+for the item.
+Takedown
+If you consider content in White Rose Research Online to be in breach of UK law, please notify us by
+emailing eprints@whiterose.ac.uk including the URL of the record and the reason for the withdrawal request.
+RESEARCH Open Access
+Preferred reporting items for systematic review
+and meta-analysis protocols (PRISMA-P) 2015
+statement
+David Moher1*
+, Larissa Shamseer1
+, Mike Clarke2
+, Davina Ghersi3
+, Alessandro Liberatiˆ, Mark Petticrew4
 ,
-with [PL] being the concentration of the bound protein-ligand
-complex and [P] and [L] the concentrations of the unbound
-protein and unbound ligand respectively. The binding free
-energy ∆G can be related to the dissociation constant via the
-following equation
-∆G = kBT ln
-Kd
-c◦
-–
-, (2)
-with Boltzmann constant kB, temperature T and standard
-state reference concentration c◦
-–
-, which is typically c◦
-–
-= 1 M.
-In many drug discovery projects, potency of compounds is
-assessed by measuring the half-maximal inhibitory concen-
-tration (IC50) of a substance on a biological or biochemical
-function. This is often converted to pIC50
-pIC50 = – log10 IC50.
-Typically, the substance is competing in these experiments
-with either a probe or substrate. For such competition as-
-says, IC50 can be related to the binding aﬃnity of the inhibitor
-Ki via the Cheng-Prusoff equation
-Ki =
-IC50
-1 + [S]
-Km
-, (3)
-where [S] is the concentration of the substrate and Km the
-Michaelis constant. Many assays are conducted using a sub-
-strate concentration of [S] = Km. This leads to a conversion
-factor of 0.5 between IC50 and Ki based on Equation 3 and
-to a constant offset in ∆G. This offset cancels out for a con-
-generic ligand series with the same mode-of-action in identi-
-cal assay conditions. Hence, in this case, ∆pIC50 values are
-a useful bioactivity that can be compared to relative binding
-free energy calculations. We can then use the approximation
-∆G ≈ kBT ln IC50.
-4.5.2 Consistency of datasets
-The paucity of experimental aﬃnity measurement data may
-tempt practitioners to cobble together all available mea-
-surements for a given target (say, from a ChEMBL query)
-to construct a dataset with a suﬃciently large number of
-measurements to provide statistical power in discriminating
-the performance of different methodologies on a given
-10 of 31
-A LiveCoMS Best Practices Guide
-target. This temptation should generally be resisted, as
-assay conditions or protocols in different labs might not be
-comparable. Figure 6 illustrates this by comparing two sets
-of data obtained by different methods. These differences
-could, for example, result from the concentration of the
-substrate (see Equation 3), the protein construct, the incu-
-bation time or the composition of the buffer, and might not
-be suﬃciently documented in the reported experimental
-methodology. However, in comparison to the inherent
-experimental error (see below), mixing experimental data
-from different laboratories might add only a moderate
-amount of noise [100]. To ensure consistency within a
-dataset such that relative free energy differences are as
-reliable as possible, we highly recommend the use of data
-from a single source (e.g., a single publication or a patent).
-To avoid rounding or unit conversion errors that often
-arise from automated or manual data extraction, data
-should be extracted from the original source.1
-Going back
-to the original publication is also important to identify com-
-pounds that are outside of the detection limit of the assay
-but are still reported with speciﬁc numerical values (e.g.,
-reported IC50 > 30 µM). Such ligands should be excluded
-from benchmark sets to ensure that accuracy measures can
-be properly evaluated.
-4.5.3 Experimental uncertainty
-To assess the reliability, ideally, errors are reported for all lig-
-and aﬃnities or at least for a subset. The primary publication
-of the experimental results is typically the best source of ex-
-perimental uncertainty as cited aﬃnities may occasionally be
-subject to rounding differences or unit errors [103]. Errors
-quoted will likely be an estimate of the repeatability of the
-assay, rather than true, independent reproducibility. Publica-
-tions with essential experimental controls reported — such
-as incubation time and concentration regime to demonstrate
-equilibrium — can add conﬁdence to the reported aﬃnity,
-however these may be performed and not reported [104].
-Meta-analyses of both repeatability [105] and reproducibil-
-ity [103] found errors in pKi of 0.3-0.4 log units (0.43-0.58
-kcal mol–1
-) and 0.44 log units (0.64 kcal mol–1
-) respectively.
-Another analysis for reproducibility found that variability in
-pIC50 were even 21-26% higher than for pKi data (0.55 log
-units) [100]. These values provide a guideline for experimen-
-tal error, if none is available. Note that for difference mea-
-sures ∆pIC50, the individual experimental errors propagate
-as
-q
-σ2
-1 + σ2
-2.
+Paul Shekelle5
+, Lesley A Stewart6
+and PRISMA-P Group
+Abstract
+Systematic reviews should build on a protocol that describes the rationale, hypothesis, and planned methods of the
+review; few reviews report whether a protocol exists. Detailed, well-described protocols can facilitate the understanding
+and appraisal of the review methods, as well as the detection of modifications to methods and selective reporting in
+completed reviews. We describe the development of a reporting guideline, the Preferred Reporting Items for
+Systematic reviews and Meta-Analyses for Protocols 2015 (PRISMA-P 2015). PRISMA-P consists of a 17-item checklist
+intended to facilitate the preparation and reporting of a robust protocol for the systematic review. Funders and those
+commissioning reviews might consider mandating the use of the checklist to facilitate the submission of relevant
+protocol information in funding applications. Similarly, peer reviewers and editors can use the guidance to gauge the
+completeness and transparency of a systematic review protocol submitted for publication in a journal or other
+medium.
+Background
+Systematic reviews are the reference standard for syn-
+thesizing evidence in health care because of their meth-
+odological rigor. They are used to support the
+development of clinical practice guidelines and inform
+clinical decision-making. They are becoming increas-
+ingly common; in 2010, 11 new reviews were estimated
+to be published daily [1]. Ideally, systematic reviews are
+based on pre-defined eligibility criteria and conducted
+according to a pre-defined methodological approach as
+outlined in an associated protocol.
+The preparation of a protocol is an essential compo-
+nent of the systematic review process; it ensures that a
+systematic review is carefully planned and that what is
+planned is explicitly documented before the review
+starts, thus promoting consistent conduct by the review
+team, accountability, research integrity, and transparency
+of the eventual completed review. A protocol may also
+reduce arbitrariness in decision-making when extracting
+and using data from primary research, since planning
+provides an opportunity for the review team to antici-
+pate potential problems. When clearly reported proto-
+cols are made available, they enable readers to identify
+deviations from planned methods in completed reviews
+and whether they bias the interpretation of a review re-
+sults and conclusions. Bias related to the selective
+reporting of outcomes has been characterized as a ser-
+ious problem in clinical research, including systematic
+reviews [2-7].
+Until recently, systematic review protocols were gener-
+ally available only through select organizations, such as
+The Cochrane [8] and Campbell Collaborations and the
+Joanna Briggs Institute, for which the preparation of a
+protocol is mandatory. Outside of these organizations,
+the existence of a protocol is infrequently reported in
+completed reviews [9,10]. Fewer than half of 300 system-
+atic reviews indexed on MEDLINE in November 2004
+(most recent generalizable sample; 2014 update under-
+way) report working from a protocol [10], 80% of which
+are non-Cochrane affiliated. Of the non-Cochrane thera-
+peutic reviews, only 11% mentioned the existence of a
+protocol [10]. The majority of reviews in health care are
+* Correspondence: dmoher@ohri.ca
+ˆDeceased
 1
-Excellent examples of signiﬁcant errors that can be introduced are thor-
-oughly described in this comprehensive United States Geological Survey re-
-port on errors in misreporting the solubility and partition coeﬃcient of
-dichlorodiphenyltrichloroethane (DDT) and its primary metabolite [101], as
-well as this talk on automatic data extraction errors [102].
-10 9 8 7 6
-Assay A Gbind / kcal mol 1
-10
-9
-8
-7
-6
-Assay
-B
-G
-bind
-/
-kcal
-mol
+Ottawa Hospital Research Institute and University of Ottawa, Ottawa,
+Canada
+Full list of author information is available at the end of the article
+© 2015 Moher et al.; licensee BioMed Central. This is an Open Access article distributed under the terms of the Creative
+Commons Attribution License (http://creativecommons.org/licenses/by/4.0), which permits unrestricted use, distribution, and
+reproduction in any medium, provided the original work is properly credited. The Creative Commons Public Domain
+Dedication waiver (http://creativecommons.org/publicdomain/zero/1.0/) applies to the data made available in this article,
+unless otherwise stated.
+Moher et al. Systematic Reviews 2015, 4:1
+http://www.systematicreviewsjournal.com/content/4/1/1
+conducted and published outside of Cochrane, however
+[10]. The paucity of protocols may be due, in part, to the
+authors’ lack of knowledge about how to write them and
+what to include. Currently, little succinct guidance is
+available for those preparing systematic review protocols,
+although the recent Standards for Systematic Reviews
+prepared by the Institute of Medicine (IOM) provide
+some guidance toward addressing this gap [11].
+Many groups have called for the widespread preparation
+and registration of systematic review protocols in order
+to increase the availability and accessibility of a priori
+methods for systematic reviews [12-14]. Such an effort
+may reduce the duplication of effort [15] and reduce
+the publication bias of systematic reviews. This chal-
+lenge has been taken up by the Centre for Reviews and
+Dissemination, University of York, which has spearheaded
+the establishment of an international register—PROS-
+PERO (International Prospective Register of Ongoing
+Systematic Reviews, http://www.crd.york.ac.uk/prospero)
+[16,17]. The register, which enables the permanent docu-
+mentation of 22 mandatory (and 18 optional) items about
+the a priori design and conduct of a review, was launched
+in February 2011. At the time of writing, >5,000 system-
+atic review protocols from over 70 countries have been
+registered since its inception. Starting in October 2013,
+new Cochrane protocols were and continue to be auto-
+matically added to PROSPERO.
+Along with the improved accessibility of protocols
+through registration comes the need for strengthened
+transparency, accuracy, and completeness of the reports
+of protocols intended for dissemination. A template to
+aid in the preparation of systematic review protocols,
+such as a reporting guideline, may help achieve this. Fur-
+thermore, such guidance will enable authors to create a
+clear and complete document of their a priori methods,
+which may facilitate the registration of key information
+into the PROSPERO database. Building on an estab-
+lished guideline for systematic reviews and meta-
+analyses of studies evaluating health care interventions
+—the Preferred Reporting Items for Systematic reviews
+and Meta-Analyses (PRISMA, www.prisma-statement.
+org) [12,13]—we have developed PRISMA for Protocols
+(PRISMA-P) 2014. Table 1 summarizes the difference
+in intentions between PRISMA-P and PROSPERO.
+The aim of PRISMA-P 2015 is to improve the quality
+of systematic review protocols, similar to the impact
+achieved by other reporting guidelines [18-20]. By help-
+ing authors document an a priori road map of their sys-
+tematic review, PRISMA-P also has the potential to
+improve the conduct of systematic reviews, as has been
+suggested of other reporting guidelines [21]. This State-
+ment paper summarizes the development of the guide-
+line and presents the PRISMA-P checklist.
+Terminology
+There is no standard definition for a systematic review
+and meta-analysis protocol, and we note that some ter-
+minology contained within these definitions may carry
+different meanings for different readers (i.e., ‘systematic
+search’). The terms ‘systematic review’, ‘meta-analysis,’
+and ‘protocol’ are defined in Table 2. The former two
+terms are in accordance with the definitions reported in
+the PRISMA Statement [13] and are in line with those
+used by the Agency for Healthcare Research and Qual-
+ity’s Evidence-based Practice Center (EPC) program [22],
+The Cochrane Collaboration [23], and the 2011 guidance
+from the Institute of Medicine [11]. The definition pro-
+vided is a culmination of the terminology used by the
+Standard Protocol Items: Recommendations for Inter-
+ventional Trials (SPIRIT) 2013 initiative [24], the PROS-
+PERO register, and the IOM Standards (Table 2).
+Scope
+The PRISMA-P checklist is intended primarily for the
+preparation of protocols of systematic reviews and meta-
+analyses that summarize aggregate data from studies,
+Table 1 PROSPERO and PRISMA-P
+Definition and objective
+PROSPERO: International Prospective
+Register of Systematic Reviews
+An online portal through which to register the intention to conduct a systematic review, with health-related
+outcomes, before it is initiated [16]. One of the main goals of PROSPERO is to make the intent of systematic
+reviews known before they are conducted in order to reduce the unplanned duplication of systematic
+reviews [15]. In addition, by requiring the documentation of a priori methods, the register facilitates
+increased transparency in the review process by allowing readers of systematic reviews to compare
+methods, outcomes, and analyses carried out with those planned in advance and judge whether such
+changes impact the results of a review.
+PRISMA-P: Preferred Reporting Items for
+Systematic Review and Meta-Analysis
+Protocols
+A guideline to help authors prepare protocols for planned systematic reviews and meta-analyses that
+provides them with a minimum set of items to be included in the protocol. A protocol is intended to
+provide the rationale for the review and pre-planned methodological and analytic approach, prior to
+embarking on a review. Investigators should prepare a review protocol in advance of registering it in
+PROSPERO so that details requiring further consideration may be thought through in advance, avoiding
+the need for multiple amendments to registration information. PRISMA-P items have been derived largely
+from the PRISMA checklist and items of the PROSPERO register, in order to facilitate seamless registration.
+Moher et al. Systematic Reviews 2015, 4:1 Page 2 of 9
+http://www.systematicreviewsjournal.com/content/4/1/1
+particularly the evaluations of the effects of interven-
+tions. There are many review types that are outside of
+this scope. As such, given the general lack of protocol
+guidance for other types of reviews, we encourage re-
+viewers preparing any type of review protocol to make
+use of PRISMA-P as applicable. Readers can also use the
+checklist to assess the completeness of the reporting of
+published protocols. However, it is not recommended to
+use the checklist as an assessment tool to gauge the ap-
+propriateness of the methods of a systematic review
+protocol; it has not been validated for that purpose.
+Development of PRISMA-P 2015
+An international steering committee (MC, DG, AL, DM,
+MP, PS, and LAS) comprising members with wide-ranging
+experience in systematic review methodology, protocol
+registry development, and reporting guideline development
+led the development of PRISMA-P, coordinated by LS. The
+process proposed by the Enhancing the Quality and Trans-
+parency of Health Research (EQUATOR) Network was
+used to guide PRISMA-P development [27]. The process
+has 18 step-by-step recommendations grouped into five
+main stages:
+1. Initial steps (determine the need for a reporting
+guideline);
+2. Pre-meeting activities (identify contributors, conduct
+Delphi exercise, generate a list of potential items,
+and prepare for face-to-face meeting);
+3. Face-to-face consensus meeting (present results of
+pre-meeting activities and relevant evidence);
+4. Post-meeting activities (develop guidance Statement,
+Explanation and Elaboration document, and a
+publication strategy);
+5. Post-publication activities (encourage uptake of
+guideline).
+The first stage, ‘Initial steps,’ was described above; de-
+tails of the remaining four steps are below.
+Pre-meeting activities
+In developing the PRISMA-P checklist, the steering
+committee compiled a list of items from various tools
+relating to the preparation of systematic review proto-
+cols for discussion at a consensus meeting of experts.
+Specifically, we mapped items from a Delphi exercise
+carried out during the development of PROSPERO [28],
+PROSPERO register items, PRISMA checklist items [13],
+SPIRIT 2013 checklist items [29], and items of IOM
+Standard 2.6 [11] against each other to identify unique
+and overlapping concepts. Lessons learned from the de-
+velopment of the SPIRIT checklist with respect to the
+concept and content of research protocols were used to
+guide discussion and debate at the meeting.
+PRISMA-P consensus meeting
+Twenty-three international experts attended the
+PRISMA-P consensus meeting on June 23–24, 2011, in
+Rockville, MD, USA to gain consensus on and reduce
+the number of potential PRISMA-P items. Delegates in-
+cluded journal editors, systematic review methodologists
+(including directors and representatives from inter-
+national Cochrane Centres, Agency for Healthcare Re-
+search and Quality’s (AHRQ’s) Evidence-based Practice
+Centres, and the UK National Institute for Health Re-
+search), reporting guideline developers, information spe-
+cialists, biostatisticians, and health research funders.
+Through group discussion at the meeting, 38 potential
+checklist items were reduced to 22.
+Post-meeting activities
+Following the meeting, the steering committee revised
+the draft 22-item checklist and refined their wording
+such that they accurately reflected meeting discussions.
+The draft checklist was also presented to the PROS-
+PERO group, at a scientific meeting of the Cochrane
+Collaboration, for input and feedback and to AHRQ’s
+Learning Network. After each of these reviews, the steer-
+ing committee made minor amendments to the items.
+Table 2 PRISMA-P terminology
+Term Definition
+Systematic
+review
+A systematic review attempts to collate all relevant evidences that fits pre-specified eligibility criteria to answer a specific research
+question. It uses explicit, systematic methods to minimize bias in the identification, selection, synthesis, and summary of studies.
+When done well, this provides reliable findings from which conclusions can be drawn and decisions made [25,26]. The key
+characteristics of a systematic review are (a) a clearly stated set of objectives with an explicit, reproducible methodology; (b) a
+systematic search that attempts to identify all studies that would meet the eligibility criteria; (c) an assessment of the validity of the
+findings of the included studies (e.g., assessment of risk of bias and confidence in cumulative estimates); and (d) systematic
+presentation, and synthesis, of the characteristics and findings of the included studies
+Meta-analysis Meta-analysis is the use of statistical techniques to combine and summarize the results of multiple studies; they may or may be
+contained within a systematic review. By combining data from several studies, meta-analyses can provide more precise estimates
+of the effects of health care than those derived from the individual studies
+Protocol In the context of systematic reviews and meta-analyses, a protocol is a document that presents an explicit plan for a systematic
+review. The protocol details the rationale and a priori methodological and analytical approach of the review
+Moher et al. Systematic Reviews 2015, 4:1 Page 3 of 9
+http://www.systematicreviewsjournal.com/content/4/1/1
+The checklist was then circulated to all meeting invitees
+for critical input.
+The PRISMA-P 2015 checklist
+The final PRISMA-P 2015 checklist contains 17 numbered
+items (26 including sub-items) Items are categorized into
+three main sections: administrative information, introduc-
+tion, and methods (Table 3).
+We made a conscious effort to harmonize the PRISMA-
+P checklist items with the items of the PRISMA checklist
+to facilitate authors in transitioning their protocol into
+a report of a systematic review. Thirteen PRISMA-P
+sub-items have existing PRISMA counterparts. Where
+PRISMA wording or content did not sufficiently ad-
+dress protocol reporting, checklist items were modified.
+Readers familiar with PRISMA will notice that PRISMA-
+P does not contain a flow diagram documenting the flow
+of studies throughout the systematic review process. Such
+documentation is possible only after a review has been car-
+ried out and remains an essential component to include in
+the report of a completed systematic review or meta-
+analysis; for further guidance, see the PRISMA Explanation
+and Elaboration document [12].
+We strongly recommend that the present document
+and the accompanying PRISMA-P 2015 Explanation and
+Elaboration document [30], which includes examples of
+good reporting, rationale, and evidence (where available),
+be read together with the PRISMA-P 2015 checklist.
+PRISMA-P 2015 explanation and elaboration
+Once the steering committee prepared the PRISMA-P
+2015 Statement and checklist, they drafted the content
+of an Explanation and Elaboration document, with as-
+sistance from the larger PRISMA-P group. The explana-
+tory text was derived largely from discussions at the
+PRISMA-P meeting (recorded at the time) as well as the
+PRISMA Explanation and Elaboration document [12].
+Examples of well-reported PRISMA-P items came from
+protocols registered in the PROSPERO database,
+AHRQ’s EPC Program, and the Cochrane Database of
+Systematic Reviews or those published elsewhere. After
+the entire group had an opportunity to suggest addi-
+tions, deletions, and changes, the steering committee
+combined all amendments to create the PRISMA-P 2014
+Explanation and Elaboration document [30].
+Post-publication activities
+The post-publication activities recommended by EQUA-
+TOR include seeking and responding to criticism, encour-
+aging the endorsement of and adherence to the guideline
+from various stakeholders, translating the guideline into
+other languages, evaluating its impact, ensuring website
+development, and updating of the guideline. The
+PRISMA-P 2015 checklist and related publications are
+freely available on the websites of the PRISMA Group
+(www.prisma-statement.org) and EQUATOR Network
+(www.equator-network.org). The PROSPERO register
+also contains a link to the guidance to encourage regis-
+trants to prepare a complete documentation of their
+protocol if they have not done so already.
+We plan to develop an educational webinar about the
+rationale, usefulness, and potential impact of PRISMA-P,
+similar to what was done for PRISMA [31]. In addition,
+the potential for PRISMA-P 2015 to be used as an educa-
+tional tool for authors, peer reviewers, and editors will be
+explored. Targeted implementation activities for PRISMA-
+P will be developed in a systematic manner together with
+experts in knowledge translation. The PRISMA website
+and social media (@PRISMAStatement, www.twitter.
+com/PRISMAStatement) will be used to make an-
+nouncements about the launch of PRISMA-P and edu-
+cational initiatives.
+Endorsement
+We encourage journals publishing systematic review prod-
+ucts to modify their ‘Instructions for Authors’ section to
+endorse PRISMA-P 2015 and to consider publishing sys-
+tematic review protocols, if they do not do so already. We
+plan to communicate with known endorsers of PRISMA
+(http://prisma-statement.org/endorsers.htm) as well as to
+other, relevant non-endorsing journals, to ask them to
+consider extending their support to PRISMA-P.
+To help ensure optimal uptake by systematic reviewers,
+we propose a uniform endorsement policy across organi-
+zations and journals involved in the development and
+publication of systematic review protocols, demonstrated
+by the adoption of the following statement:
+‘[this organization/journal] requires a completed
+PRISMA-P 2015 checklist as a condition of submission
+of systematic review protocols. We recommend that,
+while completing the PRISMA-P 2015 checklist, you
+ensure your protocol addresses all items. Taking the
+time to ensure that your protocol adheres to these
+basic reporting elements will improve your manuscript
+and potentially enhance its chances of eventual
+acceptance.’
+Such a statement could be included in a journal’s ‘In-
+structions to Authors,’ or for funding agencies and those
+commissioning systematic reviews, in their Application
+Guidelines, recommending that applicants developing
+the proposals of systematic reviews for funding use
+PRISMA-P 2014. Peer reviewers and scientific commit-
+tees can also use the checklist to gauge the extent to
+which protocols include necessary information.
+As has been done for previous reporting guidelines
+[18,32] we plan to evaluate whether and to what degree
+Moher et al. Systematic Reviews 2015, 4:1 Page 4 of 9
+http://www.systematicreviewsjournal.com/content/4/1/1
+Table 3 PRISMA-P 2015 checklist: recommended items to include in a systematic review protocola
+Section/topic Item # Checklist item
+ADMINISTRATIVE INFORMATION
+Title
+Identification 1a Identify the report as a protocol of a systematic review
+Update 1b If the protocol is for an update of a previous systematic review, identify as such
+Registration 2 If registered, provide the name of the registry (e.g., PROSPERO) and registration number
+Authors
+Contact 3a Provide name, institutional affiliation, and e-mail address of all protocol authors; provide physical
+mailing address of corresponding author
+Contributions 3b Describe contributions of protocol authors and identify the guarantor of the review
+Amendments 4 If the protocol represents an amendment of a previously completed or published protocol,
+identify as such and list changes; otherwise, state plan for documenting important protocol
+amendments
+Support
+Sources 5a Indicate sources of financial or other support for the review
+Sponsor 5b Provide name for the review funder and/or sponsor
+Role of sponsor/
+funder
+5c Describe roles of funder(s), sponsor(s), and/or institution(s), if any, in developing the protocol
+INTRODUCTION
+Rationale 6 Describe the rationale for the review in the context of what is already known
+Objectives 7 Provide an explicit statement of the question(s) the review will address with reference to participants,
+interventions, comparators, and outcomes (PICO)
+METHODS
+Eligibility criteria 8 Specify the study characteristics (e.g., PICO, study design, setting, time frame) and report characteristics
+(e.g., years considered, language, publication status) to be used as criteria for eligibility for the review
+Information sources 9 Describe all intended information sources (e.g., electronic databases, contact with study authors,
+trial registers, or other grey literature sources) with planned dates of coverage
+Search strategy 10 Present draft of search strategy to be used for at least one electronic database, including planned
+limits, such that it could be repeated
+Study records
+Data management 11a Describe the mechanism(s) that will be used to manage records and data throughout the review
+Selection process 11b State the process that will be used for selecting studies (e.g., two independent reviewers) through each
+phase of the review (i.e., screening, eligibility, and inclusion in meta-analysis)
+Data collection process 11c Describe planned method of extracting data from reports (e.g., piloting forms, done independently, in
+duplicate), any processes for obtaining and confirming data from investigators
+Data items 12 List and define all variables for which data will be sought (e.g., PICO items, funding sources), any
+pre-planned data assumptions and simplifications
+Outcomes and
+prioritization
+13 List and define all outcomes for which data will be sought, including prioritization of main and
+additional outcomes, with rationale
+Risk of bias in
+individual studies
+14 Describe anticipated methods for assessing risk of bias of individual studies, including whether this will
+be done at the outcome or study level, or both; state how this information will be used in data synthesis
+Data
+Synthesis 15a Describe criteria under which study data will be quantitatively synthesized
+15b If data are appropriate for quantitative synthesis, describe planned summary measures, methods of
+handling data, and methods of combining data from studies, including any planned exploration of
+consistency (e.g., I2
+, Kendall’s tau)
+15c Describe any proposed additional analyses (e.g., sensitivity or subgroup analyses, meta-regression)
+15d If quantitative synthesis is not appropriate, describe the type of summary planned
+Moher et al. Systematic Reviews 2015, 4:1 Page 5 of 9
+http://www.systematicreviewsjournal.com/content/4/1/1
+endorsement of PRISMA-P 2015 by journals (and poten-
+tially by other organizations) influences the complete-
+ness of reported protocols. Such an evaluation will be
+planned after allowing sufficient time for the wide dis-
+semination of PRISMA-P 2015.
+Implementation
+The current system of implementing reporting guide-
+lines is not optimal. At present, their primary mechan-
+ism of uptake is through endorsement by journals at
+their discretion, if at all. In journals that do endorse
+Table 3 PRISMA-P 2015 checklist: recommended items to include in a systematic review protocola
+(Continued)
+Meta-bias(es) 16 Specify any planned assessment of meta-bias(es) (e.g., publication bias across studies, selective
+reporting within studies)
+Confidence in
+cumulative evidence
+17 Describe how the strength of the body of evidence will be assessed (e.g., GRADE)
+PRISMA-P Preferred Reporting Items for Systematic review and Meta-Analysis Protocols.
+a
+It is strongly recommended that this checklist be read in conjunction with the PRISMA-P Explanation and Elaboration [30] for important clarification on the items.
+Amendments to a review protocol should be tracked and dated. The copyright for PRISMA-P (including checklist) is held by the PRISMA-P Group and is distributed
+under a Creative Commons Attribution License 4.0.
+Table 4 Proposed stakeholders, actions, and potential benefits for supporting adherence to PRISMA-P
+Stakeholder Proposed action Potential benefits
+Funders Promote or mandate adherence to PRISMA-P or use PRISMA-P as
+a template for systematic review proposals for grant applications
+Improved quality, completeness, and consistency
+of systematic review proposal submissions
+Standardized protocol content will improve peer
+review efficiency and investigator understanding
+of requirements
+Systematic review authors/
+groups/organizations
+Use/adhere to PRISMA-P during protocol development Improved quality, completeness, and consistency
+of protocol content
+Enables reviewers to anticipate and avoid future
+changes to review methods (i.e., outcomes)
+Increased awareness of minimum content for
+protocol reporting
+Improved completeness of reporting of
+completed reviews
+PROSPERO (and other
+review registries)
+Encourage the development of PRISMA-P-based protocols Improved quality of registry entries
+Improved consistency across registry entries,
+protocols, and systematic reviews
+Practice guideline
+developers
+Use PRISMA-P to gauge the completeness of protocols and
+facilitate detection of selective reporting when considering
+reviews for guideline inclusion
+Enables easy comparison across protocols, registry
+entries, and completed systematic reviews
+Policymakers Advocate use of PRISMA-P by those funding and carrying
+out systematic reviews
+May yield better quality, more complete, and more
+consistent reviews to inform decision-making
+Journal editors Encourage compliance to PRISMA-P for authors submitting
+protocols for publication
+Improved quality, completeness, and consistency
+of protocols over those published in journals not
+endorsing PRISMA-P
+Offer PRISMA-P as a template to assist in protocol
+writing for publication
+Increased efficiency in protocol peer and
+author understanding of journal requirements
+Improved transparency and interpretation
+of reviews by readers
+Educators Use PRISMA-P as a training tool Simplified teaching and grading of protocols
+Encourage adherence in students submitting protocols
+for coursework
+Improved quality, completeness, and
+consistency of protocol content
+Students Develop protocols for coursework or research using PRISMA-P Improved understanding of the minimum
+protocol content
+Well-trained systematic reviewer going
+into the workforce
+Moher et al. Systematic Reviews 2015, 4:1 Page 6 of 9
+http://www.systematicreviewsjournal.com/content/4/1/1
+guidelines, language describing their support is often
+vague, leaving authors unclear on what they are sup-
+posed to do with a given reporting guideline during the
+submission process [33]. Furthermore, policies around
+how journal editors and peer reviewers should ensure
+and/or enforce adherence to reporting checklists are
+even less clear, if they exist at all [34]. Other barriers to
+implementation may include a lack of awareness of the
+guideline and perceived burden of using a reporting
+guideline checklist during the editorial process [35].
+Some well-known checklists, such as PRISMA, include
+a column to the right of the main checklists in which
+users report the page number on which a specific item is
+reported. This was initially intended to help authors en-
+sure each checklist item is addressed and to aid peer re-
+viewers in locating reported text for each item within a
+document. However, this system is not optimal. One
+major problem is that peer reviewers still have to search
+within a considerable body of text to locate the exact
+text describing a checklist item. When multiple items
+are listed separately but reported together or vice versa,
+this problem is compounded, because exactly which
+content pertains to each item may remain unclear.
+The lack of implementation and adherence to report-
+ing guidelines is systemic; additional authorities encoun-
+tered early in the research process should promote a
+clearer message about author adherence to reporting
+standards if improvements in reporting are to be made.
+In targeting protocols of systematic reviews, PRISMA-P
+has a unique opportunity to not only affect the way in
+which protocols are reported but to also impact the way
+in which reviews are eventually conducted, perhaps
+allowing for a more seamless transition into a com-
+pletely reported systematic review.
+To overcome known challenges with reporting guideline
+uptake [36,37], we are developing a prospective imple-
+mentation strategy for PRISMA-P 2015 using knowledge
+translation principles involving theoretically derived inter-
+ventions [37] which have demonstrated effectiveness in
+the development of implementation interventions for clin-
+ical practice guidelines [38,39]. An initial list of proposed
+stakeholders who can assist in the implementation of
+PRISMA-P, along with proposed actions and benefits, is
+provided in Table 4.
+Discussion
+Studies comparing trial protocols to final reports have
+widely documented both the presence and the extent of
+reporting biases in publications of randomized trials
+[2,40]. Protocols for systematic reviews are rarely available
+for such comparisons, with the exception of select organi-
+zations. Of 288 reviews with available protocols in a 2006/
+2007 cohort, 64 (22%) were observed to have at least one
+discrepant outcome with their completed reviews; only 4
+described reasons for the change in the completed review
+[3]. Discrepant outcomes added or upgraded from second-
+ary to primary at the review stage were more likely to be
+statistically significant than those outcomes that had not
+changed. This practice (i.e., including, excluding, or chan-
+ging outcomes in association with the strength or direc-
+tion of findings) has the potential to bias the findings of
+any meta-analysis and the review’s conclusions. As review
+protocols are expected to become increasingly available
+with the advent of PROSPERO, clear reporting will be-
+come essential to facilitate the identification of discrepan-
+cies between protocol and review by readers and help
+them determine whether they need to be cautious in inter-
+preting findings.
+Reporting and publishing protocols is an important step
+in increasing the transparency of the research process and
+reliability of published papers. For example, some journals
+require a copy of the protocol as part of the peer review
+process of randomized trials. As of 1 March 2014, BioMed
+Central has published 4,158 trial protocols across 66 of its
+258 open-access journals, including 1,026 in Trials. Sys-
+tematic Reviews, a BioMed Central journal launched in
+February 2012, is committed to publishing systematic re-
+view products, including protocols [41], and has published
+142 protocols since inception (to 8 June 2014).
+Journals, granting agencies, and systematic review or-
+ganizations are encouraged to endorse PRISMA-P 2015
+in their ‘Instructions to Authors’ and guidance for appli-
+cants and to implement its use during their peer review
+process of systematic review proposals. Reviewers are
+encouraged to use the PRISMA-P checklist and Explan-
+ation and Elaboration [30] document to guide them
+through the documentation of a protocol. Doing so will
+enhance the completeness of reporting of review proto-
+cols, facilitate the assessment of potential in systematic
+reviews, and hopefully strengthen the methodological
+quality and reliability of completed systematic reviews.
+Competing interests
+The PRISMA-P 2015 initiative was supported by the AHRQ, USA (Contract No.
+HHSA 290 2007 10059 I) and the Canadian Institutes for Health Research
+(Reference No. 114369). This manuscript does not reflect the opinions of
+either agency; one author, SC, is an employee of AHRQ. MC, DG, DM, MP,
+and LAS are members of the Advisory Board for PROSPERO. DGA, SC, MC,
+JG, MH, JM, and MP are members of the Editorial Board, and DM, PS, and
+LAS are co-Editors in Chief of Systematic Reviews. None of the authors who
+are editors of Systematic Reviews were involved in the handling of this
+paper or the decision to publish it.
+Authors’ contributions
+DM, LS, MC, DG, AL, MP, PS, and LAS conceived this paper. DM and LS
+drafted the article, and all authors critically revised it for important
+intellectual content. All authors approved the final version of this article. DM
+is the guarantor of this work.
+Acknowledgements
+The PRISMA-P steering committee would like to thank the following staff
+from the Ottawa Hospital Research Institute (OHRI): Jodi Peters for her efforts
+organizing the PRISMA-P consensus meeting, Michael Zhao for his assistance
+Moher et al. Systematic Reviews 2015, 4:1 Page 7 of 9
+http://www.systematicreviewsjournal.com/content/4/1/1
+in preparing documents for the PRISMA-P meeting, Dr. Mohammed Ansari
+for valuable input and feedback throughout the process, and Justin Thielman
+for his assistance during the preparation of the PRISMA-P manuscripts.
+Dedication
+The PRISMA-P 2015 initiative is dedicated to our colleague Alessandro Liberati
+(1954–2012) who passed away during the time in which PRISMA-P 2015 was
+under development and whose contributions to this work were invaluable.
+PRISMA-P group (listed alphabetically)
+Douglas G Altman, DSc, Centre for Statistics in Medicine (CSM), University of
+Oxford, (Oxford, UK); Alison Booth, Centre for Reviews and Dissemination (CRD),
+University of York (York, UK); An-Wen Chan, Women’s College Research
+Institute, University of Toronto (Toronto, Canada); Stephanie Chang,
+Agency for Healthcare Research and Quality (Rockville, USA); Mike Clarke,
+Queen’s University of Belfast (Belfast, Ireland); Tammy Clifford, Canadian
+Agency for Drugs and Technologies in Health (CADTH) (Ottawa, Canada);
+Kay Dickersin, Johns Hopkins Bloomberg School of Public Health; Matthias
+Egger, Institut für Sozial-und Präventivmedizin; Davina Ghersi, National
+Health and Medical Research Council (Canberra, Australia); Peter C Gøtzsche,
+Nordic Cochrane Centre (Copenhagen, Denmark); Jeremy M Grimshaw,
+Canadian Cochrane Centre and OHRI (Ottawa, Canada); Trish Groves, The
+BMJ (London, UK); Mark Helfand, AHRQ EPC Scientific Resource Center,
+Portland VA Research Foundation (Portland, USA); Julian Higgins, School of
+Social and Community Medicine (Bristol, UK); Toby Lasserson, Cochrane
+Editorial Unit (London, UK); Joseph Lau, Center for Evidence-based Medicine,
+Brown University (Providence, USA); Alessandro Liberati, University of Modena
+(Modena, Italy); Kathleen Lohr, Research Triangle Institute-University of North
+Carolina EPC (Research Triangle Park, USA); Jessie McGowan, University of
+Ottawa (Ottawa, Canada); David Moher, Clinical Epidemiology Program, OHRI,
+and University of Ottawa (Ottawa, Canada); Cynthia Mulrow, Annals of
+Internal Medicine (San Antonio, USA); Melissa Norton, PLoS Medicine
+(London, UK); Matthew Page, Monash University (Australia); Mark Petticrew,
+London School of Hygiene and Tropical Medicine (London, UK); Margaret
+Sampson, Children’s Hospital of Eastern Ontario (Ottawa; Canada); Holger
+Schünemann, McMaster University (Hamilton, Canada); Larissa Shamseer, Clinical
+Epidemiology Program, OHRI, and University of Ottawa (Ottawa; Canada);
+Paul Shekelle, Southern California EPC, (Los Angeles, USA); Iveta Simera,
+CSM, University of Oxford (Oxford, UK); Lesley A Stewart, CRD, University of
+York (York, UK); William Summerskill, The Lancet (London, UK); Jennifer Tetzlaff,
+Clinical Epidemiology Program, OHRI (Ottawa, Canada); Thomas A Trikalinos,
+Center for Evidence-based Medicine, Brown University (Providence, USA); David
+Tovey, The Cochrane Library (London, UK); Lucy Turner, Clinical Epidemiology
+Program, OHRI (Ottawa Canada); Evelyn Whitlock, Kaiser Permanente Research
+Affiliates EPC (Portland, USA).
+Author details
 1
-RMSE: 0.64 [95%: 0.53 - 0.75]
-Figure 6. Experimental uncertainties can be on the order of 0.64
-kcal mol–1. The binding aﬃnity of 365 molecules assayed by two dif-
-ferent methods for the open source COVID moonshot project [106].
-Molecules that were predicted to bind in one assay, but inactive (i.e.,
-aﬃnity lower than the assay limit) in the other are shown in blue. The
-RMSE agreement between the methods, for both purple and blue
-data points is 0.64 kcal mol–1. Data was collected from the PostEra
-website [107] accessed 22/11/2020. The grey region indicates an as-
-say variability of 0.64 kcal mol–1.
-4.5.4 Choosing representative experimental assays
-for FE calculations
-There are two main requirements to consider in order to
-ensure that the experimental data are representative of
-the physics-based binding free energy that is calculated
-from the simulations. First, the measured output should
-reﬂect or closely correlate with actual protein-ligand binding.
-Second, the assay conditions and the protein-ligand system
-used in the simulation should match as closely as possible.
-The ﬁrst point relates to choosing the appropriate type of
-experimental data to compare with. Ideally, these would
-be biophysical binding data such as KD determined from
-isothermal titration calorimetry (ITC) or surface plasmon
-resonance (SPR). However, this type of data is often only
-available for a small number of compounds in drug discov-
-ery projects (and the related literature), typically for a few
-representatives per series. In addition, ITC data are often
-only available for a narrow dynamic range [108, 109]. Since
-having a suﬃciently large dataset with a large dynamic
-range is also very important (see below), it may often be
-necessary to use data from functional assays (e.g., IC50 from
-a biochemical assay) instead. For this assay, correlation with
-a biophysical readout should be checked before using the
-11 of 31
-A LiveCoMS Best Practices Guide
-system as a benchmark dataset [100].
-With regards to matching simulation and binding as-
-say, as mentioned above, it is important to have detailed
-knowledge of the assay conditions available; e.g., salt
-concentrations and co-factors. This information is needed
-for setting up a simulation model that closely matches the
-experimental conditions (see Section 5.1). Generally, salt
-concentration should match experimental assay conditions
-to capture screening effects, though sometimes salt identity
-may be varied because of force ﬁeld limitations. For a
-benchmark set, experimental data with assay conditions in-
-volving many co-factors or multiple protein partners should
-be avoided. In addition, one should check which protein
-construct was used in the structural studies compared to
-the assay (see Section 4.4). These should match as closely as
-possible.
-4.5.5 Ensuring suﬃcient statistical power
-Finally, a dataset used for benchmarking of free energy cal-
-culations needs to be suitable to draw robust conclusions on
-the success of the methods ideally by both accuracy and cor-
-relation statistics. Whether a dataset is suitable depends on
-the number of data points in the set, the experimental dy-
-namic range and the experimental uncertainty.
-Quantifying the experimental uncertainty is necessary
-for understanding the upper-limit of feasible accuracy
-for a model [110]. Understanding this is both useful for
-fair comparison between methods, and for conveying the
-reliability of a model to medicinal chemists [111]. Building
-predictive models becomes more diﬃcult with (a) a small
-experimental dynamic range and (b) large experimental
-uncertainties. It is useful to understand the upper limit
-of success a computational method can have for a set of
-experimental results;
-R2
-max = 1 –
-
-σ(measurement error)
-σ(aﬃnity)
-2
-, (4)
-where R2
-max is the highest achievable R2
-for a dataset with a
-standard deviation of aﬃnities (σ(aﬃnity)) and an experimen-
-tal uncertainty of σ(measurement error) [105]. This relation
-is illustrated in Figure 7.
-For a typical experimental error of 0.64 kcal mol–1
-(see
-Section 4.5.3) and a desired R2
-max = 0.9, a standard devia-
-tion of aﬃnities σ(aﬃnity) = 2.02 kcal mol–1
-(≈1.5 log units)
-is required. Assuming a uniform distribution of experimen-
-tal aﬃnities in the dataset, this corresponds to a required
-dynamic range of 7.01 kcal mol–1
-(e.g., from –12 to –5 kcal
-mol–1
-) or ≈ 5 log units (e.g., from 1 nM to 100 µM). This dy-
-namic range and the associated standard deviation of aﬃni-
-ties also allow to differentiate typical free energy methods
-from a trivial aﬃnity prediction model where all predicted
-aﬃnities ∆Gi
-pred are equal to the mean experimental aﬃn-
-ity
-PN
-i=1 ∆Gi
-exp. Note that for such a model RMSE is equal to
-the standard deviation of the aﬃnities σ(aﬃnity), while there
-is no correlation between predicted and experimental aﬃni-
-ties. In practice, experimental datasets with a dynamic range
-of 7 kcal mol–1
-are diﬃcult to obtain. Using the same assump-
-tions as before, a dynamic range of 5 and 3 kcal mol–1
-cor-
-respond to a standard deviation of aﬃnities of σ(aﬃnity) =
-1.44 kcal mol–1
-and σ(aﬃnity) = 0.87 kcal mol–1
-and hence
-R2
-max = 0.8 and R2
-max = 0.45 respectively. Balancing data
-availability and achievable R2
-max, we recommend collecting
-datasets with a dynamic range of 5 kcal mol–1
-.
-0.2 0.4 0.6 0.8 1.0
-(measurement error)
-0
-1
-2
-3
-4
-5
-(affinity)
-0
-.
-9
-5
-0.9
-0.8
-0.7
-Figure 7. The larger the experimental uncertainty, the larger the
-aﬃnity range required for a given R2
-max. Corresponding to Equa-
-tion 4, the maximum achievable R2 for a given dataset is limited by
-the range of aﬃnities and the associated experimental uncertainty.
-The illustration assumes that σ(measurement error) and σ(aﬃnity)
-are in the same units, with an experimental error of 0.64 kcal mol–1
-indicated.
-In order to robustly evaluate statistics with small conﬁ-
-dence intervals, the dataset needs to be suﬃciently large. Fig-
-ure 8 illustrates the dependence of the conﬁdence interval
-obtained by bootstrapping for correlation statistics and ac-
-curacy statistics for simulated toy data. The "experimental"
-toy data were simulated using a uniform distribution with an
-aﬃnity range of 7 kcal mol–1
-for the experimental toy data.
-This would be the optimal dynamic range for an experimen-
-tal error of 0.64 kcal mol–1
-(see Section 4.5.3). Predicted toy
-data were derived from the experimental toy data using a
-Gaussian distribution with standard deviation of σ = 0.5, 1
-and 1.5 kcal mol–1
-. While the absolute values that can be ob-
-12 of 31
-A LiveCoMS Best Practices Guide
-tained for the correlation statistics are strongly affected by
-the dynamic range of the experimental data, the effect on
-the conﬁdence intervals estimated via bootstrapping is rela-
-tively small (very similar results in terms of the size of the con-
-ﬁdence intervals can be obtained assuming a dynamic range
-of 5 kcal mol–1
-).
-Based on these simulations, we recommend a dataset
-size of 25 to 50 ligands. For a dataset size of 50, it is possible
-to distinguish between all three toy methods reliably in terms
-of RMSE. For an aﬃnity prediction method with Gaussian er-
-ror σ = 1.0 kcal mol–1
-this would yield the following estimated
-statistics: Kendall τ = 0.720.80
-0.62 and RMSE = 1.01.18
-0.81 kcal mol–1
-.
-Note that for relative calculations, a smaller number of lig-
-ands could be suﬃcient since multiple edges are typically
-evaluated for each ligand. On the other hand, for relative
-calculations, the experimental error for the relative free ener-
-gies are larger because experimental errors for both ligands
-add up.
-As stated before, in practice it is challenging to ﬁnd
-datasets that meet these criteria for dynamic range and
-number of ligands. We therefore currently recommend
-annotating benchmark datasets according to these criteria
-to make challenges and limitations visible.
-5 How to best set up and run benchmark
-free energy simulations
-5.1 Structure preparation
-Starting with an experimental crystal structure, often an X-
-ray structure for the protein or protein-ligand complex, the
-most error-prone stage of protein preparation is the trans-
-lation from a this experimental structure into a simulation
-model: inferring missing atoms and making choices about
-which X-ray components to include. Having chosen the crys-
-tal lattice monomer based on the criteria in the above sec-
-tion, some domains of the structure may be removed if they
-are large and unlikely to affect the biological activities of in-
-terest. The truncation of the system needs to be assessed
-carefully as it has been shown in some cases, such as the
-dimeric form of PDE2 and the presence of cyclin with CDK2,
-as a more authentic representation of the system was ben-
-eﬁcial for stability during simulations and improved the free
-energy calculations. In some cases, though, truncation gains
-eﬃciency by decreasing the size of the overall simulation sys-
-tem while maintaining its biological activity, with potentially
-minimal impact on results. Datasets for benchmarking may
-be run many times so this eﬃciency gain can be meaningful.
-In addition to the protein itself, the subsystem carried for-
-ward from the X-ray structure into simulation may have other
-components: ligand, cofactors, structural waters, other lig-
-ands (if simulating a multimer), post-translational modiﬁca-
-A
-B
-Figure 8. The larger the dataset, the smaller the uncertainty in
-the performance statistics. (A) Kendall τ and (B) RMSE were eval-
-uated for 1,000 toy datasets for a given size of the dataset N. The
-experimental data were simulated from a uniform distribution over
-the interval [-12:-5] and the predicted aﬃnities were simulated from
-the experimental toy data using a Gaussian distribution with differ-
-ent standard deviation σ. The statistic was evaluated for the whole
-dataset and 95% conﬁdence intervals were estimated via bootstrap-
-ping. These were then averaged over all 1,000 toy datasets.
-tions (PTMs), and excipients. The cofactors should be delib-
-erately included or excluded based on their role in the bio-
-logical activity being modeled, removing a cofactor from its
-cavity might cause unexpected movements or collapse of the
-cavity during the simulations. To avoid this, a careful equili-
-bration and solvation of that pocket might be needed. All
-structural waters close to the protein should be included: in
-principle the MD sampling could allow waters to arrange in
-equilibrium positions, but experimental and theoretical work
-has shown that the timescales for this can be impractically
-long. Also, internal structural waters even very distal from
-the active site are integral to the protein structure, and omit-
-ting them can adversely affect the protein dynamics. Gen-
-erally, we recommend excluding excipients (often speciﬁc to
-the crystallization media and not present in the assay). PTMs
-require a judgement call: surface-exposed and distal from
-the active site they can often be safely excluded, for exam-
-13 of 31
-A LiveCoMS Best Practices Guide
-ple glycosylations which could otherwise greatly increase the
-size of the calculation. This again can save on the overall sys-
-tem size and from parameterization diﬃculties. PTMs prox-
-imal to the active site or known to be directly implicated in
-activity should be retained. Ligands other than that in the
-active site are again a judgement call: retaining them is only
-necessary if there is biological cooperativity in the biological
-assay. As this is in practice often not known, they should be
-kept if possible.
-Protein Ligands
-X-Ray
-S-S Bridges
-Protonation
-Alternative side
-chains
-Crystal Waters
-Co Factors
-Forcefield
-description
-Protein
-prep
-and
-minimization
-Parameterization
-Solvated Complex
-Solvated Ligand
-Generate Complex
-Alchemical free energy methods
-Figure 9. Outline of the system preparation steps. First the pro-
-tein is prepared (left, Section 5.1.1) by modelling missing atoms, as-
-signing bond orders, protonation and tautomeric states. Similarily,
-the chemical structure of the ligands is translated into a simulation
-model (right, Section 5.1.2). The ligands are simulated in two dif-
-ferent environments, once complexed with the protein (bottom left)
-and once in solvent (bottom right). For the solvated complex, the lig-
-and structures need to be docked into the binding site of the protein,
-typically by using the information of a reference ligand in the X-ray
-structure.
-5.1.1 Protein preparation
-The experimental protein structure has frequently missing
-coordinates for atoms, residues or groups of residues due to
-the lack of supporting data (electron density) from the X-ray
-experiments. These often include N-terminal and C-terminal
-residues, mobile loops (e.g. the activation loop in kinases),
-and residue sidechains. Also, there can be extra coordinates
-available in the structure as "alternate locations" (AltLocs):
-residue sidechains, or occasionally entire residues or the lig-
-and, for which the experimental density supports more than
-one distinct orientation in a single X-ray structure solution.
-For the simulation, the protein must have all the atoms pro-
-vided for every residue modeled. Missing residue sidechains
-should always be modeled in, assigning them the most pre-
-ferred rotamer given the local environment.
-If the N- and/or C-terminal residues are missing due to
-lack of electron density, this may provide a basis for omitting
-them from the model, but the truncated N- and C-termini
-should be "capped" by neutral termini, usually an acetate
-(ACE) cap on the N-terminus and an N-methyl (NME) cap on
-the C-terminus to mimic the peptide backbone out to the
-carbon-alpha. Of course, one must be careful not to cap the
-charged protein termini which are properly resolved in the
-X-ray: these can be critical for function and structure.
-This "capping" tactic can also treat the termini of "gaps":
-regions of missing residues over the span of the peptide
-chain, usually missing loop regions due to lack of experi-
-mental density. While capping the ends of a loop instead of
-modeling the whole loop may be acceptable for MD runs
-of relatively short duration, over longer simulations there
-is a risk of having the protein around the capped ends
-of the missing loop gradually lose its structure. Even if a
-loop is unstructured (and therefore missing in the X-ray
-structure), its presence still affects the remainder of the
-structure and can provide stability, such as by holding the
-connecting residues in place, raising concerns if these are
-capped instead. Strategic use of a distance restraints during
-the simulations can mitigate this liability.
-Another possibility for missing loops is to close the ends
-with a short modeled loop of glycine residues of suﬃcient
-size to link the termini without introducing strain, but not
-necessarily of the full length of the missing loop. There are
-several reasons why this can be desirable. If the missing
-loop is particularly large (for instance >15 or 20 amino acids)
-accurately modeling its conformation could be challeng-
-ing and introduce more uncertainty and instability to MD
-simulations. Furthermore, if the missing loop is distal from
-the binding site and not expected to affect protein-ligand
-interactions, the replacement only needs to stabilize the
-termini and avoids the use of restraints.
-14 of 31
-A LiveCoMS Best Practices Guide
-However, all of these approaches are likely inferior to us-
-ing a good quality model of the missing loop.
-When multiple alternate models of a particular region of
-the protein are available, the experimental model indicates
-that this region potentially occupies two (or more) mutually
-exclusive conformations, but one must chosen for the model.
-Again, this selection can be a judgement call depending on
-where this region occurs relative to the active site: distal from
-the active site, the choice may be less critical; proximal re-
-quires more careful consideration. Higher occupancy for one
-of the alternate models could provide a reason to choose
-that particular model for the calculations. For critical or un-
-certain cases, we recommend repeating test calculations be-
-ginning from different models to analyze the sensitivity of the
-choice.
-Once the above issues have been resolved, there remains
-one more round of decision-making to select sidechain ro-
-tamers and protonation states. Protein X-ray experiments
-cannot resolve the positions of hydrogens, making protona-
-tion states an issue. Sidechain ﬂips are particularly relevant
-for HIS, ASN, and GLN, because these experiments cannot
-distinguish between different ﬁrst-row elements O, N, and C:
-they all produce similar density and thus are indistinguish-
-able. This means that even with good electron density the
-sidechain orientations of ASN and GLN can have either ori-
-entation, swapping O and N positions, and thus interchang-
-ing H-bond donors and acceptors. The two possible orien-
-tations of HIS sidechains effectively interchange N and C po-
-sitions in the ring. Surface exposed, these different orienta-
-tions may be of little consequence, but in the interior of the
-protein, proximal to the active site, or especially interacting
-with the ligand, this can be very important and can change
-patterns of hydrogen bond donors and acceptors. In princi-
-ple these orientations can be sampled over the course of the
-MD run but only if the trajectory is long enough for the sam-
-pling scheme to allow it. Considering that these orientations
-are experimentally ambiguous, it is a matter of judgement at
-setup time of whether these sidechains should be reoriented
-to make a more chemically reasonable model.
-Protonation of the protein model is generally straight-
-forward with one key exception: the ionization state of
-sidechains which may undergo environmental shifts, espe-
-cially HIS, ASP and GLU. Active site catalytic CYS is another
-case requiring care, and occasionally LYS can be deproto-
-nated in some circumstances. The two main determining
-factors are the pH of the biological milieu and the micro-
-scopic environment around the ionizable sidechain. In
-general, the ionization state of each residue is chosen during
-the setup of the protein and remains constant over the
-course of the simulation, even if the microenvironment
-changes. Note that a formal charge on the bound ligand can
-also affect the ionization state of nearby protein residues;
-this can be particularly problematic when the ligand charge
-alchemically changes over the course of a relative free
-energy calculation. Unlike side-chain rotamers, which may
-sample other orientations within a simulation, incorrect
-protonation state assignments cannot correct themselves
-without the use of constant-pH algorithms, that have not
-been routinely implemented within free energy calculations
-yet.
-There are a number of tools to automate the steps de-
-scribed in this section, notably the Protein Preparation Wiz-
-ard [112], the Molecular Operating Environment (MOE) [113],
-and Spruce [114]. We recommend manual inspections after
-applying these.
-5.1.2 Ligand preparation
-In the preparation of the ligand for simulation it is impor-
-tant to verify that the chemical structure is correct. While
-this is less problematic for structures generated from small-
-molecule sources, historically it has been a frequent problem
-for ligands taken from protein-ligand X-ray structures. Since
-X-ray structures lack protons and do not provide bond orders
-or other key information, if a PDB structure is used as input,
-some tool must be applied to supply this information, pre-
-senting a frequent source of failure (though, for structures
-in the RCSB, a ligand SMILES string can provide a more com-
-plete representation of the ligand’s identity).
-Once the underlying chemical structure, including bond
-orders and stereochemistry, is correct, the key issues are
-the tautomer and ionization states. As with the ionizable
-protein residue discussed above, the main factors are the
-macroscopic pKa of the ligand (for ionization states), the
-intrinsic relative stability of different tautomer states, and
-the perturbing effects of the active site micro-environment
-of the bound ligand. Compounding the complexity is if the
-unbound ligand (used as a reference state) would have
-a different tautomer/ionization state. These need to be
-carefully examined at setup to make sure there is comple-
-mentarity between the protein and ligand independently of
-the alchemical change between ligands, and then to ﬂag and
-resolve alchemical conversions between inconsistent states
-of the protein.
-5.1.3 Preparation of the complex
-Once protein and ligand have been prepared, the complex
-is assembled and solvated in water with counter-ions at an
-appropriate ionic strength, or embedded in membrane if the
-protein belongs to a membrane protein family. Membrane
-simulations should use an appropriate equilibrated mem-
-brane that matches experimental criteria of thickness and
-area per lipid as well as the appropriate counter ions. Once
-15 of 31
-A LiveCoMS Best Practices Guide
-the system box is constructed the step involves neutralizing
-the net charge on the protein-ligand complex, but beyond
-this a higher concentration of salt (usually sodium chloride)
-is often warranted to mimic the biological milieu being mod-
-eled; most assays are run in a signiﬁcant salt concentration
-(100 to 150 mM) to emulate biological environments. The
-salt concentration can strongly affect experimental binding
-aﬃnities, particularly with highly polar active sites.
-Once the above decisions have been made and the com-
-plete simulation system has been set up, it is important to let
-it relax and equilibrate at simulation temperature and pres-
-sure, which should mimic the assay conditions.
-5.2 Alchemical free energy calculations pose
-speciﬁc setup challenges
-There are an abundance of details that must be considered
-during the set up of any simulation and in particular for
-alchemical free energy calculations. These simulations
-require setting up an alchemical perturbation of the small
-molecules, but also require making a variety of assumptions
-with respect to the environment at the two endstates. In the
-following we will address all essential choices that need to
-be made for the setup. For a very detailed introduction to
-best practices for alchemical free energy calculations and a
-much broader discussion on choices for their setup please
-refer to the relevant best practices guide [19].
-5.2.1 Should I run an absolute or relative free energy
-calculation?
-There are two possible ways in which to run alchemical free
-energy calculations, which both provide free energies of bind-
-ing, but will require different routes for their setup. Relative
-free energy calculations provide free energies of binding with
-respect to a reference ligand, meaning that all compounds
-that are to be assessed for their binding aﬃnity should share
-a similar scaffold. In contrast, absolute free energies of bind-
-ing can be used for a set of ligands that do not share any
-commonalities, since the reference state for the free energy
-of binding is the standard state. This is probably the easiest
-deciding factor in terms of what kind of calculation to run. If
-the particular benchmark dataset contains ligands that form
-a congeneric series then a relative calculation is likely a bet-
-ter choice. Of course, congeneric ligand series can also be as-
-sessed using absolute free energy calculations, or it may be
-of interest to compare relative to absolute calculations for a
-given benchmark dataset.
-5.2.2 Alchemical pathway
-Choices in topology
-The choice of topology may be dictated by the simulation
-software of choice as not all common MD codes implement
-all topologies. The topology refers to the way in which
-a molecule A is changed to molecule B. Selecting either
-a dual or single topology approach is acceptable, unless
-performance of different topologies is assessed across the
-benchmark datasets. For more details on the different
-topology choices and implementations please refer to Mey
-et al. [19].
-Choices concerning λ
-In order to connect the initial and ﬁnal state of the alchem-
-ical free energy calculation an alchemical pathway must be
-chosen. This pathway is regulated by a variable ~
-λ, which at
-~
-λ = 0 represents molecule A and at ~
-λ = 1 molecule B. As
-free energy is a state function, the computed free energy is in
-principle independent on the pathway, but different choices
-in pathway can make the problem computationally more or
-less tractable. The simplest way to switch between molecule
-A and B is using a linear switching function for the potential
-energy of the form:
-U(~
-q,~
-λ) = (1 – ~
-λ)U0(~
-q) + ~
-λU1(~
-q), (5)
-where U is the potential energy ~
-q, is the set of positions and
-~
-λ the switching parameter. However, this typically approach
-fails when atoms are being inserted or deleted, requiring al-
-ternate choices, as reviewed elsewhere [19].
-Considerable care needs to be taken in selecting the
-switching function and spacing of so-called λ-windows.
-Common choices are, how many λ-windows should be
-used? What functional form should my switching function
-take? The concept of diﬃcult and easy transformation is
-more and more explored, but currently heuristics based on
-phase space overlap between neighboring λ-windows is the
-best way to assess how many windows should be simulated.
-This can for example be done by looking at the off-diagonals
-of an overlap matrix [115, 116]. Furthermore, the choice of
-simulation protocol will inﬂuence what switching function
-and how many λ-windows should be used.
-5.2.3 Choice of simulation protocol
-There are currently four common types of simulation proto-
-cols available, which are summarised in Figure 10, these are:
-Figure 10 (A) independent replicas, (B) replica exchange, (C)
-Single replica, self adjusted mixture modelling and (D) non-
-equilibrium switching. Particularly for (B) and (C) the choice
-of λ-spacing will be important, as in (B) it dictates the success
-of replicas exchanging between λs and in (C), often tightly
-spaced replicas allow for a best exploration. Independent
-replicas are not necessarily recommended, but are still com-
-monly implemented in software packages.
-16 of 31
-A LiveCoMS Best Practices Guide
-A
-B
-C
-D
-…
-λ1
-λ2
-λΝ
-…
-λN-1
-λ1
-λ2
-λΝ
-λN-1
-λ1
-λ2
-λΝ
-λN-1
-…
-…
-… … …
-…
-neq
-MD
-ns/µs
-https://link.springer.com/protocol/
-10.1007%2F978-1-4939-8736-8_2
-λ1
-λΝ
-…
-ns
-P(-W)
-P(W)
-Independent replicas
-Replica exchange
-Self-adjusted mixture sampling
-Non-equilibrium switching
-Figure 10. There are four simulations protocols available for gen-
-erating samples and all ~
-λ states. (A) Independent replicas run in
-parallel at different λs as indicated by differently colored arrows, (B)
-Replica exchange attempts after short simulation for each replica (C)
-Self-adjusted mixture sampling with a single replica exploring all of
-λ, (D) Non-equilibrium methods with equilibrium end-state simula-
-tion and frequent non-equlibrium switching between endstates. The
-clock icon is indicating the ﬂow of simulation time and the pair of dice
-indicate a Metropolis Hastings based trial move
-5.2.4 End-state environments
-When setting up a relative calculation it is important to be
-aware of the similarity of the ’end states’, i.e. of the conforma-
-tional, hydration, and electrostatic environment of ligand A
-and B. Many of these end-state issues can be addressed with
-inﬁnite sampling, but this may be impractical and should be
-considered when planning perturbations. Issues can arise, if
-there are two distinct bound conformations (different bind-
-ing modes) for ligand A and ligand B, it may be necessary to
-sample both binding modes, or extend the simulation time
-to allow for suﬃcient rearrangements. A similar issue that
-may be addressed with extended sampling times are scaf-
-fold changes that occur between ligand A and B. Different
-hydration patterns may also cause inaccuracies in computed
-binding free energies. The probably most diﬃcult issue to ad-
-dress are changes in charge states that occur either between
-the two ligands or may even affect the protein depending on
-the type of ligand binding.
-5.2.5 Perturbation maps for relative calculations
-In relative free energy calculations a network of perturba-
-tions between ligands needs to be constructed. The choice
-of which relative calculations to carry out is vast and can have
-a substantial effect on the accuracy of the results. The way
-in which different ligands are connected by relative alchem-
-ical calculations is called a perturbation map. In particular
-for benchmarking free energy methods, perturbation maps
-should be held ﬁxed for a given benchmark set, unless the
-goal is to test different approaches for setting up perturba-
-tion maps. In this way each edge of the perturbation map
-will be maintained across subsequent tests and plots created
-during the analysis phase later will be comparable.
-The simplest way of connecting ligands in a perturbation
-map is in a star shape, with each connected to a central crys-
-tal structure ligand, with the assumption that all ligands of
-the congeneric series will bind in the same binding mode
-as the available crystal – which may even be conﬁrmed by
-other crystals, see Figure 11 (A), there are different methods
-available for creating interconnected perturbation maps us-
-ing LOMAP [117] or Diffnet [118], as well as some work to-
-wards assessing trade off in terms of what network struc-
-ture will actually provide most reliable estimates with as lit-
-tle computational cost as possible [118, 119]. To date, there
-are no rigorous guidelines to prioritise perturbations, but we
-recommend avoiding diﬃcult perturbations such as those
-mentioned above involving ring breaking, changes in linker
-length, changes in charge, and where possible attempt to
-maximise structural similarity in 2D (via the maximum com-
-mon substructure) and 3D.
-17 of 31
-A LiveCoMS Best Practices Guide
-A
-B
-= crystal
-Star shaped perturbation map
-Multi-connection perturbation map
-cycle closure
-Figure 11. Typically either star shaped perturbation maps or
-multi-connected perturbation maps are used in relative calcula-
-tions. (A) The star map will have a central ligand, of which the crys-
-tal structure is known and all other ligands distributed in a star. (B)
-A multi-connected map introduces redundancies into the network,
-allows for larger perturbations through multiple connections and al-
-lows assessment of robustness of calculations. The diamond and
-green shading indicates the crystal structure.
-6 How to analyse benchmark free
-energy simulations properly
-6.1 Measuring the success of free energy
-calculations requires careful analysis
-Reliable reporting and analysis of the success of calculations
-is vital for the validation and benchmarking of free energy
-methods, as well as the dissemination of published results.
-The reporting and analysis falls into two major categories – vi-
-sualization of results, and statistical analysis. Here, we make
-recommendations for both categories.
-6.1.1 Plots of free energy results should adhere to
-certain common standards
-Figures plotting experimental vs. calculated results are a very
-useful way to gauge the success of a method or a set of cal-
-culations. We recommend several key steps to ensure these
-plots are valuable, communicate accurate information, and
-are informative and readable. Experimental values (on the
-x-axis) should be converted into the same units as the free
-energy results (on the y-axis), and axes should use the same
-scale. One common issue with plotting free energy results
-is that different scales are used on the different axes, which
-can change the appearance of the results, as illustrated in
-Figure 12, where changes in the axis and ratios can make the
-data look more correlated.
-Error bars can be very helpful in understanding the un-
-certainty in the data – both for calculated and experimental
-values, and thus both experimental and computational
-error bars should always be included in visualizations of the
-data. Different sources of error might be used to quantify
-this, whether an uncertainty directly from a free energy
-estimator, variance between repeats or a hysteresis-type
-analysis. If the experimental errors are not reported, the
-experimental error can be estimated as e.g. 0.64 kcal mol–1
-(see Section 4.5.3). How the error bars have been calculated
-should be reported in the ﬁgure caption.
-Additionally, experimental values which were not actually
-measured (e.g. values resulting from a measured KD value
-which only has experimental bounds, such as > 5 µM) should
-not be plotted or should be clearly indicated by different
-styles and symbols. Such data should not be included in the
-accuracy or correlation statistics, see discussion in Section
-6.1.2. However, confusion matrices and reporting sensi-
-tivity, speciﬁcity, and precision can be useful for asserting
-a models’ strength at classifying ligands as binders and
-non-binders, as demonstrated in [120].
-Finally, plots of results across multiple targets should typ-
-ically be shown as one ﬁgure per target. Differences in the
-success of free energy methods can vary widely between tar-
-gets, and combining the data across targets onto a single plot
-18 of 31
-A LiveCoMS Best Practices Guide
-Expt. ΔΔG / kcal mol-1
-Expt. ΔΔG / kcal mol-1
-Expt. ΔΔG / kcal mol-1
-Calc.
-ΔΔG
-/
-kcal
-mol
--1 A B C
-Figure 12. Changes to the plotting style can change the appearance of the data. The above three ﬁgures illustrates the same toy data.
-(A) shows the data correctly, with the same units (which are labelled) and scales on both axes. (B) shows the same data, however the limits
-on the y-axis have been changed such that the scales is not consistent. (C) is also not consistent, but this is due to the scale of the plot, rather
-than the limits.
-can obscure actual performance on any given target. Addi-
-tionally, when considering absolute free energies, the aﬃnity
-ranges between targets may vary, which may result in analy-
-sis picking up the correlation between targets and their aﬃni-
-ties, rather than the free energy methods ability to differen-
-tiate aﬃnities for a particular target. One exception to this is
-if free energy calculations were being performed for selectiv-
-ity analysis of similar proteins, whereby the targets are not
-independent parameters [121].
-6.1.2 Consistent reporting of statistics, and
-understanding their limitations is vital for
-measuring success
-Free energy calculations fall into two categories: absolute
-and relative. Depending on which type of result are being
-analyzed — absolute or relative — different statistics will be
-appropriate. Accuracy statistics, such as root mean squared
-error (RMSE) and mean unsigned errors (MUE) provide infor-
-mation as to how well the computational method recapitu-
-lates the experimental results, and allow for a ’best guess’ as
-to how far the computation prediction of new ligands’ aﬃni-
-ties may be from experiment. Correlation statistics, such as
-R2
-, Kendall tau (τ) and Spearman’s rank (ρ) indicate how well
-a method does at ordering the results, at identifying the best
-and worst ligand in a set, which in an everyday drug design
-application, where these models may be used to make pur-
-chasing decisions or for synthesis planning, may be a more
-useful metric than accuracy. However, these statistics can
-have biases when the number of datapoints (i.e. ligands or
-edges) are low, as discussed in Section 4.5.
-One mistake that is commonly made, is the use of
-correlation-type statistics for the benchmarking of relative
-free energy calculations. As relative calculations are pairwise
-comparisons between ligands, the direction, or sign of the
-calculation is arbitrary. If a ligand A is 2 kcal mol–1
-higher
-aﬃnity than ligand B, this could equally be plotted and
-reported as ligand B being –2 kcal mol–1
-lower aﬃnity than
-ligand A. The consequence of the possible inversion of
-data points can shift the correlation statistics, despite the
-underlying data being consistent. The same set of data
-points can give a range of statistical results depending
-on arbitrary sign-ﬂips in the dataset, where there are 2N
-2
-possible permutations for a set of N relative free energies.
-While the size of this issue can be affected by the number,
-range and accuracy of the data points, this can still be
-problematic, as illustrated in Figure 13. If a clear protocol
-is used, such as mapping all of the results to either be all
-positive or all negative, or plotting both A → B and B → A
-then the statistics quoted will be reproducible, however it
-is our recommendation to avoid correlation statistics for
-relative free energy results.
-Additionally, correlation statistics, which are appropriate
-for reporting absolute free energy results, can be sensitive to
-the number of data points, and the range that they cover, as
-illustrated in Section 4.5, Figure 8. This can be exacerbated
-by experimental uncertainties, which is covered in Section
-4.5. Some statistical measures are available that attempt
-to capture the inherent experimental range in the analysis,
-such as GRAM [122] and relative root-mean-squared error
-(RRMSE). As the number, dynamic range, and experimental
-19 of 31
-A LiveCoMS Best Practices Guide
-Figure 13. Using correlation statistics with relative free energy
-results are unreliable. (A) The original set of N datapoints of rela-
-tive free energy results yields speciﬁc statistics for R2, Kendall τ and
-ρ. However, there are 2N/2 possible permutations in the sign for the
-datapoints, where the changes in sign result in a range of possible
-statistics from the same underlying data. (B) The distribution of pos-
-sible values (210/2 = 512) for R2, Kendall τ and ρ are illustrated in
-the violin plot. In the following plots ((C)-(H)), the order of permu-
-tations are illustrated that result in the lowest (red: (C), (E) and (G))
-and highest (green: plots (D), (F) and (H)) correlation statistic. The
-considered statistics are R2 ((C) and (D)), Kendall τ ((E) and (F)) and ρ
-((G) and (H)). This illustrates how better correlation statistics for the
-same relative free energy results can be achieved by simply using
-different deﬁnitions of relative ’directions’ for various edges. For this
-reason, best practise is to avoid reporting correlation statistics for
-the reporting of relative free energy calculations, and using accuracy
-statistics such as RMSE and MUE instead.
-uncertainty can all limit the maximum achievable correlation
-and conﬁdence intervals, it is worth assessing these values
-a priori when deciding if a particular protein-ligand dataset
-is appropriate for a benchmark (see Section 4.5).
-6.1.3 Bootstrapping is a reliable method for
-determining conﬁdence intervals for statistics
-While statistics are a useful measure of the performance of
-a method, it is also important to understand how accurate
-those measures are themselves. Is a MUE of 1.2 kcal mol–1
-much better than 1.3 kcal mol–1
-? Would the performance be
-likely to change on the addition of new ligands in the series?
-Is the R2
-being heavily leveraged by a handful of outliers? Per-
-forming bootstrap analysis allows for conﬁdence intervals to
-be placed on the statistics, and for these questions to be an-
-swered with some conﬁdence. A MUE of 1.2 (0.6) kcal mol–1
-is not statistically different than a MUE of 1.3 (0.5) kcal mol–1
-.
-Bootstrap analysis provides a measure of accuracy to the
-statistics through random sampling with replacement. Boot-
-strapping should be performed on the data used to compute
-the statistic reported — for relative free energies this illus-
-trate how sensitive the statistics are to the edges chosen, and
-for absolute free energies: the sensitivity to the ligands in the
-set. The statistical error for each data point should be incor-
-porated in the bootstrap estimate, where bootstrapping is
-performed by taking a sample from each data point using
-its associated variance. It is best practise to report the boot-
-strapped statistical errors alongside data as 95% conﬁdence
-intervals to appropriately evaluate the performance of a par-
-ticular method, and identify if improvements or changes to a
-model are statistically signiﬁcant.
-7 Key learnings
-7.1 Analysis tools
-We developed a python-based analysis package (h t tp :
-//github.com/openforcefield/arsenic) to compute statistics
-from the results of analyzing binding free energy calcula-
-tions. If statistics from different approaches and sets of
-calculations are calculated with this package, users can
-ensure that they are comparing exactly the same statistics
-calculated in the same way. Results become invariant to
-different software and deﬁnitions of metrics, especially
-with respect to error or conﬁdence interval calculations.
-We also see this as a ﬁrst step towards a containerized
-benchmarking of methods as is planned for the SAMPL
-challenges [50] There, users will ultimately compare their
-methods by submissions of containerized methods instead
-of independently calculated predictions. Thus, all methods
-will use exactly the same input and their results will be
-analyzed in the same way.
-20 of 31
-A LiveCoMS Best Practices Guide
-For the evaluation of X-ray structure quality, we also
-provide scripts to calculate Iridium scores and classiﬁcations.
-The Iridium score yields an objective evaluation of the
-structure.
-7.2 Benchmark set
-We assembled a benchmark set using data from prior bench-
-mark studies of relative binding free energy calculations. [44,
-72, 123] During evaluations of the given data (Table 1), we
-found quality defects which render parts of the data not ap-
-propriate for benchmarking according to our established cri-
-teria.
-We found deﬁcits in the dataset regarding all our estab-
-lished criteria. There are not trustworthy protein structures
-(e.g. the PDB 2GMX of Jnk1, Section 4.4), too few data points
-(e.g. only eight ligands of galectin, 4.5), or narrow dynamic
-ranges (e.g. 0.9 kcal mol–1
-in BACE_P2 4.5). We tagged the
-protein targets as deprecated which did not meet a proposed
-set of minimal criteria (see our Checklist "Minimal require-
-ments for a dataset"). After improvement by addition of new
-data (such as binding data for additional ligands or binding
-data spanning a broader dynamic range, availability/use of
-higher quality protein structures, etc.), these targets could
-potentially be added to a benchmark set again.
-We acknowledge that the proposed benchmark set does
-not meet the ideal requirements we established. To date,
-these requirements are challenging to meet due to scarce
-high-quality experimental data, especially after applying all
-the criteria we lay out. Experimental aﬃnities measurements
-from a single source often do not cover dynamic ranges >
-5 kcal mol–1
-and much larger dynamic ranges become unre-
-alistic. Large numbers of single source aﬃnity data points
-are rarely available and additionally impose the practical lim-
-itations of large computational resources for benchmarking
-calculations. As a chain is only as strong as its weakest link,
-the above points need to be paired with high-quality struc-
-tural data and a good preparation of the simulation input.
-We welcome community contributions and assistance to
-build a benchmarking dataset that will eventually fulﬁll our
-high standards.
-8 Recommendations
-Methods for binding free energy calculations have been
-continuously developed over the last decades and are
-increasingly used both in academic research, as well as
-pharmaceutical industry applications in structure based
-drug discovery [25, 30, 44], making their validation and
-benchmarking particularly crucial.
-In order to reliably benchmark methods, we provide
-best practices recommendations for setting up benchmark
-calculations. This setup begins with the appropriate choice
-of experimental inputs and data, which includes the choice
-of target(s) and ligands (Section 4). We require both struc-
-tural information (Section 4.4) and aﬃnity data (Section 4.5.
-This input information needs to be adequately prepared to
-generate simulation inputs (Section 5.1) before the systems
-are simulated with a speciﬁc choice of software, calculation
-setup, and simulation protocol. Here, we made a variety of
-recommendations as to how to select and prepare systems
-for benchmarking.
-Benchmarking also requires analysis and comparison
-with experiment, thus we also recommend standard report-
-ing procedures (Section 6). These provide a mechanism to
-assess the accuracy of the calculations, present the results
-and compare to calculations done with other methods.
-These standard procedures will make it far easier to com-
-pare results across studies done by different researchers or
-using different tools.
-Our recommendations are exempliﬁed in publicly avail-
-able tools for the analysis of calculations (http://github.com
-/openforcefield/arsenic) and a living protein-ligand benchmark
-dataset (http://github.com/openforcefield/protein-ligand-
-benchmark). This set is living in the sense that we expect
-it to be subject to ongoing updates, curation, and improve-
-ment – both by ourselves and by the community, and we wel-
-come community input via the GitHub issue tracker at http:
-//github.com/openforcefield/protein-ligand-benchmark/issues.
-Additionally, further curation is clearly necessary as our rec-
-ommendations are in part not fulﬁlled in the initial version
-of this benchmark dataset. Partially,this is because we have
-begun from previously used benchmark sets and are begin-
-ning the curation process, but also because it is diﬃcult to
-ﬁnd large and accurate experimental datasets meeting all the
-desired characteristics. Thus, in our initial set, the relevant
-issues are annotated and we expect the benchmark set to
-evolve to better meet the recommendations given here.
-We hope that our recommended best practices will be
-adopted and where necessary improved by the community.
-We believe that these best practices will ultimately help ad-
-vance the accuracy, applicability, and availability of binding
-free energy calculations.
-9 Checklists
-21 of 31
-A LiveCoMS Best Practices Guide
-CHOOSE SUITABLE PROTEIN STRUCTURES FOR BENCHMARKING
-Find experimental structural data: Section 4.4
-Global criteria
- Select the best available structure using DPI or coordinate error (< 0.7)
- Ensure experimental data is available, i.e. electron/neutron density or cyro EM map
- Ensure the reported Rfree < 0.45 when resolution ≤ 3.5 Å
- Ensure that the reported difference between R and Rfree ≤ 0.05
-Local criteria
- Determine if there are crystal contacts and assess if they effect protein conformation. Select structures with no crystal
-packing atoms within 6 Å of any ligand atom.
- Conﬁrm that the ligand has at least partial density (check visually or real space correlation coeﬃcient (RSCC) > 0.90)
-and the density is adequate to conﬁrm ligand presence and binding mode
- Ensure that all ligand and active site atoms have occupancy >0.80
- Identify active site atoms with partial density and conﬁrm these are acceptable and not key contacts
- Conﬁrm active site crystallographic waters have density and no difference density
- Identify any alternate conformations for ligand and active site atoms. Select the alternate conformation with the high-
-est occupancy and fewest clashes.
- Conﬁrm that the ligand is not covalently bound as deposited, and is also not likely to have reacted to become one
- Check for any missing loops or residues and side chain atoms in the structure and conﬁrm these are not near the
-binding site/not key for the study
-AFFINITY DATA
-Find experimental aﬃnity data: Section 4.5
- Select single source data.
- Extract binding data from original source and convert carefully.
- Remove data points outside detection limits.
- Ideally data should be from biophysical assays. With functional assays, more care must be taken.
- Assess dataset quality in terms of number of datapoints, experimental aﬃnity range and experimental error to know
-the maximally achievable precision.
-22 of 31
-A LiveCoMS Best Practices Guide
-PREPARE THE SYSTEM WITH CARE BECAUSE FAILURES HERE ARE CRUCIAL
-Prepare structural data for simulation: Section 5.1
- Assess which domains of the X-ray structure are needed and retain domains present in the experimental study, unless
-it is known that further simpliﬁcations can be made without affecting accuracy.
- Check other components (cofactors, crystallographic waters, other ligands, PTMs) of the structure and make sure you
-include everything which is key for the study.
- Split the protein and ligand structures to prepare separately.
-Protein preparation
- Add caps if the structure’s termini are not resolved.
- If possible, model missing loops, if loops are too long (> 15 to 20 residues) or too mobile, consider capping the ends
-and adding restraints, or modeling a short glycine loop that links both ends. These must not be in the binding site.
- Inspect for side chain ﬂips of side chains which can ﬁt density similarly when reoriented (HIS, ASN, GLN); conﬁrm that
-the orientations chosen lead to preferred interactions with the ligand. Evaluate alternate placements if necessary.
- Check the protonation states of the ligand and receptor, again checking in the context of the interactions that would
-be formed with the ligand.
-Ligand preparation
- Ensure that the chemical structure is correct (bond orders, stereochemistry).
- Align the ligand series based on conformations of (X-ray) reference compound(s).
- Check tautomer and ionization states. Determine whether multiple possibilities need to be considered.
- Check whether alternate rotamers may need to be considered after alignment to reference compound(s).
-System preparation
- Assemble the protein, ligand and cofactors.
- Without removing crystallographic waters and ions, solvate the complex or embed it in a membrane.
- Add ions; use an appropriate salt concentration (sodium and chloride ions) to model the assay.
- Equilibrate the system.
-CAREFULLY SELECT APPROPRIATE SIMULATION DETAILS
-Choose simulation setup: Section 5.2
- Choose absolute vs. relative calculations.
- Choose topology approach and alchemical pathway.
- Choose sampling protocol.
- Plan a perturbation map if calculations are relative.
-23 of 31
-A LiveCoMS Best Practices Guide
-PRESENT GRAPHS OF RESULTS IN A CONSISTENT MANNER
-Presenting results in an appropriate format: Section 6.1.1
- Clearly label the data with titles, legends, and captions.
- Plot results with the dependent variable (calculated) on y-axis, and the independent variable (experimental) on the
-x-axis.
- Ensure that the data are reported in the same units on both axes, and labelled. The scale of the axis in real space
-should be consistent, such that a 1 cm change on the x-axis corresponds to the same change in aﬃnity to 1 cm on the
-y-axis.
- Plot only one target per plot, unless speciﬁcally looking at selectivity.
-USE CAREFUL STATISTICAL ANALYSIS TO QUANTIFY PERFORMANCE
-Quantifying the success of a method: Section 6.1.2
- Identify which metrics are appropriate for your method. Statistics that measure accuracy, such as RMSE and MUE, are
-commonplace; correlation statistics are appropriate for absolute free energies, but not relative free energies.
- Bootstrap statistics to provide conﬁdence intervals.
- Provide conﬁdence intervals for all reported values and avoid overinterpreting results given these intervals.
-MINIMAL AND IDEAL REQUIREMENTS FOR A DATASET
-Summary of the most important points from the checklists above and deﬁnition of minimal as well as ideal
-(boldface) requirements for a benchmark set.
- Experimental structure should be Iridium classiﬁed as at least MT (ideally HT).
- Single source experimental activities (ideally from a biophysical assay).
- At least 16 (ideally 25) data points/ligands.
- A dynamic range of at least > 3.0 kcal mol–1
-( ideally > 5 kcal mol–1
-).
- Well prepared structures (charge and tautomeric states) checked by at least one other experienced person (ideally by
-the community).
-24 of 31
-A LiveCoMS Best Practices Guide
-10 Author Contributions
-CIB contributed to the text in the Section 5.1 Structure
-preparation.
-HEBM wrote Sections 6 How to analyse benchmark free en-
-ergy simulations properly and 7.1 Analysis tools, created the
-ﬁgures therein, and contributed to Section 4.5 Experimental
-binding aﬃnity data.
-JDC helped in the manuscript design and edited the ﬁnal
-manuscript.
-DFH coordinated the manuscript preparation, wrote the
-Section 4.4 Structural Data and 8 Recommendations, con-
-tributed to most other sections.
-ASJSM wrote Section 5.2 Alchemical free energy calculations
-pose speciﬁc setup challenges and created Figure 11, Fig-
-ure 10, updated Figure 9 and helped edit the manuscript.
-DLM helped outline some of the sections, edited many of
-the sections and contributed to the text in several sections.
-LPB wrote Section 5.1 Structure preparation.
-CS wrote Section 4.5 Experimental binding aﬃnity data and
-created Figure 8.
-GT wrote Sections 2 Introduction and 4 Dataset selection,
-edited the ﬁnal manuscript.
-GLW generated the data for Table 1 and contributed to the
-text in the Section 4.4 Structural Data.
-For a more detailed description of author contributions,
-see the GitHub issue tracking and changelog at https:
-//github.com/openforcefield/FE-Benchmarks-Best-Practices.
-11 Other Contributions
-We want to thank the authors of the following publications
-for establishing the initial protein-ligand benchmark sets:
-Wang et al.[72], Perez-Benito et al.[124], Gapsys et al.[123]
-and Schindler et al.[44].
-For a more detailed description of contributions from the
-community and others, see the GitHub issue tracking and
-changelog at https://github.com/openforcefield/FE-Benc
-hmarks-Best-Practices.
-12 Potentially Conﬂicting Interests
-DLM serves on the scientiﬁc advisory board for OpenEye Sci-
-entiﬁc Software and is an Open Science Fellow with Silicon
-Therapeutics. ASJSM is a consultant for Exscientia. JDC is a
-current member of the Scientiﬁc Advisory Board of OpenEye
-Scientiﬁc Software and a consultant to Foresite Laboratories.
-HEBM is employed by MSD.
-13 Funding Information
-JDC acknowledges support from NIH grant P30 CA008748.
-We appreciate the ﬁnancial support of the Open Force
-Field Consortium (https://openforcef ield.org), and the
-National Institutes of Health (NIGMS R01GM132386 and
-R01GM108889). HEBM acknowledges support from a Molec-
-ular Sciences Software Institute Investment Fellowship and
-Relay Therapeutics.
-Author Information
-ORCID:
-David F. Hahn: 0000-0003-2830-6880
-Christopher I. Bayly: 0000-0001-9145-6457
-Hannah E. Bruce Macdonald: 0000-0002-5562-6866
-John D. Chodera: 0000-0003-0542-119X
-Antonia S. J. S. Mey: 0000-0001-7512-5252
-David L. Mobley: 0000-0002-1083-5533
-Laura Perez Benito: 0000-0001-9607-9048
-Christina E. M. Schindler: 0000-0002-8980-048X
-Gary Tresadern: 0000-0002-4801-1644
-Gregory L. Warren: 0000-0003-4017-0162
+Ottawa Hospital Research Institute and University of Ottawa, Ottawa,
+Canada. 2
+Queen’s University Belfast, Belfast, Ireland. 3
+National Health and
+Medical Research Council, Canberra, Australia. 4
+London School of Hygiene
+and Tropical Medicine, London, UK. 5
+Southern California Evidence-based
+Practice Center, Santa Monica, CA, USA. 6
+Centre for Reviews and
+Dissemination, University of York, York, UK.
+Received: 27 August 2014 Accepted: 26 November 2014
+Published: 1 January 2015
 References
-[1] Mobley DL, Gilson MK. Predicting Binding Free Energies: Fron-
-tiers and Benchmarks. Annual Review of Biophysics. 2017;
-46(1):531–558. https://doi.org/10.1146/annurev-biophys-
-070816-033654.
-[2] van Gunsteren WF, Daura X, Hansen N, Mark AE, Oost-
-enbrink C, Riniker S, Smith LJ. Validation of Molecu-
-lar Simulation: An Overview of Issues. Angewandte
-Chemie International Edition. 2018; 57(4):884–902.
-https://doi.org/10.1002/anie.201702945.
-[3] Tsai HC, Tao Y, Lee TS, Merz KM, York DM. Validation
-of Free Energy Methods in AMBER. Journal of Chem-
-ical Information and Modeling. 2020; 60(11):5296–5300.
-https://doi.org/10.1021/acs.jcim.0c00285.
-[4] Abel R, Wang L, Mobley DL, Friesner RA. A Critical Review
-of Validation, Blind Testing, and Real- World Use of Alchem-
-ical Protein-Ligand Binding Free Energy Calculations. Cur-
-rent Topics in Medicinal Chemistry. 2017; 17(23):2577–2585.
-https://doi.org/10.2174/1568026617666170414142131.
-[5] Abel R, Manas ES, Friesner RA, Farid RS, Wang L. Modeling the
-Value of Predictive Aﬃnity Scoring in Preclinical Drug Discov-
-ery. Current Opinion in Structural Biology. 2018; 52:103–110.
-https://doi.org/10.1016/j.sbi.2018.09.002.
-[6] Cournia Z, Allen B, Sherman W. Relative Binding Free
-Energy Calculations in Drug Discovery: Recent Ad-
-vances and Practical Considerations. Journal of Chemi-
-cal Information and Modeling. 2017; 57(12):2911–2937.
-https://doi.org/10.1021/acs.jcim.7b00564.
-[7] Zwanzig RW. High-Temperature Equation of State
-by a Perturbation Method. I. Nonpolar Gases. The
-Journal of Chemical Physics. 1954; 22(8):1420–1426.
-https://doi.org/10.1063/1.1740409.
-25 of 31
-A LiveCoMS Best Practices Guide
-[8] Bennett CH. Eﬃcient Estimation of Free Energy Differ-
-ences from Monte Carlo Data. Journal of Computational
-Physics. 1976; 22(2):245–268. https://doi.org/10.1016/0021-
-9991(76)90078-4.
-[9] Kirkwood JG. Quantum Statistics of Almost Classi-
-cal Assemblies. Physical Review. 1933; 44(1):31–37.
-https://doi.org/10.1103/PhysRev.44.31.
-[10] Kirkwood JG. Quantum Statistics of Almost Classi-
-cal Assemblies. Physical Review. 1934; 45(2):116–117.
-https://doi.org/10.1103/PhysRev.45.116.
-[11] Kirkwood JG. Statistical Mechanics of Fluid Mixtures.
-The Journal of Chemical Physics. 1935; 3(5):300–313.
-https://doi.org/10.1063/1.1749657.
-[12] Jorgensen WL, Ravimohan C. Monte Carlo Simula-
-tion of Differences in Free Energies of Hydration. The
-Journal of Chemical Physics. 1985; 83(6):3050–3054.
-https://doi.org/10.1063/1.449208.
-[13] Straatsma TP, Berendsen HJC, Postma JPM. Free Energy of
-Hydrophobic Hydration: A Molecular Dynamics Study of No-
-ble Gases in Water. The Journal of Chemical Physics. 1986;
-85(11):6720–6727. https://doi.org/10.1063/1.451846.
-[14] Lybrand TP, McCammon JA, Wipff G. Theoretical Calculation
-of Relative Binding Aﬃnity in Host-Guest Systems. Proceed-
-ings of the National Academy of Sciences. 1986; 83(4):833–835.
-https://doi.org/10.1073/pnas.83.4.833.
-[15] Merz KM, Kollman PA. Free Energy Perturbation Simula-
-tions of the Inhibition of Thermolysin: Prediction of the
-Free Energy of Binding of a New Inhibitor. Journal of
-the American Chemical Society. 1989; 111(15):5649–5658.
-https://doi.org/10.1021/ja00197a022.
-[16] Pearlman DA, Connelly PR. Determination of the
-Differential Effects of Hydrogen Bonding and Wa-
-ter Release on the Binding of FK506 to Native and
-Tyr82→Phe82 FKBP-12 Proteins Using Free Energy Simu-
-lations. Journal of Molecular Biology. 1995; 248(3):696–717.
-https://doi.org/10.1006/jmbi.1995.0252.
-[17] Chodera JD, Mobley DL, Shirts MR, Dixon RW, Bran-
-son K, Pande VS. Alchemical Free Energy Methods
-for Drug Discovery: Progress and Challenges. Cur-
-rent Opinion in Structural Biology. 2011; 21(2):150–160.
-https://doi.org/10.1016/j.sbi.2011.01.011.
-[18] Mobley DL, Klimovich PV. Perspective: Alchemical
-Free Energy Calculations for Drug Discovery. The
-Journal of Chemical Physics. 2012; 137(23):230901.
-https://doi.org/10.1063/1.4769292.
-[19] Mey ASJS, Allen BK, Bruce Macdonald HE, Chodera JD, Hahn
-DF, Kuhn M, Michel J, Mobley DL, Naden LN, Prasad S, Rizzi
-A, Scheen J, Shirts MR, Tresadern G, Xu H. Best Practices
-for Alchemical Free Energy Calculations [Article v1.0]. Liv-
-ing Journal of Computational Molecular Science. 2020; 2(1).
-https://doi.org/10.33011/livecoms.2.1.18378.
-[20] Wang L, Wu Y, Deng Y, Kim B, Pierce L, Krilov G, Lupyan D,
-Robinson S, Dahlgren MK, Greenwood J, Romero DL, Masse C,
-Knight JL, Steinbrecher T, Beuming T, Damm W, Harder E, Sher-
-man W, Brewer M, Wester R, et al. Accurate and Reliable Pre-
-diction of Relative Ligand Binding Potency in Prospective Drug
-Discovery by Way of a Modern Free-Energy Calculation Proto-
-col and Force Field. Journal of the American Chemical Society.
-2015; 137(7):2695–2703. https://doi.org/10.1021/ja512751q.
-[21] Harder E, Damm W, Maple J, Wu C, Reboul M, Xiang JY, Wang L,
-Lupyan D, Dahlgren MK, Knight JL, Kaus JW, Cerutti DS, Krilov
-G, Jorgensen WL, Abel R, Friesner RA. OPLS3: A Force Field
-Providing Broad Coverage of Drug-like Small Molecules and
-Proteins. Journal of Chemical Theory and Computation. 2016;
-12(1):281–296. https://doi.org/10.1021/acs.jctc.5b00864.
-[22] Roos K, Wu C, Damm W, Reboul M, Stevenson JM, Lu
-C, Dahlgren MK, Mondal S, Chen W, Wang L, Abel R,
-Friesner RA, Harder ED. OPLS3e: Extending Force Field
-Coverage for Drug-Like Small Molecules. Journal of
-Chemical Theory and Computation. 2019; 15(3):1863–1874.
-https://doi.org/10.1021/acs.jctc.8b01026.
-[23] Song LF, Lee TS, Zhu C, York DM, Merz KM. Using AM-
-BER18 for Relative Free Energy Calculations. Journal of
-Chemical Information and Modeling. 2019; 59(7):3128–3135.
-https://doi.org/10.1021/acs.jcim.9b00105.
-[24] Kuhn M, Firth-Clark S, Tosco P, Mey ASJS, Mackey
-M, Michel J. Assessment of Binding Aﬃnity via Al-
-chemical Free-Energy Calculations. Journal of Chemi-
-cal Information and Modeling. 2020; 60(6):3120–3130.
-https://doi.org/10.1021/acs.jcim.0c00165.
-[25] Gapsys V, Pérez-Benito L, Aldeghi M, Seeliger D, van Vli-
-jmen H, Tresadern G, de Groot BL. Large Scale Relative
-Protein Ligand Binding Aﬃnities Using Non-Equilibrium
-Alchemy. Chemical Science. 2020; 11(4):1140–1152.
-https://doi.org/10.1039/C9SC03754C.
-[26] Jiménez J, Škalič M, Martínez-Rosell G, De Fabritiis G.
-KDEEP : Protein–Ligand Absolute Binding Aﬃnity Predic-
-tion via 3D-Convolutional Neural Networks. Journal of
-Chemical Information and Modeling. 2018; 58(2):287–296.
-https://doi.org/10.1021/acs.jcim.7b00650.
-[27] Jiménez-Luna J, Pérez-Benito L, Martínez-Rosell G, Scia-
-bola S, Torella R, Tresadern G, De Fabritiis G. DeltaDelta
-Neural Networks for Lead Optimization of Small Molecule
-Potency. Chemical Science. 2019; 10(47):10911–10918.
-https://doi.org/10.1039/C9SC04606B.
-[28] Aldeghi M, Ross GA, Bodkin MJ, Essex JW, Knapp S,
-Biggin PC. Large-Scale Analysis of Water Stability in
-Bromodomain Binding Pockets with Grand Canonical
-Monte Carlo. Communications Chemistry. 2018; 1(1):19.
-https://doi.org/10.1038/s42004-018-0019-x.
-[29] Cournia Z, Allen BK, Beuming T, Pearlman DA, Radak BK, Sher-
-man W. Rigorous Free Energy Simulations in Virtual Screen-
-ing. Journal of Chemical Information and Modeling. 2020; p.
-acs.jcim.0c00116. https://doi.org/10.1021/acs.jcim.0c00116.
-26 of 31
-A LiveCoMS Best Practices Guide
-[30] Sherborne B, Shanmugasundaram V, Cheng AC, Christ CD,
-DesJarlais RL, Duca JS, Lewis RA, Loughney DA, Manas
-ES, McGaughey GB, Peishoff CE, van Vlijmen H. Col-
-laborating to Improve the Use of Free-Energy and Other
-Quantitative Methods in Drug Discovery. Journal of
-Computer-Aided Molecular Design. 2016; 30(12):1139–1141.
-https://doi.org/10.1007/s10822-016-9996-y.
-[31] Wang L, Deng Y, Wu Y, Kim B, LeBard DN, Wandschneider
-D, Beachy M, Friesner RA, Abel R. Accurate Modeling of
-Scaffold Hopping Transformations in Drug Discovery. Jour-
-nal of Chemical Theory and Computation. 2017; 13(1):42–54.
-https://doi.org/10.1021/acs.jctc.6b00991.
-[32] Liu S, Wang L, Mobley DL. Is Ring Breaking Feasible in
-Relative Binding Free Energy Calculations? Journal of
-Chemical Information and Modeling. 2015; 55(4):727–735.
-https://doi.org/10.1021/acs.jcim.5b00057.
-[33] Michel J, Tirado-Rives J, Jorgensen WL. Energetics of
-Displacing Water Molecules from Protein Binding Sites:
-Consequences for Ligand Optimization. Journal of the
-American Chemical Society. 2009; 131(42):15403–15411.
-https://doi.org/10.1021/ja906058w.
-[34] Bruce Macdonald HE, Cave-Ayland C, Ross GA, Essex JW.
-Ligand Binding Free Energies with Adaptive Water Net-
-works: Two-Dimensional Grand Canonical Alchemical Pertur-
-bations. Journal of Chemical Theory and Computation. 2018;
-14(12):6586–6597. https://doi.org/10.1021/acs.jctc.8b00614.
-[35] Ross GA, Russell E, Deng Y, Lu C, Harder ED, Abel R,
-Wang L. Enhancing Water Sampling in Free Energy Cal-
-culations with Grand Canonical Monte Carlo. Journal of
-Chemical Theory and Computation. 2020; 16(10):6061–6076.
-https://doi.org/10.1021/acs.jctc.0c00660.
-[36] Ben-Shalom IY, Lin Z, Radak BK, Lin C, Sherman W, Gilson
-MK. Accounting for the Central Role of Interfacial Water in
-Protein–Ligand Binding Free Energy Calculations. Journal of
-Chemical Theory and Computation. 2020; 16(12):7883–7894.
-https://doi.org/10.1021/acs.jctc.0c00785.
-[37] Huang YmM, Chen W, Potter MJ, Chang CeA. Insights
-from Free-Energy Calculations: Protein Conforma-
-tional Equilibrium, Driving Forces, and Ligand-Binding
-Modes. Biophysical Journal. 2012; 103(2):342–351.
-https://doi.org/10.1016/j.bpj.2012.05.046.
-[38] Fratev F, Sirimulla S. An Improved Free Energy Per-
-turbation FEP+ Sampling Protocol for Flexible Ligand-
-Binding Domains. Scientiﬁc Reports. 2019; 9(1):16829.
-https://doi.org/10.1038/s41598-019-53133-1.
-[39] Singh N, Li W. Absolute Binding Free Energy Calcula-
-tions for Highly Flexible Protein MDM2 and Its Inhibitors.
-International Journal of Molecular Sciences. 2020; 21(13).
-https://doi.org/10.3390/ijms21134765.
-[40] Lenselink EB, Louvel J, Forti AF, van Veldhoven JPD, de Vries H,
-Mulder-Krieger T, McRobb FM, Negri A, Goose J, Abel R, van Vli-
-jmen HWT, Wang L, Harder E, Sherman W, IJzerman AP, Beum-
-ing T. Predicting Binding Aﬃnities for GPCR Ligands Using
-Free-Energy Perturbation. ACS Omega. 2016; 1(2):293–304.
-https://doi.org/10.1021/acsomega.6b00086.
-[41] Deﬂorian F, Perez-Benito L, Lenselink EB, Congreve M, van Vli-
-jmen HWT, Mason JS, Graaf Cd, Tresadern G. Accurate Predic-
-tion of GPCR Ligand Binding Aﬃnity with Free Energy Pertur-
-bation. Journal of Chemical Information and Modeling. 2020;
-60(11):5563–5579. https://doi.org/10.1021/acs.jcim.0c00449.
-[42] Świderek K, Paneth P. Binding Ligands and Cofactor to L-
-Lactate Dehydrogenase from Human Skeletal and Heart Mus-
-cles. The Journal of Physical Chemistry B. 2011; 115(19):6366–
-6376. https://doi.org/10.1021/jp201626k.
-[43] Ono F, Chiba S, Isaka Y, Matsumoto S, Ma B, Katayama R,
-Araki M, Okuno Y. Improvement in Predicting Drug Sensitivity
-Changes Associated with Protein Mutations Using a Molecular
-Dynamics Based Alchemical Mutation Method. Scientiﬁc Re-
-ports. 2020; 10(1):2161. https://doi.org/10.1038/s41598-020-
-58877-9.
-[44] Schindler CEM, Baumann H, Blum A, Böse D, Buchstaller
-HP, Burgdorf L, Cappel D, Chekler E, Czodrowski P, Dorsch
-D, Eguida MKI, Follows B, Fuchß T, Grädler U, Gunera J,
-Johnson T, Jorand Lebrun C, Karra S, Klein M, Knehans T,
-et al. Large-Scale Assessment of Binding Free Energy Cal-
-culations in Active Drug Discovery Projects. Journal of
-Chemical Information and Modeling. 2020; 60(11):5457–5474.
-https://doi.org/10.1021/acs.jcim.0c00900.
-[45] Knight JL, Brooks CL. Multisite λ Dynamics for Simu-
-lated Structure–Activity Relationship Studies. Journal of
-Chemical Theory and Computation. 2011; 7(9):2728–2739.
-https://doi.org/10.1021/ct200444f.
-[46] Vilseck JZ, Armacost KA, Hayes RL, Goh GB, Brooks CL.
-Predicting Binding Free Energies in a Large Combinatorial
-Chemical Space Using Multisite λ Dynamics. The Jour-
-nal of Physical Chemistry Letters. 2018; 9(12):3328–3332.
-https://doi.org/10.1021/acs.jpclett.8b01284.
-[47] Rufa DA, Bruce Macdonald HE, Fass J, Wieder M, Grinaway PB,
-Roitberg AE, Isayev O, Chodera JD. Towards Chemical Accuracy
-for Alchemical Free Energy Calculations with Hybrid Physics-
-Based Machine Learning / Molecular Mechanics Potentials.
-Biophysics; 2020. https://doi.org/10.1101/2020.07.29.227959.
-[48] Genheden S, Ryde U. The MM/PBSA and MM/GBSA
-methods to estimate ligand-binding aﬃnities. Ex-
-pert Opinion on Drug Discovery. 2015; 10(5):449–461.
-https://doi.org/10.1517/17460441.2015.1032936.
-[49] Amaro RE, Gilson MK, Drug Design Data Resource; 2021. https:
-//drugdesigndata.org/.
-[50] Mobley DL, The SAMPL challenges; 2021. https://samplchall
-enges.github.io/.
-[51] Geballe MT, Skillman AG, Nicholls A, Guthrie JP, Taylor PJ.
-The SAMPL2 Blind Prediction Challenge: Introduction and
-Overview. Journal of Computer-Aided Molecular Design. 2010;
-24(4):259–279. https://doi.org/10.1007/s10822-010-9350-8.
-[52] Muddana HS, Daniel Varnado C, Bielawski CW, Urbach
-AR, Isaacs L, Geballe MT, Gilson MK. Blind Prediction of
-Host–Guest Binding Aﬃnities: A New SAMPL3 Challenge. Jour-
-nal of Computer-Aided Molecular Design. 2012; 26(5):475–487.
-https://doi.org/10.1007/s10822-012-9554-1.
-27 of 31
-A LiveCoMS Best Practices Guide
-[53] Muddana HS, Gilson MK. Prediction of SAMPL3 Host-Guest
-Binding Aﬃnities: Evaluating the Accuracy of Generalized
-Force-Fields. Journal of Computer-Aided Molecular Design.
-2012; 26(5):517–525. https://doi.org/10.1007/s10822-012-
-9544-3.
-[54] Muddana HS, Fenley AT, Mobley DL, Gilson MK. The SAMPL4
-Host–Guest Blind Prediction Challenge: An Overview. Jour-
-nal of Computer-Aided Molecular Design. 2014; 28(4):305–317.
-https://doi.org/10.1007/s10822-014-9735-1.
-[55] Gathiaka S, Liu S, Chiu M, Yang H, Stuckey JA, Kang YN, Del-
-proposto J, Kubish G, Dunbar JB, Carlson HA, Burley SK, Wal-
-ters WP, Amaro RE, Feher VA, Gilson MK. D3R Grand Chal-
-lenge 2015: Evaluation of Protein–Ligand Pose and Aﬃnity Pre-
-dictions. Journal of Computer-Aided Molecular Design. 2016;
-30(9):651–668. https://doi.org/10.1007/s10822-016-9946-8.
-[56] Bannan CC, Burley KH, Chiu M, Shirts MR, Gilson MK, Mob-
-ley DL. Blind Prediction of Cyclohexane–Water Distribu-
-tion Coeﬃcients from the SAMPL5 Challenge. Journal of
-Computer-Aided Molecular Design. 2016; 30(11):927–944.
-https://doi.org/10.1007/s10822-016-9954-8.
-[57] Yin J, Henriksen NM, Slochower DR, Shirts MR, Chiu
-MW, Mobley DL, Gilson MK. Overview of the SAMPL5
-Host–Guest Challenge: Are We Doing Better? Journal
-of Computer-Aided Molecular Design. 2017; 31(1):1–19.
-https://doi.org/10.1007/s10822-016-9974-4.
-[58] Gaieb Z, Liu S, Gathiaka S, Chiu M, Yang H, Shao C, Feher VA,
-Walters WP, Kuhn B, Rudolph MG, Burley SK, Gilson MK, Amaro
-RE. D3R Grand Challenge 2: Blind Prediction of Protein–Ligand
-Poses, Aﬃnity Rankings, and Relative Binding Free Energies.
-Journal of Computer-Aided Molecular Design. 2018; 32(1):1–
-20. https://doi.org/10.1007/s10822-017-0088-4.
-[59] Gaieb Z, Parks CD, Chiu M, Yang H, Shao C, Walters WP, Lam-
-bert MH, Nevins N, Bembenek SD, Ameriks MK, Mirzadegan
-T, Burley SK, Amaro RE, Gilson MK. D3R Grand Challenge 3:
-Blind Prediction of Protein–Ligand Poses and Aﬃnity Rankings.
-Journal of Computer-Aided Molecular Design. 2019; 33(1):1–
-18. https://doi.org/10.1007/s10822-018-0180-4.
-[60] Parks CD, Gaieb Z, Chiu M, Yang H, Shao C, Walters WP,
-Jansen JM, McGaughey G, Lewis RA, Bembenek SD, Ameriks
-MK, Mirzadegan T, Burley SK, Amaro RE, Gilson MK. D3R
-Grand Challenge 4: Blind Prediction of Protein–Ligand Poses,
-Aﬃnity Rankings, and Relative Binding Free Energies. Jour-
-nal of Computer-Aided Molecular Design. 2020; 34(2):99–119.
-https://doi.org/10.1007/s10822-020-00289-y.
-[61] Hahn DF, Openforceﬁeld/protein-ligand-benchmark; 2020.
-Open Force Field Initiative.
-[62] Bruce Macdonald HE, Openforceﬁeld/Arsenic; 2020. Open
-Force Field Initiative.
-[63] Braun E, Gilmer J, Mayes HB, Mobley DL, Monroe JI,
-Prasad S, Zuckerman DM. Best Practices for Foun-
-dations in Molecular Simulations [Article v1.0]. Living
-Journal of Computational Molecular Science. 2019; 1(1).
-https://doi.org/10.33011/livecoms.1.1.5957.
-[64] Kaus JW, Harder E, Lin T, Abel R, McCammon JA, Wang L.
-How To Deal with Multiple Binding Poses in Alchemical Rela-
-tive Protein–Ligand Binding Free Energy Calculations. Journal
-of Chemical Theory and Computation. 2015; 11(6):2670–2679.
-https://doi.org/10.1021/acs.jctc.5b00214.
-[65] Sasmal S, Gill SC, Lim NM, Mobley DL. Sampling Confor-
-mational Changes of Bound Ligands Using Nonequilibrium
-Candidate Monte Carlo and Molecular Dynamics. Journal of
-Chemical Theory and Computation. 2020; 16(3):1854–1865.
-https://doi.org/10.1021/acs.jctc.9b01066.
-[66] Koeppl GW, Sagatys DS, Krishnamurthy G, Miller SI. Inversion
-barriers of pyramidal (XY3) and related planar (= XY) species.
-Journal of the American Chemical Society. 1967; 89(14):3396–
-3405.
-[67] Wagner V, Jantz L, Briem H, Sommer K, Rarey M,
-Christ CD. Computational Macrocyclization: From de
-Novo Macrocycle Generation to Binding Aﬃnity Es-
-timation. ChemMedChem. 2017; 12(22):1866–1872.
-https://doi.org/10.1002/cmdc.201700478.
-[68] Yu HS, Deng Y, Wu Y, Sindhikara D, Rask AR, Kimura T, Abel
-R, Wang L. Accurate and Reliable Prediction of the Binding
-Aﬃnities of Macrocycles to Their Protein Targets. Journal of
-Chemical Theory and Computation. 2017; 13(12):6290–6300.
-https://doi.org/10.1021/acs.jctc.7b00885.
-[69] Paulsen JL, Yu HS, Sindhikara D, Wang L, Appleby T, Villaseñor
-AG, Schmitz U, Shivakumar D. Evaluation of Free Energy Cal-
-culations for the Prioritization of Macrocycle Synthesis. Jour-
-nal of Chemical Information and Modeling. 2020; 60(7):3489–
-3498. https://doi.org/10.1021/acs.jcim.0c00132.
-[70] Warren GL, Do TD, Kelley BP, Nicholls A, Warren SD. Essential
-Considerations for Using Protein–Ligand Structures in Drug
-Discovery. Drug Discovery Today. 2012; 17(23-24):1270–1281.
-https://doi.org/10.1016/j.drudis.2012.06.011.
-[71] Cumming JN, Smith EM, Wang L, Misiaszek J, Durkin J, Pan
-J, Iserloh U, Wu Y, Zhu Z, Strickland C, Voigt J, Chen X,
-Kennedy ME, Kuvelkar R, Hyde LA, Cox K, Favreau L, Czarniecki
-MF, Greenlee WJ, McKittrick BA, et al. Structure Based De-
-sign of Iminohydantoin BACE1 Inhibitors: Identiﬁcation of
-an Orally Available, Centrally Active BACE1 Inhibitor. Bioor-
-ganic & Medicinal Chemistry Letters. 2012; 22(7):2444–2449.
-https://doi.org/10.1016/j.bmcl.2012.02.013.
-[72] Wang L, Wu Y, Deng Y, Kim B, Pierce L, Krilov G, Lupyan D,
-Robinson S, Dahlgren MK, Greenwood J, Romero DL, Masse C,
-Knight JL, Steinbrecher T, Beuming T, Damm W, Harder E, Sher-
-man W, Brewer M, Wester R, et al. Accurate and Reliable Pre-
-diction of Relative Ligand Binding Potency in Prospective Drug
-Discovery by Way of a Modern Free-Energy Calculation Proto-
-col and Force Field. Journal of the American Chemical Society.
-2015; 137(7):2695–2703. https://doi.org/10.1021/ja512751q.
-[73] Hunt KW, Cook AW, Watts RJ, Clark CT, Vigers G, Smith D, Met-
-calf AT, Gunawardana IW, Burkard M, Cox AA, Geck Do MK,
-Dutcher D, Thomas AA, Rana S, Kallan NC, DeLisle RK, Rizzi
-JP, Regal K, Sammond D, Groneberg R, et al. Spirocyclic β-
-Site Amyloid Precursor Protein Cleaving Enzyme 1 (BACE1) In-
-hibitors: From Hit to Lowering of Cerebrospinal Fluid (CSF)
-28 of 31
-A LiveCoMS Best Practices Guide
-Amyloid β in a Higher Species. Journal of Medicinal Chemistry.
-2013; 56(8):3379–3403. https://doi.org/10.1021/jm4002154.
-[74] Ciordia M, Pérez-Benito L, Delgado F, Trabanco AA, Tre-
-sadern G. Application of Free Energy Perturbation
-for the Design of BACE1 Inhibitors. Journal of Chemi-
-cal Information and Modeling. 2016; 56(9):1856–1871.
-https://doi.org/10.1021/acs.jcim.6b00220.
-[75] Keränen H, Pérez-Benito L, Ciordia M, Delgado F, Steinbrecher
-TB, Oehlrich D, van Vlijmen HWT, Trabanco AA, Tresadern G.
-Acylguanidine Beta Secretase 1 Inhibitors: A Combined Ex-
-perimental and Free Energy Perturbation Study. Journal of
-Chemical Theory and Computation. 2017; 13(3):1439–1453.
-https://doi.org/10.1021/acs.jctc.6b01141.
-[76] Malamas MS, Erdei J, Gunawan I, Turner J, Hu Y, Wagner E, Fan
-K, Chopra R, Olland A, Bard J, Jacobsen S, Magolda RL, Pangalos
-M, Robichaud AJ. Design and Synthesis of 5,50-Disubstituted
-Aminohydantoins as Potent and Selective Human β-Secretase
-(BACE1) Inhibitors. Journal of Medicinal Chemistry. 2010;
-53(3):1146–1158. https://doi.org/10.1021/jm901414e.
-[77] Hardcastle IR, Arris CE, Bentley J, Boyle FT, Chen Y,
-Curtin NJ, Endicott JA, Gibson AE, Golding BT, Griﬃn RJ,
-Jewsbury P, Menyerol J, Mesguiche V, Newell DR, Noble
-MEM, Pratt DJ, Wang LZ, Whitﬁeld HJ. N 2 -Substituted
-O 6 -Cyclohexylmethylguanine Derivatives: Potent In-
-hibitors of Cyclin-Dependent Kinases 1 and 2. Jour-
-nal of Medicinal Chemistry. 2004; 47(15):3710–3722.
-https://doi.org/10.1021/jm0311442.
-[78] Schiemann K, Mallinger A, Wienke D, Esdar C, Poeschke
-O, Busch M, Rohdich F, Eccles SA, Schneider R, Ray-
-naud FI, Czodrowski P, Musil D, Schwarz D, Urbahns
-K, Blagg J. Discovery of Potent and Selective CDK8 In-
-hibitors from an HSP90 Pharmacophore. Bioorganic
-& Medicinal Chemistry Letters. 2016; 26(5):1443–1451.
-https://doi.org/10.1016/j.bmcl.2016.01.062.
-[79] Schiemann K, Finsinger D, Zenke F, Amendt C, Knöchel
-T, Bruge D, Buchstaller HP, Emde U, Stähle W, Anzali
-S. The Discovery and Optimization of Hexahydro-2H-
-Pyrano[3,2-c]Quinolines (HHPQs) as Potent and Selec-
-tive Inhibitors of the Mitotic Kinesin-5. Bioorganic &
-Medicinal Chemistry Letters. 2010; 20(5):1491–1495.
-https://doi.org/10.1016/j.bmcl.2010.01.110.
-[80] Delaine T, Collins P, MacKinnon A, Sharma G, Stegmayr J, Ra-
-jput VK, Mandal S, Cumpstey I, Larumbe A, Salameh BA, Kahl-
-Knutsson B, van Hattum H, van Scherpenzeel M, Pieters RJ,
-Sethi T, Schambye H, Oredsson S, Leﬄer H, Blanchard H, Nils-
-son UJ. Galectin-3-Binding Glycomimetics That Strongly Re-
-duce Bleomycin-Induced Lung Fibrosis and Modulate Intracel-
-lular Glycan Recognition. ChemBioChem. 2016; 17(18):1759–
-1770. https://doi.org/10.1002/cbic.201600285.
-[81] Manzoni F, Ryde U. Assessing the Stability of Free-Energy Per-
-turbation Calculations by Performing Variations in the Method.
-Journal of Computer-Aided Molecular Design. 2018; 32(4):529–
-536. https://doi.org/10.1007/s10822-018-0110-5.
-[82] Wallace EM, Rizzi JP, Han G, Wehn PM, Cao Z, Du X, Cheng
-T, Czerwinski RM, Dixon DD, Goggin BS, Grina JA, Halfmann
-MM, Maddie MA, Olive SR, Schlachter ST, Tan H, Wang
-B, Wang K, Xie S, Xu R, et al. A Small-Molecule Antago-
-nist of HIF2α Is Eﬃcacious in Preclinical Models of Renal
-Cell Carcinoma. Cancer Research. 2016; 76(18):5491–5500.
-https://doi.org/10.1158/0008-5472.CAN-16-0473.
-[83] Szczepankiewicz BG, Kosogof C, Nelson LTJ, Liu G, Liu B, Zhao
-H, Serby MD, Xin Z, Liu M, Gum RJ, Haasch DL, Wang S, Clampit
-JE, Johnson EF, Lubben TH, Stashko MA, Olejniczak ET, Sun C,
-Dorwin SA, Haskins K, et al. Aminopyridine-Based c-Jun N-
-Terminal Kinase Inhibitors with Cellular Activity and Minimal
-Cross-Kinase Activity †. Journal of Medicinal Chemistry. 2006;
-49(12):3563–3580. https://doi.org/10.1021/jm060199b.
-[84] Friberg A, Vigil D, Zhao B, Daniels RN, Burke JP, Garcia-
-Barrantes PM, Camper D, Chauder BA, Lee T, Olejniczak ET,
-Fesik SW. Discovery of Potent Myeloid Cell Leukemia 1 (Mcl-
-1) Inhibitors Using Fragment-Based Methods and Structure-
-Based Design. Journal of Medicinal Chemistry. 2013; 56(1):15–
-30. https://doi.org/10.1021/jm301448p.
-[85] Goldstein DM, Soth M, Gabriel T, Dewdney N, Kuglstat-
-ter A, Arzeno H, Chen J, Bingenheimer W, Dalrymple SA,
-Dunn J, Farrell R, Frauchiger S, La Fargue J, Ghate M,
-Graves B, Hill RJ, Li F, Litman R, Loe B, McIntosh J,
-et al. Discovery of 6-(2,4-Diﬂuorophenoxy)-2-[3-Hydroxy-
-1-(2-Hydroxyethyl)Propylamino]-8-Methyl-8 H -Pyrido[2,3- d
-]Pyrimidin-7-One (Pamapimod) and 6-(2,4-Diﬂuorophenoxy)-
-8-Methyl-2-(Tetrahydro-2 H -Pyran-4-Ylamino)Pyrido[2,3- d
-]Pyrimidin-7(8 H )-One (R1487) as Orally Bioavailable and
-Highly Selective Inhibitors of P38α Mitogen-Activated Protein
-Kinase. Journal of Medicinal Chemistry. 2011; 54(7):2255–
-2265. https://doi.org/10.1021/jm101423y.
-[86] Buijnsters P, De Angelis M, Langlois X, Rombouts FJR, Sander-
-son W, Tresadern G, Ritchie A, Trabanco AA, VanHoof G, Roos-
-broeck YV, Andrés JI. Structure-Based Design of a Potent, Selec-
-tive, and Brain Penetrating PDE2 Inhibitor with Demonstrated
-Target Engagement. ACS Medicinal Chemistry Letters. 2014;
-5(9):1049–1053. https://doi.org/10.1021/ml500262u.
-[87] Pérez-Benito L, Keränen H, van Vlijmen H, Tresadern G. Pre-
-dicting Binding Free Energies of PDE2 Inhibitors. The Diﬃ-
-culties of Protein Conformation. Scientiﬁc Reports. 2018;
-8(1):4883. https://doi.org/10.1038/s41598-018-23039-5.
-[88] Boutard N, Białas A, Sabiniarz A, Guzik P, Banaszak K, Biela
-A, Bień M, Buda A, Bugaj B, Cieluch E, Cierpich A, Dudek Ł,
-Eggenweiler HM, Fogt J, Gaik M, Gondela A, Jakubiec K, Jurzak
-M, Kitlińska A, Kowalczyk P, et al. Discovery and Structure-
-Activity Relationships of N -Aryl 6-Aminoquinoxalines as
-Potent PFKFB3 Kinase Inhibitors. ChemMedChem. 2019;
-14(1):169–181. https://doi.org/10.1002/cmdc.201800569.
-[89] Wilson DP, Wan ZK, Xu WX, Kirincich SJ, Follows BC, Joseph-
-McCarthy D, Foreman K, Moretto A, Wu J, Zhu M, Bin-
-nun E, Zhang YL, Tam M, Erbe DV, Tobin J, Xu X, Leung
-L, Shilling A, Tam SY, Mansour TS, et al. Structure-Based
-Optimization of Protein Tyrosine Phosphatase 1B Inhibitors:
-From the Active Site to the Second Phosphotyrosine Binding
-Site. Journal of Medicinal Chemistry. 2007; 50(19):4681–4698.
-https://doi.org/10.1021/jm0702478.
-29 of 31
-A LiveCoMS Best Practices Guide
-[90] Chen YNP, LaMarche MJ, Chan HM, Fekkes P, Garcia-Fortanet
-J, Acker MG, Antonakos B, Chen CHT, Chen Z, Cooke VG, Dob-
-son JR, Deng Z, Fei F, Firestone B, Fodor M, Fridrich C, Gao
-H, Grunenfelder D, Hao HX, Jacob J, et al. Allosteric Inhi-
-bition of SHP2 Phosphatase Inhibits Cancers Driven by Re-
-ceptor Tyrosine Kinases. Nature. 2016; 535(7610):148–152.
-https://doi.org/10.1038/nature18621.
-[91] Currie KS, Kropf JE, Lee T, Blomgren P, Xu J, Zhao Z, Gallion
-S, Whitney JA, Maclin D, Lansdon EB, Maciejewski P, Rossi AM,
-Rong H, Macaluso J, Barbosa J, Di Paolo JA, Mitchell SA. Discov-
-ery of GS-9973, a Selective and Orally Eﬃcacious Inhibitor of
-Spleen Tyrosine Kinase. Journal of Medicinal Chemistry. 2014;
-57(9):3856–3873. https://doi.org/10.1021/jm500228a.
-[92] Baum B, Mohamed M, Zayed M, Gerlach C, Heine A, Hangauer
-D, Klebe G. More than a Simple Lipophilic Contact: A De-
-tailed Thermodynamic Analysis of Nonbasic Residues in the
-S1 Pocket of Thrombin. Journal of Molecular Biology. 2009;
-390(1):56–69. https://doi.org/10.1016/j.jmb.2009.04.051.
-[93] Buchstaller HP, Anlauf U, Dorsch D, Kuhn D, Lehmann
-M, Leuthner B, Musil D, Radtki D, Ritzert C, Rohdich
-F, Schneider R, Esdar C. Discovery and Optimization
-of 2-Arylquinazolin-4-Ones into a Potent and Selective
-Tankyrase Inhibitor Modulating Wnt Pathway Activity.
-Journal of Medicinal Chemistry. 2019; 62(17):7897–7909.
-https://doi.org/10.1021/acs.jmedchem.9b00656.
-[94] Liang J, Tsui V, Van Abbema A, Bao L, Barrett K, Beresini
-M, Berezhkovskiy L, Blair WS, Chang C, Driscoll J, Eigenbrot
-C, Ghilardi N, Gibbons P, Halladay J, Johnson A, Kohli PB,
-Lai Y, Liimatta M, Mantik P, Menghrajani K, et al. Lead
-Identiﬁcation of Novel and Selective TYK2 Inhibitors. Eu-
-ropean Journal of Medicinal Chemistry. 2013; 67:175–187.
-https://doi.org/10.1016/j.ejmech.2013.03.070.
-[95] Liang J, van Abbema A, Balazs M, Barrett K, Berezhkovsky
-L, Blair W, Chang C, Delarosa D, DeVoss J, Driscoll J, Eigen-
-brot C, Ghilardi N, Gibbons P, Halladay J, Johnson A, Kohli
-PB, Lai Y, Liu Y, Lyssikatos J, Mantik P, et al. Lead
-Optimization of a 4-Aminopyridine Benzamide Scaffold To
-Identify Potent, Selective, and Orally Bioavailable TYK2 In-
-hibitors. Journal of Medicinal Chemistry. 2013; 56(11):4521–
-4536. https://doi.org/10.1021/jm400266t.
-[96] Berman HM. The Protein Data Bank. Nucleic Acids Research.
-2000; 28(1):235–242. https://doi.org/10.1093/nar/28.1.235.
-[97] Meyder A, Nittinger E, Lange G, Klein R, Rarey M. Esti-
-mating Electron Density Support for Individual Atoms and
-Molecular Fragments in X-Ray Structures. Journal of Chem-
-ical Information and Modeling. 2017; 57(10):2437–2447.
-https://doi.org/10.1021/acs.jcim.7b00391.
-[98] Tickle IJ. Statistical Quality Indicators for Electron-
-Density Maps. Acta Crystallographica Section D:
-Biological Crystallography. 2012; 68(4):454–467.
-https://doi.org/10.1107/S0907444911035918.
-[99] Shih AY, Hack M, Mirzadegan T. Impact of Protein Prepa-
-ration on Resulting Accuracy of FEP Calculations. Journal of
-Chemical Information and Modeling. 2020; 60(11):5287–5289.
-https://doi.org/10.1021/acs.jcim.0c00445.
-[100] Kalliokoski T, Kramer C, Vulpetti A, Gedeck P. Comparability
-of Mixed IC50 Data – A Statistical Analysis. PLOS ONE. 2013;
-8(4):e61007. https://doi.org/10.1371/journal.pone.0061007.
-[101] Pontolillo J, Eganhouse RP. The search for reliable aqueous
-solubility (Sw) and octanol-water partition coeﬃcient (Kow)
-data for hydrophobic organic compounds: DDT and DDE as
-a case study, vol. 1. US Department of the Interior, US Geolog-
-ical Survey; 2001. https://pubs.usgs.gov/wri/wri014201/pdf/wr
-i01-4201.pdf.
-[102] Daga PR, Data Curation: The Forgotten Practice in the Era of
-AI. Zenodo; 2019. https://doi.org/10.5281/zenodo.3445476.
-[103] Kramer C, Kalliokoski T, Gedeck P, Vulpetti A. The experimen-
-tal uncertainty of heterogeneous public K i data. Journal of
-medicinal chemistry. 2012; 55(11):5165–5173.
-[104] Jarmoskaite I, AlSadhan I, Vaidyanathan PP, Herschlag D.
-How to measure and evaluate binding aﬃnities. eLife. 2020;
-9:e57264.
-[105] Sheridan RP, Karnachi P, Tudor M, Xu Y, Liaw A, Shah F, Cheng
-AC, Joshi E, Glick M, Alvarez J. Experimental Error, Kurtosis,
-Activity Cliffs, and Methodology: What Limits the Predictivity
-of Quantitative Structure–Activity Relationship Models? Jour-
-nal of Chemical Information and Modeling. 2020; 60(4):1969–
-1982.
-[106] Achdout H, Aimon A, Bar-David E, Barr H, Ben-Shmuel A,
-Bennett J, Bobby ML, Brun J, BVNBS S, Calmiano M, et al.
-COVID Moonshot: Open Science Discovery of SARS-CoV-2
-Main Protease Inhibitors by Combining Crowdsourcing, High-
-Throughput Experiments, Computational Simulations, and
-Machine Learning. bioRxiv. 2020; .
-[107] The COVID Moonshot Consortium, PostEra Covid Moonshot;
-2021. https://covid.postera.ai/covid/activity_data. .
-[108] Wiseman T, Williston S, Brandts JF, Lin LN. Rapid Mea-
-surement of Binding Constants and Heats of Binding Using
-a New Titration Calorimeter. Analytical Biochemistry. 1989;
-179(1):131–137. https://doi.org/10.1016/0003-2697(89)90213-
-3.
-[109] Chodera JD, Mobley DL. Entropy-Enthalpy Compensation:
-Role and Ramiﬁcations in Biomolecular Ligand Recognition
-and Design. Annual Review of Biophysics. 2013; 42(1):121–142.
-https://doi.org/10.1146/annurev-biophys-083012-130318.
-[110] Brown SP, Muchmore SW, Hajduk PJ. Healthy skepticism: as-
-sessing realistic model performance. Drug discovery today.
-2009; 14(7-8):420–427.
-[111] Griffen EJ, Dossetter AG, Leach AG. Chemists:
-AI Is Here; Unite To Get the Beneﬁts. Journal
-of Medicinal Chemistry. 2020; 63(16):8695–8704.
-https://doi.org/10.1021/acs.jmedchem.0c00163.
-[112] Madhavi Sastry G, Adzhigirey M, Day T, Annabhimoju R, Sher-
-man W. Protein and Ligand Preparation: Parameters, Proto-
-cols, and Inﬂuence on Virtual Screening Enrichments. Jour-
-nal of Computer-Aided Molecular Design. 2013; 27(3):221–234.
-https://doi.org/10.1007/s10822-013-9644-8.
-30 of 31
-A LiveCoMS Best Practices Guide
-[113] Molecular Operating Environment (MOE). 1010 Sherbooke
-St. West, Suite #910, Montreal, QC, Canada, H3A 2R7; 2021.
-Chemical Computing Group ULC.
-[114] SPRUCE. Santa Fe, NM;. OpenEye Scientiﬁc Software.
-[115] Klimovich PV, Shirts MR, Mobley DL. Guidelines for
-the Analysis of Free Energy Calculations. Journal of
-Computer-Aided Molecular Design. 2015; 29(5):397–411.
-https://doi.org/10.1007/s10822-015-9840-9.
-[116] Kuhn M, Firth-Clark S, Tosco P, Mey ASJS, Mackey
-M, Michel J. Assessment of Binding Aﬃnity via Al-
-chemical Free-Energy Calculations. Journal of Chemi-
-cal Information and Modeling. 2020; 60(6):3120–3130.
-https://doi.org/10.1021/acs.jcim.0c00165.
-[117] Liu S, Wu Y, Lin T, Abel R, Redmann JP, Summa CM, Jaber VR,
-Lim NM, Mobley DL. Lead Optimization Mapper: Automat-
-ing Free Energy Calculations for Lead Optimization. Journal
-of Computer-Aided Molecular Design. 2013; 27(9):755–770.
-https://doi.org/10.1007/s10822-013-9678-y.
-[118] Xu H. Optimal Measurement Network of Pairwise Differ-
-ences. Journal of Chemical Information and Modeling. 2019;
-59(11):4720–4728. https://doi.org/10.1021/acs.jcim.9b00528.
-[119] Yang Q, Burchett W, Steeno GS, Liu S, Yang M, Mobley DL, Hou
-X. Optimal Designs for Pairwise Calculation: An Application
-to Free Energy Perturbation in Minimizing Prediction Variabil-
-ity. Journal of Computational Chemistry. 2020; 41(3):247–257.
-https://doi.org/10.1002/jcc.26095.
-[120] Hauser K, Negron C, Albanese SK, Ray S, Steinbrecher T, Abel
-R, Chodera JD, Wang L. Predicting Resistance of Clinical Abl Mu-
-tations to Targeted Kinase Inhibitors Using Alchemical Free-
-Energy Calculations. Communications Biology. 2018; 1(1):70.
-https://doi.org/10.1038/s42003-018-0075-x.
-[121] Aldeghi M, Heifetz A, Bodkin MJ, Knapp S, Biggin PC. Predic-
-tions of Ligand Selectivity from Absolute Binding Free Energy
-Calculations. Journal of the American Chemical Society. 2017;
-139(2):946–957. https://doi.org/10.1021/jacs.6b11467.
-[122] Cui G, Graves AP, Manas ES. GRAM: A True Null Model for
-Relative Binding Aﬃnity Predictions. Journal of Chemical In-
-formation and Modeling. 2019; 60(1):11–16.
-[123] Gapsys V, Pérez-Benito L, Aldeghi M, Seeliger D, van Vli-
-jmen H, Tresadern G, de Groot BL. Large Scale Relative
-Protein Ligand Binding Aﬃnities Using Non-Equilibrium
-Alchemy. Chemical Science. 2020; 11(4):1140–1152.
-https://doi.org/10.1039/C9SC03754C.
-[124] Pérez-Benito L, Casajuana-Martin N, Jiménez-Rosés
-M, van Vlijmen H, Tresadern G. Predicting Activity
-Cliffs with Free-Energy Perturbation. Journal of Chem-
-ical Theory and Computation. 2019; 15(3):1884–1895.
-https://doi.org/10.1021/acs.jctc.8b01290.
-31 of 31
+1. Bastian H, Glasziou P, Chalmers I: Seventy-five trials and eleven systematic
+reviews a day: how will we ever keep up? PLoS Med 2010, 7(9):e1000326.
+2. Chan AW, Hróbjartsson A, Haahr MT, Gøtzsche PC, Altman DG: Empirical
+evidence for selective reporting of outcomes in randomized trials:
+comparison of protocols to published articles. JAMA 2004,
+291(20):2457–2465.
+3. Kirkham JJ, Altman DG, Williamson PR: Bias due to changes in specified
+outcomes during the systematic review process. PLoS ONE 2010,
+5(3):e9810.
+4. Kirkham JJ, Dwan KM, Altman DG, Gamble C, Dodd S, Smyth R, Williamson
+PR: The impact of outcome reporting bias in randomised controlled trials
+on a cohort of systematic reviews. BMJ 2010, 340:c365.
+5. Dwan K, Gamble C, Williamson PR, Kirkham JJ, Reporting Bias Group:
+Systematic review of the empirical evidence of study publication bias
+and outcome reporting bias—an updated review. PLoS ONE 2013,
+8(7):e66844.
+6. Norris SL, Holmer HK, Ogden LA, Fu R, Abou-Setta AM, Viswanathan MS,
+McPheeters ML: Selective Outcome Reporting as a Source of Bias in Reviews of
+Comparative Effectiveness (Prepared by the Oregon Evidence-Based Practice Center
+Under Contract no. 290-2007-10057-I). Rockville: Agency for Healthcare Research
+and Quality; 2012. Report No.: AHRQ Publication No. 12-EHC110-EF.
+7. Page MJ, McKenzie JE, Kirkham J, Dwan K, Kramer S, Green S, Forbes A: Bias
+due to selective inclusion and reporting of outcomes and analyses in
+systematic reviews of randomised trials of healthcare interventions.
+Cochrane Lib 2014, (10):Art No.:MR000035. doi:10.1002/14651858.MR000035.
+pub2.
+8. Higgins JPT, Green S (Eds): Cochrane Handbook for Systematic Reviews of
+Interventions Version 5.1.0: updated March 2011. The Cochrane Collaboration;
+2011. Available from [www.cochrane-handbook.org]
+9. Ma B, Guo J, Qi G, Li H, Peng J, Zhang Y, Ding Y, Yang K: Epidemiology,
+quality and reporting characteristics of systematic reviews of traditional
+Chinese medicine interventions published in Chinese journals. PLoS ONE
+2011, 6(5):e20185.
+10. Moher D, Tetzlaff J, Tricco AC, Sampson M, Altman DG: Epidemiology
+and reporting characteristics of systematic reviews. PLoS Med 2007,
+4(3):e78.
+11. Institute of Medicine. In Finding What Works in Health Care: Standards for
+Systematic Reviews. Edited by Eden J, Levit L, Berg A, Morton S. Washington,
+DC: The National Academies Press; 2011.
+12. Liberati A, Altman DG, Tetzlaff J, Mulrow C, Gotzsche PC, Ioannidis JP, Clarke
+M, Devereaux PJ, Kleijnen J, Moher D: The PRISMA statement for reporting
+systematic reviews and meta-analyses of studies that evaluate health
+care interventions: explanation and elaboration. PLoS Med 2009,
+6(7):e1000100.
+13. Moher D, Liberati A, Tetzlaff J, Altman DG, PRISMA Group: Preferred
+reporting items for systematic reviews and meta-analyses: the PRISMA
+Statement. BMJ 2009, 339:b2535.
+14. Straus S, Moher D: Registering systematic reviews. CMAJ 2010, 182(1):13–14.
+15. Moher D, Booth A, Stewart L: How to reduce unnecessary duplication: use
+PROSPERO. BJOG 2014, 121:784–786.
+16. Booth A, Clarke M, Ghersi D, Moher D, Petticrew M, Stewart L: An
+international registry of systematic-review protocols. Lancet 2011,
+377(9760):108–109.
+17. Booth A, Clarke M, Dooley G, Ghersi D, Moher D, Petticrew M, Stewart L:
+The nuts and bolts of PROSPERO: an international prospective register of
+systematic reviews. Syst Rev 2012, 1:2.
+18. Turner L, Shamseer L, Altman DG, Schulz KF, Moher D: Does use of the
+CONSORT statement impact the completeness of reporting of
+randomised controlled trials published in medical journals? A Cochrane
+review. Syst Rev 2012, 1:60.
+19. Smidt N, Rutjes AWS, Van der Windt D, Ostelo R, Bossuyt PM, Reitsma JB,
+Bouter LM, de Vet HCW: The quality of diagnostic accuracy studies since
+the STARD statement: has it improved? Neurology 2006, 67(5):792–797.
+20. Prady SL, Richmond SJ, Morton VM, MacPherson H: A systematic
+evaluation of the impact of STRICTA and CONSORT recommendations
+on quality of reporting for acupuncture trials. PLoS ONE 2008, 3(2):e1577.
+21. Williams HC: Cars, CONSORT 2010, and clinical practice. Trials 2010, 11:33.
+22. Methods Guide for Effectiveness and Comparative Effectiveness Reviews, AHRQ
+Publication No. 10(14)-EHC063-EF. Rockville: Agency for Healthcare Research
+and Quality; 2014. Chapters available at: www.effectivehealthcare.ahrq.gov.
+23. Green S, Higgins JPT, Alderson P, Clarke M, Mulrow CD, Oxman AD: 1.2.2.
+What is a systematic review? In Cochrane Handbook for Systematic Reviews
+of Interventions Version 5.1.0: updated March 2011. Edited by Higgins JPT,
+Green S. The Cochrane Collaboration; 2011 [www.cochrane-handbook.org]
+24. Chan A, Tetzlaff JM, Altman DG, Laupacis A, Gøtzsche PC, Krleža-Jerić K,
+Hróbjartsson A, Mann H, Dickersin K, Berlin JA, Doré C, Parulekar WR,
+Summerskill WSM, Groves T, Schulz KF, Sox HC, Rockhold FW, Rennie D,
+Moher D: SPIRIT 2013 statement: defining standard protocol items for
+clinical trials. Ann Intern Med 2013, 158(3):200–207.
+25. Antman EM, Lau J, Kupelnick B, Mosteller F, Chalmers TC: A comparison of
+results of meta-analyses of randomized control trials and recommendations
+of clinical experts: treatments for myocardial infarction. JAMA 1992,
+268(2):240–248.
+Moher et al. Systematic Reviews 2015, 4:1 Page 8 of 9
+http://www.systematicreviewsjournal.com/content/4/1/1
+26. Oxman AD, Guyatt GH: The science of reviewing research. Ann N Y Acad
+Sci 1993, 703:125,33. discussion 133–134.
+27. Moher D, Schulz KF, Simera I, Altman DG: Guidance for developers of
+health research reporting guidelines. PLoS Med 2010, 7(2):e1000217.
+28. Booth A, Clarke M, Ghersi D, Moher D, Petticrew M, Stewart L: Establishing
+a minimum dataset for prospective registration of systematic reviews: an
+international consultation. PLoS ONE 2011, 6(11):e27319.
+29. Chan A, Tetzlaff JM, Gøtzsche PS, Altman DG, Mann H, Berlin JA, Dickersin K,
+Hróbjartsson A, Schulz KF, Paruleka WR, Krleža-Jerić K, Laupaucis A, Moher D:
+SPIRIT 2013 explanation and elaboration: guidance for protocols of
+clinical trials. BMJ 2013, 346:e7586.
+30. Shamseer L, Moher D, Clarke M, Ghersi D, Liberati A, Petticrew M, Shekelle P,
+Stewart LA, PRISMA-P Group: Preferred reporting items for systematic
+review and meta-analysis protocols (PRISMA-P) 2015: elaboration &
+explanation. BMJ 2015, 349:g7647.
+31. Cochrane Canada: David Moher on crystal clear reporting of systematic
+reviews and EQUATOR Network. In 2010 [https://www.youtube.com/
+watch?v=TVFYenon1Jo]
+32. Stevens A, Shamseer L, Weinstein E, Yazdi F, Turner L, Thielman J, Altman
+DG, Hirst A, Hoey J, Palepu A, Schulz KF, Moher D: Relation of
+completeness of reporting of health research to journals’ endorsement
+of reporting guidelines: systematic review. BMJ 2014, 348:g3804.
+33. Hopewell S, Altman DG, Moher D, Schulz KF: Endorsement of the
+CONSORT statement by high impact factor medical journals: a survey of
+journal editors and journal ‘Instructions to Authors’. Trials 2008, 9:20.
+34. Hirst A, Altman DG: Are peer reviewers encouraged to use reporting
+guidelines? A survey of 116 health research journals. PLoS ONE 2012,
+7(4):e35621.
+35. Shamseer L, Weeks L, Turner L, Straus S, Grimshaw J, Moher D: Identifying
+barriers to uptake and implementation of the CONSORT statement. In
+The Seventh International Congress on Peer Review and Biomedical Publication:
+8–10 Sept 2014: Chicago, USA.
+36. Mills E, Wu P, Gagnier J, Heels-Ansdell D, Montori VM: An analysis of
+general medical and specialist journals that endorse CONSORT found
+that reporting was not enforced consistently. J Clin Epidemiol 2005,
+58(7):662–667.
+37. Craig P, Dieppe P, Macintyre S, Michie S, Nazareth I, Petticrew M:
+Developing and evaluating complex interventions: the new medical
+research council guidance. BMJ 2008, 337(0959–535):a1655.
+38. Davies P, Walker AE, Grimshaw JM: A systematic review of the use of
+theory in the design of guideline dissemination and implementation
+strategies and interpretation of the results of rigorous evaluations.
+Implement Sci 2010, 5:14.
+39. Carlsen B, Glenton C, Pope C: Thou shalt versus thou shalt not: a meta-
+synthesis of GPs’ attitudes to clinical practice guidelines. Br J Gen Pract
+2007, 57(545):971–978.
+40. Dwan K, Altman DG, Cresswell L, Blundell M, Gamble CL, Williamson PR:
+Comparison of protocols and registry entries to published reports for
+randomised controlled trials. Cochrane Database Syst Rev 2011,
+1:MR000031.
+41. Moher D, Stewart L, Shekelle P: Establishing a new journal for systematic
+review products. Syst Rev 2012, 1:1.
+doi:10.1186/2046-4053-4-1
+Cite this article as: Moher et al.: Preferred reporting items for
+systematic review and meta-analysis protocols (PRISMA-P) 2015
+statement. Systematic Reviews 2015 4:1.
+Submit your next manuscript to BioMed Central
+and take full advantage of:
+• Convenient online submission
+• Thorough peer review
+• No space constraints or color figure charges
+• Immediate publication on acceptance
+• Inclusion in PubMed, CAS, Scopus and Google Scholar
+• Research which is freely available for redistribution
+Submit your manuscript at
+www.biomedcentral.com/submit
+Moher et al. Systematic Reviews 2015, 4:1 Page 9 of 9
+http://www.systematicreviewsjournal.com/content/4/1/1
 

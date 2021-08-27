@@ -1,1716 +1,722 @@
-Neural Machine Translation for Low-Resource Languages: A
-Survey
-SURANGIKA RANATHUNGA, University of Moratuwa, Sri Lanka
-EN-SHIUN ANNIE LEE, University of Toronto, Canada
-MARJANA PRIFTI SKENDULI, University of New York Tirana, Albania
-RAVI SHEKHAR, Queen Mary University, London
-MEHREEN ALAM, National University of Computer and Emerging Sciences, Pakistan
-RISHEMJIT KAUR, CSIR-Central Scientific Instruments Organisation, India
-Neural Machine Translation (NMT) has seen a tremendous spurt of growth in less than ten years, and has
-already entered a mature phase. While considered as the most widely used solution for Machine Translation,
-its performance on low-resource language pairs still remains sub-optimal compared to the high-resource
-counterparts, due to the unavailability of large parallel corpora. Therefore, the implementation of NMT
-techniques for low-resource language pairs has been receiving the spotlight in the recent NMT research arena,
-thus leading to a substantial amount of research reported on this topic. This paper presents a detailed survey
-of research advancements in low-resource language NMT (LRL-NMT), along with a quantitative analysis
-aimed at identifying the most popular solutions. Based on our findings from reviewing previous work, this
-survey paper provides a set of guidelines to select the possible NMT technique for a given LRL data setting. It
-also presents a holistic view of the LRL-NMT research landscape and provides a list of recommendations to
-further enhance the research efforts on LRL-NMT.
-CCS Concepts: • Computing methodologies → Natural language processing; Neural networks; Machine
-translation; Language resources; Machine learning.
-Additional Key Words and Phrases: Neural Machine Translation, Low-Resource Languages, Unsupervised
-NMT, Semi-supervised NMT, Multilingual NMT, Transfer Learning, Data Augmentation, Zero-shot Translation,
-Pivoting
-1 INTRODUCTION
-Since the beginning of time, language and communication has been central to human interac-
-tions. Therefore, translating between different languages has been pivotal in societal and cultural
-advancements.
-Machine Translation (MT) was one of the first applications conceived to be solvable by computers;
-this vision was birthed by the “translation memorandum” presented by Warren Weaver, and the
-word-for-word translation system by IBM in 1954 [74].
-Consequently, different techniques were developed to address the problem of Machine Transla-
-tion, with a prominent being Statistical Machine Translation (SMT). Because the performance of
-the SMT system is directly impacted by the number of parallel sentence pairs available for training,
-a heavy emphasis has been placed on creating parallel datasets (also known as bitext) in addition
-to research on new MT techniques.
-In 2013, the introduction of end-to-end neural encoder-decoder based MT systems saw a break-
-through with promising results, which soon got popularized as Neural Machine Translation (NMT).
-Currently NMT is the dominant technique in the community. However, it was quickly realized that
-Authors’ addresses: Surangika Ranathunga, surangika@cse.mrt.ac.lk, University of Moratuwa, Bandaranayaka Mawatha,
-Katubedda, Sri Lanka, 10400; En-Shiun Annie Lee, annie.lee@cs.toronto.edu, University of Toronto, 9th Floor - 700 University
-Avenue, Toronto, Canada, M5G 1Z5; Marjana Prifti Skenduli, marjanaprifti@unyt.edu.al, University of New York Tirana,
-Tirana, Albania, 1000; Ravi Shekhar, r.shekgar@qmul.ac.uk, Queen Mary University, London, Mehreen Alam, , National
-University of Computer and Emerging Sciences, Pakistan, Rishemjit Kaur, rishemjit.kaur@csio.res.in, CSIR-Central Scientific
-Instruments Organisation, Sector-30C, Chandigarh, India, 160030.
-arXiv:2106.15115v1
-[cs.CL]
-29
-Jun
-2021
-2Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-these initial NMT systems required huge volumes of parallel data to achieve comparable results to
-that of SMT [93].
-High resource language pairs (such as English and French) do not have dataset size concerns
-because researchers have created ample amounts of parallel corpora over the years1. However,
-the requirement of having large amounts of parallel data is not a realistic assumption for many
-of the 7000+ languages currently in use around the world and therefore is considered a major
-challenge for low-resource languages (LRLs) [93]. Due to economic and social reasons, it is useful
-to automatically translate between most of these LRLs, particularly for countries that have multiple
-official languages. Therefore, in recent years, there has been a noticeable increase in NMT research
-(both by academia and industry) that specifically focused on LRL pairs.
-Despite this emphasis, we are not aware of any literature review that systematically examines
-the NMT techniques tailored for LRL pairs. Although there exists some work that discusses the
-challenges of using NMT in the context of LRL pairs [187] and the application of specific techniques
-for LRL pairs [34], none of them gives a comprehensive view of the available NMT techniques for
-LRL pairs. This makes it difficult for new researchers in the field to identify the best NMT technique
-for a given dataset specification. In addition, none of these surveys presents a holistic view of the
-NMT landscape for LRL pairs to derive insights on research efforts and current practices.
-This survey aims to address the above shortcomings in the NMT research landscape for LRLs.
-More specifically, it provides researchers working on LRLs a catalogue of methods and approaches
-for NMT and identifies factors that positively influence NMT research on LRL pairs. To achieve
-these aims, we answer the following research questions:
-(1) NMT Techniques: What are the major NMT techniques that can be applied to LRL pairs,
-and what are the current trends?
-(2) Technique Selection: How to select the most suitable NMT technique for a given language?
-(3) Future Directions: How to increase research efforts and what are the future directives for
-NMT on LRL pairs?
-To answer the above questions, we first conducted a systematic analysis of the NMT techniques
-that have been applied for LRL pairs, and their progress (Section 3). Secondly, we critically analysed
-the applicability of these techniques for LRL pairs in practical terms. Based on our observations,
-we provide a set of guidelines for those who want to use NMT for LRL pairs to select the most
-suitable NMT technique by considering the size and type of the datasets, as well as the available
-computing resources (Section 4). Lastly, we conducted a comprehensive analysis of the amount
-of NMT research conducted for LRLs in the world (Section 5). Here, we note a strong correlation
-between the amount of NMT research per language and the amount of publicly available parallel
-corpora for that language. We also note the recent rise of regional level research communities that
-contributed to parallel dataset creation, and thus NMT for LRL pairs in turn.
-Therefore, our recommendations to advance the area of NMT for LRL pairs are to 1) create
-LRL resources (datasets and tools), 2) make computational resources and trained models publicly
-available, and 3) involve research communities at a regional-level. Based on our analysis of the
-existing NMT techniques, we also recommend possible improvements to existing NMT techniques
-that would elevate the development of NMT techniques that work well LRL pairs.
-2 BACKGROUND
-2.1 Low-Resource Languages (LRLs)
-For Natural Language Processing (NLP), a low-resource problem can arise mainly due to the
-considered languages being low-resourced, or the considered domains being low-resourced [71]. In
-1The English-French corpus Cho et al. [25] used contained 348 Million parallel sentences.
-Neural Machine Translation for Low-Resource Languages: A Survey 3
-this paper, we focus on LRLs only.
-Researchers have attempted to define LRLs by exploring various criteria such as the number of
-mother-tongue speakers and the number of available datasets. According to Besacier et al. [16],
-an LRL2 is a language that lacks a unique writing system, lacks (or has) a limited presence on
-the World Wide Web, lacks linguistic expertise specific to that language, and/or lacks electronic
-resources such as corpora (monolingual and parallel), vocabulary lists, etc. NLP researchers have
-used the availability of data (in either labelled, unlabelled or auxiliary data), and the NLP tools and
-resources as the criteria to define LRLs [71].
-Over the years, there have been many initiatives to categorise languages according to the
-aforementioned different criteria [69, 82]. Given that the category of a language may change with
-time, we rely on the language categorization recently proposed by Joshi et al. [82] to identify LRLs.
-As shown in Table 1, Joshi et al. [82] categorised 2485 languages into six groups based on the
-amount of publicly available data.
-Class Description Language Examples
-0 Have exceptionally limited resources, and have rarely been considered in
-language technologies.
-Slovene, Sinhala
-1 Have some unlabelled data; however, collecting labelled data is challenging. Nepali, Telugu
-2 A small set of labeled datasets has been collected, and language support
-communities are there to support the language.
-Zulu, Irish
-3 Has a strong web presence, and a cultural community that backs it. Have
-been highly benefited by unsupervised pre-training.
-Afrikaans, Urdu
-4 Have a large amount of unlabeled data, and lesser, but still a significant
-amount of labelled data. have dedicated NLP communities researching these
-languages.
-Russian, Hindi
-5 Have a dominant online presence. There have been massive investments in
-the development of resources and technologies.
-English, Japanese
-Table 1. Language Categories identified by Joshi et al. [82]
-Unlike other NLP tasks, MT take place between two languages. Thus, in MT the resourcefulness
-of a language pair is determined by the available amount of parallel corpora between the considered
-languages. The terms ‘high-resource’, ‘low-resource’, as well as ‘extremely low-resource’ have been
-commonly used when referring to the parallel corpora at hand. However, there is no minimum
-requirement in the size of the parallel corpora to categorise a language pair as high, low, or extremely
-low-resource. Some early research considered even 1 million parallel sentences as LR [196]. More
-recent research seems to consider a language pair as LR or extremely LR if the available parallel
-corpora for the considered pair for NMT experiments is below 0.5 Million, and below 0.1 Million,
-respectively [99, 109, 129, 132, 183]; however, these are not absolute values for the size of the
-corpora.
-Even if a particular language has a large number of monolingual corpora while still having a small
-parallel corpus with another language, this language pair is considered as LR for the NMT task. We
-assume that languages that have been labelled as LR by Joshi et al. [82] have very small parallel
-corpora with other languages, or have no parallel corpora at all.
-2An LRL is also known as under resourced, low-density, resource-poor, low data, or less-resourced language [16]
-4Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-2.2 Related Work
-Some of the previous survey papers discussed different NMT architectures [130, 150, 160, 178, 187].
-They did not contain any reference of LRL-NMT, except for Zhang and Zong [187], which briefly
-identified Multilingual NMT (multi-NMT), unsupervised, and semi-supervised LRL-NMT techniques.
-Another set of papers surveyed only one possible NMT methodology, for example multi-NMT [34],
-leveraging monolingual data for NMT [56], use of pre-trained embeddings for NMT [132], or
-domain adaptation techniques for NMT [27]. Out of these surveys, Gibadullin et al. [56] specifically
-focused on LR settings, may be because monolingual data is more useful in that scenario. We also
-observed that some surveys focused on the broader MT, both SMT and NMT, in problem domains
-such as document-level MT [116], while others focused on MT for a selected set of languages [5].
-On a different front, we found surveys that discussed LRL scenarios in the general context of NLP,
-but did not have a noticeable focus on NMT or even MT [71].
-Table 2 categorises the survey papers discussed above. In conclusion, although there are surveys
-that dedicated a brief section on LRL-NMT and others that explicitly focus on LRLs for a selected
-NMT technique, there is no comprehensive survey on leveraging NMT for LRLs.
-Type of survey Examples
-NMT Architectures Zhang and Zong [187], Yang et al. [178], Stahlberg [150], Popescu-Belis
-[130], Vázquez et al. [160]
-Specific NMT Methodologies Dabre et al. [34], Chu and Wang [27], Gibadullin et al. [56], Qi et al. [132]
-Specific MT Problem Domain Maruf et al. [116]
-Specific Language Alsohybe et al. [5]
-LRL NLP Hedderich et al. [71]
-Table 2. Type of Survey papers
-2.3 Scope of the Survey
-Most of the NMT techniques discussed in this paper can be used in the context of LRL translation
-as well as LR domain translation. However, an LR domain, such as medical or finance, can exist
-for a high-resource language, such as English as well [71, 103]. In that case, additional language
-resources (e.g. WordNet, Named Entity Recognisers) can be utilised in developing the solution.
-However, such resources might not be available for LRL pairs. Thus, solutions that only apply for
-LR domains are considered out of scope for this paper. In this paper, we use the phrase low-resource
-language NMT (LRL-NMT) to refer to NMT techniques that are applicable for translation between
-LRL pairs.
-Similarly, we omit techniques that focused on NMT in general, without any specific focus
-on the translation of LRL pairs. We also omit techniques that focus on speech translation only,
-and multimodal translation (which is typically between images and text), as such research is not
-common in the context of LRL pairs. Some techniques (e.g. data augmentation (Section 3.2) and
-pivoting(Section 3.7)) have been used in the context of SMT as well, which is not discussed in this
-review.
-NMT solutions for zero-shot translation (no parallel data to train an MT model) are included
-because of its relationship to the task of transation of LRL pairs, with an overlap between the
-techniques used.
-Neural Machine Translation for Low-Resource Languages: A Survey 5
-3 NMT TECHNIQUES FOR LOW-RESOURCE LANGUAGES
-3.1 Overview
-NMT methodologies fall broadly into supervised, semi-supervised, and unsupervised. Supervised
-NMT is the default architecture that relies on large-scale parallel datasets. Recurrent neural ar-
-chitecture with attention [13], as well as the recently introduced transformer architecture [159],
-are commonly used. However, due to space limitations, we do not detail out these techniques,
-and interested readers can refer to the aforementioned references. Both these neural architectures
-rely on large parallel corpora, an advantage not available to LRLs. A solution is to synthetically
-generate data, which is called data augmentation (Section 3.2). These techniques can be applied
-irrespective of the NMT architecture used. In the extreme case where no parallel data is available,
-unsupervised NMT techniques (Section 3.3) can be employed. Even if the available parallel corpora
-is small, it is possible to combine them with the monolingual data of the languages concerned, in a
-semi-supervised manner (Section 3.4).
-Even if parallel data is available, building (bilingual) NMT models between each pair of languages
-is not practical. As a solution, multi-NMT models (Section 3.5) were introduced, which facilitate
-the translation between more than one language pair using a single model. Most of the multi-NMT
-models are based on supervised NMT, while some research is available on the applicability of
-semi-supervised, and unsupervised NMT in a multilingual setting. Although multi-NMT models
-were initially introduced to avoid the need to build individual bilingual translation models, their
-capability in the translation of LRL pairs is shown to be promising.
-Transfer learning (Section 3.6) is a technique that is commonly used in low-resource NLP,
-including NMT. Here, an NMT model trained on a high-resource language pair is used to initialize
-a child model, which reduces the amount of time taken to train the latter, while guaranteeing
-better performances over training the child model from scratch. In particular, transfer learning on
-multi-NMT models have shown very good performance for LRL pairs. This is a very promising
-development, as it is time-consuming to train a multi-NMT model every time a dataset for a new
-language pair comes up.
-Zero-shot NMT (Section 3.7) is a problem related to LRL-NMT. In zero-shot, there is no parallel
-data, and the model is trained with no parallel data for the considered language pair. While some
-researchers [18, 118] consider zero-shot to be synonymous to extremely LR case, others [80, 88]
-disagree. Promising solutions for zero-shot translation that have been presented include pivoting,
-multi-NMT, unsupervised NMT, and transfer learning. Zero-shot translation is extremely useful
-because it eliminates the requirement of the existence of parallel data between every pair of
-languages.
-Figure 1 gives an overview of these techniques. Note that it does not cover all the possible
-scenarios. For example, semi-supervised NMT techniques can work with monolingual data available
-either at the source or target side, and multi-NMT works with more than three languages.
-The following sub-sections discuss the aforementioned techniques at length. At the end of each
-sub-section, we discuss how the technique has been employed with respect to LRLs.
-3.2 Data Augmentation Techniques
-Data augmentation (DA) is a set of techniques that is used to create additional data either by
-modifying existing data or adding data from different sources, to be used in training Machine
-Learning models. For the problem of MT, data augmentation is used to generate synthetic parallel
-sentence pairs to train data-centric MT models, such as SMT and NMT. In contrast to the other
-techniques discussed in this section, data augmentation techniques usually do not alter the NMT
-architecture but generate data to train these neural architectures. Data augmentation techniques
-6Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-Fig. 1. NMT techniques applicable for the translation of LRL pairs. 𝐿1 − 𝐿3 refer to languages. Dashed lines
-indicate translation task, and solid lines indicate the availability of parallel corpora. Double circles in (a) and
-(b) indicate the languages have monolingual data. (a) Bilingual supervised NMT, (b) Bilingual semi-supervised
-NMT, (c) Bilingual unsupervised NMT, (d) Multi-NMT, (e) Pivoting.
-for NMT could be divided into 3 categories: i) word or phrase replacement based augmentation, ii)
-back-translation based augmentation, and iii) parallel corpus mining.
-1. Word or phrase replacement based augmentation: In this technique, a subset of sentences
-from an existing parallel or monolingual corpus is selected, and new synthetic sentences are
-generated by replacing words or phrases in that selected set of sentences. One solution is to use a
-bilingual dictionary and replace all the words [119] or rare words [127] in the selected sentences of
-a monolingual corpus, with the words in the other language in order to generate its translation.
-Another solution is to replace frequent words in the target sentences with rare words in the target
-vocabulary and then modifying the aligned source words accordingly [47]. The main problem with
-such synthetic data is a lack of fluency. There have been subsequent attempts to select the best set
-of words considering fluency [52, 166]. Alternatively, instead of replacing words, phrases can be
-replaced, which preserves the context and in turn, improves the fluency of resulting sentences [108].
-To further improve fluency, syntactic rules (e.g. morphological, POS, or dependency rules) have
-been imposed during word replacement [41, 157].
-2. Back-Translation based Data Augmentation: Back-Translation is the process of trans-
-lating a monolingual corpus in the target language by pre-existing MT system, in the reverse
-translation direction, into the source language. Then the obtained synthetic source language sen-
-tences along with their respective target language sentences are used to construct a synthetic
-parallel corpus [144]. Usually, target-side sentences are selected to be back-translated, because
-monolingual target data helps improve the fluency of the translation model. Fadaee and Monz [48]
-empirically showed that starting with the source side has a lesser success.
-Synthetic data generated using BT tends to be noisier than the original parallel data, especially
-if the MT system used to generate the synthetic data is suboptimal. This is particularly the case
-with MT systems trained with very small amounts of data. Thus, subsequent research improved BT
-using data selection, data filtering, distinguishing between synthetic and original data, sampling
-and iterative BT. These improvements are further discussed below.
-Iterative back-translation: In one form of iterative back-translation, source and target monolin-
-gual data are back-translated using source to target and target to source NMT models, respectively.
-This procedure is continued iteratively, where the same set of sentences is back-translated several
-times until no improvement is observed in both translation direction [10, 72]. Another option is to
-improve the forward and backward translators in an iterative manner [31, 70]. However, in these
-Neural Machine Translation for Low-Resource Languages: A Survey 7
-systems, the two translators are trained independently. As a solution, Zheng et al. [191] jointly
-trained the two translators.
-Monolingual data selection: In BT, simply back-translating all the available monolingual data
-would not guarantee optimal results. One factor that determines the performance of back-translation
-is the original-synthetic data ratio [45]. Thus, the synthetic to original parallel data ratio has to
-be selected carefully. The purpose of data selection is to select the best subset from the available
-monolingual corpora to be back-translated [39, 48].
-Synthetic parallel data filtering: Even if a subset of monolingual data is selected to be back-
-translated, the resulting synthetic data could contain noise. Data filtering refers to the process of
-selecting a subset of the generated synthetic parallel sentences (the highest quality ones) to be used
-alongside the original data to train the NMT system [77, 78].
-Distinguishing between original and back-translated data: Even after monolingual and paral-
-lel data filtering discussed above, it is highly likely that this data would be of lesser quality, compared
-to the original parallel data. It has been shown that adding a tag to the back-translated data to
-distinguish them from original data gives better results [21, 85, 115]. An alternative is to distinguish
-these two types of data by assigning a weight according to the quality of sentences[39, 85, 163].
-Sampling: In sampling, multiple source sentences are generated per target sentence in an attempt
-to average out errors in synthetic sentences [58, 75]. Note that this technique as well as the previ-
-ously discussed two techniques can be applied with other forms of DA techniques as well. However,
-we find experiments reported only in the context of BT.
-3. Parallel Data Mining (bitext mining) from comparable corpora: Comparable corpora
-refer to text on the same topic that is not direct translations of each other but may contain fragments
-that are translation equivalents (e.g. Wikipedia or news articles reporting the same facts in different
-languages). Parallel sentences extracted from comparable corpora have been long identified as a
-good source of synthetic data for MT.
-Because recently introduced multilingual sentence embeddings have become the common tech-
-nique for generating parallel data to train NMT models, we only discuss those techniques3. In these
-techniques, a multilingual sentence embedding representation is first learnt between two or more
-languages. Then, during the sentence ranking step, for each given sentence in one language, a set
-of nearest neighbours is identified as parallel sentences from the other language, using a sentence
-similarity measurement technique.
-Multilingual Embedding generation: Early research used NMT inspired encoder-decoder
-architectures to generate multilingual sentence embeddings. These include bilingual dual encoder
-architectures [64, 179], and shared multilingual encoder-decoder architectures [140]. Artetxe and
-Schwenk [11] leveraged the shared encoder-decoder model across 93 languages, which is publicly
-released under the LASER toolkit. This toolkit was the base for subsequent massive-scale parallel
-corpus extraction projects [14, 141, 142].
-The above-discussed multilingual embedding generation techniques require large parallel corpora
-during the training process. As a result, unsupervised [95], as well as self-learning [138] NMT
-architectures have been used to generate multilingual embeddings. A notable development is
-the use of pre-trained multilingual embedding models such as multilingual BERT (mBERT) or
-XLM-R [2, 84, 155, 184].
-Sentence Ranking: The choice of the sentence similarity measurement technique has been largely
-unsupervised (cosine similarity was the simplest one employed). However, this simple method is
-3We only discuss multilingual sentence embedding techniques that have been evaluated on NMT tasks. Some techniques
-have been evaluated on some other NLP tasks s.a. Natural Language Inference.
-8Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-suboptimal, and improved cosine similarity measurements are available [11, 64, 68]. In addition,
-supervised sentence measurement techniques have been employed to a lesser extent [2, 155].
-3.2.1 Data Augmentation for Low-Resource Language NMT. The above three data augmentation
-techniques have shown promising results for translation between LRL pairs. However, each tech-
-nique has its practical limitations when applied to the translation of LRL pairs. BT assumes that an
-MT system is already available between the given language pair. Moreover, as evidenced by many
-empirical studies, the success of BT depends on many factors such as the original-synthetic parallel
-data ratio, and the domain relatedness of the parallel and monolingual data [44, 48, 176]. In addition,
-there have been attempts to leverage high-resource language data for LRL with BT; however, its
-success depends on the relatedness of the high-resource language and LRL [83] or the availability
-of bilingual lexicons [175]. Word or phrase replacement based augmentation techniques rely on
-language-specific resources (e.g. bilingual dictionaries, Part of Speech (POS) taggers, dependency
-parsers) that many LRLs would not have. One possibility to explore the use of neural language
-models trained on monolingual data (e.g. BERT and its variants) to increase the fluency of the
-synthetic data. For parallel data mining, the applicability of pre-trained multilingual models such
-as LASER or mBERT is restricted to the languages already included in the pre-trained model. Thus,
-it is worthwhile to investigate the heuristic and statistical-based parallel corpus mining techniques
-employed in early SMT research, in the context of LRLs.
-3.3 Unsupervised NMT
-The generation of parallel corpora for language translation is expensive and resource-intensive.
-In contrast, monolingual corpora are often easier to obtain. As a result, unsupervised NMT using
-monolingual corpora or cross-lingual word embeddings (i.e., cross-lingual representations of words
-in a joint embedding space) is less data-intensive for LRL-NMT 4. Generally, the architecture
-for unsupervised NMT makes use of Generative Adversarial Networks (GANs) and contains the
-following three steps [180]: i) initialization, ii) back-translation, and iii) discriminative classifier.
-Initialization: The underlying goal of the initialization step is to bridge the gap between the in-
-put representations of the different languages in an unsupervised manner. As shown in Figure 2, the
-unsupervised NMT model is initialized by learning a mapping between two or more languages. The
-intuition is that human beings live a shared common experience in the same physical world. Thus,
-the embedding of different languages should have a shared mathematical context. Researchers have
-experimented with various linguistic resources and neural input representations for initialisation.
-The traditional lexical resources include bilingual dictionaries [9, 42, 100, 102] or word-by-word
-gloss [131] (inferred by aligning words [101], phrases [8, 102], or sub-words [8]).
-Neural representations include cross-lingual n-grams, word embeddings, language models (LMs)
-or dependency embeddings [26, 29, 43, 136]. These neural input representations are either jointly
-trained by concatenating the source and target monolingual corpora or by learning the transforma-
-tion between the separate monolingual embeddings to map them into the shared space. One such
-technique is to leverage the available bilingual dictionaries by initialising the model with bilingual
-word embedding [9, 42, 100]. Instead of words, using sub-word representations such as Byte Pair
-Encoding (BPE) has shown more promise [102].
-In recent works, it has been shown that the cross-lingual masked LMs could be more effective in
-initialising the models [29]. During training, the LM tries to predict the percentage of tokens that
-are randomly masked in the input. Ren et al. [136] further extended on the same lines by using
-n-grams instead of BPE tokens and inferred the cross-lingual n-gram translation tables.
-4The input corpora used for training data for unsupervised NMT is assumed to be monolingual corpora, while testing uses
-parallel corpora to evaluate the true translation
-Neural Machine Translation for Low-Resource Languages: A Survey 9
-Fig. 2. The initialization step of unsupervised NMT, where two languages are mapped to a common space. The
-input is a trained embedding for each language and a dictionary of mapped words. The dictionary pairs help
-guide the two embeddings by a) rotation and b) alignment. The resulting embedding space of the dictionary
-pairs is matched.
-Back-Translation: Next, the generative step uses back-translation (discussed previously in
-Section 3.2) by a denoising autoencoder that combines forward and backward translation from
-source to target, then target back to the source. The loss function compares the original source text
-against the doubly translated text. Again, the intuition is that there exists a common latent space
-between two languages so that the model can reconstruct the sentence in a given noisy version
-and then reconstruct the source sentence given noisy translation.
-Recent back-translation based on multi-NMT (Section 3.5) models have shown much better results
-compared to the bilingual counterpart [53, 105, 143, 154, 162].
-Adversarial Architecture: Finally, a discriminative step uses a binary classifier to differentiate
-the source language from the target language by distinguishing translated target text from original
-target text. An adversarial loss function trades-off between the reconstruction loss from the back-
-translation against the discrimination loss from the classifier. The result of this step is a high-quality
-translation that is more fluent for LRLs.
-Existing methods in the unsupervised NMT literature modifies the adversarial framework by
-incorporating additional adversarial steps or additional loss functions into the optimization step.
-These include dual cycle-GAN architecture [8] and local-global GAN [182]. On the other hand,
-those methods that add a loss function include embedding agreement [153], edit and extract [173],
-and comparative translations [153].
-3.3.1 Unsupervised NMT for Low-Resource Languages. The majority of the early unsupervised
-techniques focused on high-resource languages that have monolingual data in abundance [137, 143,
-148, 173, 181]; except for English-Russian and English-Romanian [42, 136, 180]. However, having the
-required input representation for the LRLs is a limitation because some LRLs do not have bilingual
-dictionaries or proper word alignments. On the other hand, to build a neural representation, large
-monolingual corpora are needed. How these resources perform in extreme LRLs has not been
-properly studied. More recent work that explored the conditions for using unsupervised NMT for
-LRLs having less monolingual data is a promising development [26, 43, 87, 114].
-Various researchers have found a reduced translation quality for LRL pairs that are not from similar
-linguistic families or similar domains [43, 87, 114]. Four areas of concerns are: i) different script
-and dissimilar language, ii) imperfect domain alignment or domain mismatch, iii) diverse datasets,
-and iv) extremely LRLs [114]. To resolve issues i and ii, Kim et al. [87] proposed robust training
-by using language models that are agnostic to language similarity and domain similarity, while
-Chronopoulou et al. [26] resolved issue i by combining transfer learning from HRL to LRL with
-unsupervised NMT to improve translations on a low-resource supervised setup.
-10
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-3.4 Semi-Supervised NMT
-In contrast to unsupervised techniques, semi-supervised techniques assume the availability of some
-amount of parallel corpora alongside monolingual corpora. Semi-supervised techniques can be
-categorised according to the way the monolingual data is utilised:
-Using monolingual data to generate synthetic parallel data: The simplest strategy is to
-create the synthetic parallel corpus (this is essentially data augmentation) either by 1) copying
-monolingual data of one language as the translated text [33], or 2) creating the source side with a
-null token [144]. A better way to generate synthetic data is through back-translation, as discussed
-in Section 3.2.
-Using monolingual data to generate a language model (LM): A LM can be integrated into
-the target-side of the NMT to improve the fluency of the generated text. This is named LM fusion,
-which can be broadly categorised as shallow fusion and deep fusion [63]. In shallow fusion, the LM
-is used to score the candidate words generated by the decoder of the NMT system either during
-inference time [63, 147], or training time [151]. In deep fusion, the NMT architecture is modified
-to concatenate the LM with the decoder. Deep fusion provides better performance. However, LM
-model fusion has few limitations: 1) The NMT model and LM are trained independently and are not
-fine-tuned, 2) LM is only used at the decoder, 3) in deep fusion, only the final layers of the LM are
-integrated, disregarding the low-level LM features, and 4) the NMT architecture has to be changed
-to integrate the LM [15, 134].
-Instead of LM fusion, Baziotis et al. [15] used the trained LM model as a weakly informative prior,
-which drives the output distributions of the NMT model to be probable under the distributions of
-the LM. This does not require any change to the NMT architecture. Another alternative is to use
-LMs to initialize the NMT model. Ramachandran et al. [134] initialized both encoder and decoder
-with the LMs of respective languages, while Abdou et al. [1] used source embeddings to initialize
-the encoder. Following this line of research, recently there have been initiatives to incorporate
-BERT fine-tuning for NMT [194]. A promising extension is the use of pre-training multilingual
-LMs, such as mBART, in the form of an autoregressive sequence-to-sequence model [109].
-Changing the NMT training objective to incorporate monolingual data: Cheng et al.
-[23] appended a reconstruction term to the training objective, which reconstructs the observed
-monolingual corpora using an autoencoder. This method assumes both source and target mono-
-lingual corpora are available. They jointly train source-to-target and target-to-source translation
-models, which serve as the encoder and decoder (respectively) for the autoencoder. Zhang et al.
-[188] also made use of both source and target monolingual data and employed source-to-target and
-target-to-source translation models. They introduced a new training objective by adding a joint
-Expectation Maximization (EM) estimation over the monolingual data to the Maximum Likelihood
-Estimation (MLE) over parallel data.
-Multi-task learning: Here, separate NMT models are used. Zhang and Zong [186] trained one
-model on the aligned sentence pairs to predict the target sentence from the source sentence, while
-the other is trained on the source monolingual data to predict the reordered source sentence from
-original source sentences. In essence, they strengthened the encoder using source-side monolingual
-data. Domhan and Hieber [37] followed a similar approach, however, they strengthened the decoder
-using target-side monolingual data. A similar technique is joint learning, where the source-to-target
-and target-to-source translation models, as well as language models, are aligned through a shared
-latent semantic space [192].
-Dual Learning: Dual learning is based on the concept of Reinforcement Learning (RL) and
-requires monolingual data on both sides. Parallel data is used to build two weak source-to-target
-and target-to-source translation models. Then, monolingual data of both sides undergo a two-hop
-Neural Machine Translation for Low-Resource Languages: A Survey 11
-translation. For example, source side data is first translated using the source-to-target model, the
-output of which is again translated by the target-to-source model. This final output is evaluated
-against the original monolingual sentence and is used as a reward signal to improve the translation
-models [70]. This process is carried out iteratively and shows some resemblance to iterative BT [192].
-However, RL based techniques are known to be very inefficient [168, 174]. Wu et al. [174] also
-argued that the above RL based technique does not properly exploit the monolingual data, and
-suggested several improvements. Wang et al. [168] transferred the knowledge learned in this dual
-translation task into the primary source-to-target translation task.
-3.4.1 Semi-supervised NMT for Low-Resource Languages. Although semi-supervised techniques
-have been presented as a solution to the scarcity of parallel data, we note the following concerns
-with respect to their applicability in the context of LRLs: 1) A LRL translation scenario has been
-simulated by taking small amounts of parallel data from high-resource languages such as English,
-French, German, and Chinese. 2) Some research has employed very large monolingual corpora.
-Although many LRLs have monolingual corpora with sizes larger than parallel corpora, it is difficult
-to assume they would have such large amounts of monolingual corpora, 3) Lack of comparative
-evaluations across the different semi-supervised techniques. Except for a few research [15, 168, 192],
-most of the others compared with back-translation only. Interestingly some reported results less
-than BT [37] and iterative BT [177], while some reported only marginal gains over BT [168, 174, 192].
-This makes one doubt the actual benefit of these sophisticated techniques. Thus to establish the
-usefulness of these techniques for true LRLs, experiments should be carried out concerning a wide
-array of languages and different monolingual dataset sizes.
-Although integrating massive language models such as BERT have shown promising results, these
-techniques have also been tested with high-resource languages. How these models would work
-with models built with rather small amounts of monolingual data should be investigated5. However,
-multilingual models such as mBART are indeed very promising for the translation of LRL pairs,
-which has been already proven [49] as further discussed in Section 3.5.
-3.5 Multilingual NMT
-Multilingual NMT (multi-NMT) systems are those handling translation between more than one
-language pair [34, 66]. Recent research has shown multilingual models outperform their bilingual
-counterpart, in particular when the number of languages in the system is small and those languages
-are related [96, 156]. Particularly, in English-centric datasets, multi-NMT models trained with
-roughly 50 languages have shown clear performance gains over bilingual models for LRLs [6]. This
-is mainly due to the capability of the model to learn an interlingua (shared semantic representation
-between languages) [80]. Training multi-NMT models is a more practical solution as opposed to
-building separate bilingual models in a real-world setting [6].
-Despite these benefits, multi-NMT faces challenging problems such as i) Inclusion of a large
-number of languages that have varying differences among them, ii) noise especially in the parallel
-data used, iii) data imbalance (some languages just having a fraction of parallel sentences compared
-to high-resource languages), and iv) other discrepancies concerning factors such as writing style
-and topic [6].
-With respect to the translation task, multi-NMT can be categorised into three types (Figure 3):
-(1) Translating from one source language to multiple target languages, (one-to-many) (Figure 3
-(a)): This is essentially a multi-task problem, where each target becomes a new task [38, 139].
-5Note that there is a long list of very recent publications in this line. However, due to this reason, above we cited only one.
-12
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-(2) Translating from multiple source languages to a single target language, (many-to-one) (Fig-
-ure 3 (b)): This can be considered as a multi-source problem, considered relatively easier than
-the multi-task problem [54, 195].
-(3) Translating from multiple languages to multiple languages,(many-to-many) (Figure 3 (c) and
-(d)). This is the multi-source, multi-target problem, and the most difficult scenario [50, 80].
-Supervised multi-NMT architectures introduced to tackle the aforementioned translation tasks
-can be broadly categorised into three paradigms: i) single encoder-decoder for all the languages
-(all source sentences are fed into the encoder irrespective of the language, and the decoder can
-generate any of the target languages (Figure 3. (c)); ii) per-language encoder-decoder (each source
-language has its own encoder, and each target language has its own decoder (Figure 3. (d)); and iii)
-shared (a single) encoder/decoder at one side, with per-language decoder/encoder at the other side
-(Figure 3. (a) and (b)). The main objective of these different architectures is to maximize the common
-information shared across languages while retaining language-specific information to distinguish
-between different languages. This mainly depends on how parameters are shared between individual
-encoders and decoders. All of these architectures are based on either the recurrent model with
-attention [80], or the transformer-based model [158]. Comparison of the recurrent model against
-the transformer model under the same settings has shown that the latter is better [96, 98, 139].
-Almost all the recent multi-NMT architectures are based on the transformer model.
-Single encoder-decoder for all the languages: For large-scale multi-NMT implementations,
-this is currently the state-of-the-art, especially in real-world industry-level systems [3, 6, 81]. Since
-all the source languages share the same encoder and all the target languages share the same decoder,
-while simultaneously supporting one-to-many, many-to-one, and many-to-many cases, this model
-is commonly known as the ‘universal NMT model’. The main advantage of a universal model is lower
-model complexity compared to per language encoder-decoder models (discussed next) because it
-has a lower parameter count. Moreover, as demonstrated by Johnson et al. [80], this universal model
-is capable of learning a form of interlingua, which is crucial in facilitating zero-shot translation
-(see Section 3.7).
-A major challenge in using this architecture is enabling the decoder to distinguish the target
-language. The common practice is to add a language identification tag to the source sentence [18,
-66, 80, 170]. An alternative is to add the language name as an input feature [67]. More recent work
-has used language-dependent positional embeddings representations [170, 172, 193].
-Per-language encoder-decoder: In this architecture, there is a separate encoder per source
-language, as well as a separate decoder per each target language[50]. As opposed to the universal
-NMT models described above, the requirement to capture language-independent features can be
-easily achieved by this setup. However, sharing common information across languages is a challenge.
-The commonly applied solution is the use of shared parameters in the model, employing shared
-attention [50, 110, 133, 161]. Platanios et al. [129] extended this idea even further, and introduced a
-contextual parameter generator, which enables the model to learn language-specific parameters,
-while sharing information between similar languages.
-Single encoder with per-language decoder / per-language encoder with single decoder:
-The single encoder per language with multiple decoder architecture supports the one-to-many
-scenario, where a single source language gets translated to multiple languages via multiple decoders
-(multi-task). The multiple encoders, single decoder architecture supports the many-to-one scenario,
-where multiple encoders process separate source languages while using a single decoder to translate
-into one target language (multi-source).
-In the one-to-many scenario, each decoder has its attention mechanism, so no parameter sharing
-takes place at the decoder side [38]. A more effective model is to allow partial sharing of parameters
-Neural Machine Translation for Low-Resource Languages: A Survey 13
-Fig. 3. Supervised multi-NMT architectures.
-across decoders [139, 171]. When there are multiple encoders alongside a single decoder, encoder
-output has to be combined to be sent to the decoder. Initial solutions assumed the used corpus is
-multi-way parallel [195]. Ways to relax this restriction are either to mark a corresponding sentence
-as null if a particular language does not have that sentence [124] or to generate the missing
-sentences with a pre-trained model [123].
-Many research has evaluated the pros and cons of these different architectures. For example,
-Hokamp et al. [73] showed that a unique decoder for each target language or unique decoder
-attention parameters for each target language outperform models with fully shared decoder pa-
-rameters. Sachan and Neubig [139] obtained better results with partial parameter sharing in the
-transformer model, over the full-parameter sharing recurrent model of Johnson et al. [80]. However,
-the best model selection would depend on the nature of the task at hand. For example, if the model
-is expected to deal with hundreds of languages, it is desirable to have maximum parameter sharing
-like in Johnson et al. [80], to reduce the model complexity [6].
-3.5.1 Multi-NMT for Low-Resource Languages. All of the three supervised multi-NMT techniques
-discussed above have been leveraged for LRL translation. In addition, the multilingual version of
-unsupervised and semi-supervised NMT models, as well as transfer learning on multi-NMT parent
-models have been used for LRL translation.
-1. Supervised multi-NMT architectures: In the available multilingual datasets, the LRL pairs
-are heavily under-represented. Thus, the results of supervised multi-NMT models for the LRL
-pairs are far below the results for high-resource languages, even though they use the same multi-
-NMT model [3]. The simplest strategy to alleviate this problem would be to over-sample the
-parallel corpus related to the LRL pair. There are different sampling strategies such as simple
-over-sampling and temperature-based sampling [6, 50, 164, 167]. Sampling data into mini-batches
-also has to be given careful consideration, to avoid any form of bias. Some strategies include
-scheduling (cycle through the bilingual language pairs) [50], using mini-batches that consist of
-different languages [80, 139], or using mini-batches that contain data from the same target [18].
-Data augmentation [129] (Section 3.2) and pivoting [51] (Section 3.7) can also be used to generate
-parallel data for LRL pairs.
-2. Unsupervised multi-NMT: When a multi-NMT model is built entirely upon monolingual
-data, it is referred to as unsupervised multi-NMT, which are trained following a similar process
-to that of bilingual unsupervised models (see Section 3.3). The difference between bilingual and
-multilingual NMT comes from the way the input representation is constructed. In the English-
-centric unsupervised model proposed by Sen et al. [143], first, the embeddings of non-English
-14
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-languages are mapped into the latent space of English embeddings. Sun et al. [154] constructed
-a multilingual masked language model using only a single encoder. Better results over the pure
-unsupervised model can be obtained if at least one language has parallel data with some other
-language [53, 105, 162].
-3. Semi-supervised multi-NMT In semi-supervised multi-NMT, monolingual data is used to
-create an additional training objective on top of the supervised translation training objective.
-While Siddhant et al. [146] used the MASS objective [149] for this purpose, Wang et al. [169]
-employed two monolingual auxiliary tasks: masked language modelling (MLM) for the source-side,
-and denoising autoencoding for the target side. Semi-supervised NMT is further discussed in
-Section 3.4.
-4. Transfer Learning on a pre-trained multi-NMT model: Transfer Learning is discussed
-in Section 3.6. Here we note that transfer learning using a multilingual parent has been identified
-as a promising approach for LRL-NMT [35, 60, 61, 97, 121]. In particular, some LRL data may not be
-available during multi-NMT training time and very large multilingual models cannot be re-trained
-every time parallel data for a new language pair becomes available [97, 122].
-Input Representation: Despite the multi-NMT methodology selected, a major factor that de-
-cides the success of multi-NMT for LRLs is the input representation. The input representation
-determines the ability to group semantically similar words from different languages in the embed-
-ding space. Input representation can be broadly broken down into two categories: surface form
-(word-level) representation, and embedding-based representation.
-When the surface form representation is used, a semantic grouping of words is achieved by
-adding a language token to each word [66], or by using additional information s.a POS of words [46].
-However, using word-level input results in large vocabulary sizes that are difficult to scale [129].
-Even if there are linguistically similar languages that share a common script, the amount of
-vocabulary overlap is minimal [34]. LRLs are severely affected by this [60].
-As a solution, sub-word level encoding (BPE [80, 139], sentence piece representation [6], or
-transliteration [57, 112] was used. Gu et al. [60] noted that even sub-word level encoding does not
-create enough overlap for extremely LRLs, since it still uses the surface form of the word. Further,
-as Wang et al. [165] pointed out, with such sub-word based techniques, semantically similar and
-similarly spelt words could get split into different sub-words for different languages.
-An alternative is to use input representations based on cross-lingual embeddings. Qi et al. [132]
-argued that, when the input languages are in the same semantic space, the encoder has to learn a
-relatively simple transform of the input. Moreover, in such shared spaces, LRLs get enriched with
-more semantic information with the help of high-resource languages. Such universal embedding
-representations have shown very promising results for LR as well as extremely LRL pairs [60, 165]. A
-very interesting development is the use of multilingual denoising models pre-trained on monolingual
-data of a large number of languages (e.g. mBART [109]), which can be fine-tuned on multilingual
-translation tasks. This has shown very promising results for LRL pairs [49].
-In summary, we see research efforts on multiple fronts to leverage multi-NMT for LRLs. While
-earlier research experimented with datasets sub-sampled from high-resource language pairs[38,
-50, 66], later research has experimented with actual LRLs [112]. Moreover, it is encouraging to see
-very promising results from transfer learning over multi-NMT models, as training large multi-NMT
-models is time-consuming. However, most of this research has been carried out holistically, without
-focusing on individual language, or language-family characteristics. How these characteristics can
-be exploited to better leverage NMT for LRLs would result in multi-NMT models that are more
-focused on a required set of languages.
-Neural Machine Translation for Low-Resource Languages: A Survey 15
-Fig. 4. Transfer Learning process.
-3.6 Transfer Learning in NMT
-Transfer learning is a sub-area in Machine Learning that reuses (i.e. transfers or adapts) knowledge
-that is gained from solving one particular task, problem, or model (parent) by applying it to a
-different but related one (child) [126]. Zoph et al. [196] first introduced the viability of transfer
-learning for NMT. In NMT, the parent model is first trained on a large corpus of parallel data from
-a high-resource language pair (or pairs), which is then used to initialize the parameters of a child
-model that is trained on a relatively smaller parallel corpus of the LRL pair (Figure 4).
-The advantages of transferring knowledge from the parent model to the child model include i)
-reducing the size requirement on child training data, ii) improving the performance of the child
-task, and iii) faster convergence compared to child models trained from scratch.
-The transfer process in NMT models can be broadly categorised as either warm-start and cold-
-start [121]. Due to the availability of child parallel data during parent model training, warm-start
-systems are more accurate and has been the focus of most of the previous work [36, 90, 113, 122, 196].
-However, cold-start systems are also of importance due to their resemblance to a real-life scenario
-where child parallel data is not always available at parent model training time [86, 91, 97].
-As shown in Figure 4, the first step in transfer learning is to train a parent model, which could
-be either bilingual or multilingual (note that the source and target in multi-NMT models can
-be many-to-one, one-to-many, or many-to-many. A special case of multi-NMT based transfer
-learning is fine-tuning large-scale multilingual language models such as mBART using small
-amounts of parallel data [30], as already mentioned in Section 3.5). However, the bilingual parent
-model is more common. The majority of the time, the parent and child have the same target
-language [4, 36, 86, 113, 118, 122, 196], while others use the same source language for both the
-parent and child [91]. However, it is also possible for the parent and child not to have shared
-languages in common [90, 111, 112]. Often, multi-NMT models used as parents in transfer learning
-have been trained on the many-to-one setting [35, 60, 61, 97, 121]. Despite the parent model being
-trained on either bilingual or multilingual source-target languages, the child has always been
-bilingual with the exception of Lakew et al. [97], which progressively fine-tuned a parent model in
-order to build a model that adequately performs on multiple language pairs.
-Improvements in transfer learning for NMT corresponds to three main aspects: i) minimizing
-the language space mismatch between languages, ii) fine-tuning technique and iii) the transfer
-protocol.
-Minimizing the language space mismatch: Transfer learning systems have to address the
-problem of language space mismatch, since parent and child languages may not have the same
-feature distribution [79]. When the surface form is used as input, this language mismatch problem
-becomes a vocabulary mismatch between parent and child models. In the warm-start systems,
-sub-word segmentation models can be applied to the parent and child training data to build
-joint vocabularies [35, 121]. Gheini and May [55] took this idea even further and introduced
-a universal vocabulary for the parent to train on. Lakew et al. [97] showed that a vocabulary
-based on sub-wording can be employed even in the cold-start scenarios by building a dynamic
-16
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-vocabulary. However, for cold-start scenarios, the better alternative is to pre-train a universal input
-representation, including child monolingual data, if available [60, 79, 86].
-Fine-tuning technique: Transferring knowledge from the parent model to the child model
-requires fine-tuning the parameters trained in the parent model on the child dataset. Conversely,
-when a particular layer of the parent model is not fine-tuned, this is called freezing that layer of the
-parent model. Below we list the research experiments with differing fine-tuning strategies, where
-the best freezing setup depends on factors such as the neural architecture employed, the translation
-task, and the dataset size. Thus we do not draw any conclusions on the best fine-tuning strategy.
-No fine-tuning: The whole parent model is frozen (in other words, copied) to the child [4, 79].
-Fine-tune the embedding layer: Similarity between parent and child language pairs (e.g. whether
-parent and child have the same target) determines which embedding has to be fine-tuned. For
-example, if the parent and child translate to the same target language, parent decoder embeddings
-can be transferred to the child [196]. When the surface form input is used, the most naive way
-of transferring the embedding layer is to randomly initialize the parent embedding layer before
-training the child model [196]. A better alternative is to take the parent and child vocabulary
-overlap while replacing the rest of the parent embeddings with child embeddings [97, 122].
-Fine-tune all of the parent model: No layer of the parent model is freezed [79, 91, 97, 112].
-Fine-tune a custom set of layers: This includes fine-tuning a selected combination on input, and
-inner layers of the encoder and decoder [4, 86, 91, 196].
-Transfer Protocol: Varying the transfer protocol is also a promising way to improve NMT
-transfer learning. This can be done in different forms:
-• Train a chain of consecutive NMT models by transferring the parameters of a parent model
-to new LRL pairs [97].
-• Train the initial NMT model on a parallel corpus for a resource-rich language pair, fine-tune
-it with the combined corpus of parent and child (can be more than one child), and finally,
-fine-tune further with the selected child data only [35, 113].
-• First train the unrelated high-resource language pair, then fine-tune it on a similar intermedi-
-ate language pair and finally fine-tune on the LRL pair [76, 111].
-Multiple factors determine the success of transfer learning. The relationship between the lan-
-guages used in parent and child models has been identified as the most crucial [36, 122, 196]. High
-relatedness between languages guarantees high vocabulary overlap when the surface form is used
-as input and would result in more meaningful cross-lingual embeddings as well. Much research has
-exploited vocabulary overlap of related languages using sub-word segmentation to achieve good
-results with transfer learning [122], even when parent and child have no language in common [90].
-An important consideration is the size of the sub-word vocabulary. It should be selected in such a
-way that the child is not overwhelmed by the parent [90, 121]. For related languages, transliteration
-has shown to reduce lexical divergence [57, 112, 122]. The syntactic divergence between parent and
-child can be reduced by re-ordering the parent data [86, 118]. Other factors that influence transfer
-learning include the size of the parent and child corpora, domains of the parent and child data, the
-number of shared words (vocabulary overlap), and the language script [4, 35, 90, 91, 106].
-3.6.1 Transfer Learning for Low-Resource Languages. Transfer learning was originally introduced
-as a solution to low-resource (both domain and language) NMT. With respect to translation of LRL
-pairs, transfer learning using a high-resource pair always yielded better results than training the
-child model from scratch. This holds even for extremely LR children as well [97]. Interestingly,
-some research has shown that transfer learning is better than training a child pair (or a set of pairs )
-with one or more parent pairs in a multi-NMT manner [86, 97, 112, 113]. However, that research has
-been conducted against an early multi-NMT model [80], considering very few languages. Whether
-Neural Machine Translation for Low-Resource Languages: A Survey 17
-the same observation would hold if a more novel multi-NMT model (discussed in Section 3.5) is
-used along with a large number of language pairs should be subject to more research. On the
-other hand, transfer learning using pre-trained multi-NMT parent models has received only limited
-attention [57, 60, 121]. As mentioned above, multiple factors affect the success of transfer learning.
-Thus the impact of these factors should be evaluated extensively to determine their exact impact
-on LRL-NMT. Zero-shot translation adds an extra condition to the cold-start scenario, meaning
-that child parallel data unavailable, as discussed in Section 3.7.
-3.7 Zero-shot NMT
-In the zero-shot scenario, no parallel corpus is available for the considered source(X)-target(Z)
-language pair. We have identified pivoting, transfer learning, multi-NMT and unsupervised NMT
-as existing solutions in the literature for zero-shot NMT.
-Pivot-based solutions:
-An initial solution for zero-shot translation was the pivot-based translation, also known as
-pivoting. Pivoting relies on the availability of an intermediate high-resource language (Y), called
-the ‘pivot language’. In pivoting, the translation of X-Z is decomposed into the problem of training
-the two high-resource independent models: source-pivot (X-Y) and pivot-target (Y-Z). A source
-sentence is first translated using the X-Y model, the output of which is again translated using the
-Y-Z model to obtain the target sentence.
-This basic form of pivoting has two main limitations. First, it suffers from the error propagation
-problem. Since the source-pivot and pivot-target models are independently trained, errors made in
-the first phase are propagated into the second phase. This is particularly the case when the source-
-pivot and pivot-target languages are distantly related. Second, as models have to be independently
-trained, the total time complexity is increased.
-To reduce the problem of error propagation, source-pivot and pivot-target models can be allowed
-to interact with each other during training by sharing the word embedding of the pivot language [24].
-Another solution is to combine pivoting with transfer learning [88]. Here, the high-resource source-
-pivot and pivot-target models are first independently trained as in the basic pivoting technique,
-acting as the parent models. Then the source-target model (child model) is initialized with the source
-encoder from the pre-trained source-pivot model, and the target decoder from the pivot-target
-model. In addition to reducing the error propagation, this method reduces time complexity, since
-only one trained model is used for translation. Another way to reduce error propagation is to use a
-source-pivot parallel corpus to guide the learning process of a pivot-target model [22]. Zheng et al.
-[190] proposed a similar approach by training the source-target model via Maximum Likelihood
-Estimation , where the training objective is to maximize the expectation concerning a pivot-source
-model for the intended source-to-target model on a pivot-target parallel corpus.
-It has been shown that adding even small amounts of true parallel source-target sentences (thus
-the extremely low-resource scenario) does increase the translation accuracy in pivoting [22, 24, 88,
-135] . Another possibility is to make use of monolingual data to generate synthetic parallel data.
-Pivot monolingual data is preferred because compared to source or target, pivot language would
-have much more monolingual data [32].
-A common observation of the above discussed pivoting research (with the exception of [32, 135])
-is that, although the focus is on zero-shot translation between a source and target, large parallel
-corpora have been employed for source-pivot and pivot-target pairs. However, some LRLs may
-not have large parallel datasets even with a high-resource language such as English. Moreover, as
-empirically shown by Liu et al. [107], the performance of pivoting depends on the relatedness of
-the selected languages. Thus, we believe that more research is needed to determine the impact of
-pivoting for zero-shot NMT in the context of LRL pairs.
-18
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-Transfer Learning-based Solutions: As mentioned in Section 3.6, transfer learning can be
-considered a form of zero-shot translation, when no parallel data is available for the child model. Ji
-et al. [79] explored transfer learning for zero-shot translation by mimicking the pivoting technique,
-assuming a high-resource pivot language. They use source-pivot data to build a universal encoder,
-which is then used to initialize a pivot-target model. This model is used to directly translate source
-sentences into target sentences.
-Multi-NMT-based Solutions: Although pivot-based models have been the solution for zero-
-shot NMT for a long time, recent research showed that multi-NMT models can outperform the
-pivot-based zero-shot translation [6]. Many-to-many models have recently shown to beat the
-English-centric multi-NMT models in zero-shot settings [49].
-A multi-NMT model can provide a reasonable translation between a source-target pair when
-the two languages are included in the model in the form of parallel data with any other language
-because the multi-NMT model is capable of learning an ‘interlingua’ (see Section 3.5). If the multi-
-NMT model is truly capable of learning a language-independent interlingua, there should be less
-correlation between the source and target languages. However, when the model is trained with a
-large number of languages, the modelling capacity (loosely measured in terms of the number of
-free parameters for neural networks [3]) has to be distributed across all the languages, suggesting
-that the overall model capacity is faced with a bottleneck [6, 185]. Thus, the learned interlingua
-is not fully language independent. Two solutions have been presented to solve this problem: to
-explicitly make the source and target languages independent [6, 62, 128, 145], and to improve model
-capacity [49, 185].
-As another solution, synthetic data can be generated between zero-shot language pairs using
-techniques such as pivoting [51] and back-translation [62, 98, 143, 185]. This synthetic parallel data
-is included in the multilingual corpus used to train the multi-NMT model.
-Unsupervised NMT-based solutions: Unsupervised NMT techniques discussed in Section 3.3
-rely only on monolingual data. Thus, this translation task can be considered as a zero-shot translation
-task.
-3.8 Analysis on the Popularity of LRL-NMT Techniques
-So far we have discussed seven different techniques that can be used for the translation of LRL
-pairs, as well as zero-shot translation . This section provides a quantitative view of the use of these
-techniques in the related literature.
-Figure 5 shows how the use of different techniques varied from 2014 onwards based on the
-research papers indexed in Google Scholar. For each of the technique, Google Scholar was searched
-with the following query: “<technique_name>” + “low-resource” + “neural machine translation” for
-the year range 2014-2020. However, we acknowledge that the search results contain noise. For
-example, in certain cases, unsupervised NMT research was referred in unsupervised text generation
-papers. However, here we are only interested in a comparative view, thus we assume the noise is
-equally distributed across the search results for all the techniques.
-Figure 5 shows that multi-NMT had the highest number of papers till 2019, however, unsupervised
-techniques have surpassed it marginally after that. In particular, the use of multi-NMT for LRL
-pairs started growing with the promising results shown by Firat et al. [50] and Johnson et al. [80]
-around 2016 and 2017. Transfer learning, and semi-supervised had similar growth till 2018, whereas
-from 2019 onwards transfer learning has seen a steep increase in popularity. Data augmentation
-techniques have gained popularity in 2020 as well. However, pivoting seems to have lost its traction,
-which may be due to the recent advancements in multi-NMT that outperformed pivoting for
-zero-shot translation [6]. Overall, it can be seen that the interest of the NMT research community
-towards LRLs is steadily increasing irrespective of the type of technique.
-Neural Machine Translation for Low-Resource Languages: A Survey 19
-2014 2015 2016 2017 2018 2019 2020
-Year
-0
-200
-400
-600
-800
-1000
-N
-GS
-Multilingual
-Unsupervised
-Transfer learning
-Semi-Supervised
-Data Augmentation
-Pivoting
-Fig. 5. Number of Google Scholar search results(𝑁𝐺𝑆 ) for different techniques from 2014-2020
-4 GUIDELINES TO SELECT A TECHNIQUE FOR A GIVEN DATA SPECIFICATION
-The effectiveness and viability of the techniques presented in Section 3 depend on the size and
-nature of the available parallel and monolingual data and the computational resources at hand.
-This section gives a set of guidelines to advise practitioners of LRL-NMT on the suitable technique
-for a particular data setup. These guidelines should not be construed as rigid criteria but only as an
-advisory for the practitioners.
-Figure 6 shows a possible process that can be followed in selecting an NMT technique. This
-flowchart only provides guidelines for the bilingual scenario where parallel data is available for a
-pair of languages. However, it should be noted that if sufficient computing resources are available,
-the multilingual versions of all the techniques can be used as they have shown promising results
-with respect to LRL pairs. We did not show the multilingual scenario just for the sake of clarity.
-We considered the availability and size of the parallel corpus, the availability of monolingual
-corpora, and language similarity as the major factors to select a technique. The foremost factor
-that we have considered is the availability of parallel corpora. If a parallel corpus is available for a
-language pair, the next step is to check its size (step 1). There is no definite threshold suggested
-in the literature for the size of the parallel corpus to be considered an LRL scenario in NMT.
-However, following our discussion in Section 2.1, here we considered an LRL scenario where a
-particular language pair has less than 0.5M parallel sentences. This is not a hard threshold but a
-mere suggestion. If a particular language pair has more than 0.5M sentences, we can achieve a
-reasonable performance through supervised NMT techniques (step 2).
-If the parallel corpus has less than 0.5M sentences, there could be multiple steps taken by a
-practitioner (as shown by steps 3-5 in Figure 6). One of the steps could be to increase the size of
-the dataset by using data augmentation (step 3) which is further followed by a supervised NMT
-technique (step 6). Data augmentation can be performed by using resources such as bilingual
-dictionaries and monolingual data. The other option could be to integrate the available monolingual
-and parallel data to perform semi-supervised NMT (step 5).
-If the source and target languages have parallel data available with some other common language
-such as English, then we can also recommend attempting pivoting (step 10). However, if such
-parallel datasets are not available, a practitioner can attempt transfer learning (step 11). For this
-scenario, a parallel corpus between two high-resource languages can be used to build the parent
-model, which can further be fine-tuned to the LRL child. Transfer learning can be performed on
-20
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-multi-NMT models as well even when high-end GPU machines are not available. As discussed in
-Section 3.6, the effectiveness of transfer learning depends on the language relatedness, therefore
-the selection of parent model has to be done carefully. It should be noted that it is always possible
-to increase the original dataset size by applying data augmentation techniques, before applying
-pivoting, transfer learning, or semi-supervised solutions.
-If the considered LRLs do not have parallel data but have a reasonable amount of monolingual
-corpora (which is a reasonable assumption for most of the LRLs), unsupervised NMT can be applied
-(step 13). If a considered language pair neither has any parallel data, nor the monolingual corpora6,
-the only option is to manually create parallel and/or monolingual corpora (step 14).
-We would like to conclude with the following two remarks. First, for each of the discussed
-LRL-NMT techniques, a large body of past related research is available; therefore, practitioners have
-to carefully select the most appropriate technique to be used as the baseline for their considered
-languages. This decision not only depends on the exact size of the available datasets but also the
-language characteristics and any other associated language/linguistic resources such as POS taggers
-and bilingual dictionaries. Second, LRL-NMT should be considered as an iterative process. For
-example, as shown by step (15), once a parallel corpus is manually created, the considered language
-pair now has a parallel dataset less than 0.5M. With that, either transfer learning, or semi-supervised
-NMT can be tried out. With this trained model, more parallel data can be generated. Although the
-generated parallel data might not be 100% accurate, the noise can be removed via post-processing
-(manual/automatic/hybrid) to obtain cleaner data. It is possible to train a new model with this
-newly cleaned data by integrating it with the original corpus.
-5 LANDSCAPE OF LOW-RESOURCE LANGUAGES AND NMT RESEARCH
-There are over 7000 languages being spoken around the world. A look into the related research
-reported in Section 3 reveals the NMT techniques have mostly been tested on the same set of
-languages. Identifying reasons for this imbalance in language selection would lead to efforts for more
-language diversity and inclusion in NMT research. We built upon the work by Joshi et al. [82] in
-which 2485 languages have been divided into 6 classes (see Table 1) based on the amount of publicly
-available un-annotated and annotated corpora. Although Joshi et al. [82] did not specifically refer
-to parallel data available for NMT, we hypothesize that there exists a strong correlation between
-the language class (and consequently the amount of publicly available data for that language) and
-the amount of NMT research available for this language.
-5.1 Methodology
-We queried Google Scholar with the query “neural machine translation” + “language” (e.g. “neural
-machine translation” + “Hindi”). We excluded results before 2014 along with patents and citations.
-It should be noted that the search results were noisy; the most common among them being the
-ambiguity in the language name, where the language name is the same as the other entities such as
-location or author name. For example, the language ‘Swati’, a Bantoid language spoken in Africa is
-also a common Indian name. Therefore, we manually checked and removed 240 such languages
-from our analysis.
-In order to find the LRLs that have been frequently used by the NMT community, we studied the
-outlier languages in language Classes 0-2 in Joshi et al. [82], using the obtained Google Scholar
-search results (𝑁𝐺𝑆 ). For each class 𝑐, the outlier languages were identified using the following
-equation:
-𝑁𝑙
-𝐺𝑆 > 𝑄𝑐
-3 + 1.5𝐼𝑄𝑅𝑐
-(1)
-6We refer to electronic resources, which could be the case with endangered languages that do not have any web presence.
-Neural Machine Translation for Low-Resource Languages: A Survey 21
-Fig. 6. Flowchart describing selection of an appropriate technique for a given data specification
-where 𝑁𝑙
-𝐺𝑆 represents the number of Google Scholar results obtained for a language 𝑙, 𝑄𝑐
-3 is the
-third quartile and 𝐼𝑄𝑅𝑐 is the interquartile range of Google Scholar results for a language class
-𝑐. In order to ascertain the factors responsible for the interest of the researchers towards these
-languages, we manually selected some of these outliers with geographical variations and plotted
-the number of search results with respect to the year. These languages are selected such that it has
-a diverse mix of language class7.
-5.2 Results and Discussions
-We found 12.6%, 11.2% and 7.1% of languages as outliers for Class 0-2 respectively. A few random
-outlier examples are Sinhala & Slovene (Class 0), Nepali & Telugu (Class 1), and Irish (Class 2), as
-shown in Figure 7(a). We identified the possible factors responsible for the growth of research for
-some languages and put them into four categories: geographic considerations, dataset availability,
-open source frameworks and models, and community involvement.
-Geographic considerations : We hypothesize that the geographical location where a language
-is spoken might play an important role in the growth of that language. To validate the importance
-of geography, we looked at the outlier languages from Class 0-2 with respect to their geographical
-7Hausa and Swahili (from African macroarea) were not among the outlier languages, yet they were included in the plot to
-show geographical diversity.
-22
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-0 1 2
-Language Class
-0
-100
-101
-102
-103
-N
-GS
-Irish
-Malayalam
-Nepali
-Slovene
-Sinhala
-Taiwanese
-Telugu
-2014 2015 2016 2017 2018 2019 2020
-Year
-0
-20
-40
-60
-80
-100
-120
-140
-N
-GS
-Telugu
-Nepali
-Sinhala
-Slovene
-Gujarati
-Swahili
-Hausa
-Irish
-Fig. 7. a) Boxplot showing the distribution of Google Scholar search results (𝑁𝐺𝑆 ) for different language
-classes. Outliers are marked by black markers and have been calculated independently for each class b)Time-
-varying trends of a few selected outlier languages from Classes 0-2. Y-axis represents the year and the x-axis
-represents the number of Google Scholar search results(𝑁𝐺𝑆 )
-location8. In Figure 8(a), we plot the percentage of outlier vs its geographical region. We found that
-in Class 0, approximately 25% of the outliers are languages from the European region, whereas in
-Class 1, approx 7% of the total languages from Europe are outliers.
-Thus it is safe to assume that the early growth for NMT was mostly driven by the geographical
-location of the language. This could be due to the availability of funds, resources, and regional level
-joint projects. One of the prominent examples is the growth of European languages. Some of the
-recent trends are also supporting this. For example, the steady increase in the research activity for
-Irish and Slovene, outliers from Class 2 and Class 0 respectively (see Figure 7) might be due to their
-presence in the European region.
-Dataset availability: The next source of growth is driven by the availability of the datasets.
-For example, Sinhala and Nepali, outlier languages from Class 0 and Class 1, respectively have
-seen a steep rise from 2018-19 onwards (see Fig 7(b)). One reason could be due to the release of the
-FLoRes Evaluation Datasets [65], which includes both Sinhala-English and Nepali-English. Our
-analysis revealed that the inclusion of a language in the standard yearly challenge such as WMT
-has a considerable impact on its growth in terms of NMT. For example, WMT-2019 [92] shared
-task had Nepali-Hindi parallel corpus. Similarly, Nepali and Sinhala were also part of Google’s
-102 languages corpus [3]. Similarly, the increase in the number of publications for the Gujarati
-language from 2019 onwards could be attributed to the fact that the Gujarati-English language pair
-was included in the Shared Machine Translation task in WMT 2019 [20].
-To quantify the relationship between the availability of datasets and research activity around that
-language, we used the resource matrix9. This contains the details of the number of monolingual
-corpora and parallel corpora for 64 languages. Even though the list is not exhaustive, it is helpful
-for the growth analysis as it contains the languages from all the classes. In Figure 8(b), we plot the
-total number of datasets available v.s. the research activity (number of Google Scholar results for
-NMT) for a particular language. The number of datasets (X-axis) has been calculated by summing
-the number of monolingual datasets available for a source language and parallel corpora available
-between a source language and the other target languages. It can be observed that the availability
-8The geographical area of a language is determined by using WALS data [40]
-9More information on this source: http://matrix.statmt.org/resources/matrix?set=all
-Neural Machine Translation for Low-Resource Languages: A Survey 23
-0 1 2
-Language Class
-0
-5
-10
-15
-20
-25
-30
-35
-Percentage
-of
-outlier
-langauges
-Macro Area
-Africa
-Asia
-Australia
-Europe
-North America
-Papunesia
-South America
-0 100 200 300 400 500 600
-NDatasets
-0
-2000
-4000
-6000
-8000
-10000
-12000
-14000
-N
-GS
-English
-French
-German
-Italian
-Dutch
-Persian
-Hindi
-r=0.88
-Fig. 8. a) Percentage of outliers from 7 different geographical regions for Classes 0-2 b) Relationship between
-the number of datasets available and number of Google Scholar search results (𝑁𝐺𝑆 )
-of datasets is directly correlated with the research activity (𝑟 = 0.88), which further strengthens our
-claim that the NMT growth for a particular language is directly proportional to the data availability.
-Open-source frameworks and models accessibility The availability of open-source frame-
-works and models is a major contributing factor towards the growth of research in the area of
-NMT. Frameworks such as OpenNMT [89], and fairseq [125], as well as pre-trained models such
-as mBART [109] provide an easy and scalable implementation that helps in building a baseline
-and improving it for existing and new languages. These open-source projects are periodically
-maintained, flexible, and provide most of the latest NMT-related techniques. Since these projects
-provide standardized codes, it becomes easy to adapt for the LRLs even by novice researchers.
-It eliminates the need to develop the codes from scratch and helps in accelerating the research
-process.
-Community involvement: A recent development is a group of like-minded researchers coming
-together to increase the visibility of MT systems in the context of languages used in a particular
-region. It consists of both dataset building and the development of the standardized code and
-also focuses on training a new generation of enthusiasts to carry forward the work. One of the
-prominent examples is the Masakhane project [120], which aims to put the Africa AI, specifically
-African language MT, into the world map. Within about two years, the Masakhane community has
-covered more than 38 African languages and resulted in multiple publications [120]. As we could
-see from Figure 7(b), two of the representative languages, Swahili and Hausa, have a steep growth
-after 2018, which coincides with the inception of the Masakhane project.
-Our results and analysis highlight i) the importance of community building and region-level
-projects, ii) the inclusion of LRL datasets into yearly challenges and large multilingual datasets,
-and iii) the availability of open source models and frameworks to increase the focus on LRLs in
-the NMT landscape. This analysis could provide a cue to the researchers and funding agencies
-worldwide for the development of LRL resources.
-6 DISCUSSION
-This section discusses the open questions in LRL-NMT research and provides the answers to our
-initial research questions.
-24
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-6.1 Open Questions for LRL-NMT and Future Directions
-While notable advances have been made in LRL-NMT in recent years, there remain interesting
-directions for exploration in model improvements as well as equitable and inclusive access.
-6.1.1 Model Improvements. Based on the various LRL-NMT techniques discussed, there are multiple
-improvements that can be applied to the model: allowing the multilingual models to include more
-LRL pairs, making the models more robust to limitations in the input dataset, expanding the
-interpretability and explainability of the model in understanding their behaviour on LRL pairs, and
-mitigating biases in the model.
-Model Capacity to Include LRLs. Massive multi-NMT models is a promising technique, especially
-for systems produced by multinational tech companies [3, 6, 49]. In particular, multi-NMT for
-zero-shot translation is an important line of research, as it eliminates the need for parallel datasets
-between every possible language. The work of Fan et al. [49] is of particular interest, as it deals with
-a non-English-centric multilingual dataset, yet managed to outperform English-centric models in
-zero-shot translation. However, despite multi-NMT being able to cover about 100 languages [3, 6],
-only a small fraction of LRLs are included from the more than 7000 possible languages. Therefore,
-more efforts need to be invested in scaling multi-NMT models that are capable of handling a larger
-number of languages, which would inherently cover LRLs and extremely LRLs. It is important to
-investigate how these LRLs are better represented in these massive models without compromising
-the performance of high-resource languages. Fan et al. [49] recently reported promising results on
-this line, which should be further explored.
-Model Robustness to Limiting Input Factors: Techniques discussed in Section 3 are limited by
-various input requirements such as the size of the datasets, domain of the datasets, and language
-relatedness. Although some ablation studies [4, 6, 44] have been done to understand the effect of
-input requirements, they are not sufficient or not exhaustive in considering model robustness.
-For the example of language similarity, LRLs that have syntactic differences between spoken and
-written forms (e.g. Sinhala) is a challenge. Another challenge is translating code-mixed data. In
-terms of domain relatedness, most publicly available datasets are from sources that do not resemble
-real-life translations. Thus, more focus should be given to multilingual domain adaption research,
-where pre-trained multi-MNT models can be fine-tuned to the task at hand (e.g. translating legal
-or medical records). Thus, empirical experimentation with the goal to extend the field to new
-approaches and architectures to address these limitations must be conducted.
-Model Interpretability and Explainability: Explaining and interpreting neural models is a challenge
-for researchers in Deep Learning. For multi-NMT, there have been experiments [80, 94] that delve
-into models to examine how the learning takes place, and how different languages behave. There
-have also been attempts to provide theoretical interpretations on aspects of NMT models [189].
-However, we believe more research in NMT model interpretability (such as interlingua learning
-and parent-child transfer) would help developing solutions specific to LRLs.
-Mitigating Model Bias: It has already been shown that gender bias exists in NMT models when
-trained on high-resource languages [104, 152]. Recently, the existence of biases in the context of
-LRL MT is a problem that has not come into light as far as we know. In particular, when translating
-between languages belonging to different regions and cultures in multilingual settings, there can
-be undesirable influences from high-resource languages. As discussed later in this section, parallel
-data extracted from the web tends to contain bias. While there should be parallel efforts to free
-datasets of bias, it is important to develop models that are robust to dataset bias in order to prevent
-Neural Machine Translation for Low-Resource Languages: A Survey 25
-the ramification of propagating stereotypes from the social context of high-resource languages in
-to LRLs.
-6.1.2 Equitable and Inclusive Access. Findings in our trend analysis (Section 3.8) suggest that
-more resources should be made available to underrepresented geographic regions, especially for
-communities that are traditionally excluded in technological development and those who face
-social-economic inequities. Therefore the inclusion of these communities can be prioritized when
-creating datasets and when providing accessibility to substantial computing resources required for
-building time-consuming and expensive neural models. These communities will also benefit from
-open-source tools and frameworks, as well as the availability of trained models.
-Creation of Datasets: Most of the datasets used in NMT have originated in a small number of
-regions in the world focusing on English-centric translations, however about 40% the content on
-the Internet is now non-English10. Although LRL-NMT was initially applied to large corpora by
-sub-sampling HRLs such as English, French, and German, [7, 8] it was later adapted for LRL pairs
-such as English-Esperanto, [101], English-Urdu, English-Romanian, and English-Russian [29, 102]11.
-This focus shifted to European LRLs, and more recently to non-European languages such as Indian,
-African, East Asian, and Middle Eastern languages [20, 65, 92, 120]. However, the amount of such
-datasets is less than high resource counterparts.
-Therefore, on par with current trends in some Machine Learning communities, more focus can
-be given to those that present new LRL datasets rather than the novelty of the employed technique,
-when accepting papers to conferences and evaluating value of this type of research. Contribution
-of conferences such as LREC, and journals such as the LREC journal is commendable, in this regard.
-Projects such as ParaCrawl [14] have automatically mined a large amount of parallel data from the
-web for multiple language pairs, including LRL such as Irish and Nepalese. In addition, regional
-communities can take the lead in dataset creation due to their expertise in their own cultural
-context thus could provide better judgement on the bias (discussed in the next point).
-More recently, the problem of dataset bias has received significant attention from the community
-[19]. For example, the public crawl data available demonstrate a narrow sub-segment of population
-and may encode values and perspectives that exist within Western society. More specifically, it has
-been shown that scrapped text contains geographical bias [59, 117], as well as an age and gender
-bias [28]. Furthermore, these web crawl datasets contain the potential to harm due to abusive
-language, hate speech, microaggressions, dehumanization, and social-political biases [12]. Thus,
-data pre-processing mechanisms can be employed with input from experts such as social scientists,
-regional communities, and linguists familiar with different languages.
-Open-source Tools and Frameworks. Same as creating new LRL datasets, accessibility to tools
-and frameworks for LRLs are critical in advancing the field. Therefore, creating and making them
-open-source for free access is of tremendous benefit to LRL community. We like to note the positive
-impact created by open source initiatives such as HuggingFace12.
-Availability of Trained models: Although the community has a recent focus on developing com-
-putationally efficient NMT models [17], the public release of large-scale multi-NMT models has
-been limited, with the exception of the work by [109]. By giving public access to these models,
-these time-consuming and expensive models can be used as the parent models to be transferred
-to the LRL child models. Therefore publicly releasing NMT models including massive multi-NMT
-10https://www.visualcapitalist.com/the-most-used-languages-on-the-internet/
-11[100] excluded because low-resource was suggested but not experimented
-12https://huggingface.co/
-26
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-models would be tremendously beneficial to those working in LRL-NMT as well as advancing the
-field in other areas.
-Availability of Computational Resources: The community has a recent focus on developing com-
-putationally efficient NMT models and providing computational resources for researchers [17]13.
-However, more efforts need to be put forth by the research community, industry organizations, and
-governments in distributing resources and attention. Furthermore, computational resources can
-also be made available as part of conferences and challenges to further encourage LRLs researchers
-to participate.
-6.2 Answering the Research Questions
-Key findings of this survey can be summarized as follows:
-(1) Techniques and Trends: Our survey found that there is a substantial amount of LRL-
-NMT research, and the trend continues. All the LRL-NMT techniques (data augmentation,
-unsupervised NMT, semi-supervised NMT, multi-NMT, and transfer learning for NMT) except
-pivoting show an upward trend with respect to the research publications, suggesting that
-these techniques have established themselves as the de facto solutions for LRL-NMT.
-(2) Technique Selection: The decision chart we produced on technique selection can be taken
-as a guide in selecting the most appropriate NMT technique for a given data specification,
-also considering the availability of computational resources. However, we note that this
-selection also depends on other factors such as language relatedness, and the domain of data.
-These factors were discussed with respect to individual LRL-NMT techniques.
-(3) Future Directions: We identified multiple research areas for the research community to
-collectively increase efforts on LRL-NMT. These initiatives were broadly categorised as model
-improvements and equitable and inclusive access.
-7 CONCLUSIONS
-Due to the recent advancements in the field, NMT is no longer an unattainable goal for LRLs.
-However, the sheer volume as well as the acceleration of research taking place makes it difficult
-to select the state-of-the-art LRL-NMT techniques for a given data specification, as no guidelines
-are available for the selection of the most appropriate NMT technique for a given data setup. The
-contribution of this survey paper is to give a comprehensive picture of the LRL-NMT landscape,
-highlighting the recent trends in technological advancements and provide a guideline to select
-the most appropriate LRL-NMT technique for a given data specification. Based on our findings
-through research publications and our quantitative analysis, we provided a set of recommendations
-to advance the LRL-NMT solutions. We believe that these recommendations would be positively
-received by the NMT research community.
-8 ACKNOWLEDGEMENT
-The first author (SR) would like to thank the postgraduate students of the National Language
-Processing Center, University of Moratuwa, and the undergraduates of the Department of Computer
-Science and Engineering, University of Moratuwa, for their support.
-REFERENCES
-[1] Mostafa Abdou, Vladan Glončák, and Ondřej Bojar. 2017. Variable mini-batch sizing and pre-trained embeddings. In
-Proceedings of the Second Conference on Machine Translation. 680–686.
-13Some tech giants also provide research grants to use their cloud GPUs platforms.
-Neural Machine Translation for Low-Resource Languages: A Survey 27
-[2] Haluk Açarçiçek, Talha Çolakoğlu, Pınar Ece Aktan Hatipoğlu, Chong Hsuan Huang, and Wei Peng. 2020. Filtering
-Noisy Parallel Corpus using Transformers with Proxy Task Learning. In Proceedings of the Fifth Conference on Machine
-Translation. 940–946.
-[3] Roee Aharoni, Melvin Johnson, and Orhan Firat. 2019. Massively Multilingual Neural Machine Translation. In
-Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics:
-Human Language Technologies, Volume 1 (Long and Short Papers). 3874–3884.
-[4] Alham Fikri Aji, Nikolay Bogoychev, Kenneth Heafield, and Rico Sennrich. 2020. In Neural Machine Translation,
-What Does Transfer Learning Transfer?. In Proceedings of the 58th Annual Meeting of the ACL. 7701–7710.
-[5] Nabeel T Alsohybe, Neama Abdulaziz Dahan, and Fadl Mutaher Ba-Alwi. 2017. Machine-translation history and
-evolution: survey for Arabic-English translations. arXiv preprint arXiv:1709.04685 (2017).
-[6] Naveen Arivazhagan, Ankur Bapna, Orhan Firat, Dmitry Lepikhin, Melvin Johnson, Maxim Krikun, Mia Xu Chen,
-Yuan Cao, George Foster, Colin Cherry, et al. 2019. Massively multilingual neural machine translation in the wild:
-Findings and challenges. arXiv preprint arXiv:1907.05019 (2019).
-[7] Mikel Artetxe, Gorka Labaka, and Eneko Agirre. 2017. Learning bilingual word embeddings with (almost) no bilingual
-data. In Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics. 451–462.
-[8] Mikel Artetxe, Gorka Labaka, and Eneko Agirre. 2019. An Effective Approach to Unsupervised Machine Translation.
-In Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics. 194–203.
-[9] Mikel Artetxe, Gorka Labaka, Eneko Agirre, and Kyunghyun Cho. 2018. Unsupervised Neural Machine Translation.
-In 6th International Conference on Learning Representations, ICLR 2018, Conference Track Proceedings.
-[10] Mikel Artetxe, Gorka Labaka, Noe Casas, and Eneko Agirre. 2020. Do all roads lead to Rome? Understanding the role
-of initialization in iterative back-translation. Knowledge-Based Systems 206 (2020), 106401.
-[11] Mikel Artetxe and Holger Schwenk. 2019. Margin-based Parallel Corpus Mining with Multilingual Sentence Embed-
-dings. In Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics. 3197–3203.
-[12] Brooke Auxier and Monica Anderson. 2021. Social media use in 2021. Pew Research Center (2021).
-[13] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. 2015. Neural Machine Translation by Jointly Learning to
-Align and Translate. In 3rd International Conference on Learning Representations, ICLR 2015.
-[14] Marta Bañón, Pinzhen Chen, Barry Haddow, Kenneth Heafield, Hieu Hoang, Miquel Esplà-Gomis, Mikel L. Forcada,
-Amir Kamran, Faheem Kirefu, Philipp Koehn, Sergio Ortiz Rojas, Leopoldo Pla Sempere, Gema Ramírez-Sánchez,
-Elsa Sarrías, Marek Strelec, Brian Thompson, William Waites, Dion Wiggins, and Jaume Zaragoza. 2020. ParaCrawl:
-Web-Scale Acquisition of Parallel Corpora. In Proceedings of the 58th Annual Meeting of the ACL. 4555–4567.
-[15] Christos Baziotis, Barry Haddow, and Alexandra Birch. 2020. Language Model Prior for Low-Resource Neural Machine
-Translation. In Proceedings of the 2020 Conference on Empirical Methods in NLP. 7622–7634.
-[16] Laurent Besacier, Etienne Barnard, Alexey Karpov, and Tanja Schultz. 2014. Automatic speech recognition for
-under-resourced languages: A survey. Speech Communication 56 (2014), 85–100.
-[17] Alexandra Birch, Andrew Finch, Minh-Thang Luong, Graham Neubig, and Yusuke Oda. 2018. Findings of the Second
-Workshop on Neural Machine Translation and Generation. In Proceedings of the 2nd Workshop on Neural Machine
-Translation and Generation. 1–10.
-[18] Graeme Blackwood, Miguel Ballesteros, and Todd Ward. 2018. Multilingual Neural Machine Translation with
-Task-Specific Attention. In Proceedings of the 27th International Conference on Computational Linguistics. 3112–3122.
-[19] Su Lin Blodgett, Solon Barocas, Hal Daumé III, and Hanna Wallach. 2020. Language (Technology) is Power: A Critical
-Survey of “Bias” in NLP. In Proceedings of the 58th Annual Meeting of the ACL. 5454–5476.
-[20] Ondřej Bojar, Rajen Chatterjee, Christian Federmann, Yvette Graham, Barry Haddow, Shujian Huang, Matthias Huck,
-Philipp Koehn, Qun Liu, Varvara Logacheva, Christof Monz, Matteo Negri, Matt Post, Raphael Rubino, Lucia Specia,
-and Marco Turchi. 2017. Findings of the 2017 Conference on Machine Translation (WMT17). In Proceedings of the
-Second Conference on Machine Translation. 169–214.
-[21] Isaac Caswell, Ciprian Chelba, and David Grangier. 2019. Tagged Back-Translation. In Proceedings of the Fourth
-Conference on Machine Translation (Volume 1: Research Papers). 53–63.
-[22] Yun Chen, Yang Liu, Yong Cheng, and Victor O.K. Li. 2017. A Teacher-Student Framework for Zero-Resource Neural
-Machine Translation. In Proceedings of the 55th Annual Meeting of the ACL. 1925–1935.
-[23] Yong Cheng, Wei Xu, Zhongjun He, Wei He, Hua Wu, Maosong Sun, and Yang Liu. 2016. Semi-Supervised Learning
-for Neural Machine Translation. In Proceedings of the 54th Annual Meeting of the Association for Computational
-Linguistics (Volume 1: Long Papers). 1965–1974.
-[24] Yong Cheng, Qian Yang, Yang Liu, Maosong Sun, and Wei Xu. 2017. Joint Training for Pivot-based Neural Machine
-Translation. In Proceedings of the Twenty-Sixth International Joint Conference on AI 2017. 3974–3980.
-[25] Kyunghyun Cho, Bart van Merriënboer, Dzmitry Bahdanau, and Yoshua Bengio. 2014. On the Properties of Neural
-Machine Translation: Encoder–Decoder Approaches. In Proceedings of SSST-8, Eighth Workshop on Syntax, Semantics
-and Structure in Statistical Translation. 103–111.
-28
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-[26] Alexandra Chronopoulou, Dario Stojanovski, and Alexander Fraser. 2020. Reusing a Pretrained Language Model on
-Languages with Limited Corpora for Unsupervised NMT. In Proceedings of the 2020 Conference on Empirical Methods
-in Natural Language Processing (EMNLP). 2703–2711.
-[27] Chenhui Chu and Rui Wang. 2018. A Survey of Domain Adaptation for Neural Machine Translation. In Proceedings of
-the 27th International Conference on Computational Linguistics. 1304–1319.
-[28] M Cohen. 2008. Encyclopedia idiotica. Times Higher Education 28 (2008).
-[29] Alexis Conneau and Guillaume Lample. 2019. Cross-lingual Language Model Pretraining. In Advances in Neural
-Information Processing Systems 32: Annual Conference on NeurIPS 2019. 7057–7067.
-[30] Asa Cooper Stickland, Xian Li, and Marjan Ghazvininejad. 2021. Recipes for Adapting Pre-trained Monolingual and
-Multilingual Models to Machine Translation. In Proceedings of the 16th Conference of the European Chapter of the
-Association for Computational Linguistics: Main Volume. 3440–3453.
-[31] Ryan Cotterell and Julia Kreutzer. 2018. Explaining and generalizing back-translation through wake-sleep. arXiv
-preprint arXiv:1806.04402 (2018).
-[32] Anna Currey and Kenneth Heafield. 2019. Zero-Resource Neural Machine Translation with Monolingual Pivot Data.
-In Proceedings of the 3rd Workshop on Neural Generation and Translation. 99–107.
-[33] Anna Currey, Antonio Valerio Miceli Barone, and Kenneth Heafield. 2017. Copied Monolingual Data Improves
-Low-Resource Neural Machine Translation. In Proceedings of the Second Conference on Machine Translation. 148–156.
-[34] Raj Dabre, Chenhui Chu, and Anoop Kunchukuttan. 2020. A survey of multilingual neural machine translation. ACM
-Computing Surveys (CSUR) 53, 5 (2020), 1–38.
-[35] Raj Dabre, Atsushi Fujita, and Chenhui Chu. 2019. Exploiting Multilingualism through Multistage Fine-Tuning for
-Low-Resource Neural Machine Translation. In Proceedings of the 2019 Conference on Empirical Methods in Natural
-Language Processing and the 9th International Joint Conference on Natural Language Processing. 1410–1416.
-[36] Raj Dabre, Tetsuji Nakagawa, and Hideto Kazawa. 2017. An Empirical Study of Language Relatedness for Transfer
-Learning in Neural Machine Translation. In Proceedings of the 31st Pacific Asia Conference on Language, Information
-and Computation. 282–286.
-[37] Tobias Domhan and Felix Hieber. 2017. Using Target-side Monolingual Data for Neural Machine Translation through
-Multi-task Learning. In Proceedings of the 2017 Conference on Empirical Methods in NLP. 1500–1505.
-[38] Daxiang Dong, Hua Wu, Wei He, Dianhai Yu, and Haifeng Wang. 2015. Multi-Task Learning for Multiple Language
-Translation. In Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics and the 7th
-International Joint Conference on Natural Language Processing (Volume 1: Long Papers). 1723–1732.
-[39] Zi-Yi Dou, Antonios Anastasopoulos, and Graham Neubig. 2020. Dynamic Data Selection and Weighting for Iterative
-Back-Translation. In Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP).
-5894–5904.
-[40] Matthew S Dryer. 2011. Martin Haspelmath, editors. 2013. WALS Online. Max Planck Institute for Evolutionary
-Anthropology, Leipzig (2011).
-[41] Sufeng Duan, Hai Zhao, Dongdong Zhang, and Rui Wang. 2020. Syntax-aware data augmentation for neural machine
-translation. arXiv preprint arXiv:2004.14200 (2020).
-[42] Xiangyu Duan, Baijun Ji, Hao Jia, Min Tan, Min Zhang, Boxing Chen, Weihua Luo, and Yue Zhang. 2020. Bilingual
-Dictionary Based Neural Machine Translation without Using Parallel Sentences. In Proceedings of the 58th Annual
-Meeting of the Association for Computational Linguistics. 1570–1579.
-[43] Lukas Edman, Antonio Toral, and Gertjan van Noord. 2020. Low-Resource Unsupervised NMT: Diagnosing the
-Problem and Providing a Linguistically Motivated Solution. In Proceedings of the 22nd Annual Conference of the
-European Association for Machine Translation. 81–90.
-[44] Sergey Edunov, Myle Ott, Michael Auli, and David Grangier. 2018. Understanding Back-Translation at Scale. In
-Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing. 489–500.
-[45] Sergey Edunov, Myle Ott, Marc’Aurelio Ranzato, and Michael Auli. 2020. On The Evaluation of Machine Translation
-Systems Trained With Back-Translation. In Proceedings of the 58th Annual Meeting of the ACL. 2836–2846.
-[46] Cristina España-Bonet and Josef van Genabith. 2017. Going beyond zero-shot MT: combining phonological, morpho-
-logical and semantic factors. The UdS-DFKI System at IWSLT 2017. Proc. of IWSLT (2017).
-[47] Marzieh Fadaee, Arianna Bisazza, and Christof Monz. 2017. Data Augmentation for Low-Resource Neural Machine
-Translation. In Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics (Volume 2: Short
-Papers). 567–573.
-[48] Marzieh Fadaee and Christof Monz. 2018. Back-Translation Sampling by Targeting Difficult Words in Neural Machine
-Translation. In Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing. 436–446.
-[49] Angela Fan, Shruti Bhosale, Holger Schwenk, Zhiyi Ma, Ahmed El-Kishky, Siddharth Goyal, Mandeep Baines, Onur
-Celebi, Guillaume Wenzek, Vishrav Chaudhary, Naman Goyal, Tom Birch, Vitaliy Liptchinsky, Sergey Edunov,
-Edouard Grave, Michael Auli, and Armand Joulin. 2020. Beyond English-Centric Multilingual Machine Translation.
-Neural Machine Translation for Low-Resource Languages: A Survey 29
-[50] Orhan Firat, Kyunghyun Cho, and Yoshua Bengio. 2016. Multi-Way, Multilingual Neural Machine Translation with a
-Shared Attention Mechanism. In Proceedings of the 2016 Conference of the North American Chapter of the Association
-for Computational Linguistics: Human Language Technologies. 866–875.
-[51] Orhan Firat, Baskaran Sankaran, Yaser Al-onaizan, Fatos T. Yarman Vural, and Kyunghyun Cho. 2016. Zero-Resource
-Translation with Multi-Lingual Neural Machine Translation. In Proceedings of the 2016 Conference on Empirical
-Methods in Natural Language Processing. 268–277.
-[52] Fei Gao, Jinhua Zhu, Lijun Wu, Yingce Xia, Tao Qin, Xueqi Cheng, Wengang Zhou, and Tie-Yan Liu. 2019. Soft
-Contextual Data Augmentation for Neural Machine Translation. In Proceedings of the 57th Annual Meeting of the
-Association for Computational Linguistics. 5539–5544.
-[53] Xavier Garcia, Pierre Foret, Thibault Sellam, and Ankur Parikh. 2020. A Multilingual View of Unsupervised Machine
-Translation. In Findings of the Association for Computational Linguistics: EMNLP 2020. 3160–3170.
-[54] Ekaterina Garmash and Christof Monz. 2016. Ensemble Learning for Multi-Source Neural Machine Translation. In
-Proceedings of COLING 2016, the 26th International Conference on CL: Technical Papers. 1409–1418.
-[55] Mozhdeh Gheini and Jonathan May. 2019. A universal parent model for low-resource neural machine translation
-transfer. arXiv preprint arXiv:1909.06516 (2019).
-[56] Ilshat Gibadullin, Aidar Valeev, Albina Khusainova, and Adil Khan. 2019. A Survey of Methods to Leverage Monolingual
-Data in Low-resource Neural Machine Translation. arXiv preprint arXiv:1910.00373 (2019).
-[57] Vikrant Goyal, Sourav Kumar, and Dipti Misra Sharma. 2020. Efficient Neural Machine Translation for Low-
-Resource Languages via Exploiting Related Languages. In Proceedings of the 58th Annual Meeting of the Association
-for Computational Linguistics: Student Research Workshop. 162–168.
-[58] Miguel Graça, Yunsu Kim, Julian Schamper, Shahram Khadivi, and Hermann Ney. 2019. Generalizing Back-Translation
-in Neural Machine Translation. In Proceedings of the 4th Conference on Machine Translation. 45–52.
-[59] Mark Graham, Bernie Hogan, Ralph K Straumann, and Ahmed Medhat. 2014. Uneven geographies of user-generated
-information: Patterns of increasing informational poverty. Annals of the Association of American Geographers 104, 4
-(2014), 746–764.
-[60] Jiatao Gu, Hany Hassan, Jacob Devlin, and Victor O.K. Li. 2018. Universal Neural Machine Translation for Extremely
-Low Resource Languages. In Proceedings of the 2018 Conference of the NAACL: Human Language Technologies, Volume
-1 (Long Papers). 344–354.
-[61] Jiatao Gu, Yong Wang, Yun Chen, Victor O. K. Li, and Kyunghyun Cho. 2018. Meta-Learning for Low-Resource Neural
-Machine Translation. In Proceedings of the 2018 Conference on Empirical Methods in NLP. 3622–3631.
-[62] Jiatao Gu, Yong Wang, Kyunghyun Cho, and Victor O.K. Li. 2019. Improved Zero-shot Neural Machine Translation
-via Ignoring Spurious Correlations. In Proceedings of the 57th Annual Meeting of the ACL. 1258–1268.
-[63] Caglar Gulcehre, Orhan Firat, Kelvin Xu, Kyunghyun Cho, Loic Barrault, Huei-Chi Lin, Fethi Bougares, Holger
-Schwenk, and Yoshua Bengio. 2015. On using monolingual corpora in neural machine translation. arXiv preprint
-arXiv:1503.03535 (2015).
-[64] Mandy Guo, Qinlan Shen, Yinfei Yang, Heming Ge, Daniel Cer, Gustavo Hernandez Abrego, Keith Stevens, Noah
-Constant, Yun-Hsuan Sung, Brian Strope, and Ray Kurzweil. 2018. Effective Parallel Corpus Mining using Bilingual
-Sentence Embeddings. In Proceedings of the Third Conference on Machine Translation: Research Papers. 165–176.
-[65] Francisco Guzmán, Peng-Jen Chen, Myle Ott, Juan Pino, Guillaume Lample, Philipp Koehn, Vishrav Chaudhary, and
-Marc’Aurelio Ranzato. 2019. The FLORES Evaluation Datasets for Low-Resource Machine Translation: Nepali–English
-and Sinhala–English. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and
-the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP). 6098–6111.
-[66] Thanh-Le Ha, Jan Niehues, and Alexander Waibel. 2016. Toward multilingual neural machine translation with
-universal encoder and decoder. arXiv preprint arXiv:1611.04798 (2016).
-[67] Thanh-Le Ha, Jan Niehues, and Alexander Waibel. 2017. Effective strategies in zero-shot neural machine translation.
-arXiv preprint arXiv:1711.07893 (2017).
-[68] Viktor Hangya and Alexander Fraser. 2019. Unsupervised Parallel Sentence Extraction with Parallel Segment Detection
-Helps Machine Translation. In Proceedings of the 57th Annual Meeting of the ACL. 1224–1234.
-[69] David Harmon. 1995. The Status of the World’s Languages as Reported in" Ethnologue". Southwest Journal of
-Linguistics 14 (1995), 1–28.
-[70] Di He, Yingce Xia, Tao Qin, Liwei Wang, Nenghai Yu, Tie-Yan Liu, and Wei-Ying Ma. 2016. Dual Learning for Machine
-Translation. In Advances in Neural Information Processing Systems 29: Annual Conference on Neural Information
-Processing Systems 2016. 820–828.
-[71] Michael A. Hedderich, Lukas Lange, Heike Adel, Jannik Strötgen, and Dietrich Klakow. 2021. A Survey on Recent
-Approaches for Natural Language Processing in Low-Resource Scenarios. In Proceedings of the 2021 Conference of the
-North American Chapter of the Association for Computational Linguistics: Human Language Technologies. 2545–2568.
-30
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-[72] Vu Cong Duy Hoang, Philipp Koehn, Gholamreza Haffari, and Trevor Cohn. 2018. Iterative Back-Translation for
-Neural Machine Translation. In Proceedings of the 2nd Workshop on NMT and Generation. 18–24.
-[73] Chris Hokamp, John Glover, and Demian Gholipour Ghalandari. 2019. Evaluating the Supervised and Zero-shot
-Performance of Multi-lingual Translation Models. In Proceedings of the Fourth Conference on Machine Translation
-(Volume 2: Shared Task Papers, Day 1). 209–217.
-[74] John Hutchins. 1997. From first conception to first demonstration: the nascent years of machine translation, 1947–1954.
-a chronology. Machine Translation 12, 3 (1997), 195–252.
-[75] Kenji Imamura, Atsushi Fujita, and Eiichiro Sumita. 2018. Enhancement of Encoder and Attention Using Target
-Monolingual Corpora in Neural Machine Translation. In Proceedings of the 2nd Workshop on Neural Machine Translation
-and Generation. 55–63.
-[76] Aizhan Imankulova, Raj Dabre, Atsushi Fujita, and Kenji Imamura. 2019. Exploiting Out-of-Domain Parallel Data
-through Multilingual Transfer Learning for Low-Resource Neural Machine Translation. In Proceedings of Machine
-Translation Summit XVII Volume 1: Research Track. 128–139.
-[77] Aizhan Imankulova, Takayuki Sato, and Mamoru Komachi. 2017. Improving Low-Resource Neural Machine Translation
-with Filtered Pseudo-Parallel Corpus. In Proceedings of the 4th Workshop on Asian Translation (WAT2017). 70–78.
-[78] Aizhan Imankulova, Takayuki Sato, and Mamoru Komachi. 2019. Filtered pseudo-parallel corpus improves low-
-resource neural machine translation. ACM Transactions on Asian and Low-Resource Language Information Processing
-(TALLIP) 19, 2 (2019), 1–16.
-[79] Baijun Ji, Zhirui Zhang, Xiangyu Duan, Min Zhang, Boxing Chen, and Weihua Luo. 2020. Cross-Lingual Pre-
-Training Based Transfer for Zero-Shot Neural Machine Translation. In The Thirty-Fourth AAAI Conference on Artificial
-Intelligence, AAAI 2020, The Thirty-Second Innovative Applications of Artificial Intelligence Conference, IAAI 2020, The
-Tenth AAAI Symposium on Educational Advances in Artificial Intelligence, EAAI 2020. 115–122.
-[80] Melvin Johnson, Mike Schuster, Quoc V. Le, Maxim Krikun, Yonghui Wu, Zhifeng Chen, Nikhil Thorat, Fernanda
-Viégas, Martin Wattenberg, Greg Corrado, Macduff Hughes, and Jeffrey Dean. 2017. Google’s Multilingual Neural
-Machine Translation System: Enabling Zero-Shot Translation. Transactions of the Association for Computational
-Linguistics 5 (2017), 339–351.
-[81] Melvin Johnson, Mike Schuster, Quoc V. Le, Maxim Krikun, Yonghui Wu, Zhifeng Chen, Nikhil Thorat, Fernanda
-Viégas, Martin Wattenberg, Greg Corrado, Macduff Hughes, and Jeffrey Dean. 2017. Google’s Multilingual Neural
-Machine Translation System: Enabling Zero-Shot Translation. Transactions of the ACL 5 (2017), 339–351.
-[82] Pratik Joshi, Sebastin Santy, Amar Budhiraja, Kalika Bali, and Monojit Choudhury. 2020. The State and Fate of
-Linguistic Diversity and Inclusion in the NLP World. In Proceedings of the 58th Annual Meeting of the Association for
-Computational Linguistics. 6282–6293.
-[83] Alina Karakanta, Jon Dehdari, and Josef van Genabith. 2018. Neural machine translation for low-resource languages
-without parallel corpora. Machine Translation 32, 1-2 (2018), 167–189.
-[84] Phillip Keung, Julian Salazar, Yichao Lu, and Noah A. Smith. 2020. Unsupervised Bitext Mining and Translation via
-Self-Trained Contextual Embeddings. Transactions of the Association for Computational Linguistics 8 (2020), 828–841.
-[85] Jyotsana Khatri and Pushpak Bhattacharyya. 2020. Filtering Back-Translated Data in Unsupervised Neural Machine
-Translation. In Proceedings of the 28th International Conference on Computational Linguistics. 4334–4339.
-[86] Yunsu Kim, Yingbo Gao, and Hermann Ney. 2019. Effective Cross-lingual Transfer of Neural Machine Translation
-Models without Shared Vocabularies. In Proceedings of the 57th Annual Meeting of the ACL. 1246–1257.
-[87] Yunsu Kim, Miguel Graça, and Hermann Ney. 2020. When and Why is Unsupervised Neural Machine Translation
-Useless?. In Proceedings of the 22nd Annual Conference of the European Association for Machine Translation. 35–44.
-[88] Yunsu Kim, Petre Petrov, Pavel Petrushkov, Shahram Khadivi, and Hermann Ney. 2019. Pivot-based Transfer Learning
-for Neural Machine Translation between Non-English Languages. In Proceedings of the 2019 Conference on Empirical
-Methods in NLP and the 9th International Joint Conference on Natural Language Processing. 866–876.
-[89] Guillaume Klein, Yoon Kim, Yuntian Deng, Jean Senellart, and Alexander Rush. 2017. OpenNMT: Open-Source Toolkit
-for Neural Machine Translation. In Proceedings of ACL 2017, System Demonstrations. 67–72.
-[90] Tom Kocmi and Ondřej Bojar. 2018. Trivial Transfer Learning for Low-Resource Neural Machine Translation. In
-Proceedings of the Third Conference on Machine Translation: Research Papers. 244–252.
-[91] Tom Kocmi and Ondřej Bojar. 2020. Efficiently Reusing Old Models Across Languages via Transfer Learning. In
-Proceedings of the 22nd Annual Conference of the European Association for Machine Translation. 19–28.
-[92] Philipp Koehn, Francisco Guzmán, Vishrav Chaudhary, and Juan Pino. 2019. Findings of the WMT 2019 Shared
-Task on Parallel Corpus Filtering for Low-Resource Conditions. In Proceedings of the Fourth Conference on Machine
-Translation (Volume 3: Shared Task Papers, Day 2). 54–72.
-[93] Philipp Koehn and Rebecca Knowles. 2017. Six Challenges for Neural Machine Translation. In Proceedings of the First
-Workshop on Neural Machine Translation. 28–39.
-Neural Machine Translation for Low-Resource Languages: A Survey 31
-[94] Sneha Kudugunta, Ankur Bapna, Isaac Caswell, and Orhan Firat. 2019. Investigating Multilingual NMT Representations
-at Scale. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th
-International Joint Conference on Natural Language Processing (EMNLP-IJCNLP). 1565–1575.
-[95] Guokun Lai, Zihang Dai, and Yiming Yang. 2020. Unsupervised Parallel Corpus Mining on Web Data. arXiv preprint
-arXiv:2009.08595 (2020).
-[96] Surafel Melaku Lakew, Mauro Cettolo, and Marcello Federico. 2018. A Comparison of Transformer and Recurrent
-Neural Networks on Multilingual Neural Machine Translation. In Proceedings of the 27th International Conference on
-Computational Linguistics. 641–652.
-[97] Surafel M Lakew, Aliia Erofeeva, Matteo Negri, Marcello Federico, and Marco Turchi. 2018. Transfer learning in
-multilingual neural machine translation with dynamic vocabulary. arXiv preprint arXiv:1811.01137 (2018).
-[98] Surafel M Lakew, Marcello Federico, Matteo Negri, and Marco Turchi. 2019. Multilingual Neural Machine Translation
-for Zero-Resource Languages. arXiv preprint arXiv:1909.07342 (2019).
-[99] Surafel M Lakew, Alina Karakanta, Marcello Federico, Matteo Negri, and Marco Turchi. 2019. Adapting Multilingual
-Neural Machine Translation to Unseen Languages. arXiv preprint arXiv:1910.13998 (2019).
-[100] Guillaume Lample, Alexis Conneau, Ludovic Denoyer, and Marc’Aurelio Ranzato. 2018. Unsupervised Machine
-Translation Using Monolingual Corpora Only. In 6th International Conference on Learning Representations, ICLR 2018,
-Conference Track Proceedings.
-[101] Guillaume Lample, Alexis Conneau, Marc’Aurelio Ranzato, Ludovic Denoyer, and Hervé Jégou. 2018. Word translation
-without parallel data. In 6th International Conference on Learning Representations, Conference Track Proceedings.
-[102] Guillaume Lample, Myle Ott, Alexis Conneau, Ludovic Denoyer, and Marc’Aurelio Ranzato. 2018. Phrase-Based &
-Neural Unsupervised Machine Translation. In Proceedings of the 2018 Conference on Empirical Methods in Natural
-Language Processing. 5039–5049.
-[103] Rumeng Li, Xun Wang, and Hong Yu. 2020. MetaMT, a Meta Learning Method Leveraging Multiple Domain Data for
-Low Resource Machine Translation. In The Thirty-Fourth AAAI Conference on Artificial Intelligence, AAAI 2020, The
-Thirty-Second Innovative Applications of Artificial Intelligence Conference, IAAI 2020, The Tenth AAAI Symposium on
-Educational Advances in Artificial Intelligence, EAAI 2020. 8245–8252.
-[104] Tao Li, Tushar Khot, Daniel Khashabi, Ashish Sabharwal, and Vivek Srikumar. 2020. UnQovering Stereotyping Biases
-via Underspecified Questions. CoRR abs/2010.02428 (2020).
-[105] Zuchao Li, Hai Zhao, Rui Wang, Masao Utiyama, and Eiichiro Sumita. 2020. Reference Language based Unsupervised
-Neural Machine Translation. In Findings of the Association for Computational Linguistics: EMNLP 2020. 4151–4162.
-[106] Yu-Hsiang Lin, Chian-Yu Chen, Jean Lee, Zirui Li, Yuyan Zhang, Mengzhou Xia, Shruti Rijhwani, Junxian He, Zhisong
-Zhang, Xuezhe Ma, Antonios Anastasopoulos, Patrick Littell, and Graham Neubig. 2019. Choosing Transfer Languages
-for Cross-Lingual Learning. In Proceedings of the 57th Annual Meeting of the ACL. 3125–3135.
-[107] Chao-Hong Liu, Catarina Cruz Silva, Longyue Wang, and Andy Way. 2018. Pivot machine translation using Chinese
-as pivot language. In China Workshop on Machine Translation. Springer, 74–85.
-[108] Qi Liu, Matt Kusner, and Phil Blunsom. 2021. Counterfactual Data Augmentation for Neural Machine Translation. In
-Proceedings of the 2021 Conference of the North American Chapter of the Association for Computational Linguistics:
-Human Language Technologies. 187–197.
-[109] Yinhan Liu, Jiatao Gu, Naman Goyal, Xian Li, Sergey Edunov, Marjan Ghazvininejad, Mike Lewis, and Luke Zettlemoyer.
-2020. Multilingual Denoising Pre-training for Neural Machine Translation. Transactions of the Association for
-Computational Linguistics 8 (2020), 726–742.
-[110] Yichao Lu, Phillip Keung, Faisal Ladhak, Vikas Bhardwaj, Shaonan Zhang, and Jason Sun. 2018. A neural interlingua
-for multilingual machine translation. In Proceedings of the 3rd Conference on MT: Research Papers. 84–92.
-[111] Gongxu Luo, Yating Yang, Yang Yuan, Zhanheng Chen, and Aizimaiti Ainiwaer. 2019. Hierarchical transfer learning
-architecture for low-resource neural machine translation. IEEE Access 7 (2019), 154157–154166.
-[112] Mieradilijiang Maimaiti, Yang Liu, Huanbo Luan, and Maosong Sun. 2019. Multi-Round Transfer Learning for Low-
-Resource NMT Using Multiple High-Resource Languages. ACM Transactions on Asian and Low-Resource Language
-Information Processing (TALLIP) 18, 4 (2019), 1–26.
-[113] Mieradilijiang Maimaiti, Yang Liu, Huanbo Luan, and Maosong Sun. 2020. Enriching the Transfer Learning with
-Pre-Trained Lexicon Embedding for Low-Resource Neural Machine Translation. Tsinghua Science and Technology
-(2020), 1.
-[114] Kelly Marchisio, Kevin Duh, and Philipp Koehn. 2020. When Does Unsupervised Machine Translation Work?. In
-Proceedings of the 5th Conference on Machine Translation 2020, Online, November 19-20, 2020. 571–583.
-[115] Benjamin Marie, Raphael Rubino, and Atsushi Fujita. 2020. Tagged Back-translation Revisited: Why Does It Really
-Work?. In Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics. 5990–5997.
-[116] Sameen Maruf, Fahimeh Saleh, and Gholamreza Haffari. 2019. A survey on document-level machine translation:
-Methods and evaluation. arXiv preprint arXiv:1912.08494 (2019).
-32
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-[117] Kris McGuffie and Alex Newhouse. 2020. The radicalization risks of GPT-3 and advanced neural language models.
-arXiv preprint arXiv:2009.06807 (2020).
-[118] Rudra Murthy, Anoop Kunchukuttan, and Pushpak Bhattacharyya. 2019. Addressing word-order Divergence in
-Multilingual Neural Machine Translation for extremely Low Resource Languages. In Proceedings of the 2019 Conference
-of the NAACL: Human Language Technologies, Volume 1 (Long and Short Papers). 3868–3873.
-[119] Sreyashi Nag, Mihir Kale, Varun Lakshminarasimhan, and Swapnil Singhavi. 2020. Incorporating Bilingual Dictionaries
-for Low Resource Semi-Supervised Neural Machine Translation.
-[120] Wilhelmina Nekoto, Vukosi Marivate, Tshinondiwa Matsila, Timi Fasubaa, Taiwo Fagbohungbe, Solomon Oluwole
-Akinola, Shamsuddeen Muhammad, Salomon Kabongo Kabenamualu, Salomey Osei, Freshia Sackey, Rubungo Andre
-Niyongabo, Ricky Macharm, Perez Ogayo, Orevaoghene Ahia, Musie Meressa Berhe, Mofetoluwa Adeyemi, Masabata
-Mokgesi-Selinga, Lawrence Okegbemi, Laura Martinus, Kolawole Tajudeen, Kevin Degila, Kelechi Ogueji, Kathleen
-Siminyu, Julia Kreutzer, Jason Webster, Jamiil Toure Ali, Jade Abbott, Iroro Orife, Ignatius Ezeani, Idris Abdulkadir
-Dangana, Herman Kamper, Hady Elsahar, Goodness Duru, Ghollah Kioko, Murhabazi Espoir, Elan van Biljon,
-Daniel Whitenack, Christopher Onyefuluchi, Chris Chinenye Emezue, Bonaventure F. P. Dossou, Blessing Sibanda,
-Blessing Bassey, Ayodele Olabiyi, Arshath Ramkilowan, Alp Öktem, Adewale Akinfaderin, and Abdallah Bashir. 2020.
-Participatory Research for Low-resourced Machine Translation: A Case Study in African Languages. In Findings of
-the Association for Computational Linguistics: EMNLP 2020. 2144–2160.
-[121] Graham Neubig and Junjie Hu. 2018. Rapid Adaptation of Neural Machine Translation to New Languages. In
-Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing. 875–880.
-[122] Toan Q. Nguyen and David Chiang. 2017. Transfer Learning across Low-Resource, Related Languages for Neural
-Machine Translation. In Proceedings of the Eighth International Joint Conference on NLP. 296–301.
-[123] Yuta Nishimura, Katsuhito Sudoh, Graham Neubig, and Satoshi Nakamura. 2018. Multi-source neural machine
-translation with data augmentation. arXiv preprint arXiv:1810.06826 (2018).
-[124] Yuta Nishimura, Katsuhito Sudoh, Graham Neubig, and Satoshi Nakamura. 2018. Multi-Source Neural Machine
-Translation with Missing Data. In Proceedings of the 2nd Workshop on Neural Machine Translation and Generation.
-92–99.
-[125] Myle Ott, Sergey Edunov, Alexei Baevski, Angela Fan, Sam Gross, Nathan Ng, David Grangier, and Michael Auli.
-2019. fairseq: A Fast, Extensible Toolkit for Sequence Modeling. In Proceedings of the 2019 Conference of the North
-American Chapter of the Association for Computational Linguistics (Demonstrations). 48–53.
-[126] Sinno Jialin Pan and Qiang Yang. 2009. A survey on transfer learning. IEEE Transactions on knowledge and data
-engineering 22, 10 (2009), 1345–1359.
-[127] Wei Peng, Chongxuan Huang, Tianhao Li, Yun Chen, and Qun Liu. 2020. Dictionary-based data augmentation for
-cross-domain neural machine translation. arXiv preprint arXiv:2004.02577 (2020).
-[128] Ngoc-Quan Pham, Jan Niehues, Thanh-Le Ha, and Alexander Waibel. 2019. Improving Zero-shot Translation with
-Language-Independent Constraints. In Proceedings of the Fourth Conference on Machine Translation. 13–23.
-[129] Emmanouil Antonios Platanios, Mrinmaya Sachan, Graham Neubig, and Tom Mitchell. 2018. Contextual Parameter
-Generation for Universal Neural Machine Translation. In Proceedings of the 2018 Conference on Empirical Methods in
-Natural Language Processing. 425–435.
-[130] Andrei Popescu-Belis. 2019. Context in neural machine translation: A review of models and evaluations. arXiv
-preprint arXiv:1901.09115 (2019).
-[131] Nima Pourdamghani, Nada Aldarrab, Marjan Ghazvininejad, Kevin Knight, and Jonathan May. 2019. Translating
-Translationese: A Two-Step Approach to Unsupervised Machine Translation. In Proceedings of the 57th Annual Meeting
-of the Association for Computational Linguistics. 3057–3062.
-[132] Ye Qi, Devendra Sachan, Matthieu Felix, Sarguna Padmanabhan, and Graham Neubig. 2018. When and Why Are
-Pre-Trained Word Embeddings Useful for Neural Machine Translation?. In Proceedings of the 2018 Conference of the
-North American Chapter of the Association for Computational Linguistics: Human Language Technologies. 529–535.
-[133] Alessandro Raganato, Raúl Vázquez, Mathias Creutz, and Jörg Tiedemann. 2019. An Evaluation of Language-Agnostic
-Inner-Attention-Based Representations in Machine Translation. In Proceedings of the 4th Workshop on Representation
-Learning for NLP. 27–32.
-[134] Prajit Ramachandran, Peter Liu, and Quoc Le. 2017. Unsupervised Pretraining for Sequence to Sequence Learning. In
-Proceedings of the 2017 Conference on Empirical Methods in Natural Language Processing. 383–391.
-[135] Shuo Ren, Wenhu Chen, Shujie Liu, Mu Li, Ming Zhou, and Shuai Ma. 2018. Triangular Architecture for Rare Language
-Translation. In Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long
-Papers). 56–65.
-[136] Shuo Ren, Yu Wu, Shujie Liu, Ming Zhou, and Shuai Ma. 2019. Explicit Cross-lingual Pre-training for Unsupervised
-Machine Translation. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and
-the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP). 770–779.
-Neural Machine Translation for Low-Resource Languages: A Survey 33
-[137] Shuo Ren, Yu Wu, Shujie Liu, Ming Zhou, and Shuai Ma. 2020. A Retrieve-and-Rewrite Initialization Method for
-Unsupervised Machine Translation. In Proceedings of the 58th Annual Meeting of the ACL. 3498–3504.
-[138] Dana Ruiter, Josef van Genabith, and Cristina España-Bonet. 2020. Self-Induced Curriculum Learning in Self-
-Supervised Neural Machine Translation. In Proceedings of the 2020 Conference on Empirical Methods in Natural
-Language Processing (EMNLP). 2560–2571.
-[139] Devendra Sachan and Graham Neubig. 2018. Parameter Sharing Methods for Multilingual Self-Attentional Translation
-Models. In Proceedings of the Third Conference on Machine Translation: Research Papers. 261–271.
-[140] Holger Schwenk. 2018. Filtering and Mining Parallel Data in a Joint Multilingual Space. In Proceedings of the 56th
-Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers). 228–234.
-[141] Holger Schwenk, Vishrav Chaudhary, Shuo Sun, Hongyu Gong, and Francisco Guzmán. 2021. WikiMatrix: Mining
-135M Parallel Sentences in 1620 Language Pairs from Wikipedia. In Proceedings of the 16th Conference of the European
-Chapter of the Association for Computational Linguistics: Main Volume. 1351–1361.
-[142] Holger Schwenk, Guillaume Wenzek, Sergey Edunov, Edouard Grave, and Armand Joulin. 2019. Ccmatrix: Mining
-billions of high-quality parallel sentences on the web. arXiv preprint arXiv:1911.04944 (2019).
-[143] Sukanta Sen, Kamal Kumar Gupta, Asif Ekbal, and Pushpak Bhattacharyya. 2019. Multilingual Unsupervised NMT
-using Shared Encoder and Language-Specific Decoders. In Proceedings of the 57th Annual Meeting of the Association
-for Computational Linguistics. 3083–3089.
-[144] Rico Sennrich, Barry Haddow, and Alexandra Birch. 2016. Improving Neural Machine Translation Models with
-Monolingual Data. In Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics. 86–96.
-[145] Lierni Sestorain, Massimiliano Ciaramita, Christian Buck, and Thomas Hofmann. 2018. Zero-shot dual machine
-translation. arXiv preprint arXiv:1805.10338 (2018).
-[146] Aditya Siddhant, Ankur Bapna, Yuan Cao, Orhan Firat, Mia Chen, Sneha Kudugunta, Naveen Arivazhagan, and
-Yonghui Wu. 2020. Leveraging Monolingual Data with Self-Supervision for Multilingual Neural Machine Translation.
-In Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics. 2827–2835.
-[147] Ivan Skorokhodov, Anton Rykachevskiy, Dmitry Emelyanenko, Sergey Slotin, and Anton Ponkratov. 2018. Semi-
-Supervised Neural Machine Translation with Language Models. In Proceedings of the AMTA 2018 Workshop on
-Technologies for MT of Low Resource Languages (LoResMT 2018). 37–44.
-[148] Anders Søgaard, Sebastian Ruder, and Ivan Vulić. 2018. On the Limitations of Unsupervised Bilingual Dictionary
-Induction. In Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics. 778–788.
-[149] Kaitao Song, Xu Tan, Tao Qin, Jianfeng Lu, and Tie-Yan Liu. 2019. MASS: Masked Sequence to Sequence Pre-training
-for Language Generation. In Proceedings of the 36th International Conference on Machine Learning, ICML 2019, 9-15
-June 2019 (Proceedings of Machine Learning Research), Vol. 97. 5926–5936.
-[150] Felix Stahlberg. 2020. Neural machine translation: A review. Journal of AI Research 69 (2020), 343–418.
-[151] Felix Stahlberg, James Cross, and Veselin Stoyanov. 2018. Simple Fusion: Return of the Language Model. In Proceedings
-of the Third Conference on Machine Translation: Research Papers. 204–211.
-[152] Gabriel Stanovsky, Noah A. Smith, and Luke Zettlemoyer. 2019. Evaluating Gender Bias in Machine Translation. In
-Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics. 1679–1684.
-[153] Haipeng Sun, Rui Wang, Kehai Chen, Masao Utiyama, Eiichiro Sumita, and Tiejun Zhao. 2019. Unsupervised Bilingual
-Word Embedding Agreement for Unsupervised Neural Machine Translation. In Proceedings of the 57th Annual Meeting
-of the Association for Computational Linguistics. 1235–1245.
-[154] Haipeng Sun, Rui Wang, Kehai Chen, Masao Utiyama, Eiichiro Sumita, and Tiejun Zhao. 2020. Knowledge Distillation
-for Multilingual Unsupervised Neural Machine Translation. In Proceedings of the 58th Annual Meeting of the Association
-for Computational Linguistics. 3525–3535.
-[155] Yu Sun, Shaolin Zhu, Feng Yifan, and Chenggang Mi. 2021. Parallel sentences mining with transfer learning in
-an unsupervised setting. In Proceedings of the 2021 Conference of the North American Chapter of the Association for
-Computational Linguistics: Student Research Workshop. 136–142.
-[156] Xu Tan, Yi Ren, Di He, Tao Qin, Zhou Zhao, and Tie-Yan Liu. 2019. Multilingual Neural Machine Translation with
-Knowledge Distillation. In 7th International Conference on Learning Representations, ICLR 2019.
-[157] Pasindu Tennage, Prabath Sandaruwan, Malith Thilakarathne, Achini Herath, Surangika Ranathunga, Sanath Jayasena,
-and Gihan Dias. 2017. Neural machine translation for sinhala and tamil languages. In 2017 International Conference
-on Asian Language Processing (IALP). IEEE, 189–192.
-[158] Ashish Vaswani, Samy Bengio, Eugene Brevdo, Francois Chollet, Aidan Gomez, Stephan Gouws, Llion Jones, Łukasz
-Kaiser, Nal Kalchbrenner, Niki Parmar, Ryan Sepassi, Noam Shazeer, and Jakob Uszkoreit. 2018. Tensor2Tensor for
-Neural Machine Translation. In Proceedings of the 13th Conference of the Association for Machine Translation in the
-Americas (Volume 1: Research Track). 193–199.
-[159] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and
-Illia Polosukhin. 2017. Attention is All you Need. In Advances in Neural Information Processing Systems 30: Annual
-34
-Surangika Ranathunga, En-Shiun Annie Lee, Marjana Prifti Skenduli, Ravi Shekhar, Mehreen Alam, and Rishemjit Kaur
-Conference on Neural Information Processing Systems 2017, December 4-9, 2017. 5998–6008.
-[160] Raúl Vázquez, Alessandro Raganato, Mathias Creutz, and Jörg Tiedemann. 2020. A Systematic Study of Inner-
-Attention-Based Sentence Representations in Multilingual Neural Machine Translation. Computational Linguistics 46,
-2 (2020), 387–424.
-[161] Raúl Vázquez, Alessandro Raganato, Jörg Tiedemann, and Mathias Creutz. 2019. Multilingual NMT with a Language-
-Independent Attention Bridge. In Proceedings of the 4th Workshop on Representation Learning for NLP. 33–39.
-[162] Mingxuan Wang, Hongxiao Bai, Lei Li, and Hai Zhao. 2021. Cross-lingual Supervision Improves Unsupervised
-Neural Machine Translation. In Proceedings of the 2021 Conference of the North American Chapter of the Association for
-Computational Linguistics: Human Language Technologies: Industry Papers. 89–96.
-[163] Shuo Wang, Yang Liu, Chao Wang, Huanbo Luan, and Maosong Sun. 2019. Improving Back-Translation with
-Uncertainty-based Confidence Estimation. In Proceedings of the 2019 Conference on Empirical Methods in Natural
-Language Processing and the 9th International Joint Conference on Natural Language Processing. 791–802.
-[164] Xinyi Wang and Graham Neubig. 2019. Target Conditioned Sampling: Optimizing Data Selection for Multilingual
-Neural Machine Translation. In Proceedings of the 57th Annual Meeting of the ACL. 5823–5828.
-[165] Xinyi Wang, Hieu Pham, Philip Arthur, and Graham Neubig. 2019. Multilingual Neural Machine Translation With
-Soft Decoupled Encoding. In 7th International Conference on Learning Representations, ICLR 2019,.
-[166] Xinyi Wang, Hieu Pham, Zihang Dai, and Graham Neubig. 2018. SwitchOut: an Efficient Data Augmentation Algorithm
-for Neural Machine Translation. In Proceedings of the 2018 Conference on Empirical Methods in NLP. 856–861.
-[167] Xinyi Wang, Yulia Tsvetkov, and Graham Neubig. 2020. Balancing Training for Multilingual Neural Machine
-Translation. In Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics. 8526–8537.
-[168] Yijun Wang, Yingce Xia, Li Zhao, Jiang Bian, Tao Qin, Guiquan Liu, and Tie-Yan Liu. 2018. Dual transfer learning
-for neural machine translation with marginal distribution regularization. In Proceedings of the AAAI Conference on
-Artificial Intelligence, Vol. 32.
-[169] Yiren Wang, ChengXiang Zhai, and Hany Hassan. 2020. Multi-task Learning for Multilingual Neural Machine
-Translation. In Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing. 1022–1034.
-[170] Yining Wang, Jiajun Zhang, Feifei Zhai, Jingfang Xu, and Chengqing Zong. 2018. Three Strategies to Improve
-One-to-Many Multilingual Translation. In Proceedings of the 2018 Conference on Empirical Methods in NLP. 2955–2960.
-[171] Yining Wang, Jiajun Zhang, Long Zhou, Yuchen Liu, and Chengqing Zong. 2019. Synchronously Generating Two
-Languages with Interactive Decoding. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language
-Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP). 3350–3355.
-[172] Yining Wang, Long Zhou, Jiajun Zhang, Feifei Zhai, Jingfang Xu, and Chengqing Zong. 2019. A Compact and
-Language-Sensitive Multilingual Translation Method. In Proceedings of the 57th Annual Meeting of the Association for
-Computational Linguistics. 1213–1223.
-[173] Jiawei Wu, Xin Wang, and William Yang Wang. 2019. Extract and Edit: An Alternative to Back-Translation for
-Unsupervised Neural Machine Translation. In Proceedings of the 2019 Conference of the North American Chapter of the
-Association for Computational Linguistics: Human Language Technologies. 1173–1183.
-[174] Lijun Wu, Fei Tian, Tao Qin, Jianhuang Lai, and Tie-Yan Liu. 2018. A Study of Reinforcement Learning for Neural
-Machine Translation. In Proceedings of the 2018 Conference on Empirical Methods in NLP. 3612–3621.
-[175] Mengzhou Xia, Xiang Kong, Antonios Anastasopoulos, and Graham Neubig. 2019. Generalized Data Augmentation
-for Low-Resource Translation. In Proceedings of the 57th Annual Meeting of the ACL. 5786–5796.
-[176] Nuo Xu, Yinqiao Li, Chen Xu, Yanyang Li, Bei Li, Tong Xiao, and Jingbo Zhu. 2019. Analysis of Back-translation
-Methods for Low-Resource Neural Machine Translation. In CCF International Conference on Natural Language
-Processing and Chinese Computing. Springer, 466–475.
-[177] Weijia Xu, Xing Niu, and Marine Carpuat. 2020. Dual Reconstruction: a Unifying Objective for Semi-Supervised
-Neural Machine Translation. In Findings of the Association for Computational Linguistics: EMNLP 2020. 2006–2020.
-[178] Shuoheng Yang, Yuxin Wang, and Xiaowen Chu. 2020. A Survey of Deep Learning Techniques for Neural Machine
-Translation. arXiv preprint arXiv:2002.07526 (2020).
-[179] Yinfei Yang, Gustavo Hernández Ábrego, Steve Yuan, Mandy Guo, Qinlan Shen, Daniel Cer, Yun-Hsuan Sung, Brian
-Strope, and Ray Kurzweil. 2019. Improving Multilingual Sentence Embedding using Bi-directional Dual Encoder with
-Additive Margin Softmax. In Proceedings of the Twenty-Eighth International Joint Conference on Artificial Intelligence,
-IJCAI 2019, Macao, China, August 10-16, 2019, Sarit Kraus (Ed.). 5370–5378.
-[180] Zhen Yang, Wei Chen, Feng Wang, and Bo Xu. 2018. Improving Neural Machine Translation with Conditional
-Sequence Generative Adversarial Nets. In Proceedings of the 2018 Conference of the North American Chapter of the
-Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long Papers). 1346–1355.
-[181] Zhen Yang, Wei Chen, Feng Wang, and Bo Xu. 2018. Unsupervised Domain Adaptation for Neural Machine Translation.
-In 2018 24th International Conference on Pattern Recognition (ICPR). IEEE, 338–343.
-Neural Machine Translation for Low-Resource Languages: A Survey 35
-[182] Zhen Yang, Wei Chen, Feng Wang, and Bo Xu. 2018. Unsupervised Neural Machine Translation with Weight Sharing.
-In Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics. 46–55.
-[183] Poorya Zaremoodi, Wray Buntine, and Gholamreza Haffari. 2018. Adaptive Knowledge Sharing in Multi-Task
-Learning: Improving Low-Resource Neural Machine Translation. In Proceedings of the 56th Annual Meeting of the
-Association for Computational Linguistics (Volume 2: Short Papers). 656–661.
-[184] Boliang Zhang, Ajay Nagesh, and Kevin Knight. 2020. Parallel Corpus Filtering via Pre-trained Language Models. In
-Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics. 8545–8554.
-[185] Biao Zhang, Philip Williams, Ivan Titov, and Rico Sennrich. 2020. Improving Massively Multilingual Neural Machine
-Translation and Zero-Shot Translation. In Proceedings of the 58th Annual Meeting of the ACL. 1628–1639.
-[186] Jiajun Zhang and Chengqing Zong. 2016. Exploiting Source-side Monolingual Data in Neural Machine Translation.
-In Proceedings of the 2016 Conference on Empirical Methods in Natural Language Processing. 1535–1545.
-[187] Jiajun Zhang and Chengqing Zong. 2020. Neural Machine Translation: Challenges, Progress and Future. arXiv
-preprint arXiv:2004.05809 (2020).
-[188] Zhirui Zhang, Shujie Liu, Mu Li, Ming Zhou, and Enhong Chen. 2018. Joint Training for Neural Machine Translation
-Models with Monolingual Data. In Proceedings of the Thirty-Second AAAI Conference on Artificial Intelligence, (AAAI-
-18), the 30th innovative Applications of Artificial Intelligence (IAAI-18), and the 8th AAAI Symposium on Educational
-Advances in Artificial Intelligence (EAAI-18). 555–562.
-[189] Han Zhao, Junjie Hu, and Andrej Risteski. 2020. On Learning Language-Invariant Representations for Universal
-Machine Translation. In Proceedings of the 37th International Conference on Machine Learning, ICML 2020, 13-18 July
-2020, Virtual Event (Proceedings of Machine Learning Research), Vol. 119. 11352–11364.
-[190] Hao Zheng, Yong Cheng, and Yang Liu. 2017. Maximum Expected Likelihood Estimation for Zero-resource Neural
-Machine Translation. In Proceedings of the 26th International Joint Conference on AI, Carles Sierra (Ed.). 4251–4257.
-[191] Zaixiang Zheng, Hao Zhou, Shujian Huang, Lei Li, Xin-Yu Dai, and Jiajun Chen. 2020. Mirror-Generative Neural
-Machine Translation. In 8th International Conference on Learning Representations, 2020.
-[192] Zaixiang Zheng, Hao Zhou, Shujian Huang, Lei Li, Xin-Yu Dai, and Jiajun Chen. 2020. Mirror-Generative Neural
-Machine Translation. In 8th International Conference on Learning Representations.
-[193] Changfeng Zhu, Heng Yu, Shanbo Cheng, and Weihua Luo. 2020. Language-aware Interlingua for Multilingual Neural
-Machine Translation. In Proceedings of the 58th Annual Meeting of the ACL. 1650–1655.
-[194] Jinhua Zhu, Yingce Xia, Lijun Wu, Di He, Tao Qin, Wengang Zhou, Houqiang Li, and Tieyan Liu. 2019. Incorporating
-BERT into Neural Machine Translation. In International Conference on Learning Representations.
-[195] Barret Zoph and Kevin Knight. 2016. Multi-Source Neural Translation. In Proceedings of the 2016 Conference of the
-North American Chapter of the Association for Computational Linguistics: Human Language Technologies. 30–34.
-[196] Barret Zoph, Deniz Yuret, Jonathan May, and Kevin Knight. 2016. Transfer Learning for Low-Resource Neural
-Machine Translation. In Proceedings of the 2016 Conference on Empirical Methods in NLP. 1568–1575.
+867
+Bulletin of the World Health Organization | November 2007, 85 (11)
+Abstract Much biomedical research is observational.The reporting of such research is often inadequate,which hampers the assessment
+ofitsstrengthsandweaknessesandofastudy’sgeneralizability.TheStrengtheningtheReportingofObservationalStudiesinEpidemiology
+(STROBE) Initiative developed recommendations on what should be included in an accurate and complete report of an observational
+study.We defined the scope of the recommendations to cover three main study designs:cohort,case-control and cross-sectional studies.
+We convened a two-day workshop,in September 2004,with methodologists,researchers and journal editors to draft a checklist of items.
+This list was subsequently revised during several meetings of the coordinating group and in e-mail discussions with the larger group
+of STROBE contributors, taking into account empirical evidence and methodological considerations.The workshop and the subsequent
+iterative process of consultation and revision resulted in a checklist of 22 items (the STROBE Statement) that relate to the title, abstract,
+introduction, methods, results and discussion sections of articles. Eighteen items are common to all three study designs and four are
+specific for cohort, case-control, or cross-sectional studies. A detailed Explanation and Elaboration document is published separately
+and is freely available on the web sites of PLoS Medicine, Annals of Internal Medicine and Epidemiology. We hope that the STROBE
+Statement will contribute to improving the quality of reporting of observational studies.
+Bulletin of the World Health Organization 2007;85:867–872.
+Une traduction en français de ce résumé figure à la fin de l’article. Al final del artículo se facilita una traducción al español.
+The Strengthening the Reporting of Observational Studies in
+Epidemiology (STROBE) Statement: guidelines for reporting
+observational studies*
+Erik von Elm,a
+Douglas G Altman,b
+Matthias Egger,a,c
+Stuart J Pocock,d
+Peter C Gøtzsche e
+& Jan P Vandenbrouckef
+for the STROBE Initiative
+.‫املقالة‬ ‫لهذه‬ ‫الكامل‬ ‫النص‬ ‫نهاية‬ ‫يف‬ ‫الخالصة‬ ‫لهذه‬ ‫العربية‬ ‫الرتجمة‬
+Policy and practice
+* In order to encourage dissemination of the STROBE Statement, this paper will also be published and made freely available by Annals of Internal Medicine, BMJ,
+Epidemiology,The Lancet, and PLoS Medicine and Preventive Medicine.The authors jointly hold the copyright of this paper. For details on further use, see STROBE
+web site (http://www.strobe-statement.org).
+a
+Institute of Social and Preventive Medicine (ISPM), University of Bern, Finkenhubelweg 11, CH-3012 Bern, Switzerland. Correspondence to Erik von Elm (e-mail:
+strobe@ispm.unibe.ch).
+b
+Centre for Statistics in Medicine, University of Oxford, Oxford, England.
+c
+Department of Social Medicine, University of Bristol, Bristol, England.
+d
+London School of Hygiene and Tropical Medicine, University of London, London, England.
+e
+Nordic Cochrane Centre, Copenhagen, Denmark.
+f
+Department of Clinical Epidemiology, Leiden University Hospital, Leiden, the Netherlands.
+doi: 10.2471/BLT.07.045120
+(Submitted: 20 June 2007 – Final revised version submitted: 13 August 2007 – Accepted: 20 August 2007)
+Introduction
+Manyquestionsinmedicalresearcharein-
+vestigated in observational studies.1
+Much
+of the research into the cause of diseases
+relies on cohort, case-control or cross-
+sectional studies. Observational studies
+alsohavearoleinresearchintothebenefits
+andharmsofmedicalinterventions.2
+Ran-
+domizedtrialscannotanswerallimportant
+questions about a given intervention. For
+example, observational studies are more
+suitable to detect rare or late adverse ef-
+fects of treatments, and are more likely to
+provide an indication of what is achieved
+in daily medical practice.3
+Researchshouldbereportedtranspar-
+ently so that readers can follow what was
+planned, what was done, what was found,
+and what conclusions were drawn. The
+credibility of research depends on a critical
+assessment by others of the strengths and
+weaknesses in study design, conduct and
+analysis. Transparent reporting is also
+needed to judge whether and how results
+can be included in systematic reviews.4,5
+However, in published observational
+research important information is often
+missing or unclear. An analysis of epide-
+miological studies published in general
+medical and specialist journals found that
+therationalebehindthechoiceofpotential
+confoundingvariableswasoftennotreport-
+ed.6
+Onlyfewreportsofcase-controlstudies
+in psychiatry explained the methods used
+to identify cases and controls.7
+In a survey
+of longitudinal studies in stroke research,
+17 of 49 articles (35%) did not specify the
+eligibilitycriteria.8
+Othershavearguedthat
+without sufficient clarity of reporting, the
+benefitsofresearchmightbeachievedmore
+slowly,9
+andthatthereisaneedforguidance
+in reporting observational studies.10,11
+Recommendations on the report-
+ing of research can improve reporting
+quality. The Consolidated Standards of
+ReportingTrials(CONSORT)Statement
+was developed in 1996 and revised five
+years later.12
+Many medical journals sup-
+ported this initiative,13
+which has helped
+to improve the quality of reports of
+randomized trials.14,15
+Similar initiatives
+have followed for other research areas –
+e.g. for the reporting of meta-analyses
+868 Bulletin of the World Health Organization | November 2007, 85 (11)
+Policy and practice
+STROBE guidelines for reporting observational studies Erik von Elm et al.
+of randomized trials16
+or diagnostic
+studies.17
+We established a network of
+methodologists, researchers and journal
+editors to develop recommendations for
+the reporting of observational research:
+the Strengthening the Reporting of
+Observational Studies in Epidemiology
+(STROBE) Statement.
+Aims and use of the STROBE
+Statement
+The STROBE Statement is a checklist of
+items that should be addressed in articles
+reporting on the three main study designs
+of analytical epidemiology: cohort, case-
+control and cross-sectional studies. The
+intention is solely to provide guidance
+on how to report observational research
+well: these recommendations are not
+prescriptions for designing or conducting
+studies. Also, while clarity of reporting is a
+prerequisite to evaluation, the checklist is
+not an instrument to evaluate the quality
+of observational research.
+Here we present the STROBE State-
+ment and explain how it was developed.
+In a detailed companion paper, the
+Explanation and Elaboration article,18–20
+we justify the inclusion of the different
+checklist items, and give methodological
+background and published examples of
+what we consider transparent report-
+ing. We strongly recommend using the
+STROBE checklist in conjunction with
+the explanatory article, which is available
+freely on the web sites of PLoS Medicine
+(www.plosmedicine.org), Annals of
+Internal Medicine (www.annals.org) and
+Epidemiology (www.epidem.com).
+Development of the STROBE
+Statement
+We established the STROBE Initiative
+in 2004, obtained funding for a work-
+shop and set up a web site (www.strobe-
+statement.org). We searched textbooks,
+bibliographic databases, reference lists
+and personal files for relevant material,
+including previous recommendations,
+empirical studies of reporting and arti-
+cles describing relevant methodological
+research. Because observational research
+makes use of many different study de-
+signs, we felt that the scope of STROBE
+had to be clearly defined early on. We
+decided to focus on the three study
+designs that are used most widely in ana-
+lytical observational research: cohort,
+case-control and cross-sectional studies.
+We organized a two-day workshop
+in Bristol, the United Kingdom, in Sep-
+tember 2004. Twenty-three individu-
+als attended this meeting, including
+editorial staff from Annals of Internal
+Medicine, BMJ, Bulletin of the World
+Health Organization, International Jour-
+nal of Epidemiology, JAMA, Preventive
+Medicine and The Lancet as well as epi-
+demiologists, methodologists, statisti-
+cians and practitioners from Europe and
+North America. Written contributions
+were sought from 10 other individuals
+who declared an interest in contribut-
+ing to STROBE, but could not attend.
+Three working groups identified items
+deemed to be important to include in
+checklists for each type of study. A pro-
+visional list of items prepared in advance
+(available from our web site) was used
+to facilitate discussions. The three draft
+checklists were then discussed by all
+participants and, where possible, items
+were revised to make them applicable to
+all three study designs. In a final plenary
+session, the group decided on the strat-
+egy for finalizing and disseminating the
+STROBE Statement.
+After the workshop we drafted a
+combined checklist including all three
+designs and made it available on our
+web site. We invited participants and
+additional scientists and editors to
+comment on this draft checklist. We
+subsequently published three revisions
+on the web site, and two summaries of
+comments received and changes made.
+During this process the coordinating
+group (i.e. the authors of the present
+paper) met on eight occasions for one
+or two days, and held several telephone
+conferences to revise the checklist and
+to prepare the present paper and the
+Explanation and Elaboration paper.18–20
+The coordinating group invited three
+additional co-authors with method-
+ological and editorial expertise to help
+write the Explanation and Elaboration
+paper, and sought feedback from more
+than 30 people, who are listed at the end
+of this paper. We allowed several weeks
+for comments on subsequent drafts of
+the paper and reminded collaborators
+about deadlines by e-mail.
+STROBE components
+The STROBE Statement is a checklist of
+22 items that we consider essential for
+good reporting of observational studies
+(see Table 1). These items relate to the
+article’s title and abstract (item 1), the
+introduction (items 2 and 3), methods
+(items 4–12), results (items 13–17),
+discussion sections (items 18–21) and
+other information (item 22 on fund-
+ing). Eighteen items are common to all
+three designs, while four (items 6, 12,
+14 and 15) are design-specific, with dif-
+ferent versions for all or part of the item.
+For some items (indicated by footnote a
+),
+information should be given separately
+for cases and controls in case-control
+studies, or exposed and unexposed
+groups in cohort and cross-sectional
+studies. Although presented here as a
+single checklist, separate checklists are
+available for each of the three study de-
+signs on the STROBE web site.
+Implications and limitations
+The STROBE Statement was developed
+to assist authors when writing up ana-
+lytical observational studies, to support
+editors and reviewers when considering
+such articles for publication, and to
+help readers when critically appraising
+published articles. We developed the
+checklist through an open process, tak-
+ing into account the experience gained
+with previous initiatives, in particular
+CONSORT. We reviewed the relevant
+empirical evidence as well as method-
+ological work, and subjected consecutive
+drafts to an extensive iterative process
+of consultation. The checklist presented
+here is thus based on input from a large
+number of individuals with diverse
+backgrounds and perspectives. The
+comprehensive explanatory article,18–20
+which is intended for use alongside the
+checklist, also benefited greatly from this
+consultation process.
+Observational studies serve a wide
+range of purposes, on a continuum from
+the discovery of new findings to the
+confirmation or refutation of previous
+findings.18–20
+Some studies are essen-
+tially exploratory and raise interesting
+hypotheses. Others pursue clearly de-
+fined hypotheses in available data. In yet
+another type of studies, the collection
+of new data is planned carefully on the
+basis of an existing hypothesis. We
+believe the present checklist can be
+useful for all these studies, since the
+readers always need to know what was
+planned (and what was not), what was
+done, what was found, and what the
+results mean. We acknowledge that
+STROBE is currently limited to three
+main observational study designs. We
+would welcome extensions that adapt
+869
+Bulletin of the World Health Organization | November 2007, 85 (11)
+Policy and practice
+STROBE guidelines for reporting observational studies
+Erik von Elm et al.
+Table 1. The STROBE Statement: a checklist of items that should be addressed in reports of observational studies
+Item Item
+number
+Recommendation
+Title and abstract 1 (a) Indicate the study’s design with a commonly used term in the title or the abstract
+(b) Provide in the abstract an informative and balanced summary of what was done and what
+was found
+Introduction
+Background/rationale 2 Explain the scientific background and rationale for the investigation being reported
+Objectives 3 State specific objectives, including any pre-specified hypotheses
+Methods
+Study design 4 Present key elements of study design early in the paper
+Setting 5 Describe the setting, locations and relevant dates, including periods of recruitment, exposure,
+follow-up and data collection
+Participants 6 (a) Cohort study – Give the eligibility criteria, and the sources and methods of selection of
+participants. Describe methods of follow-up
+Case-control study – Give the eligibility criteria, and the sources and methods of case
+ascertainment and control selection. Give the rationale for the choice of cases and controls
+Cross-sectional study – Give the eligibility criteria, and the sources and methods of selection
+of participants
+(b) Cohort study – For matched studies, give matching criteria and number of exposed and
+unexposed
+Case-control study – For matched studies, give matching criteria and the number of controls
+per case
+Variables 7 Clearly define all outcomes, exposures, predictors, potential confounders and effect modifiers.
+Give diagnostic criteria, if applicable
+Data sources/measurement 8a
+For each variable of interest, give sources of data and details of methods of assessment
+(measurement). Describe comparability of assessment methods if there is more than one group
+Bias 9 Describe any efforts to address potential sources of bias
+Study size 10 Explain how the study size was arrived at
+Quantitative variables 11 Explain how quantitative variables were handled in the analyses. If applicable, describe which
+groupings were chosen and why
+Statistical methods 12 (a) Describe all statistical methods, including those used to control for confounding
+(b) Describe any methods used to examine subgroups and interactions
+(c) Explain how missing data were addressed
+(d) Cohort study – If applicable, explain how loss to follow-up was addressed
+Case-control study – If applicable, explain how matching of cases and controls was addressed
+Cross-sectional study – If applicable, describe analytical methods taking account of sampling
+strategy
+(e) Describe any sensitivity analyses
+Results
+Participants 13a
+(a) Report the numbers of individuals at each stage of the study – e.g. numbers potentially
+eligible, examined for eligibility, confirmed eligible, included in the study, completing follow-
+up and analyzed
+(b) Give reasons for non-participation at each stage
+(c) Consider use of a flow diagram
+Descriptive data 14a
+(a) Give characteristics of study participants (e.g. demographic, clinical, social) and information
+on exposures and potential confounders
+(b) Indicate the number of participants with missing data for each variable of interest
+(c) Cohort study – Summarize follow-up time (e.g. average and total amount)
+Outcome data 15a
+Cohort study – Report numbers of outcome events or summary measures over time
+Case-control study – Report numbers in each exposure category, or summary measures of
+exposure
+Cross-sectional study – Report numbers of outcome events or summary measures
+870 Bulletin of the World Health Organization | November 2007, 85 (11)
+Policy and practice
+STROBE guidelines for reporting observational studies Erik von Elm et al.
+Item Item
+number
+Recommendation
+Main results 16 (a) Give unadjusted estimates and, if applicable, confounder-adjusted estimates and their
+precision (e.g. 95% confidence interval). Make clear which confounders were adjusted for
+and why they were included
+(b) Report category boundaries when continuous variables were categorized
+(c) If relevant, consider translating estimates of relative risk into absolute risk for a meaningful
+time period
+Other analyses 17 Report other analyses done – e.g. analyses of subgroups and interactions, and sensitivity
+analyses
+Discussion
+Key results 18 Summarize key results with reference to study objectives
+Limitations 19 Discuss limitations of the study, taking into account sources of potential bias or imprecision.
+Discuss both direction and magnitude of any potential bias
+Interpretation 20 Give a cautious overall interpretation of results considering objectives, limitations, multiplicity of
+analyses, results from similar studies, and other relevant evidence
+Generalizability 21 Discuss the generalizability (external validity) of the study results
+Other information
+Funding 22 Give the source of funding and the role of the funders for the present study and, if applicable,
+for the original study on which the present article is based
+a
+Give such information separately for cases and controls in case-control studies, and, if applicable, for exposed and unexposed groups in cohort and cross-sectional studies.
+An Explanation and Elaboration article18–20
+discusses each checklist item, and gives methodological background and published examples of transparent
+reporting.The STROBE checklist is best used in conjunction with this article (freely available on the web sites of PLoS Medicine, Annals of Internal Medicine and
+Epidemiology). Separate versions of the checklist for cohort, case-control and cross-sectional studies are available on the STROBE web site.
+(Table 1, cont.)
+the checklist to other designs – e.g.
+case-crossover studies or ecological stud-
+ies – and also to specific topic areas.
+Four extensions are now available for
+the CONSORT Statement.21–24
+A first
+extension to STROBE is under way for
+gene–disease association studies: the
+STROBE Extension to Genetic Associa-
+tion studies (STREGA) initiative.25
+We
+ask those who aim to develop extensions
+of the STROBE Statement to contact
+the coordinating group first to avoid
+duplication of effort.
+The STROBE Statement should not
+be interpreted as an attempt to prescribe
+the reporting of observational research
+in a rigid format. The checklist items
+should be addressed in sufficient detail
+and with clarity somewhere in an article,
+but the order and format for presenting
+information depends on author prefer-
+ences, journal style and the traditions of
+the research field. For instance, we discuss
+the reporting of results under several
+separate items, while recognizing that au-
+thors might address several items within
+a single section of text or in a table. Also,
+item 22, on the source of funding and the
+role of funders, could be addressed in an
+appendix or in the methods section of the
+article. We do not aim at standardizing
+reporting. Authors of randomized clinical
+trials were asked by an editor of a special-
+ist medical journal to “CONSORT”
+their manuscripts on submission.26
+We
+believe that manuscripts should not be
+“STROBEd”, in the sense of regulat-
+ing style or terminology. We encourage
+authors to use narrative elements, includ-
+ing the description of illustrative cases,
+to complement the essential informa-
+tion about their study, and to make their
+articles an interesting read.27
+We emphasize that the STROBE
+Statement was not developed as a tool
+for assessing the quality of published
+observational research. Such instru-
+ments have been developed by other
+groups and were the subject of a recent
+systematic review.28
+In the Explanation
+and Elaboration paper, we used several
+examples of good reporting from stud-
+ies whose results were not confirmed in
+further research – the important feature
+was the good reporting, not whether the
+research was of good quality. However,
+if STROBE is adopted by authors and
+journals, issues such as confounding, bias
+and generalizability could become more
+transparent, which might help temper
+the over-enthusiastic reporting of new
+findings in the scientific community
+and popular media,29
+and improve the
+methodology of studies in the long
+term. Better reporting may also help to
+have more informed decisions about
+when new studies are needed and what
+they should address.
+We did not undertake a compre-
+hensive systematic review for each of the
+checklist items and sub-items, or do our
+own research to fill gaps in the evidence
+base. Further, although no one was
+excluded from the process, the composi-
+tion of the group of contributors was
+influenced by existing networks and was
+not representative in terms of geography
+(it was dominated by contributors from
+EuropeandNorthAmerica)andprobably
+wasnotrepresentativeintermsofresearch
+interests and disciplines. We stress that
+STROBE and other recommendations
+on the reporting of research should be
+seen as evolving documents that require
+continual assessment, refinement, and,
+if necessary, change. We welcome sug-
+gestions for the further dissemination of
+STROBE – e.g. by re-publication of the
+present article in specialist journals and
+in journals published in other languages.
+Groups or individuals who intend to
+translate the checklist to other languages
+should consult the coordinating group
+beforehand.We will revise the checklist in
+thefuture,takingintoaccountcomments,
+criticism, new evidence and experience
+871
+Bulletin of the World Health Organization | November 2007, 85 (11)
+Policy and practice
+STROBE guidelines for reporting observational studies
+Erik von Elm et al.
+from its use. We invite readers to submit
+their comments via the STROBE web
+site (www.strobe-statement.org). ■
+Acknowledgments
+The following individuals have
+contributedtothecontentandelaboration
+of the STROBE Statement: Douglas G
+Altman, Maria Blettner, Paolo Boffetta,
+Hermann Brenner, Geneviève Chêne,
+Cyrus Cooper, George Davey-Smith,
+Erik von Elm, Matthias Egger, France
+Gagnon, Peter C Gøtzsche, Philip
+Greenland, Sander Greenland, Claire
+Infante-Rivard, John Ioannidis, Astrid
+James, Giselle Jones, Bruno Ledergerber,
+Julian Little, Margaret May, David
+Moher, Hooman Momen, Alfredo
+Morabia, Hal Morgenstern, Cynthia D
+Mulrow, Fred Paccaud, Stuart J Pocock,
+Charles Poole, Drummond Rennie,
+Martin Röösli, Dietrich Rothenbacher,
+Kenneth Rothman, Caroline Sabin,
+Willi Sauerbrei, Lale Say, James J
+Schlesselman, Jonathan Sterne, Holly
+Syddall, Jan P Vandenbroucke, Ian
+White, Susan Wieland, Hywel Williams,
+Guang Yong Zou.
+The workshop was funded by the
+European Science Foundation (ESF).
+Additional funding was received from the
+MedicalResearchCouncilHealthServices
+Collaboration and the National Health
+ServicesResearchandDevelopmentMeth-
+odology Programme. We are grateful to
+GerdAntes,KayDickersin,ShahEbrahim
+and Richard Lilford for supporting the
+STROBE Initiative. We are grateful to
+thefollowinginstitutionsthathavehosted
+working meetings of the coordinating
+group: Institute of Social and Preventive
+Medicine (ISPM), University of Bern,
+Bern, Switzerland; Department of Social
+Medicine, University of Bristol, Bristol,
+the United Kingdom; London School of
+Hygiene andTropical Medicine, London,
+the United Kingdom; Nordic Cochrane
+Centre, Copenhagen, Denmark; and
+Centre for Statistics in Medicine, Oxford,
+theUnitedKingdom.Wearegratefultosix
+reviewerswhoprovidedhelpfulcomments
+on a previous draft of this paper.
+Competing interests: None declared.
+Résumé
+Déclaration de l’Initiative STROBE (Strengthening the Reporting of Observational Studies in
+Epidemiology) : recommandations pour l’élaboration des rapports d’études observationnelles
+Les recherches menées dans le domaine biomédical sont pour
+une grande part de nature observationnelle. Les rapports de ces
+études sont souvent inadéquats, ce qui empêche l’évaluation
+des points forts et des défauts de l’étude et sa généralisation.
+L’Initiative STROBE (Strengthening the Reporting of Observational
+Studies in Epidemiology) a élaboré des recommandations sur ce
+que doit être le contenu d’un rapport complet et précis d’étude
+observationnelle. Nous avons défini le champ d’application
+de ces recommandations comme couvrant les trois principaux
+types d’étude, à savoir les études de cohorte, cas-témoins et
+transversales. En septembre 2004, dans le cadre d’un atelier
+de deux jours, nous avons invité des méthodologistes, des
+chercheurs et des éditeurs de revue à élaborer une liste de points
+à considérer. Cette liste a ensuite été révisée dans le cadre de
+plusieurs réunions du groupe coordinateur et de discussions par
+courrier électronique avec le groupe plus large des contributeurs
+à l’Initiative STROBE, en tenant compte de résultats empiriques
+et de considérations méthodologiques. L’atelier et le processus
+itératif ultérieur de consultation et de révision ont débouché sur
+une liste de contrôle en 22 points (la déclaration STROBE)
+concernant le titre, le résumé, l’introduction, la méthodologie
+et les parties Résultats et Discussion des articles. Dix-huit
+points s’appliquent collectivement aux trois types d’étude et
+quatre spécifiquement aux études de cohortes, cas-témoins ou
+transversales.Un document intituléExplanation and Elaborationest
+publié séparément et accessible gratuitement sur les sites Internet
+PloS Medicine,Annals of Internal Medicine et Epidemiology. Nous
+espérons que la déclaration STROBE contribuera à l’amélioration
+de la qualité des rapports d’étude observationnelle.
+Gran parte de la investigación biomédica es de tipo observacional,
+pero la información difundida sobre esas investigaciones es a
+menudo insuficiente, lo que dificulta la evaluación de sus puntos
+fuertes y débiles y de su generalizabilidad de las conclusiones.
+En el marco de la iniciativa de Fortalecimiento de la Notificación
+de los Estudios Observacionales en Epidemiología (STROBE), se
+formularon recomendaciones sobre lo que debería contener una
+notificación precisa de un estudio observacional. Decidimos limitar
+el alcance de las recomendaciones a tres grandes modalidades
+de estudio: estudios de cohortes, estudios de casos y controles,
+y estudios transversales. En septiembre de 2004 organizamos un
+taller de dos días con metodólogos, investigadores y editores de
+revistas para elaborar una lista de verificación de distintos puntos.
+Esta lista fue revisada posteriormente en varias reuniones del
+grupo de coordinación y en discusiones mantenidas por e-mail
+Resumen
+Declaración de la Iniciativa STOBE (Strengthening the Reporting of Observational Studies in
+Epidemiology): directrices para informar sobre los estudios observacionales
+con los principales participantes en STROBE, teniendo en cuenta
+la evidencia empírica y diversas consideraciones metodológicas.
+El taller y el posterior proceso iterativo de consulta y revisión
+desembocaron en una lista de verificación de 22 puntos (la
+declaración STROBE) que guardan relación con el título, el
+resumen, la introducción y las secciones de métodos, resultados
+y discusión de los artículos. Dieciocho puntos son comunes a las
+tres modalidades de estudio, y cuatro se refieren específicamente
+a los estudios de cohortes, de casos y controles o transversales.
+Se ha publicado separadamente un documento de Explicación y
+elaboración al que puede accederse libremente en los sitios web
+de PLoS Medicine, Annals of Internal Medicine y Epidemiology.
+Esperamos que la declaración STROBE contribuya a mejorar la
+calidad de la notificación de los estudios observacionales.
+872 Bulletin of the World Health Organization | November 2007, 85 (11)
+Policy and practice
+STROBE guidelines for reporting observational studies Erik von Elm et al.
+References
+1. Glasziou P,Vandenbroucke JP, Chalmers I.Assessing the quality of research.
+BMJ 2004;328:39-41.
+2. Black N.Why we need observational studies to evaluate the effectiveness of
+health care. BMJ 1996;312:1215-8.
+3. Papanikolaou PN, Christidi GD, Ioannidis JP. Comparison of evidence on
+harms of medical interventions in randomized and nonrandomized studies.
+CMAJ 2006;174:635-41.
+4. Jüni P,Altman DG, Egger M. Systematic reviews in health care:Assessing
+the quality of controlled clinical trials. BMJ 2001;323:42-6.
+5. Egger M, Schneider M, Davey Smith G. Spurious precision? Meta-analysis of
+observational studies. BMJ 1998;316:140-4.
+6. Pocock SJ, Collier TJ, Dandreo KJ, de Stavola BL, Goldman MB, Kalish LA,
+et al. Issues in the reporting of epidemiological studies: a survey of recent
+practice. BMJ 2004;329:883.
+7. Lee W, Bindman J, Ford T, Glozier N, Moran P, Stewart R, et al. Bias in
+psychiatric case-control studies: literature survey. Br J Psychiatry 2007;
+190:204-9.
+8. Tooth L,Ware R, Bain C, Purdie DM, Dobson A. Quality of reporting of
+observational longitudinal research. Am J Epidemiol 2005;161:280-8.
+9. Bogardus ST Jr, Concato J, Feinstein AR. Clinical epidemiological quality in
+molecular genetic research: the need for methodological standards. JAMA
+1999;281:1919-26.
+10. Guidelines for documentation of epidemiologic studies. Epidemiology
+Work Group of the Interagency Regulatory Liaison Group. Am J Epidemiol
+1981;114:609-13.
+11. Rennie D. CONSORT revised – improving the reporting of randomized trials.
+JAMA 2001;285:2006-7.
+12. Moher D, Schulz KF,Altman DG.The CONSORT statement: revised
+recommendations for improving the quality of reports of parallel-group
+randomised trials. Lancet 2001;357:1191-4.
+13. Moher D,Altman DG, Schulz KF, Elbourne DR. Opportunities and challenges
+for improving the quality of reporting clinical research: CONSORT and
+beyond. CMAJ 2004;171:349-50.
+14. Plint AC, Moher D, Morrison A, Schulz K,Altman DG, Hill C, et al. Does the
+CONSORT checklist improve the quality of reports of randomised controlled
+trials? A systematic review. Med J Aust 2006;185:263-7.
+15. Egger M, Jüni P, Bartlett C.Value of flow diagrams in reports of randomized
+controlled trials. JAMA 2001;285:1996-9.
+16. Moher D, Cook DJ, Eastwood S, Olkin I, Rennie D, Stroup DF. Improving
+the quality of reports of meta-analyses of randomised controlled trials: the
+QUOROM statement. Quality of reporting of meta-analyses. Lancet 1999;
+354:1896-900.
+17. Bossuyt PM, Reitsma JB, Bruns DE, Gatsonis CA, Glasziou PP, Irwig LM, et al.
+Towards complete and accurate reporting of studies of diagnostic accuracy:
+The STARD Initiative. Ann Intern Med 2003;138:40-4.
+18. Vandenbroucke JP, von Elm E,Altman DG, Gøtzsche PC, Mulrow CD, Pocock
+SJ, et al. Egger M for the STROBE initiative. Strengthening the Reporting
+of Observational Studies in Epidemiology (STROBE): Explanation and
+Elaboration. PLoS Med 2007;4: e297. doi:10.1371/journal.pmed.0040297
+19. Vandenbroucke JP, von Elm E,Altman DG, Gøtzsche PC, Mulrow CD,
+Pocock SJ, Poole C, Schlesselman JJ, Egger M for the STROBE initiative.
+Strengthening the Reporting of Observational Studies in Epidemiology
+(STROBE): Explanation and Elaboration. Annals of Intern Med 2007. In
+press.
+20. Vandenbroucke JP von Elm E.Altman DG, Gøtzsche PC, Mulrow CD,
+Pocock SJ, Poole C, Schlesselman JJ, Egger M for the STROBE initiative.
+Strengthening the Reporting of Observational Studies in Epidemiology
+(STROBE): Explanation and Elaboration. Epidemiology 2007. In press.
+21. Ioannidis JP, Evans SJ, Gøtzsche PC, O’Neill RT,Altman DG, Schulz K, et al.
+Better reporting of harms in randomized trials: an extension of the CONSORT
+statement. Ann Intern Med 2004;141:781-8.
+22. Campbell MK, Elbourne DR,Altman DG. CONSORT statement: extension to
+cluster randomised trials. BMJ 2004;328:702-8.
+23. Piaggio G, Elbourne DR,Altman DG, Pocock SJ, Evans SJ. Reporting of
+noninferiority and equivalence randomized trials: an extension of the
+CONSORT statement. JAMA 2006;295:1152-60.
+24. Gagnier JJ, Boon H, Rochon P, Moher D, Barnes J, Bombardier C. Reporting
+randomized, controlled trials of herbal interventions: an elaborated CONSORT
+statement. Ann Intern Med 2006;144:364-7.
+25. Ioannidis JP, Gwinn M, Little J, Higgins JP, Bernstein JL, Boffetta P, et al.
+A road map for efficient and reliable human genome epidemiology. Nat
+Genet 2006;38:3-5.
+26. Ormerod AD. CONSORT your submissions: an update for authors. Br J
+Dermatol 2001;145:378-9.
+27. Schriger DL. Suggestions for improving the reporting of clinical research:
+the role of narrative. Ann Emerg Med 2005;45:437-43.
+28. Sanderson S,Tatt ID, Higgins JP.Tools for assessing quality and susceptibility
+to bias in observational studies in epidemiology: a systematic review and
+annotated bibliography. Int J Epidemiol. 2007;36:666-76.
+29. Bartlett C, Sterne J, Egger M.What is newsworthy? Longitudinal study
+of the reporting of medical research in two British newspapers. BMJ 2002;
+325:81-4.
+‫ملخص‬
+‫تقارير‬ ‫إعداد‬ ‫حول‬ ‫إرشادية‬ ‫دالئل‬ :STROBE ‫سرتوب‬ ‫بيان‬ :‫الوبائيات‬ ‫مجال‬ ‫يف‬ ‫اقبة‬‫ر‬‫امل‬ ‫عىل‬ ‫القامئة‬ ‫اسات‬‫ر‬‫الد‬ ‫تقارير‬ ‫إعداد‬ ‫عملية‬ ‫تعزيز‬
+‫اقبة‬‫ر‬‫امل‬ ‫عىل‬ ‫القامئة‬ ‫اسات‬‫ر‬‫الد‬
+‫يصعب‬ ‫ما‬ ً‫ا‬‫وغالب‬ ،‫اقبة‬‫ر‬‫امل‬ ‫عىل‬ ‫البيولوجية‬ ‫الطبية‬ ‫األبحاث‬ ‫من‬ ‫العديد‬ ‫يقوم‬
+‫ومواطن‬ ‫القوة‬ ‫مواضع‬ ‫تقيـيم‬ ‫يعوق‬ ‫مام‬ ،‫اسات‬‫ر‬‫الد‬ ‫تلك‬ ‫عن‬ ‫التقارير‬ ‫إعداد‬
+‫عن‬ ‫نشأت‬ ‫ولقد‬ .‫فيها‬ ‫التعميم‬ ‫إمكانية‬ ‫وكذلك‬ ،‫األبحاث‬ ‫هذه‬ ‫يف‬ ‫الضعف‬
+‫مجال‬ ‫يف‬ ‫اقبة‬‫ر‬‫امل‬ ‫عىل‬ ‫القامئة‬ ‫اسات‬‫ر‬‫الد‬ ‫تقارير‬ ‫إعداد‬ ‫عملية‬ ‫تعزيز‬ ‫مبادرة‬
+‫إحدى‬ ‫عن‬ ‫وكامل‬ ‫دقيق‬ ‫تقرير‬ ‫يضمه‬ ‫أن‬ ‫ينبغي‬ ‫ما‬ ‫حول‬ ‫توصيات‬ ‫الوبائيات‬
+‫التوصيات‬ ‫هذه‬ ‫لنطاق‬ ً‫ا‬‫تعريف‬ ‫الباحثون‬ ‫وقدم‬ .‫اقبة‬‫ر‬‫امل‬ ‫عىل‬ ‫القامئة‬ ‫اسات‬‫ر‬‫الد‬
+،‫ابية‬‫ر‬‫األت‬ ‫اسات‬‫ر‬‫الد‬ :‫هي‬ ‫البحثية‬ ‫اسات‬‫ر‬‫الد‬ ‫من‬ ‫رئيسية‬ ‫أشكال‬ ‫ثالثة‬ ‫يغطي‬
+‫حلقة‬ ‫الباحثون‬ ‫وعقد‬ .‫العرضية‬ ‫اسات‬‫ر‬‫والد‬ ،‫والشواهد‬ ‫الحاالت‬ ‫اسات‬‫ر‬‫ود‬
+،‫وباحثون‬ ،‫منهاجيون‬ ‫حرضها‬ ،2004 ‫سبتمرب‬/‫أيلول‬ ‫يف‬ ‫يومان‬ ‫مدتها‬ ‫عملية‬
+‫أن‬ ‫ينبغي‬ ‫التي‬ ‫للبنود‬ ‫تفقدية‬ ‫لقامئة‬ ‫دة‬َّ‫و‬‫مس‬ ‫لوضع‬ ،‫طبية‬ ‫مجالت‬ ‫ومحررو‬
+‫عدة‬ ‫يف‬ ‫للتنقيح‬ ً‫ا‬‫الحق‬ ‫القامئة‬ ‫هذه‬ ‫وخضعت‬ .‫التقارير‬ ‫تلك‬ ‫مثل‬ ‫تتضمنها‬
+‫الرسائل‬ ‫تبادل‬ ‫خالل‬ ‫من‬ ‫وكذلك‬ ،‫التنسيقية‬ ‫املجموعة‬ ‫عقدتها‬ ‫اجتامعات‬
+،STROBE ‫سرتوب‬ ‫بيان‬ ‫يف‬ ‫املشاركني‬ ‫من‬ ‫األكرب‬ ‫املجموعة‬ ‫بني‬ ‫اإللكرتونية‬
+‫ضت‬َّ‫متخ‬ ‫وقد‬ .‫الحسبان‬ ‫يف‬ ‫املنهاجية‬ ‫ات‬‫ر‬‫واالعتبا‬ ‫التجريبية‬ ‫نات‬ِّ‫ي‬‫الب‬ ‫أخذ‬ ‫مع‬
+‫قامئة‬ ‫عن‬ ،‫متكررة‬ ‫وتنقيح‬ ‫تشاور‬ ‫عمليات‬ ‫من‬ ‫تالها‬ ‫وما‬ ‫العملية‬ ‫الحلقة‬
+‫بعنوان‬ ‫عالقة‬ ‫ذات‬ ‫وهي‬ )STROBE ‫سرتوب‬ ‫(بيان‬ ً‫ا‬‫بند‬ 22 ‫تضم‬ ‫تفقدية‬
+.‫مبقاالته‬ ‫الخاصة‬ ‫املناقشة‬ ‫وأقسام‬ ‫البحث‬ ‫ونتائج‬ ‫وطرق‬ ‫ومقدمة‬ ‫وخالصة‬
+‫اسات‬‫ر‬‫الد‬ ‫أشكال‬ ‫جميع‬ ‫بني‬ ً‫ا‬‫مشرتك‬ ً‫ا‬‫بند‬ ‫عرش‬ ‫مثانية‬ ‫عىل‬ ‫القامئة‬ ‫وتشتمل‬
+‫اسات‬‫ر‬‫بالد‬ ‫خاصة‬ ‫نوعية‬ً‫ا‬‫بنود‬ ‫الباقية‬ ‫األربعة‬ ‫البنود‬ ‫تعد‬ ‫بينام‬ ،‫الثالثة‬ ‫البحثية‬
+‫تشمل‬ ‫منفصلة‬ ‫وثيقة‬ ‫وهناك‬ .‫العرضية‬ ‫أو‬ ،‫والشواهد‬ ‫الحاالت‬ ‫أو‬ ،‫ابية‬‫ر‬‫األت‬
+‫وهي‬ ،‫اإلنرتنت‬ ‫شبكة‬ ‫عىل‬ ‫منشورة‬ ،‫املجال‬ ‫هذا‬ ‫يف‬ ‫موسعني‬ ً‫ال‬‫وتفصي‬ ً‫ا‬‫رشح‬
+AnnalsofInternalMedicine PLoS Medicine ‫موقعي‬‫عىل‬ً‫ا‬‫مجان‬‫متاحة‬
+‫يف‬ STROBE ‫سرتوب‬ ‫بيان‬ ‫سهم‬ُ‫ي‬ ‫أن‬ ‫يف‬ ‫الباحثون‬ ‫ويأمل‬ .Epidemiology‫و‬
+.‫اقبة‬‫ر‬‫امل‬ ‫عىل‬ ‫القامئة‬ ‫اسات‬‫ر‬‫الد‬ ‫عن‬ ‫ة‬َّ‫د‬‫املع‬ ‫التقارير‬ ‫نوعية‬ ‫تحسني‬
 

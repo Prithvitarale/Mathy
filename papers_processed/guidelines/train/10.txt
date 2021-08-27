@@ -1,1258 +1,1109 @@
-Draft version June 4, 2021
-Typeset using L
-A
-TEX twocolumn style in AASTeX63
-Best Practices for Data Publication in the Astronomical Literature
-Tracy X. Chen,1
-Marion Schmitz,1
-Joseph M. Mazzarella,1
-Xiuqin Wu,1
-Julian C. van Eyken,2
-Alberto Accomazzi,3
-Rachel L. Akeson,2
-Mark Allen,4
-Rachael Beaton,5
-G. Bruce Berriman,2
-Andrew W. Boyle,2
-Marianne Brouty,4
-Ben Chan,1
-Jessie L. Christiansen,2
-David R. Ciardi,2
-David Cook,1
-Raffaele D’Abrusco,3
-Rick Ebert,1
-Cren Frayer,1
-Benjamin J. Fulton,2
-Christopher Gelino,2
-George Helou,1
-Calen B. Henderson,2
-Justin Howell,6
-Joyce Kim,1
-Gilles Landais,4
-Tak Lo,1
-Cecile Loup,4
-Barry Madore,7, 8
-Giacomo Monari,4
-August Muench,9
-Anais Oberto,4
-Pierre Ocvirk,4
-Joshua E. G. Peek,10, 11
-Emmanuelle Perret,4
-Olga Pevunova,1
-Solange V. Ramirez,7
-Luisa Rebull,6
-Ohad Shemmer,12
-Alan Smale,13
-Raymond Tam,2
-Scott Terek,1
-Doug Van Orsow,13, 14
-Patricia Vannier,4
-and Shin-Ywan Wang1
-1Caltech/IPAC-NED, Mail Code 100-22, Caltech, 1200 E. California Blvd., Pasadena, CA 91125, USA
-2Caltech/IPAC-NExScI, Mail Code 100-22, Caltech, 1200 E. California Blvd., Pasadena, CA 91125, USA
-3Center for Astrophysics | Harvard & Smithsonian, 60 Garden Street, Cambridge, MA 02138, USA
-4Centre de Données astronomiques de Strasbourg, Observatoire de Strasbourg, 11, rue de l’Université, 67000 STRASBOURG, France
-5Department of Astrophysical Sciences, Princeton University, 4 Ivy Lane, Princeton, NJ 08544, USA
-6Caltech/IPAC-IRSA, Mail Code 100-22, Caltech, 1200 E. California Blvd., Pasadena, CA 91125, USA
-7The Observatories, Carnegie Institution for Science, 813 Santa Barbara Street, Pasadena, CA 91101, USA
-8Department of Astronomy & Astrophysics, University of Chicago, 5640 S. Ellis Avenue, Chicago, IL 60637, USA
-9American Astronomical Society, 1667 K Street NW, Suite 800, Washington, DC 20006, USA
-10Space Telescope Science Institute, 3700 San Martin Drive, Baltimore, MD 21218, USA
-11Department of Physics & Astronomy, Johns Hopkins University, 3400 N. Charles Street, Baltimore, MD 21218, USA
-12Department of Physics, University of North Texas, Denton, TX 76203, USA
-13NASA Goddard Space Flight Center, 8800 Greenbelt Road, Greenbelt, MD 20771, USA
-14Business Integra, Inc., 6550 Rock Spring Dr #600, Bethesda, MD 20817, USA
+Best Practices for Notification Studies
+for Security and Privacy Issues on the Internet
+Max Maass
+mmaass@seemoo.tu-darmstadt.de
+Technical University Darmstadt
+Darmstadt, Germany
+Henning Pridöhl
+Dominik Herrmann
+henning.pridoehl@uni-bamberg.de
+dominik.herrmann@uni-bamberg.de
+Otto-Friedrich-Universität Bamberg
+Bamberg, Germany
+Matthias Hollick
+mhollick@seemoo.tu-darmstadt.de
+Technical University Darmstadt
+Darmstadt, Germany
 ABSTRACT
-We present an overview of best practices for publishing data in astronomy and astrophysics jour-
-nals. These recommendations are intended as a reference for authors to help prepare and publish
-data in a way that will better represent and support science results, enable better data sharing, im-
-prove reproducibility, and enhance the reusability of data. Observance of these guidelines will also
-help to streamline the extraction, preservation, integration and cross-linking of valuable data from
-astrophysics literature into major astronomical databases, and consequently facilitate new modes of
-science discovery that will better exploit the vast quantities of panchromatic and multi-dimensional
-data associated with the literature. We encourage authors, journal editors, referees, and publishers
-to implement the best practices reviewed here, as well as related recommendations from international
-astronomical organizations such as the International Astronomical Union (IAU) and International Vir-
-tual Observatory Alliance (IVOA) for publication of nomenclature, data, and metadata. A convenient
-Checklist of Recommendations for Publishing Data in Literature (Appendix A) is included for authors
-to consult before the submission of the final version of their journal articles and associated data files.
-We recommend that publishers of journals in astronomy and astrophysics incorporate a link to this
-document in their Instructions to Authors.
-Keywords: editorials, standards — astronomical databases: miscellaneous
-1. INTRODUCTION
-Modern telescopes and instruments are being used to
-observe larger areas of the sky over wider ranges of the
-spectrum, and with greater frequency than ever before.
-The volume and complexity of resulting data are grow-
-ing at an exponential rate, not only within the astronom-
-ical archives that capture the original data products,
-but also in the scientific literature where more highly-
-processed data are published alongside scientific results.
-It is therefore extremely important that data appear-
-ing in journal articles are prepared and published with
-great diligence in order to: accurately present new data,
-avoid any loss of data, preserve and support the integrity
-of scientific results, and enhance the reusability of data
-arXiv:2106.01477v1
-[astro-ph.IM]
-2
+Researchers help operators of vulnerable and non-compliant in-
+ternet services by individually notifying them about security and
+privacy issues uncovered in their research. To improve efficiency
+and effectiveness of such efforts, dedicated notification studies are
+imperative. As of today, there is no comprehensive documentation
+of pitfalls and best practices for conducting such notification stud-
+ies, which limits validity of results and impedes reproducibility.
+Drawing on our experience with such studies and guidance from
+related work, we present a set of guidelines and practical recommen-
+dations, including initial data collection, sending of notifications,
+interacting with the recipients, and publishing the results. We note
+that future studies can especially benefit from extensive planning
+and automation of crucial processes, i. e., activities that take place
+well before the first notifications are sent.
+ACM Reference Format:
+Max Maass, Henning Pridöhl, Dominik Herrmann, and Matthias Hollick.
+2021. Best Practices for Notification Studies for Security and Privacy Issues
+on the Internet. In The 16th International Conference on Availability, Relia-
+bility and Security (ARES 2021), August 17–20, 2021, Vienna, Austria. ACM,
+New York, NY, USA, 10 pages. https://doi.org/10.1145/3465481.3470081
+1 INTRODUCTION
+When researchers discover new vulnerabilities or compliance vio-
+lations, a large number of internet services may be affected. Large-
+scale network scans, for instance, for servers affected by the Heart-
+bleed vulnerability [14], have shown that many service providers
+fail to secure their systems even when a vulnerability is widely
+discussed. Realizing that publicly announcing vulnerabilities is not
+sufficient, security researchers have begun to approach service
+providers individually. As studies on notification effectiveness [6–
+10, 14, 21–24, 26, 32, 33, 35, 37] have returned inconclusive results
+in many areas, more studies will likely follow.
+For this paper, we consider notification studies that are de-
+signed as follows. Having identified a security or privacy issue
+affecting a large number of services or websites on the internet, re-
+searchers first obtain a list of affected targets. For each target, they
+determine a way to reach a point of contact. Next, they notify the
+points of contact about the issue. To study notification effectiveness,
+ARES 2021, August 17–20, 2021, Vienna, Austria
+© 2021 Copyright held by the owner/author(s). Publication rights licensed to ACM.
+This is the author’s version of the work. It is posted here for your personal use. Not for
+redistribution. The definitive Version of Record was published in The 16th International
+Conference on Availability, Reliability and Security (ARES 2021), August 17–20, 2021,
+Vienna, Austria, https://doi.org/10.1145/3465481.3470081.
+researchers split the targets into different treatment groups. Then,
+they analyze responses and remediation tactics (by re-scanning the
+targets) and, optionally, the use of self-service tools mentioned in
+the notifications. Researchers may also ask the points of contact to
+participate in interviews or surveys.
+So far, there is no established methodology for internet notifi-
+cation studies, which is problematic for two reasons. Firstly, there
+are numerous design decisions that cannot be amended at a later
+time, and there is much potential for implementation mistakes that
+may degrade the validity of the results (see, e. g., [26]). Secondly,
+different study designs impede comparisons with results obtained
+in other studies. Both problems can be addressed by standardization
+of methods and following best practices.
+To this end, we documented pitfalls and lessons learned while
+conducting a series of notification studies [19, 24, 26, 27] over the
+last years. The derived best practices presented in this paper also
+take into account guidance from related work (Sect. 2). We describe
+the design space of notification studies and their typical execu-
+tion timeline (Sect. 3). We also review legal and ethical obligations
+(Sect. 4). After that, we present guidance on data collection (Sect. 5),
+notification handling (Sect. 6), and publication (Sect. 7). Data analy-
+sis methods are beyond the scope of this paper.
+This paper may serve as both a blueprint and a checklist for
+future notification studies. The best practices may also be of interest
+for other kinds of studies, e. g., large-scale vulnerability scanning
+[12] and experiments that involve interactions with a large number
+of service providers [19].
+2 RELATED WORK
+To derive a design space and best practices for notification experi-
+ments, we rely on our own experience and on previous work. So
+far, there are no dedicated publications on methods for notification
+studies. As notification studies typically rely on network scans,
+we review publications on best practices for empirical network
+research. A comprehensive resource is the guide by Bajpai et al.
+[3], which discusses best practices in conducting and documenting
+networking research, including measurements and human-subject
+studies. Cui and Stolfo [12] report on their practical experience
+while running a large-scale vulnerability scanner and derive pro-
+cedures for large-scale, secure and responsible vulnerability scans.
+Durumeric et al. similarly discuss procedures to ensure good citi-
+zenship for large-scale internet scans [15, Sect. 5].
+Moreover, best practices for human subjects research on the
+internet are relevant. Notification studies may conflict with ethical
+arXiv:2106.08029v1
+[cs.CR]
+15
 Jun
 2021
-2
-to facilitate further analysis and followup studies. The
-impacts of publishing complete and accurate data are
-far-reaching across all astrophysical disciplines and en-
-compass all types of objects, and are important to the
-scientific process for providing transparency and repro-
-ducibility in the primary record of scientific exploration
-and discovery.
-These data also serve another vital function in mod-
-ern science as they are continuously being integrated
-into astronomical archives to provide comprehensive in-
-formation for astronomical objects, and to support plan-
-ning new observations, performing data analysis, mak-
-ing new discoveries, and preparing publications of new
-results. Uniformity and adherence to established norms
-in published data are essential to improving automation,
-efficiency, and accuracy of procedures required to inte-
-grate data from the literature into astronomical archives
-in a timely fashion. The high degree of connectivity
-between the digital journal articles and the astronomi-
-cal archives, with the NASA Astrophysics Data System
-(ADS1
-) as a nexus through its extensive bibliographic
-database, provides an ecosystem used 24/7 by thousands
-of scientists around the world who depend on astronom-
-ical data that are as current and accurate as possible.
-Much of data appearing in the astronomical literature
-are presented with great care and serve two scientific
-needs well: 1) a high quality scientific record with results
-that can be reproduced and expanded upon in follow-up
-studies, and 2) clean data that can be straightforwardly
-integrated into astronomical databases. However, there
-are a substantial number of journal articles published
-each year where this is not the case. Various issues con-
-tinue to severely detract from the quality and utility of
-the data and hinder both scientific goals. The most com-
-mon and severe example is the publication of ambigu-
-ous object names, typically truncated coordinate-based
-names, that make it nearly impossible to reproduce ob-
-servations or accurately cross-identify these sources with
-those in other journal articles or catalogs. Other com-
-mon examples include publishing data without uncer-
-tainties or with an unrealistic number of significant fig-
-ures, not specifying the reference frame for coordinate
-or redshift measurements, and placing data critical to
-(re)producing science results in a personal URL that has
-no long-term access support. One study has shown that
-in 2011, 44% of data links published in the astronomical
-literature a decade earlier (in 2001) were broken (Pepe
-et al. 2014). Most of these issues, and more, can be
-avoided or minimized with a small amount of additional
-1 https://ui.adsabs.harvard.edu/
-effort on the part of authors, who are ultimately respon-
-sible for the quality of any published work, combined
-with more attention to flagging such issues by referees
-and editors so authors can correct errors and omissions
-before the article is published. To assist in this pro-
-cess, we provide in this article recommendations on best
-practices for publishing data and metadata in astronom-
-ical journals. The topics discussed here are essential to
-achieving the goals of data sharing, open access, and
-reproducibility of science results.
-Active and consistent participation from authors in
-presenting their (meta)data in the literature is also cru-
-cial for the publication record and to facilitate inte-
-gration into astronomical information systems (Schwarz
-2005). A number of issues discussed here have also been
-addressed by Cambrésy et al. (2011) in the context of
-the SIMBAD2
-and VizieR3
-services of CDS4
-. We en-
-courage all authors, referees, editors and publishers to
-follow these best practices during the preparation, sub-
-mission, refereeing and editing stages of the publication
-process. We expect that these best practices will evolve
-as new forms of data are published in the journals, and
-as the journals and archives receive feedback from au-
-thors. When enough revisions build up, we plan to pub-
-lish updates to this original publication on arXiv.org.
-The broader topic of standards, formats and best prac-
-tices for depositing specific types of data products in
-repositories and archives is beyond the scope of this ar-
-ticle.
-2. ASTROPHYSICAL DATA GUIDELINES
-Here we provide guidelines for presenting data in many
-areas of astrophysical research: stars, galaxies, dust
-and gas, planets. Names, astrometry, photometry, red-
-shift/velocity etc. are among the fundamentals of the
-data published in an astrophysical article. Formatting
-and referencing these data correctly are essential in un-
-derstanding the data itself and the derived science re-
-sults. Before addressing each of these categories indi-
-vidually, here are some general rules:
-• Define symbols, acronyms, and abbrevia-
-tions. Symbols, acronyms, and abbreviations
-must be clearly defined when used anywhere in
-a publication, generally at first use, even if they
-are common throughout the discipline. This is
-especially important in younger fields of investi-
-2 Set of Identifications, Measurements and Bibliography for Astro-
-nomical Data; http://simbad.unistra.fr/simbad/
-3 http://vizier.unistra.fr/vizier/
-4 Centre de Données astronomiques de Strasbourg; https://cds.
-u-strasbg.fr/
-3
-gation where symbols may be used in divergent
-ways by the community such that their mean-
-ing is not as clear is it might seem. If there is
-any doubt, define everything explicitly, or at the
-least cite a source which clearly defines the conven-
-tions adopted. The definition should be consistent
-through the entire article to avoid confusion.
-• Provide uncertainty and confidence level
-when reporting a new measurement. Avoid
-using parentheses after the last digits of the mea-
-sured value to indicate uncertainty, as this is very
-unclear with a high degree of probable confu-
-sion. For example, when the period of a periodic
-phenomenon is represented as “P = 1.23456(12)
-days”, the uncertainty should be interpreted as
-“±0.00012 days”, but may be misinterpreted as
-“±0.0000012 days”.
-• Present the appropriate number of signif-
-icant figures for numerical measurements
-and uncertainties. Significant figures in a mea-
-surement indicate its precision. When data are
-generated from floating-point machine computa-
-tion, there is a tendency to display more signifi-
-cant figures than are justified by the measurement.
-A decimal degree coordinate of (131.32134587◦
-,
-0.01243229◦
-) would imply an accuracy of 10−8
-de-
-grees (or 0.0000100
-), which is not obtainable by
-most current telescopes. Therefore it is very im-
-portant for the authors to always supply data val-
-ues that are appropriate to the measurement sig-
-nificance, and coordinate the number of decimal
-places in both the measurements and uncertain-
-ties. The rightmost significant figure of a mea-
-surement should correspond to the rightmost sig-
-nificant figure of its associated uncertainty. For
-example, the measurement 0.123456789 of some
-quantity Q ± Qerr should be rounded to 0.123 if
-the associated uncertainty Qerr is 0.002.
-• Adopt commonly-used units wherever pos-
-sible. This will not only prevent the readers
-from possibly getting different values using differ-
-ent conversion factors, but also facilitate the com-
-parison between results from various observations,
-models, or analyses.
-• Indicate preferred values if applicable.
-When reporting multiple measurements for one
-parameter or alternative parameter sets from dif-
-ferent techniques or algorithms that fit observa-
-tions, it is valuable to the readers and beneficial
-to the archives that the authors indicate the pre-
-ferred value or parameter set.
-2.1. Nomenclature
-The most common and basic type of data in any ob-
-servational article is the naming of astronomical sources.
-Unambiguous names that follow recommended nomen-
-clature standards are essential prerequisites for clear
-communication of observational results and scientific
-conclusions, and to ensure that follow-up observations
-target the proper source.
-2.1.1. IAU conventions
-When assigning object names in an article, we rec-
-ommend the authors follow the established conventions
-from the International Astronomical Union (IAU5
-), such
-as “How to refer to a source or designate a new one”6
-and
-“Specifications concerning designations for astronomical
-radiation sources outside the solar system”7
-. The IAU
-Dictionary of Nomenclature of Celestial Objects8
-pro-
-vides a list of acronyms that are currently in use, and
-should be consulted to confirm the correct acronyms and
-formats for known objects, and to avoid reusing the same
-ones for newly discovered objects.
-Stellar names should follow the IAU naming conven-
-tions on the naming of stars9
-.The naming of double stars
-or common proper motion systems and their compo-
-nents should follow the rules of the Washington Double
-Star Catalog (WDS10
-; see also Hartkopf & Mason 2004).
-We note, however, that the scheme followed by multi-
-ple system descriptors should not be applied to stellar
-names, though there are a few exceptions - for the com-
-ponents only - for some historical acronyms (e.g., HD,
-DM). Especially, do not name a secondary component of
-a wide common proper system HD ...B if the component
-itself has its own HD name. For double stars resolved in
-astrometric catalogs, the identification of both compo-
-nents should be given (e.g., WDS ...AB = HD ..., WDS
-...A = TYC ...-1, WDS ...B = TYC ...-2).
-Letter designations for confirmed exoplanets in multi-
-planet systems should be in discovery order, and typi-
-cally in the order of ascending period when more than
-one of the exoplanets is announced in a single paper11
-.
-5 https://www.iau.org/
-6 https://cdsweb.u-strasbg.fr/Dic/how.html
-7 https://cds.u-strasbg.fr/Dic/iau-spec.html
-8 https://cds.u-strasbg.fr/cgi-bin/Dic-Simbad
-9 https://www.iau.org/public/themes/naming stars/
-10 https://www.usno.navy.mil/USNO/astrometry/
-optical-IR-prod/wds/WDS
-11 https://www.iau.org/public/themes/naming exoplanets/
-4
-When publishing simultaneous independent discovery
-announcements of the same astrophysical objects, rea-
-sonable efforts should be made to coordinate and avoid
-publishing conflicting designations.
-Following the IAU guidelines, we recommend:
-• Provide the complete object name. A name
-that has the coordinate part truncated will likely
-be ambiguous and can be confused with a nearby
-object. See Table 1 for examples.
-• Explicitly include the “J” in names based
-on J2000 coordinates. Without the “J”, this
-could be misinterpreted as B1950, resulting in an
-incorrect object position and telescope pointing.
-• Insert spacers between a catalog name and
-the identifiers within the catalog. For exam-
-ple, use B3 2327+391, not B32327+391. This will
-prevent mixing and misinterpreting the catalog
-name and the identifiers, and allow both the read-
-ers and name resolver services at the archives (e.g.,
-SIMBAD, NED12
-, NASA Exoplanet Archive13
-) to
-recognize object names more efficiently.
-• Distinguish between part of an object and
-the object itself. For example, use “3C 295 clus-
-ter” instead of “3C 295” when referring to the clus-
-ter. Similarly, the hosts for transients, like super-
-novae and gamma-ray bursts, should be referred
-to with the proper names when host properties
-are discussed, instead of just using the names of
-the transients.
-• Do not use the same name for different ob-
-jects. Once a name has been assigned to an object
-in a published catalog or journal article, it should
-not be reused for a different source in the future,
-even if an object’s existence is refuted. For exam-
-ple, the tau Ceti system now has four planets: e, f,
-g, and h. Since tau Ceti b, c, and d were refuted,
-the letter designations b, c, and d were not reused
-for the newer planets to avoid confusion.
-Table 1 illustrates some ambiguous/improper astro-
-nomical designations that have appeared in the litera-
-ture, along with the recommended proper usage.
-2.1.2. New objects
-12 NASA/IPAC Extragalactic Database; https://ned.ipac.caltech.
-edu/
-13 https://exoplanetarchive.ipac.caltech.edu/
-For newly discovered objects, please follow the IAU
-conventions mentioned in §2.1.1 for designations. Addi-
-tional recommendations include:
-• Always assign a name. Without a proper name,
-it is difficult for both the readers and the databases
-to unambiguously reference information in a pub-
-lication.
-• Verify the name is unique. The key to object
-designations is that each one must be unique when
-compared to objects identified at other observato-
-ries and wavelengths, especially within the same
-article. When creating new acronyms, please con-
-sult the IAU Dictionary of Nomenclature of Ce-
-lestial Objects as noted in §2.1.1 to avoid reusing
-existing ones.
-• Keep the appropriate number of significant
-figures in coordinate-based names. When
-the name of an object is generated from the co-
-ordinates of the object, too many significant fig-
-ures would imply a much higher accuracy than
-the measured position of the object. For example,
-J092712.64+294344.0 indicates a positional accu-
-racy of 0.15 arcsec while J092712.644+294344.02
-indicates an accuracy of 0.015 arcsec. Conversely,
-it is very important to include all significant figures
-in coordinate-based source names, at least the first
-time mentioned in the article, because truncating
-coordinates often leads to ambiguity and difficulty
-cross-matching the source with prior data due to
-confusion with nearby objects.
-2.1.3. Known objects
-For objects that are already published and known, we
-recommend:
-• Use established names. It is unnecessary and
-often adds confusion to give a new name to an
-object that already has a name. Using the estab-
-lished names also gives proper credit to the orig-
-inal authors or survey team that first discovered
-and cataloged the source.
-• Check for the correct formatting. For as-
-tronomical objects outside the Solar System, au-
-thors are encouraged to validate all the identifiers
-for known objects in their publications through
-Sesame14
-, a service hosted by CDS that queries
-NED, SIMBAD, and VizieR to help resolve ob-
-ject names. If some valid names are not indexed
-14 http://cdsweb.u-strasbg.fr/cgi-bin/Sesame
-5
-Table 1. Examples of improper astronomical designations in literature
-As published Why it is improper Recommended usage
-(notes if available)
-SDSS J1441+0948 Insufficient precision in RA and SDSS J144157.24+094859.1, or
-DEC can cause confusion with SDSS J144156.97+094856.5, or
-nearby sources. SDSS J144157.26+094853.7
-SN 05J Incomplete name can be interpreted SN 1905J, or
-into different objects. SN 2005J
-HESS J232+202 Leading zero in RA is missing and HESS J0232+202
-can cause misinterpretation of the
-RA at 23 hours instead of 02 hour.
-BR 0529-3526 Missing letter J to specify J2000 BR J0529-3526
-equatorial coordinates.
-0008+006 Name prefix is needed to distinguish ZC 0008+006 (z = 2.3), or
-between different objects. IVS B0008+006 (z = 1.5)
-DEM45 H II regions in LMC or SMC should DEM L 045, or
-be indicated with “L” or “S” to DEM S 045
-avoid ambiguity.
-SDSS 587729386611212320 Database objectID numbers are used SDSS DR6 587729386611212320
-without specifying release number.
-The same running number may refer to
-a different source in a different release.
-Gaia DR 2 2.7904e18 ID is written in scientific notation, making Gaia DR2 2790494815860044544
-it impossible to retrieve the actual object.
-by these services, authors should verify the names
-with the discovery papers of the objects.
-2.1.4. Cross-identifications
-When multiple designations exist for the same ob-
-ject, the different names are cross-identified by authors
-or databases. The best practices with these cross-
-identifications are:
-• Confirm the names and positions. Many
-examples exist in the literature where multiple
-columns of cross-identifications disagree with each
-other or with the listed coordinates. We suggest
-to always verify with established databases that
-all of the names given to an object are valid cross-
-identifications for the object and that the listed
-positions are for the same object.
-• Cross-match the same objects within the
-same article. If the same object appears in mul-
-tiple tables of the same article, but with differ-
-ent designations (e.g., duplicated detections at the
-borders between two tiles of a mosaicked image),
-a cross-matching of the tables should be done by
-the authors to enable the readers to quickly access
-related data about the objects.
-2.2. Astrometry
-One of the primary attributes for an astronomical
-source is its location in the sky. Accurate celestial co-
-ordinates for the objects are especially important for
-followup observations and study. When presenting co-
-ordinates in a publication, we recommend:
-• Provide the best available coordinates. Pre-
-cise positions of the sources are indispensable for
-the usability of observational data and for plan-
-ning followup observations. All objects studied in
-an article, especially those from private catalogs,
-need to be presented with coordinates. Complete
-celestial coordinates are preferred. When posi-
-tional offsets are published instead, it is essential
-that authors include the coordinates of the refer-
-ence position, as well as the angle of rotation (if
-North is not up or East is not to the left), and
-the sense of the offset (i.e., reference point minus
-source, or source minus reference point).
-6
-• Specify the celestial reference system
-and/or frame. Indicate the reference system
-and/or frame for the coordinates (Urban & Sei-
-delmann 2013, chap. 4 and 7). The current IAU
-celestial reference system is the International Ce-
-lestial Reference System (ICRS15
-), and it is real-
-ized through the International Celestial Reference
-Frame (ICRF16
-).
-• Indicate the equinox and epoch of obser-
-vations when necessary. This is particularly
-important for the positions of stars and exoplanet
-systems. Nearby stars can have a quite signifi-
-cant proper motion (>1 arcsec/year), which means
-that the position changes with time and therefore
-requires the equinox and epoch of observation in
-order to compute its position at another epoch.
-The standard equinox and epoch currently in use
-are J2000.0 (Aoki et al. 1983).
-• State the wavelength range from which as-
-trometry is obtained, where appropriate.
-Astronomical sources can be detected at slightly
-different positions at different wavelengths due to
-different emission mechanisms of different compo-
-nents in each band. Therefore, providing the wave-
-length range of the detection is important for un-
-derstanding the various components of the object
-and for cross-identifications between sources de-
-tected at various wavelengths.
-2.3. Photometry
-The flux or intensity of light radiated by astronomi-
-cal objects is another key observable in astronomy. To
-properly represent the photometry data and to enable
-easy comparisons of the results, we strongly recommend:
-• State the facility, telescope and instrument
-used. Specify whether the facility is ground-
-based or space-based. Authors also need to pro-
-vide any other relevant instrument configuration
-information, the specific camera on the instru-
-ment, and/or the specific CCD chips of the camera
-that were used in the analysis. These are crucial
-to the proper interpretation of the data. Good
-documentation of the metadata will also facilitate
-the correct and fast ingestion of photometry data
-in services such as the NED Spectral Energy Dis-
-tribution (SED) plots and the VizieR Photome-
-15 https://www.iers.org/IERS/EN/Science/ICRS/ICRS.html
-16 https://www.iers.org/IERS/EN/DataProducts/ICRF/ICRF/icrf.html
-try viewer17
-, which in return will better serve the
-community.
-• Describe the method used to estimate
-photometry. Indicate if an estimate is from
-point spread function fitting, aperture photome-
-try, isophotal measurements, etc. If it is aperture
-photometry, report the size of the aperture and
-background annulus, and any corrections made in
-the calculation.
-• Use standard passband/filter identifiers. Do
-not modify or abbreviate the identifier as it may
-conflict with a different standard identifier. For
-example, indicate “Johnson B” or “Cousins B”
-instead of just “B”; use “2MASS Ks” instead of
-just “K”. A listing of commonly-used identifiers
-is available at the Spanish Virtual Observatory
-Filter Profile Service18
-. When possible, authors
-should provide a link to the instrument documen-
-tation with the actual response curve for the filter
-in question.
-• Clarify the magnitude system. Explicitly in-
-dicate whether a magnitude is on the AB, Vega,
-STmag, or some other magnitude system.
-• Specify spectral transitions completely. De-
-scribe the molecular species, transitions, and
-frequencies/wavelengths. For example, carbon
-monoxide (CO) has several detectable transitions
-as do 13
-CO and C17
-O. The most commonly ob-
-served transition is (1-0) and each is between 110
-and 115 GHz. To clearly define a spectral transi-
-tion, one should use, e.g., “CO(1-0) ν = 115 GHz”.
-2.4. Time
-Knowing the time of observation is essential to under-
-stand the observed properties of many astronomical ob-
-jects, and often for calculating positions, especially for
-transient or variable sources and moving objects. Cal-
-ibrations sometimes may also vary depending on when
-the instrument was installed on a telescope. Authors are
-advised to:
-• Provide the time of observation and expo-
-sure time. Any times should be explicitly de-
-scribed in terms of both the frame of reference
-(e.g., JD, BJD, HJD), and the time system used
-(e.g., UTC, TDB, TAI). For example, use “BJD-
-TDB” to indicate Barycentric Julian Date in the
-17 http://vizier.unistra.fr/vizier/sed/
-18 http://svo2.cab.inta-csic.es/theory/fps/
-7
-Barycentric Dynamical Time standard (preferred).
-This is particularly important when precise tim-
-ing is needed, such as the measurement of ex-
-oplanet transit timing variations. See Eastman
-et al. (2010) and Urban & Seidelmann (2013, chap.
-3) for a helpful discussion of precise time stan-
-dards. It is also important to specify the duration
-(exposure time) and whether the presented obser-
-vation time is the beginning, midpoint, or end of
-the exposure time. When a precise time is not
-meaningful (such as detections from stacked im-
-ages), a time range where these observations oc-
-curred should be provided.
-• Favor full Julian Dates over abbreviated
-or offset Julian Dates. When reporting
-Julian Dates, the full unmodified date (e.g.,
-2456789.123) is preferred over any offset varia-
-tion (e.g., 6789.123), to avoid confusion. This also
-helps archives avoid having to track down and add
-often arbitrary offsets to put observations on a uni-
-form time scale, which can add an opportunity for
-errors to be introduced. Where an offset variation
-must be used, be sure to clearly indicate what the
-offset is (e.g., JD-2454833.0). Note that Modified
-Julian Date (MJD), although formally defined as
-the Julian Date minus 2400000.5, is prone to am-
-biguity. The IAU has recommended “that where
-there is any possibility of doubt regarding the us-
-age of Modified Julian Date, care be exercised to
-state its definition specifically.” (Resolution B1,
-199719
-).
-• Include phase timing measures along with
-reported periods, where relevant and prac-
-tical. This allows for future observations to be
-phased against your data, and combined. For ex-
-ample, for a transiting exoplanet orbit where the
-period is known, include a time of transit.
-• State when observations from multiple mis-
-sions are executed simultaneously. Coordi-
-nated observations in high-energy astronomy are
-critical for making a simultaneous spectral fit,
-which can help determine the physical processes
-responsible for emission in a particular energy
-band. It is also important to specify which instru-
-ments/cameras/chips were taking data and ana-
-lyzed during these coordinated observations. If
-possible, include a graphical representation of the
-19 https://www.iau.org/static/resolutions/IAU1997 French.pdf
-times that the missions obtained the data to help
-visualize where the simultaneity occurs.
-2.5. Redshift/velocity
-The redshift or the recessional radial velocity of an ob-
-ject is of major importance to many astrophysical fields.
-For various astrophysical reasons, there may be the need
-for an author to present redshifts in a galactocentric or
-Local Standard of Rest (LSR) reference frame or some
-other system. The recommendations on publishing red-
-shift/velocity data include:
-• Describe the method used to obtain red-
-shift. This includes the particular method (spec-
-troscopic, photometric, Friends-of-Friends, etc.)
-and base assumptions used in the models (tem-
-plate fitting, machine learning, etc). When avail-
-able, include a reference to the model/method
-used to determine the redshift.
-• Specify the reference frame of the redshift
-measurements. Be sure to include a clear in-
-dication of the reference frame (e.g., heliocentric,
-barycentric, Galactocentric, LSR). Additional def-
-inition on the solar velocities adopted and likely
-also the knowledge of the Sun’s distance to the
-Galactic center is needed for Galactocentric veloc-
-ities.
-• State the convention when redshifts or re-
-cessional velocities are listed. In radio as-
-tronomy, redshift is commonly defined as z =
-(f − f0)/f0, where f0 is the rest frequency and
-f is the observed frequency. Whereas optical as-
-tronomers tend to use z = (λ − λ0)/λ0, where
-λ0 is the rest wavelength and λ is the observed
-wavelength. These two redshift values can differ
-significantly, especially for large values of z.
-• Provide the wavelength range of the mea-
-surement. When the observations are made with
-multiple instruments, it is important to clarify at
-which wavelength the measurement is obtained.
-• Indicate the quality of the measurement
-when possible. A qualitative assessment of the
-quality of a measurement may add useful infor-
-mation for readers and for databases in guiding
-researchers to use the measurement appropriately
-in their analyses. Examples include indications of
-poor seeing or blended objects, uncertain deblend-
-ing of spectral lines, redshifts based on a single
-spectral line assuming identification of the proper
-feature, etc.
-8
-2.6. Classifications
-There are many spectral and morphologi-
-cal/phenomenological classifications for astronomical
-objects, and these classifications are constantly evolv-
-ing. We suggest:
-• Utilize established classifications as avail-
-able. For basic morphological types, use the well-
-established schemes20
-. Authors are encouraged to
-refer to NED’s extensive suite of searchable galaxy
-classifications and attributes21
-or SIMBAD’s Ob-
-ject Classification22
-which have been standardized
-to enable unified queries across journal articles and
-catalogs.
-• Define new classifications clearly. If new clas-
-sifications must be created, define them clearly so
-they can be easily adopted by other researchers,
-and quickly integrated into databases.
-2.7. Orbital parameters
-Reports of measured orbital parameters often suffer
-from ambiguity in terminology used because the con-
-ventions used are not clear. It is advised to avoid am-
-biguous terms, and to explicitly define all terms and
-symbols wherever there is any possibility of confusion.
-For instance:
-• Avoid using the term “longitude of periap-
-sis” (or periastron) when “argument of pe-
-riapsis” (or periastron) is really the term in-
-tended. Only use “longitude of periapsis” when
-referring to the sum of the argument of periapsis
-and the longitude of the ascending node.
-• Be explicit about which body’s orbit a mea-
-sured argument (or longitude) of periapsis
-refers to. The argument of periapsis for a planet
-or a secondary star’s orbit differs from that of
-the host or primary star’s reflex motion by 180
-degrees. Note also that the quantity is affected
-by the sign convention adopted in radial velocity
-analyses: as a general rule, positive radial veloc-
-ity should indicate redshift, and negative should
-indicate blueshift.
-• Include time of periapsis as appropriate
-when reporting orbital elements. For exam-
-ple, when reporting timing for a non-transiting ec-
-centric orbit for which argument of periapsis is
-20 e.g., http://en.wikipedia.org/wiki/Galaxy morphological
-classification
-21 https://ned.ipac.caltech.edu/uri/NED::Classifications/
-22 http://simbad.u-strasbg.fr/guide/otypes.htx
-measured, report time of periapsis in preference
-to (or in addition to) time of inferior conjunction.
-Both are preferred if possible.
-3. DATA PRESENTATION
-3.1. Tables
-Observational data are often published in the form of
-tables in an article. For tabular data presentation:
-• Provide a clear title and unambiguous la-
-bels of columns. Indicate the units for each col-
-umn when applicable. This is especially important
-when data are to be compared, or used outside a
-specialized field.
-• Explain the content of each column. A col-
-umn should be homogeneous and should not mix
-different measurements with different units nor er-
-rors with limits or comments. Clarify all special
-symbols or flags in a column, and give references
-to cited values.
-• Use clearly defined nulls for missing values.
-It is recommended to use null values that are doc-
-umented by widely-used toolkits, e.g., “NaN” for
-Astropy23
-. Avoid using numerical values such as
-“-999” or “0.0” for missing values as they could
-be misinterpreted as actual measurement by soft-
-ware. Use only one null value and have a separate
-field for the reasons of a missing value, instead of
-having multiple null values to indicate the different
-reasons.
-• Accompany a machine-readable table with
-standard ReadMe file. The CDS document
-“Astronomical Catalogues and Tables Adopted
-Standards”24
-serves a good example of how to gen-
-erate a standard ReadMe file.
-For tables containing astronomical objects, it is pre-
-ferred that authors give the complete names of the ob-
-jects (§2.1) in each table, and keep the same names in all
-the tables and text throughout the article when possible.
-This will not only enable the readers to quickly access
-related data about the objects, but also greatly expedite
-the linking and ingestion of data into data archives. The
-coordinates of the objects (§2.2) should be given in the
-table where the objects are first presented.
-We recommend not to use LaTeX for large tables as
-the markups degrade the reusability of that data. Au-
-thors can improve the transfer of results by avoiding
-23 https://www.astropy.org/
-24 http://vizier.u-strasbg.fr/vizier/doc/catstd.htx
-9
-elaborate LaTeX tricks and treating inline tables as reg-
-ular data arrays. For instance, method or other qual-
-ifying note marks could be given numerical values and
-displayed in an additional column instead of using table
-note marks which are not easily parsed by a machine.
-Additional details of the table should be included in an
-accompanying metadata file (see 4). Authors are also
-advised to report important numerical results for more
-than a couple of data points in tables, not just in text.
-When a number is reported in both text and a table,
-make sure it is consistent in both places.
-3.2. Figures
-Figures are commonly used for data visualization in an
-astronomical article, especially for images, spectra, SED
-plots, etc. For figures in a publication, we recommend:
-• Provide clear caption, legend and axis la-
-bels for each figure. Describe in detail what is
-presented in the figure, what different colors, sym-
-bols, and lines represent. Units of the axis labels
-should be included when applicable.
-• Create the graphics with accessibility in
-mind. Accessibility should be taken into consid-
-eration when designing the graphics as it will help
-a broader audience to properly understand the in-
-formation conveyed in these plots. For example,
-color-blind users would benefit from symbols that
-vary in shape in addition to colors. See the AAS25
-journals’ graphics guide26
-for more advice on this.
-• Include information for “data behind the
-plots”. Make public the original data files used
-to generate the figures, as this will greatly en-
-hance the ability to reproduce/validate or build
-upon published results.
-4. DATA ARCHIVING AND ACCESS
-To ensure long term preservation, access, and reuse of
-data published in the literature, data products should
-be made available to readers and for data integration
-services. This applies to both data from original obser-
-vations and enhanced products derived from previously
-published and/or archival data. We ask authors to:
-• Append small data sets as part of the publi-
-cation. Preserve data as supplementary materials
-with your final journal article, or post the data files
-with your arXiv preprint.
-25 The American Astronomical Society; https://aas.org/
-26 https://journals.aas.org/graphics-guide/#preparing files
-• Deposit large or complex data at well-
-established data centers. If the data are ei-
-ther too large or too complex to be hosted by the
-journal, authors are encouraged to place their data
-in a trusted repository that issues Digital Object
-Identifiers (DOIs, more on this in §5.4). Adhere to
-the specific format requirements from the archives
-when contributing data.
-• Provide a complete list of metadata. Meta-
-data provide valuable information on various as-
-pects of the data such as the creation, standards
-and quality of the data, and are often necessary to
-fully comprehend the data. For example, to visu-
-alize the position and orientation of the apertures
-on imagery, key metadata including aperture di-
-mensions, center coordinates, and position angle
-are required.
-• Include a Data Availability Statement if re-
-quired by the journal. The statement provides
-a standardised format for the transparent report-
-ing and description of the data underlying the pa-
-per.
-• Do not publish data sets at URLs lacking
-long-term support. We strongly discourage the
-publication of URLs to personal web servers host-
-ing data sets for which the author or institution
-has no means to maintain for many years after the
-publication of the associated journal article. This
-will greatly hinder future effort by researchers to
-retrieve and reuse the data.
-The Common Archive Observation Model (CAOM27
-)
-enables the storage of observational metadata from the
-complete set of telescopic data and searching through
-that metadata using a single interface. Authors are
-encouraged to provide as much information used by
-CAOM as possible when preparing metadata files. For
-image and spectral data specifically, authors are also rec-
-ommended to consult the metadata requirements of the
-International Virtual Observatory Alliance (IVOA28
-)
-that supports queries using IVOA’s Simple Image Access
-(SIA29
-) protocol and Simple Spectral Access (SSA30
-)
-protocol.
-In Appendix B, we provide a partial list of well-
-reputed data repositories that support long-term storage
-27 https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/doc/caom/
-28 https://ivoa.net/
-29 http://www.ivoa.net/documents/SIA/
-30 https://www.ivoa.net/documents/SSA/
-10
-and access to scientific catalogs, images, spectra, light
-curves, data cubes, radio visibility, probabilistic density
-functions and other large data files.
-5. CITATIONS AND CREDITS
-5.1. Literature citations
-The AAS president in May/June 2009, Dr. John
-Huchra, wrote: “Authors have a strong tendency to
-under-attribute, that is not to properly cite both pre-
-vious ideas and basic data. The phrases ‘data are avail-
-able’ or ‘it is known that’ should never be used; some-
-one had to work fairly hard to get that data or develop
-that idea and they deserve credit, even if they are your
-competitors. Also complicated is the use of master com-
-pilations, easy, but again not giving credit where credit
-is really due.”31
-To properly cite data in an article, one should always:
-• Cite the original references. For example, if
-the redshift presented is obtained from NED, use
-phrases such as “We adopted a heliocentric red-
-shift of 1.234 (Smith et al. 2012)”, where “Smith
-et al. 2012” is listed correctly in your bibliography.
-• Use preferred citations by the authors. Fol-
-low the instructions provided by the authors of
-the original papers, software etc. and use what
-the authors preferred for citations. For example, if
-2MASS data are used in your analysis, the 2MASS
-web page32
-requests that you cite the canonical
-paper by Skrutskie et al. (2006), instead of the
-Explanatory Supplement33
-. A separate standard
-acknowledgment is also listed there to be included
-in the acknowledgments.
-• Provide full provenance of the data. Ensure
-full reproducibility of the analysis performed in
-the paper by citing all data/source/software used:
-explicitly list the data identifiers provided by the
-data center in a table or in the text. For example,
-if 2MASS data is used via TOPCAT34
-accessing
-the VizieR table, then the source of the 2MASS
-data (“as downloaded with TOPCAT via Vizier”)
-should be stated, in addition to any preferred cita-
-tions of the data itself. It is also recommended to
-31 The President’s Column in the May/June 2009 AAS Newslet-
-ter by Dr. John Huchra; https://aas.org/archives/Newsletter/
-Newsletter 146 2009 05 May June.pdf
-32 https://irsa.ipac.caltech.edu/Missions/2mass.html
-33 https://irsa.ipac.caltech.edu/data/2MASS/docs/releases/
-allsky/doc/explsup.html
-34 http://www.star.bris.ac.uk/∼mbt/topcat/
-include the names of principal investigators who
-acquired the original data sets.
-• Include all references in the bibliography.
-Make sure all appropriate references to papers,
-software and data products are included in a pa-
-per’s bibliography section, not just in footnotes.
-This will ensure proper attribution of citations
-to them. More details and examples on this can
-be found in the AAS Journal Reference Instruc-
-tions35
-.
-• Distinguish original data in your article and
-data taken from other work. Use phrases
-such as “This work” to clearly identify original
-data in your article. It is important to archives,
-data services, and other authors that papers dis-
-tinguish new information and measurements from
-those made by previous work.
-5.2. Facility credits
-Proper credit needs to be given to the facility or ser-
-vice used to obtain the data in an article. This may be
-hardware (telescopes and instruments) or on-line ser-
-vices (databases). Not only are the specifics essential
-to properly understand the data, the acknowledgement
-metric is also used as a basis for productivity by or-
-ganizations maintaining telescopes, archives serving the
-data, and funding agencies for those facilities. We there-
-fore recommend:
-• Explicitly indicate the facility involved. Al-
-ways describe the facilities or services used, and
-make sure the name is unique. Examples of possi-
-ble confusion are given in Table 2.
-• Use standardized keywords when possi-
-ble. The AAS has created keyword tags36
-to be
-used with AASTeX \facility and \facilities.
-Many major astronomical archives, databases, and
-computational centers have been recently added
-to this list (e.g., CDS, Exoplanet Archive, IRSA,
-NED).
-• Include facility’s own statement if available.
-Refer to the phrase that was in place at the time
-the facility was used.
-35 https://journals.aas.org/references/
-36 https://journals.aas.org/authors/aastex/facility.html
-11
-Table 2. Examples of ambiguous telescope/instrument names in literature
-Name as published Possible interpretation
-ARO Astronomical Research Observatory
-Arizona Radio Observatory
-Abbey Ridge Observatory
-Algonquin Radio Observatory
-DDO David Dunlap Observatory:0.15m
-David Dunlap Observatory:0.5m
-David Dunlap Observatory:0.6m
-David Dunlap Observatory:1.88m
-EMIR “Eight MIxer Receiver” on the IRAM 30m radio telescope
-“Espectrógrafo Multiobjeto Infra-Rojo” on the Gran Telescopio Canarias
-OSIRIS “OH-Suppressing Infra-Red Imaging Spectrograph” on the Keck I telescope
-“Ohio State Infrared Imager/Spectrograph” on the SOAR telescope
-“Optical System for Imaging and low-Intermediate-Resolution Integrated Spectroscopy”
-on the Gran Telescopio Canarias
-5.3. Software credits
-The increasing volume and complexity of the astro-
-nomical data require a lot of software processing in ob-
-taining, calibrating, and analyzing the data and building
-the final product. Similar to acknowledging the facilities
-and services, we recommend:
-• List the software and version used in the
-production of the article. Use the preferred
-citation if available. If not, include the name of the
-author(s), title of the program/source code, the
-code version and a URL link to the code publisher.
-This will ensure proper credit is given, and at the
-same time help with reproducibility.
-The Astrophysics Source Code Library (ASCL37
-) pro-
-vides a list of common codes and software packages that
-are of interest to astronomers and astrophysicists, and
-their preferred citation methods.
-5.4. Digital object identifiers
-A digital object identifier (DOI38
-) provides a persis-
-tent and unique identification of objects of any type, and
-is widely used to identify content related to published
-articles. Authors are encouraged to:
-• Use DOIs to cite related content if available.
-This includes specific data sets, software, and ser-
-37 https://ascl.net/
-38 https://en.wikipedia.org/wiki/Digital object identifier#
-cite note-iso-1
-vices used to produce results in the published ar-
-ticles. Archive these in persistent repositories and
-link them to the article through DOIs minted by
-the repositories. The DOI links should be included
-in the bibliography to ensure proper citation, and
-also be put where the data are discussed to make
-it easier for readers to locate and access the data.
-Some resources for obtaining DOIs for specific data
-sets at the archives, as well as guidelines for using them
-in the journal articles, are provided in Appendix C.
-When DOIs are not available, authors can use the ex-
-act data set identifiers from the archives where the data
-were obtained. When archive data set identifiers cannot
-be obtained, authors are advised to give as much de-
-tailed criteria to identify the data as possible, e.g., list
-the start or stop times of every observation analyzed in
-the paper.
-6. DATA CONTENT KEYWORDS
-Traditional keywords used in journal articles do not
-capture information about the types of data presented
-in the article, for example, whether the article presents
-new position measurements (astrometry), photometric
-data, spectroscopic data, etc. This greatly limits the
-possibility of filtering literature searches based on the
-availability of these specific types of data. We suggest
-that authors:
-• Tag articles with relevant data content key-
-words from the Unified Astronomy The-
-12
-saurus (UAT39
-). The UAT is adopted as a stan-
-dard by the AAS journals40
-and the broader astro-
-nomical community including ADS. Hence we rec-
-ommend that authors tag their articles with UAT
-keywords that best describe the types of data con-
-tained in the article.
-7. SUMMARY
-We hope the guidelines provided here will assist au-
-thors in preparing and publishing their data in a way
-that allows science claims to be clearly communicated,
-and readily understood and validated by readers. These
-best practices are intended to be used not only by au-
-thors during the preparation and submission stages of
-a publication, but also by referees, editors and publish-
-ers during the refereeing and editing stages before fi-
-nal publication. This will improve the quality of the
-published research record, expedite the integration of
-data into the databases with more efficiency and ac-
-curacy, and result in long-term preservation and reuse
-of valuable data. This will in turn enable more scien-
-tific discoveries that would otherwise not be possible or
-practical, and increase citations for authors. A copy
-of this document and the checklist can be accessed at
-https://ned.ipac.caltech.edu/uri/Docs::BPDP. We ex-
-pect that these best practices will evolve as new forms of
-data are published in the journals, and we welcome feed-
-back and input from authors, publishers, archive users,
-and all interested parties.
-ACKNOWLEDGMENTS
-We thank Frank Timmes from Arizona State Uni-
-versity for his helpful comments to improve this work.
-We appreciate the endorsement from the following col-
-leagues:
-1. Kim Clube, Royal Astronomical Society, UK
-2. Mark Lacy, National Radio Astronomy Observa-
-tory, USA
-3. Adam Leary, Oxford University Press, UK
-4. Greg J. Schwarz, American Astronomical Society,
-USA
-APPENDIX
-A. CHECKLIST OF RECOMMENDATIONS FOR PUBLISHING DATA
-This checklist is a digest version of detailed information given in this article. It is intended to be a short reference for
-authors, referees, and science editors to consult in order to avoid various pit-falls that often impede the interpretation
-of data and metadata by readers, and parsing by software, and therefore also complicate and delay integration of the
-data into astronomical databases.
-1. General rules (§2)
-(a) Define all symbols, acronyms, and abbreviations at first use.
-(b) Provide uncertainty and confidence level when reporting a new measurement.
-(c) Present the appropriate number of significant figures for numerical measurements and uncertainties that
-match the precision of the measurements.
-(d) Adopt commonly-used units whenever possible.
-(e) Indicate preferred values if applicable.
-2. Nomenclature (§2.1)
-(a) Provide the complete name for each object. (§2.1.1)
-(b) Include the “J” in names based on J2000 coordinates. (§2.1.1)
-(c) Insert spacers between a catalog name and the identifiers within the catalog. (§2.1.1)
-(d) Distinguish between part of an object and the object itself. (§2.1.1)
-39 http://astrothesaurus.org/
-40 https://journals.aas.org/aas-journals-uat/
-13
-(e) Do not use the same name for different objects. (§2.1.1)
-(f) Always assign a name and verify the name is unique. (§2.1.2)
-(g) Keep the appropriate number of significant figures in coordinate-based names. (§2.1.2)
-(h) Use established names for known objects and check for the correct formatting. (§2.1.3)
-(i) Confirm the names and positions for cross-identifications. (§2.1.4)
-(j) Cross-match the same objects in different tables within the same article. (§2.1.4)
-3. Astrometry (§2.2)
-(a) Provide the best available coordinates.
-(b) Specify the celestial reference system and/or frame.
-(c) Indicate the equinox and epoch of observation when necessary.
-(d) State the wavelength range from which astrometry is obtained.
-4. Photometry (§2.3)
-(a) State the facility, telescope and instrument used.
-(b) Describe the method used to estimate photometry.
-(c) Use standard passband/filter identifiers.
-(d) Clarify the magnitude system.
-(e) Specify spectral transitions completely.
-5. Time (§2.4)
-(a) Provide the time of observation and exposure time.
-(b) Favor full Julian Dates over abbreviated or offset Julian Dates.
-(c) Include phase timing measures along with reported periods when relevant.
-(d) State when observations from multiple missions are executed simultaneously.
-6. Redshift/velocity (§2.5)
-(a) Define the method of redshift measurements (spectroscopic, photometric, etc.) and give references to the
-model/method.
-(b) Specify the reference frame of the redshift measurements (barycentric, heliocentric, galactocentric, etc.).
-(c) State whether a published redshift or recessional velocity is based on observed frequency or wavelength
-shifts (i.e., radio or optical convention).
-(d) Provide the wavelength range from which the redshift/velocity is obtained.
-(e) Indicate the quality of the measurement when possible.
-7. Classifications (§2.6)
-(a) Utilize established classifications as available.
-(b) Define new classifications clearly.
-8. Orbital parameters (§2.7)
-(a) Avoid using “longitude of periapsis” in place of “argument of periapsis”.
-(b) Be explicit about which body’s orbit a longitude or argument of periapsis refers to (e.g., planet or host
-star).
-(c) Include time of periapsis as appropriate.
-14
-9. Tables (§3.1)
-(a) Provide a clear title and unambiguous labels for columns.
-(b) Explain the contents of each column, including symbols and flags.
-(c) Use the same explicitly defined null for missing values throughout.
-(d) Prepare standard ReadMe files for machine-readable tables.
-10. Figures (§3.2)
-(a) Provide clear caption, legend and axis labels for each figure.
-(b) Design the graphics to be accessible.
-(c) Make public data files used to create the figures.
-11. Data archiving and access (§4)
-(a) Append small data sets as part of the publication.
-(b) Deposit large or complex data at a long-term archive most appropriate for your data. Adhere to the specific
-format requirements from the archives.
-(c) Provide a complete list of metadata.
-(d) Include a Data Availability Statement if required by the journal.
-(e) Do not publish data sets at URLs lacking long-term support.
-12. Literature citations (§5.1)
-(a) Cite the original references.
-(b) Use preferred citations by the authors.
-(c) Provide full provenance of the data. Credit the originator of archival data, including the Principal Investi-
-gator.
-(d) Include all references in the bibliography section.
-(e) Distinguish original data in your article and data taken from other work.
-13. Facility credits (§5.2)
-(a) Indicate the facilities involved, such as telescopes, instruments, and databases.
-(b) Use standard keywords when possible.
-(c) Include facility’s own statement if available.
-14. Software credits (§5.3)
-(a) List the software and version used in the production of the article.
-15. Digital object identifiers (§5.4)
-(a) Use DOIs to cite data sets, software and services if available.
-16. Data content keywords (§6)
-(a) Tag articles with relevant data content keywords from the UAT.
-15
-B. DATA REPOSITORIES
-We list here some data repositories (both special-purpose and general-purpose ones) that are available to support
-long-term storage and access to scientific catalogs, images, spectra, light curves, code, and other large data files used
-to produce the figures and results that appear in journal articles. This is not a complete list. Authors are encouraged
-to explore and choose a well-established repository that is most appropriate for your data. At the time your data are
-contributed, please acquire a DOI or other persistent URL suitable for publication in the journal article.
-Astronomy data repositories:
-1. ExoFOP; https://exofop.ipac.caltech.edu/; online environment for the community to upload and share observa-
-tions, data, files, and notes on exoplanet candidates.
-2. HEASARC; https://heasarc.gsfc.nasa.gov/; astrophysics catalogs, images, spectra, time series.
-3. IRSA; https://irsa.ipac.caltech.edu/frontpage/; astrophysics catalogs, images, spectra, time series.
-4. KOA; https://koa.ipac.caltech.edu; astrophysics catalogs, images, spectra, time series; raw and contributed
-science products.
-5. MAST; https://archive.stsci.edu/; astrophysics catalogs, images, spectra, time series, publication records, etc.
-6. NASA Exoplanet Archive; https://exoplanetarchive.ipac.caltech.edu/; data and derived astrophysical parameters
-for exoplanets and exoplanet candidates.
-7. VizieR; https://vizier.unistra.fr/; astrophysics catalogs, images, spectra.
-General-purpose data repositories:
-1. Code Ocean; https://codeocean.com/; all research data and code.
-2. DataHub; https://datahub.io/; all research data and metadata.
-3. Figshare; https://figshare.com/; all research data and metadata.
-4. Harvard Dataverse; https://dataverse.harvard.edu/; all research data and metadata.
-5. Mendeley Data; https://data.mendeley.com/; all research data and metadata.
-6. Open Science Framework; https://osf.io/; all research data and metadata.
-7. ScienceDB; http://www.scidb.cn/en; all research data and metadata.
-8. Zenodo; https://zenodo.org/; all research data and metadata.
-C. LIST OF DOIS
-We present here a list of DOIs that journals and archives prefer authors to use.
-Resources for publishing DOIs in astrophysics journals:
-1. AAS Journals guidelines for citing 3rd party data repositories and software; https://journals.aas.org/aastexguide/
-#softwareandthirdparty.
-2. MNRAS data policy on availability and citation of data; https://academic.oup.com/mnras/pages/General
-Instructions#2.9%20Data%20Policy.
-3. Oxford University Press guidelines for selecting a repository that will issue a DOI; https://academic.oup.com/
-journals/pages/authors/preparing your manuscript/research-data-policy#choosing.
-Resources for obtaining DOIs from astrophysics archives:
-1. CDS; CDS creates DOIs for catalogs when they are ingested in VizieR. This DOI is for the digital object of the
-catalog in VizieR and is complementary to the DOI of the publication.
-16
-2. Chandra Data Archive; https://cxc.cfa.harvard.edu/cda/cda doi.html.
-3. Exoplanet Follow-up Observing Program (ExoFOP);https://www.ipac.caltech.edu/dois/exofop.
-4. IPAC Archives; https://www.ipac.caltech.edu/dois/.
-5. IRSA; https://www.ipac.caltech.edu/dois/irsa.
-6. KOA; https://www.ipac.caltech.edu/dois/koa.
-7. MAST; https://archive.stsci.edu/access-mast-data/digital-object-identifier-doi.
-8. NASA Exoplanet Archive; https://www.ipac.caltech.edu/dois/exoplanet-archive.
-9. NED; https://www.ipac.caltech.edu/dois/ned.
+ARES 2021, August 17–20, 2021, Vienna, Austria Max Maass, Henning Pridöhl, Dominik Herrmann, and Matthias Hollick
+and legal obligations, e. g., when they are designed as covert ex-
+periments with elements of deception [10, 26]. While researchers
+typically discuss how they addressed ethical issues, legal obligations
+are mostly neglected. Mazel et al. [28] found that not all existing
+scanning projects provide even basic documentation about their
+actions. Vitak et al. [36] surveyed the ethical views of the online
+data research community and found heterogeneous results, show-
+ing that no consensus has been reached so far and encouraging
+greater discussion with colleagues on research ethics.
+3 STUDY DESIGNS
+In this section, we describe the design space of notification studies
+and their typical timeline. The purpose of this section is to provide
+an overview. Apart from some remarks, we postpone the presenta-
+tion of best practices to later sections for two reasons. Firstly, many
+recommendations affect multiple components and span multiple
+phases. Secondly, some best practices are motivated by legal and
+ethical obligations, which we describe in the upcoming Section 4.
+3.1 Design Space
+We focus on real-world field experiments, not on laboratory settings.
+General advice on robust study designs is given by Krol et al. [20].
+The design space of such studies covers three broad areas.
+Issue at Hand and Target. The most obvious design decision is
+the considered issue (e. g., a particular vulnerability in web applica-
+tions) and the responsible party (e. g., the owner of a website). The
+considered issue could be a vulnerability in a component (either
+already well-known or not) or a generic weakness such as an SQL
+injection. It could affect components on servers, network devices, or
+on clients that result from design, implementation, or configuration
+mistakes.
+Note that the responsible party (e. g., the operator of a vulnerable
+server) is not necessarily the one that is impacted by an issue, i. e.,
+the costs are borne by others. An example of an issue that involves
+such a negative externality is a system that can be misused to amplify
+the impact of denial-of-service-attacks [8, 21, 22].
+The responsible party is also not necessarily the recipient of the
+notifications. Notifications could also be sent to ISPs that host a
+vulnerable server [9, 10, 33, 35] or to a coordinating body like a
+CERT [21, 22, 33]. Previous studies have used many contact chan-
+nels to reach the recipients, including addresses harvested from
+the WHOIS interface [9, 10, 14, 22, 23, 32, 33, 35, 37], standard
+aliases [6, 9, 32, 33], or even manually collected address informa-
+tion [26, 32].
+Actual and Purported Sender. Another factor is the sender of no-
+tifications, which has been shown to affect remediation rates con-
+siderably in one study [26] (although others found only a small
+impact [10, 32, 37]). Senders may openly affiliate themselves with
+a university or act as private individuals. Senders with potentially
+more authority are CERTs, ISPs, and data protection authorities,
+although it can be difficult to gain access to them [33].
+The choice of the sender is related to the covertness of the study.
+To avoid biases such as the observer effect, it may be desirable to
+cover up the fact that an experiment takes place. Keeping recipients
+in the dark over longer periods of time is challenging. When opera-
+tional mishaps or oversights in communication give the experiment
+away, recipients may change their behavior, invalidating the results.
+Even in the absence of errors, recipients that have received different
+treatments may learn about each other, for instance, on social media
+platforms or when their systems are being run by the same service
+provider [26, 27]. While deception may be necessary for ecological
+validity [16, 20], it mandates extensive ethical considerations and
+may conflict with data protection obligations.
+Employed Instruments. At least two more aspects have to be con-
+sidered, the notification channel (email, letters, phone calls, social
+media) and the number of notifications per recipient (initial notifi-
+cation, reminders, separate debriefing). Both can have an impact
+on remediation rates. Studies may also employ other instruments,
+such as including an invitation to participate in a survey or interview
+[9, 14, 22, 26, 32, 37] or self-service tools [10, 23, 26, 37], e. g., an
+online tool to verify the issue independently or tutorials for remedi-
+ation. These instruments involve more design decisions, e. g., about
+the actual implementation of an online tool. Operating an online
+tool oneself makes it more challenging to run a study covertly while
+recommending an existing third-party tool introduces operational
+risks beyond one’s control.
+3.2 Study Timeline
+As empirical experiments, notification studies consist of three stages:
+planning and preparation, execution, and finalization. In the fol-
+lowing, we describe the activities in these stages in chronological
+sequence (Fig. 1). For conciseness, we focus on notification studies
+that target service providers rather than end users.
+Planning. Among the first activities are problem formulation
+and sketching the study design [3]. Researchers have to determine
+the issue at hand, the target group for the notifications, and relevant
+research hypotheses. As it is difficult to make amendments once
+notifications have been sent, possible reactions of recipients and
+treatment options should be anticipated during planning. To this
+end, one should discuss the planned study design with researchers
+and practitioners from relevant fields, including information secu-
+rity, data protection, and legal scholars. Moreover, talking to trusted
+members of the target group can be helpful to understand their per-
+spective. Finally, local Institutional Review Boards (IRB) should be
+approached with a comprehensive description of the study design.
+In our experience, clarifications of ethical considerations need am-
+ple amounts of time, also because they may necessitate refinements
+of the study design.
+Infrastructure Setup. Typically, notification studies involve scan-
+ning thousands of servers and notifying hundreds of recipients.
+Scanning, data collection, and message handling should be auto-
+mated with suitable tools, either off-the-shelf or custom-built. For
+complex and long-running studies, we strongly recommend using
+development and operations (DevOps) tools such as version control
+systems, issue trackers, and service monitoring. Cui and Stolfo offer
+further recommendations on scalability and security [12].
+Initial Scans. Before the first scans take place, relevant local
+staff (research group leaders, network administrators, people acting
+Best Practices for Notification Studies for Security and Privacy Issues on the Internet ARES 2021, August 17–20, 2021, Vienna, Austria
+obtain
+targets
+set up
+self-services
+set up
+DevOps
+set up
+scanning
+inform
+staff
+initial
+scans
+definitive
+scans
+split into
+groups
+refine
+dataset
+re-check
+scan results
+send noti-
+fications
+monitor
+sending
+refine
+dataset
+analyze mitigations, self-service use, responses
+process
+responses
+update
+dataset
+send re-
+minders
+monitor
+sending
+perform regular re-scans
+debrief
+recipients
+invite to
+survey
+sanitize PII
+in dataset
+release
+dataset
+set up
+long-term
+scans
+1. planning and preparations 2. execution 3. finalization
+refine
+scanner
+Figure 1: Idealized Timeline of a Notification Study
+as abuse contacts, and senior staff in the department) should be
+informed about the scans. To develop a robust scanning and data
+collection engine, researchers should run a series of initial scans to
+gain experience with error cases and refine their scanner until it
+works unattended and produces the same (or explainably dissimilar)
+results to achieve repeatability [1].
+Building Dataset. The scanner is then used to collect the dataset
+of affected services. For these services, points of contact have to be
+collected. Typically, the contact data will have to be sanitized, and
+the dataset may have to be refined. Records with the same points
+of contact should be deduplicated or merged.
+Regular re-scans may be performed while the affected services
+are being notified to analyze the remediation behavior of the noti-
+fied service providers.
+Group Assignment. The recipients are then assigned to the dif-
+ferent experimental treatment groups as well as the control group.
+This assignment should be stratified by relevant variables (country,
+industry sector, type of issue (if multiple issues are considered), ...)
+to ensure homogeneous and comparable groups.
+Notification of Recipients. Immediately before the first notifica-
+tions are sent, the scan results for the affected services should be
+checked again to avoid notifying services that have remediated the
+issue or gone offline in the meantime. The sending of notifications
+should be monitored, e. g., by collecting reputation information on
+the sending mail servers. Depending on the design of the study, it
+may be necessary to act upon incoming responses and error reports
+in a timely manner. When repeated notifications are planned, the
+dataset should be updated with information from the responses,
+e. g., to reflect changed points of contact.
+If self-service tools are part of the study design, their use may
+be monitored to analyze the behavior of affected service providers.
+While analyzing the activities with respect to individual persons
+may be desirable, such practices are governed by data protection
+regulations (cf. Sect. 4.1).
+Debriefing. Especially when the study design involves elements
+of deception, research ethics (cf. Sect. 4.2) mandate that researchers
+debrief all participants at the end of an experiment. Debriefing
+can be combined with an invitation to participate in a survey or
+interview. Members of the control group should also be informed
+about the vulnerabilities.
+Publishing. Besides presenting aggregated results in a publica-
+tion, we encourage researchers to publish those parts of their dataset
+that help others to check the validity of results, to replicate the
+experiments, and to reproduce the results independently [1], includ-
+ing the source code used for the evaluation. Benureau and Rougier
+offer practical instructions on achieving reusable code and data [4].
+Typically, datasets will have to be carefully sanitized to avoid the
+unintended release of sensitive information.
+4 LEGAL AND ETHICAL OBLIGATIONS
+Researchers not only have to consider ethical problems but also
+legal issues for their notification studies. In this section, we present
+different ethical considerations as well as legal questions that oc-
+curred in our research.
+4.1 Legal Obligations
+As legislation differs between countries and the legal situation de-
+pends on the specific case, we cannot give concrete legal advice.
+Instead, we suggest that researchers discuss their research with
+legal experts. To provide starting points for legal consultation, we
+describe some legal issues that have been discussed during our re-
+search. Specific to the situation in Germany, some advice regarding
+internet scanning and publication of the scan results can be found
+in the legal analysis of PrivacyScore [25].
+Notification studies may raise issues in four legal areas: copyright
+law, competition law, criminal law, and data protection law.
+Copyright Law. If researchers plan to store the content of a no-
+tified party, such as the HTML or JavaScript source code of their
+website, they might get in conflict with copyright law. Some leg-
+islations have a fair use provision that may allow such storage;
+others are stricter. Cooperation with other researchers from less
+strict legislations might be an option in this case – at least as long
+as ethical research standards (cf. Sect. 4.2) are honored.
+ARES 2021, August 17–20, 2021, Vienna, Austria Max Maass, Henning Pridöhl, Dominik Herrmann, and Matthias Hollick
+Competition Law. Researchers that intend to release information
+that can interfere with the competition between entities should
+take competition law into consideration. For instance, when we
+released privacy rankings of several health insurance companies to
+evaluate their reaction when being notified about these rankings,
+one health insurance company accused us of violating competition
+law [27].
+Criminal Law. When evaluating vulnerabilities, especially when
+testing whether a vulnerability is exploitable by exploiting it, re-
+searchers may come into conflict with criminal law. For example,
+in German criminal law, it is forbidden to use default credentials
+(user: “admin”, password: “admin”) to log into a service without
+authorization.1 While the Budapest Convention on Cybercrime,
+which has been ratified by 66 states, attempts to harmonize cyber-
+crime legislation [11], the local implementation of cybercrime law
+varies. As a consequence, we refrain from giving more concrete ad-
+vice. We stress, however, that researchers typically cannot delegate
+responsibility for offenses to their institution.
+Data Protection Law. Some countries have strict data protection
+laws, e. g., the GDPR that is implemented within the European Eco-
+nomic Area (EEA). The GDPR poses restrictions on the processing
+of personally identifiable information (PII). PII refers only to in-
+dividuals and does not address legal entities (Art. 4 No. 1 GDPR);
+however, notification studies often also address individuals, for
+example, freelancers. We note that IP addresses are also considered
+PII by legal experts2. Several duties may arise, such as informing
+the subjects about the data processing (Art. 13 or 14 GDPR), an-
+swering subject data requests (Art. 15 GDPR), allowing subjects to
+object to the processing (Art. 21 GDPR), or even explicitly asking
+for their consent (Art. 6(1) a) GDPR). Also, researchers may have to
+take technical and organizational measures to protect the data (Art.
+24(1) GDPR), such as encryption, storing identifiers to a person
+separately, or restricting access to specific individuals within their
+organization. While the GDPR applies to the EEA, we also note that
+the GDPR has several opening clauses that allow nation-states to
+regulate certain aspects differently, e. g., for scientific purposes in
+Art. 89(2) GDPR. Researchers can ask their data protection officer
+for consultation. Within the EEA, public bodies (except courts),
+including public universities, must appoint a data protection officer
+(Art. 37(1) a) GDPR).
+4.2 Research Ethics
+Besides legal obligations, researchers have to consider the ethical
+aspects of their work.
+Many IRBs focus their attention on whether an experiment clas-
+sifies as human-subject research. This narrow focus neglects the
+socio-technical aspects of computer science research. To address
+ethical aspects more comprehensively, publication venues such as
+IEEE Security & Privacy are incorporating mandatory ethics assess-
+ments into the reviewing process [34]. Researchers are, therefore,
+encouraged to deliberate about the ethical implications of their
+1Private communication about § 202a StGB with a public attorney specializing in
+cybercrime.
+2Gola, DS-GVO, Art. 4 margin number 21 (GDPR legal commentary)
+research early on and report them in a systematic fashion within
+their publications.
+One of the cornerstones for ethical research involving informa-
+tion and communication technologies is the Menlo Report and its
+illustrative companion guide [2]. Accordingly, researchers have to
+follow four principles, namely (1) Respect for Persons, (2) Benefi-
+cence, (3) Justice, and (4) Respect for Law and Public Interest. The
+Menlo Report can be relied upon in the absence of more concrete
+guidelines or – as in the study by Dietrich et al. [13] – when no IRB
+is available for consultation. However, in practice, its recommenda-
+tions do not cover all aspects of such studies, and researchers will
+need to make their own ethical decisions in areas where no broad
+consensus exists [36].
+In the following, we point out selected ethical aspects that arise
+during notification studies. Firstly, such studies involve scanning
+the services of third parties without obtaining their permission.
+Secondly, researchers interact with humans, e. g., end users or em-
+ployees of affected service providers.
+Network Scanning. For scanning and data collection, researchers
+should follow best practices developed by the network measure-
+ment and security scanning communities. For instance, Durumeric
+et al. [14] describe seven practices for good internet citizenship: (1)
+coordinate with local administrators to handle inquiries, (2) verify
+that scans will not overwhelm the upstream network, (3) signal
+benign nature of scans via web pages and DNS entries, (4) explain
+purpose and scope of scans in communications, (5) provide a simple
+means of opting out, (6) conduct scans no longer or more frequent
+than necessary, and (7) spread scan traffic over time and source
+addresses.
+Human-Subject Research. Many notification studies classify as
+human-subject research. This is especially true when recipients are
+deceived, for instance, when researchers do not disclose the fact
+that they run a study that analyzes the behavior of recipients.
+There is an ongoing debate about the ethical obligations for
+internet-based human-subject research [36]. The details are beyond
+the scope of this paper. Bravo-Lillo et al. provide some practical
+guidance [5]. In notification studies, researchers will typically have
+to debrief all study participants – including the control group – at
+the end of the experiment. Moreover, the study design should allow
+participants to opt-out of scanning and further notifications.
+Researchers should familiarize themselves with the processes
+for ethical review and seek approval as early as possible to avoid
+delays caused by missing ethics approval.
+5 DATA COLLECTION
+To collect a dataset of operators to notify, notification studies usually
+have an initial data collection phase in which large-scale scans of the
+internet are used to detect machines suffering from the issue at hand.
+In this paper, we do not discuss the source of the list of systems to
+be scanned. Some studies scan the entire IPv4 address space, while
+others rely on lists of domains. We note that the most common
+source of domains, the Alexa Top Million, has been criticized as
+unstable and potentially unrepresentative [29, 31]. The Tranco list
+has been proposed as an alternative [29].
+Best Practices for Notification Studies for Security and Privacy Issues on the Internet ARES 2021, August 17–20, 2021, Vienna, Austria
+In this section, we begin by considering best practices for devel-
+oping and operating scanning infrastructure. We then discuss the
+design of the scanning infrastructure, including what data should
+be collected, and close with a recommendation on scheduling the
+periodic scans that are a core part of many notification studies.
+5.1 Infrastructure
+Notification studies span several months and frequently necessitate
+changes to the scanners and other infrastructure over time as the
+software is extended, bugs are fixed, and capacity problems are
+revealed. This makes automation critical to ensure a consistent and
+efficient operation of the system.
+Use Version Control and Issue Tracking. All developed software
+should be tracked in a version control system like Git. This allows
+a simpler collaborative development process and is also critical for
+replicability and reproducibility [4]. Ideally, this should be combined
+with an issue tracker where planned features, bugs, and other details
+of the software development can be documented.
+Automate Deployments. After the software is written, it must be
+deployed on the production systems. For all non-trivial systems,
+we strongly recommend using an automated deployment process
+using tools like Ansible or Docker. Having these tools pull the data
+directly from the version control system also disincentivizes the
+antipattern of making manual changes to deployed infrastructure
+that are not tracked in version control and makes documenting the
+exact version of the software that created a result easier [4].
+Operate Test Systems. Having self-operated test systems where
+the expected result of a scan is known helps to test the detection
+software during development. During regular scans, test systems
+can verify that the detection software and test harness are still op-
+erating as expected. Also, these systems can serve as a dead man’s
+switch, i. e., when not being scanned during the expected inter-
+val, they notify the researchers. Services for a dead man’s switch
+reporting include Healthchecks.io, Dead Man’s Snitch (deadmanss-
+nitch.com), or PushMon.com. Some of these provide a free tier that
+is likely to be sufficient for a notification study.
+Monitor the Infrastructure. Software and machines can fail in
+surprising ways, especially in situations of high load. The systems
+should thus be monitored using the aforementioned test cases,
+checking for timeouts, monitoring for exceptions or implausible
+results, and checking the utilization of resources (RAM, disk space).
+The monitoring should be combined with an alerting mechanism
+to inform the operators about errors as they occur.
+Make Backups. Scanning infrastructure, like any other computer,
+can suffer from data loss, either through hardware failure or soft-
+ware issues [12]. The data should thus be backed up through regular
+automated backups to at least one (and preferably multiple) other
+machine(s), ideally on a completely different network and physical
+location. This recommendation is particularly important if the scan-
+ner infrastructure is hosted on third-party infrastructure outside
+the direct control of the researchers (e. g., AWS), where it may be
+disabled without consulting the researchers if the company receives
+abuse notifications.
+5.2 Developing the Scanner
+A notification study typically uses two kinds of software: a detection
+software that scans for the issue being reported as well as a test
+harness that executes the scans on all previously collected targets
+and stores the results.
+Choose the Right Tool. Depending on the type of issue, the detec-
+tion software can range from a simple script to a fully instrumented
+browser. For scanning websites using browser instrumentation,
+OpenWPM [17] and privacyscanner [30] are two pieces of software
+that can be used or extended. OpenWPM instruments Firefox, while
+privacyscanner instruments Chrome. While browser instrumenta-
+tion represents the reality more accurately, e. g., being able to detect
+dynamic content that an HTTP library does not see, it is also more
+complex and resource-intensive. Researchers should thoroughly
+evaluate the limitations of their detection software.
+Web-specific: Expect Cookie Banners and Bot Detection. Since the
+coming-into-effect of the GDPR, many websites are using cookie
+consent banners that may hide specific parts of the website until
+consent for tracking has been given. Similarly, some websites at-
+tempt to block access for automated programs using bot detection
+software. If the issue in question depends on measuring the pres-
+ence of or interactions with a specific third-party service, this may
+lead to false-negative results. Researchers should be aware of this
+risk when planning their study.
+Web-specific: Decide how to Handle Redirects. Websites necessi-
+tate a number of special considerations due to their dynamic nature.
+One of them is the existence of redirects between different domains.
+This can cause two classes of issues: firstly, two domains referring
+to the same final domain (making two seemingly distinct scans
+return identical results and thus biasing the dataset), and secondly,
+one domain changing which final domain it refers to (making two
+scans of the same domain return results for different websites over
+the course of the study).
+These redirects have multiple implications for notification stud-
+ies. Firstly, the scanners need to support forwards, which can also be
+triggered through JavaScript and thus invisible to simple download-
+ing scripts that only follow HTTP redirects. Secondly, if redirects
+are followed, the researchers need to decide if they follow the redi-
+rect every time, or follow it once, save the final URL, and then scan
+this final URL for all future scans. The first approach mirrors the
+behavior of users, while the latter leads to more consistent results.
+Finally, regardless of which strategy is chosen, the scanning sys-
+tem should save the URL after following all redirects as part of the
+results to facilitate later analysis.
+If redirects are followed, researchers also need to consider how
+to handle results obtained from intermediate pages. For example, if
+the use of a specific third-party service is of interest, what happens
+if it is only used on an intermediate website that then forwards to
+a different website? The scanners need to ensure that any saved
+results can be correctly attributed to the intermediate pages to
+facilitate a later exclusion if this is desired.
+If two or more domains forward to the same final domain, the
+operator of that domain may gain undue influence on the evaluation,
+as remediation by this one operator may be counted for more than
+ARES 2021, August 17–20, 2021, Vienna, Austria Max Maass, Henning Pridöhl, Dominik Herrmann, and Matthias Hollick
+one website. These cases need to be considered in the evaluation
+and addressed.
+Collect Enough Data. It is not always possible to know in advance
+which data will be needed for the evaluation. We thus recommend
+collecting as much (meta)data as possible, both about the scan target
+and about the machine running the scan. Potentially relevant data
+points include: which machine was running the scan, the version
+of all software and libraries in use by the scanner, which IP address
+was scanned (if scanning based on DNS names), HTTP response
+codes (for websites), the raw output of any external scanning tool,
+and extensive log files with timestamps. For a list of metadata
+recommended for replicability, see Benureau and Rougier [4].
+As previously discussed, however, the data collection also needs
+to consider legal obligations and ethical aspects. Care must be taken
+not to impact the operation of the target server. Finally, in some
+cases, storage space and network throughput may be of concern.
+Web-specific: Archive Websites. Some situations necessitate veri-
+fying the state of a website at a specific point in time, for example,
+when implausible results from past scans should be validated. In
+these cases, it can be valuable to have an archived version of the
+website to refer back to. Such archives can either be created using
+the Wayback Machine of the Internet Archive3 or using tools like
+webrecorder (github.com/webrecorder).
+Plan for Different Types of Scans. As described in Sect. 3.2, notifi-
+cation studies may require initial scans and regular re-scans. Initial
+scans use a larger dataset to find targets, while regular re-scans
+only address previously found targets. Thus, the test harness should
+support changing the dataset as well as one-off and regular scans.
+Identify the Scanner. When not covertly scanning, researchers
+should identify their scanning software or hosts to reduce abuse
+reports from recipients who would otherwise misinterpret the scan
+as an attack. To identify a scanning host, researchers can set an
+appropriate PTR DNS record (e. g., leak-study.yourinstitution.org),
+or host a website on the IP address of the scanner [15]. For web-
+based scans, the User-Agent header can identify the scanner and
+provide a link for more information.
+Know the Error Classes. Detection software has to deal with
+various error conditions, possibly supported by the test harness.
+Researchers, therefore, should evaluate the behavior of their soft-
+ware in such error conditions. These conditions include failure of
+the network connection in the middle of a test, an unreachable
+target, or a test host that ran out of disk space or memory. Also,
+the detection software or any software it calls might return an
+error or freeze. A test harness can deal with many cases, e. g., by
+implementing a retry mechanism if the detection software fails,
+or killing the detection software if it runs an unusually long time.
+Moreover, when running detection software in parallel, some state
+might be unintentionally shared, resulting in errors or erroneous
+data.
+3The Wayback Machine can be instructed to create a snapshot of a website by sending a
+GET request to https://web.archive.org/save/[website-url]. When doing this
+at scale, researchers should identify themselves by setting a user-agent with their
+contact information in case of problems.
+Prepare for Unknown Errors. Scanning on a large scale will likely
+produce new error classes. Thus, researchers should develop their
+software to detect deviating behavior and report those cases. De-
+viating behavior includes unexpected output, an unusual scan du-
+ration (e. g., due to deadlocks/livelocks or rate limiting), unlikely
+changes in measured values (e. g., response size drops from many
+KiB to a few bytes), or uncaught exceptions. To report deviating
+behavior, we recommend Sentry (https://sentry.io), which centrally
+logs uncaught exceptions (including stack traces) and any other
+information researchers wish to get reported.
+5.3 Scanner Operation
+Once the scanner has been developed, it needs to be put into oper-
+ation to perform regular scans. We give recommendations on the
+scanning schedule and infrastructure deployment.
+Inform the Network Operator. Researchers should contact their
+network operator beforehand and explain the scanning engine.
+Otherwise, the network operator might be surprised by unusual
+traffic patterns and considers them a threat, even without incoming
+abuse reports. Also, researchers should ask their network operator
+whether any technology is in place that could interfere with the
+scan, such as firewalls, IDS appliances, or connection throttling.
+Begin Early. After the first scans determine the list of systems
+that will be included in the study, researchers will usually plan
+for periodic scans to update the current remediation status of all
+included systems. We recommend beginning these scans as early
+as possible and, if feasible, at least 1–2 weeks before the first noti-
+fications are sent. This serves two purposes: it tests the scanning
+infrastructure in action and validates that no unexpected problems
+occur, and it collects a dataset of system behavior before any out-
+side intervention. This can be used to validate that the different
+experimental groups show similar behavior before the intervention,
+increasing the confidence that any observed differences are due
+to the notification (and not fundamental differences between the
+groups). If the groups already diverge within this timeframe, the
+group allocation strategy should be reconsidered.
+Scan Often. Regular scans should be executed often, ideally sev-
+eral times per day for each target for several reasons. Firstly, scan-
+ning often allows for a more detailed and fine-grained analysis of
+potential remediations. Secondly, more data points allow for bet-
+ter interpolation of missing or erroneous scan results, e. g., due to
+connection issues. Finally, some systems may behave differently
+depending on the time, e. g., a website that has a day and a night
+version.
+Scan From Multiple Places. We recommend running several re-
+dundant copies of the infrastructure on different machines and
+networks to prevent losing information when one machine or net-
+work fails. In addition, a comparison of data from different copies
+may find additional errors or edge cases in the scanning stack.
+6 INTERACTING WITH CONTACTS
+Notification studies necessarily involve communicating with large
+numbers of system operators. In this section, we consider different
+aspects of sending notifications to the operators and handling their
+Best Practices for Notification Studies for Security and Privacy Issues on the Internet ARES 2021, August 17–20, 2021, Vienna, Austria
+responses. We also discuss how a self-service tool for recipients can
+reduce the burden on the researchers and give advice on combining
+the study with a survey.
+6.1 Sending Notifications
+After a list of affected systems has been found, the next step is to
+identify the relevant point of contact and sent the notifications. The
+choice of contact method is diverse and often a central point of
+notification studies, so we will not go into detail on the collection of
+address information itself. Instead, we assume that a set of addresses
+is known and proceed from there.
+Deduplicate the Contacts. A single operator may be responsible
+for more than one affected system. This can have multiple impli-
+cations: firstly, the operator may have an outsized impact on the
+overall result if they operate a large number of affected systems, as
+they are likely to remediate all (or none) of their systems at once.
+Secondly, if multiple experimental groups exist, one operator can
+be part of more than one group and receive multiple notifications,
+which may confound any analysis of the effectiveness of individ-
+ual groups. To address this, operators should be deduplicated and
+grouped on a best-effort basis. This is easiest when using manual
+data collection and impossible when using standard email aliases
+(RFC 2142), which derive the contact address from the scanned
+domain without consulting any external database of contact infor-
+mation. Researchers should be aware of the effects this (lack of)
+grouping can have on their evaluation.
+Automate Message Generation and Sending. When dealing with
+many recipients, manual work is prone to errors. We recommend
+writing scripts that generate the text for all recipients, especially
+when recipients are split into groups with different treatments. For
+letters, scripts can generate L
+ATEX source code that is compiled into
+PDF files for printing. When not sending the emails via a script
+directly, researchers can use the Thunderbird plugin Mail Merge4.
+This plugin sends emails according to a template for which it reads
+template variables and recipients from a CSV file.
+Run Sending Tests Beforehand. To catch mistakes beforehand,
+researchers should send all their notification emails via a test mail
+server that does not deliver the messages to the recipients but allow
+researchers to view the sent mails. MailHog (github.com/mailhog)
+and MailSlurper (mailslurper.com) are two examples of software
+that present the sent mails in a web-based frontend.
+Implement SPF and DKIM. To authenticate senders and reject
+spam, mail servers rely on DKIM and SPF DNS records. Receiving
+mail servers may reject notifications if sending servers do not imple-
+ment DKIM or SPF properly. We found that even large universities
+can fail to implement SPF and DKIM [26], so researchers should
+always validate the servers’ configuration.
+Check for Reputation. If researchers operate their own mail server,
+they should subscribe to reputation monitoring systems such as
+Microsoft Junk Mail Reporting Program or Google’s Postmaster
+Tools5. Furthermore, researchers should check spam blocking lists
+regularly, such as SpamCop.net and Spamhaus.org.
+4See https://addons.thunderbird.net/addon/mail-merge.
+5See https://mail.live.com/mail/services.aspx and https://postmaster.google.com/
+Stretch Sending of Emails. Sending bulk emails may result in
+hitting a mail server’s rate limit. We recommend that researchers
+test the desired rate beforehand to avoid unexpected errors. Fur-
+thermore, bulk emails may trigger spam filters that look for emails
+with similar content from the same sending mail server. We had
+good experiences with sending an email every thirty seconds.
+Prepare for Undeliverable Emails. Emails to some recipients might
+be undeliverable. To account for undeliverable mails during analysis,
+researchers should check and keep track of bounces. Undeliverable
+emails and bounces manifest in different forms, which makes this
+task challenging.
+Firstly, there are delivery delays due to retries. Mail servers may
+retry delivering an email for several days, with some mail servers
+reporting the retry, while others only inform the sender when
+giving up. However, there is no guarantee that the sender will be
+informed at all. Thus, researchers should not make assumptions
+about delivery success right after sending a message.
+Secondly, bounces are not standardized. Receiving mail servers
+might reject an email with an error code right away when it is
+delivered via SMTP. Some errors are permanent (e. g., recipient
+not known), others are temporary (e. g., quota is full) and may
+result in delivery retries. In some cases, the sending mail server
+informs a user about the rejection during the submission process;
+in other cases, sending servers inform users about delivery issues
+with an email later. Also, the receiving mail server might inform
+the sender about the undeliverable email. These delivery failure
+notices may or may not contain information about the email that
+was undeliverable. Senders may not receive such notice at all.
+Finally, some delivery failure notices are not bounces, but normal
+emails that were sent as an auto-reply to an incoming message,
+telling the researcher that the message was not read by a human. In
+the end, it is impossible to automatically handle all cases. Manual
+work is required to classify automated delivery status notifications
+and assign them to the correct recipient.
+6.2 Handling Responses
+Once they have received the notification, system operators may
+initially distrust it or have questions about the details. In these
+cases, they will frequently seek to get into contact with the sender
+of the message. How the researchers react to their questions can
+have a large impact on their behavior and thus on the results of the
+notification campaign. We thus highlight a number of experiences
+and best practices for handling responses.
+Build a Frontend. Answering a recipient’s response often requires
+information about them. Relevant pieces of information include
+the reported issue (if different issues are reported) or the group the
+recipient is assigned to (if researchers vary the sent notification).
+A custom tool can help to find those pieces of information effi-
+ciently, e. g., while answering a phone call. Useful features include
+re-scanning the target to get the current state of the issue and a
+fuzzy search to find the recipient or their website. When researchers
+plan to analyze the responses in more detail, e. g., coding them, a
+tool can help keep the responses organized.
+Expect Deviating Communication Channels. While researchers
+provide their contact information to the notified recipients, they
+ARES 2021, August 17–20, 2021, Vienna, Austria Max Maass, Henning Pridöhl, Dominik Herrmann, and Matthias Hollick
+should expect to receive responses to unrelated (even private) email
+addresses and via other communication channels such as phone and
+social networks. We found that some notified recipients used search
+engines to validate the legitimacy of the sender and find communi-
+cation channels they preferred, such as a phone number [24, 26].
+Researchers should consider proactively including a phone number
+and preferred timeframe for calls in the contact information.
+Expect Colleagues and Others to be Contacted. As described above,
+notified recipients will search for alternative contact information.
+Consequently, some recipients will find other contact information
+such as those of secretaries or the central phone number of the
+institution and use those to establish contact. Recipients may also
+choose to complain at higher hierarchy levels, such as the dean. We,
+therefore, recommend informing the respective persons beforehand
+about the study to avoid surprises. It might be useful to prepare a
+one-page document describing the notification study and whom to
+contact or forward to.
+Know how to Handle Gifts. Many recipients are grateful for the
+help; some also offer gifts or payment. Accepting gifts or payment
+may have negative consequences. Depending on the legislation,
+when working for a public body, accepting gifts may represent a
+criminal offense and can lead to termination of the work contract.
+Private companies may have internal compliance rules that forbid
+accepting gifts. Since some recipients send gifts without asking
+first, we recommend that researchers discuss how to handle these
+cases with their institution. Researchers that cannot keep gifts could
+approach non-profit organizations and ask whether they accept
+donations of gifts and attest the receipt.
+Prepare for Misunderstandings and Threats. Some recipients mis-
+understand the message as spam, scam, legal threat, or defamatory.
+This fact can lead to uncomfortable messages or phone calls that
+include legal threats such as sending a cease-and-desist letter or
+suing researchers [9, 26, 27]. Again, we recommend consulting legal
+experts beforehand; see Sect. 4.1 for details. Researchers should
+offer those recipients to exclude them from further messages.
+Have a Help Policy. Helping recipients in remediating an issue
+may influence the results, e. g, when remediation rates are measured.
+Not helping, however, also has an influence since it may lead to
+resentment. In addition, some recipients may falsely claim that the
+reported issue has been remediated. Again, telling recipients of their
+false assumption may distort the experiment. Researchers should
+decide on a help policy as part of their study design. Moreover,
+ethical considerations must be taken into account when not helping,
+especially if the reported issue may impose harm on others.
+Expect Unrelated Requests. Helping recipients may result in fur-
+ther requests for help with unrelated problems. Similarly, when
+dealing with a compliance issue, recipients may ask for legal ad-
+vice. Note that some legislations have restrictions on giving legal
+advice, e. g., in Germany the Rechtsdienstleistungsgesetz restricts
+non-lawyers in giving advice. We recommend politely declining to
+help in all such cases.
+6.3 Self-service Tool
+Typically, recipients want to know whether their remediation at-
+tempt was successful. Instead of answering that question individu-
+ally, researchers may provide a tool for this purpose. In the follow-
+ing, we discuss various design decisions.
+Provide Clear Instructions. Users of the tool should be able to
+understand the tool’s purpose and how to use it. Instead of only
+showing results, the tool should help the user to interpret the results
+to avoid unnecessary support requests. If possible, the tool should
+provide extensive information on how to remediate the issue, ideally
+with code or configuration examples. Note, however, that clear
+instructions might not be sufficient, e. g., a study by Çetin et al.
+reported recipients that had trouble understanding or using a tool
+correctly despite clear instructions on the tool page [9, p. 7]. Thus,
+if possible, the tool should also detect common forms of incorrect
+usage and provide specific guidance in these cases.
+Do not Restrict the Targets. Some recipients may operate several
+websites or hosts and want to scan all their systems for the reported
+issue. Thus, researchers should consider allowing scanning of arbi-
+trary targets. In addition to reducing support requests asking the
+researchers to scan additional targets, allowing arbitrary targets
+can provide additional information on the remediation behavior of
+the recipients. Offering a public and unrestricted tool, however, is
+subject to ethical considerations if the tool can be abused or harm
+others.
+Publicize the Tool. Recipients might distrust the link to the tool in
+the notification, expecting it to be a scam. To check whether the link
+is legitimate, some recipients may attempt to find the tool using a
+search engine. Thus, assuming the tool does not rely on personalized
+links, researchers should submit the tool’s website to the index of
+search engines, making sure it can be found. In addition, linking
+the tool from a university website (if this is compatible with the
+study design) and giving it a (semi-)professional look can increase
+the trust in the tool.
+Collect Tool Usage Data. Scans performed by the tool should be
+logged. This includes the scan time, the target, and results. Collect-
+ing this data can help to answer various questions, for example:
+How often was the target scanned before the issue was remediated?
+How much time passed between the first and last scan? Does the
+state of the issue change on scans, i. e., did the user make mistakes
+when trying to remediate the issue? Were other sites scanned? If
+yes, which sites? Do they follow the same remediation pattern? We
+strongly recommend that researchers deploy an additional internal
+instance of the tool so that they can scan targets, having the same
+view as regular users, without polluting the data collection of the
+regular tool instance.
+Be Aware of Alternative Tools. For some issues, there might be
+more than one check tool. Some recipients might try other tools to
+get information, possibly conflicting with the information the re-
+searchers’ tool provides. This conflicting information might confuse
+recipients, leading to additional questions and support requests. Re-
+searchers should therefore look for other tools and make themselves
+familiar with those, especially with their limitations or errors.
+Best Practices for Notification Studies for Security and Privacy Issues on the Internet ARES 2021, August 17–20, 2021, Vienna, Austria
+6.4 Survey
+While interactions with recipients can be a source of qualitative data,
+their free-form nature does not lend itself to answering quantitative
+questions. Quantitative questions can be addressed with a survey.
+Decide When to Run the Survey. The first question when planning
+a survey is at which point in the process it should be sent out.
+Some prior studies sent the survey together with the notification
+[9, 22, 37], while others sent it later in the process [14, 26, 32]
+(e. g., with a debriefing message). This decision may, in some cases,
+be dictated by the experimental setup (e. g., if the fact that the
+messages are sent as part of a study should initially be hidden from
+the recipients, including a link to a survey with the notification
+message will usually not be possible). On the other hand, sending
+the survey weeks or months after the notification may mean that
+some recipients will not be able to remember their initial perception
+of the notification message.
+Distinguish the Groups. If the notification study employs mul-
+tiple experimental groups, researchers should ensure that these
+groups’ answers can be distinguished in the survey results to al-
+low group-specific evaluations of the responses. This requirement
+can be addressed in a privacy-preserving way by using different
+instances of a survey and sending group-specific links to recipients.
+Using the more anonymous group-specific links instead of person-
+alized links with unique IDs for each recipient might encourage
+recipients to participate.
+Consider Surveying the Control Group. Since the control group
+needs to be notified about being part of the study for ethical reasons,
+this can be a good opportunity to send them a survey as well. While
+they cannot provide insight into aspects of the notification itself,
+they may be able to provide further data on the sources of the
+vulnerability or misconfiguration in question, and gain further
+insight into the perspective of operators.
+7 PUBLICATION OF RESULTS
+After data collection and analyses are completed, the results will
+usually be published in a scientific venue. To ensure reproducibility,
+data and source code should be published whenever possible. At the
+same time, in order to avoid putting systems and operators at risk,
+researchers need to ensure that they do not release information that
+would allow others to infer who was part of the study and what their
+results were. While evaluation code can usually be released without
+worrying about deanonymizing study participants, releasing the
+dataset is more difficult.
+Ensure Reproducibility. The code used for evaluation should fol-
+low best practices for reproducibility. A comprehensive source of
+best practices for code and documentation has been published by
+Benureau and Rougier [4].
+Sanitize the Data. Before the public release of any dataset, all
+records need to be sanitized. An initial – typically not sufficient –
+step is the removal of all identifiers that may allow others to infer
+the identity of services or operators. This includes obvious aspects
+like IP addresses and domain names, but also unique identifiers that
+can be linked to a server, such as TLS certificates, identifiers in the
+network traffic, cookies, etc.
+When it is not possible to remove the identifiers altogether (e. g.,
+because they are needed to separate different servers that are using
+the same identifying information), identifiers can be pseudonymized,
+i. e., replaced with a unique number or string. The pseudonym
+should not be directly derived from the original identifier (e. g.,
+using an unsalted hash function), as this may allow others to re-
+identify records. Pseudonymization best practices are beyond the
+scope of this paper. A comprehensive guide has been published by
+ENISA [18].
+8 CONCLUSION
+Large-scale vulnerability notifications are an important building
+block in improving security and privacy on the internet – and
+the search for the most effective set of parameters is still ongoing.
+Notification studies are complex experiments with both technical
+and interpersonal challenges. The design space of such studies is
+limited by legal and ethical obligations. Drawing from experience
+gained during several such studies, we presented best practices for
+data collection, message delivery, interaction, and tool support as
+well as the integration of surveys and considerations for publication.
+While compiling this collection, we were reminded of two over-
+arching lessons that we learned during our studies. Firstly, using
+tools to automate data handling turned out to be a life-saver, both
+for our workload as well as data quality. Secondly, expect the unex-
+pected: time spent in the planning phase to account for potential
+failure cases (and methodological weaknesses) pays off at the end.
+The best practices documented in this paper can inform future
+notification studies to avoid common pitfalls and maximize benefit
+for all involved parties, thus, ultimately helping to improve security
+and privacy on the internet.
+ACKNOWLEDGEMENTS
+This work has been co-funded by the DFG as part of project C.1
+within the RTG 2050 “Privacy and Trust for Mobile Users” and
+by the German BMBF and the Hessen State Ministry for Higher
+Education, Research and the Arts within their joint support of the
+National Research Center for Applied Cybersecurity ATHENE.
 REFERENCES
-Aoki, S., Soma, M., Kinoshita, H., & Inoue, K. 1983, A&A,
-128, 263
-Cambrésy, L., Genova, F., Wenger, M., et al. 2011, in EAS
-Publications Series, Vol. 49, EAS Publications Series, ed.
-C. Sterken, 135–157, doi: 10.1051/eas/1149008
-Eastman, J., Siverd, R., & Gaudi, B. S. 2010, PASP, 122,
-935, doi: 10.1086/655938
-Hartkopf, W. I., & Mason, B. D. 2004, in Revista Mexicana
-de Astronomia y Astrofisica Conference Series, Vol. 21,
-Revista Mexicana de Astronomia y Astrofisica
-Conference Series, ed. C. Allen & C. Scarfe, 83–90
-Pepe, A., Goodman, A., Muench, A., Crosas, M., &
-Erdmann, C. 2014, PLoS ONE, 9, 104798,
-doi: 10.1371/journal.pone.0104798
-Schwarz, G. J. 2005, in Astronomical Society of the Pacific
-Conference Series, Vol. 347, Astronomical Data Analysis
-Software and Systems XIV, ed. P. Shopbell, M. Britton,
-& R. Ebert, 375
-Skrutskie, M. F., Cutri, R. M., Stiening, R., et al. 2006, AJ,
-131, 1163, doi: 10.1086/498708
-Urban, S. E., & Seidelmann, P. K. 2013, Explanatory
-Supplement to the Astronomical Almanac, 3rd edn. (Mill
-Valley, CA: University Science Books).
-http://cds.cern.ch/record/1975940
+[1] ACM. 2020. Artifact Review and Badging Version 1.1. https://www.acm.org/
+publications/policies/artifact-review-and-badging-current
+[2] Michael Bailey, David Dittrich, Erin Kenneally, and Douglas Maughan. 2012. The
+Menlo Report. IEEE Secur. Priv. 10, 2 (2012), 71–75.
+[3] Vaibhav Bajpai, Anna Brunström, Anja Feldmann, Wolfgang Kellerer, Aiko Pras,
+Henning Schulzrinne, Georgios Smaragdakis, Matthias Wählisch, and Klaus
+Wehrle. 2019. The Dagstuhl beginners guide to reproducibility for experimental
+networking research. Comput. Commun. Rev. 49, 1 (2019), 24–30.
+[4] Fabien C. Y. Benureau and Nicolas P. Rougier. 2017. Re-run, Repeat, Reproduce,
+Reuse, Replicate: Transforming Code into Scientific Contributions. Frontiers
+Neuroinformatics 11 (2017), 69.
+[5] Cristian Bravo-Lillo, Serge Egelman, Cormac Herley, Stuart Schechter, and Janice
+Tsai. 2013. You Needn’t Build That: Reusable Ethics-Compliance Infrastructure
+for Human Subjects Research. In Cybersecurity Research Ethics Dialog & Strategy
+Workshop, CREDS 2013.
+[6] Davide Canali, Davide Balzarotti, and Aurélien Francillon. 2013. The role of
+web hosting providers in detecting compromised websites. In 22nd International
+World Wide Web Conference, WWW ’13, Daniel Schwabe, Virgílio A. F. Almeida,
+Hartmut Glaser, Ricardo Baeza-Yates, and Sue B. Moon (Eds.). International World
+Wide Web Conferences Steering Committee / ACM, 177–188.
+[7] Orçun Çetin, Carlos Gañán, Lisette Altena, Samaneh Tajalizadehkhoob, and
+Michel van Eeten. 2018. Let Me Out! Evaluating the Effectiveness of Quarantining
+Compromised Users in Walled Gardens. In Fourteenth Symposium on Usable
+ARES 2021, August 17–20, 2021, Vienna, Austria Max Maass, Henning Pridöhl, Dominik Herrmann, and Matthias Hollick
+Privacy and Security, SOUPS 2018, Mary Ellen Zurko and Heather Richter Lipford
+(Eds.). USENIX Association, 251–263.
+[8] Orçun Çetin, Carlos Gañán, Lisette Altena, Samaneh Tajalizadehkhoob, and
+Michel van Eeten. 2019. Tell Me You Fixed It: Evaluating Vulnerability Notifi-
+cations via Quarantine Networks. In IEEE European Symposium on Security and
+Privacy, EuroS&P 2019. IEEE, 326–339.
+[9] Orçun Çetin, Carlos Ganan, Maciej Korczynski, and Michel van Eeten. 2017. Make
+Notifications Great Again: Learning How to Notify in the Age of Large-Scale
+Vulnerability Scanning. In 16th Annual Workshop on the Economics of Information
+Security, WEIS 2017.
+[10] Orçun Çetin, Mohammad Hanif Jhaveri, Carlos Gañán, Michel van Eeten, and
+Tyler Moore. 2015. Understanding the Role of Sender Reputation in Abuse
+Reporting and Cleanup. In 14th Annual Workshop on the Economics of Information
+Security, WEIS 2015.
+[11] Council of Europa. 2021. Chart of signatures and ratifications of Treaty 185:
+Convention on Cybercrime. https://www.coe.int/en/web/conventions/full-list/-
+/conventions/treaty/185/signatures
+[12] Ang Cui and Salvatore J Stolfo. 2011. Reflections on the Engineering and Opera-
+tion of a Large-ScaleEmbedded Device Vulnerability Scanner. In Proceedings of
+the First Workshop on Building Analysis Datasets and Gathering Experience Returns
+for Security (BADGERS 2011). ACM, 8–18.
+[13] Constanze Dietrich, Katharina Krombholz, Kevin Borgolte, and Tobias Fiebig.
+2018. Investigating System Operators’ Perspective on Security Misconfigurations.
+In Proceedings of the 2018 ACM SIGSAC Conference on Computer and Communica-
+tions Security (CCS 2018). ACM New York, 1272–1289.
+[14] Zakir Durumeric, James Kasten, David Adrian, J. Alex Halderman, Michael Bailey,
+Frank Li, Nicholas Weaver, Johanna Amann, Jethro Beekman, Mathias Payer, and
+Vern Paxson. 2014. The Matter of Heartbleed. In Proceedings of the 2014 Internet
+Measurement Conference, IMC 2014, Carey Williamson, Aditya Akella, and Nina
+Taft (Eds.). ACM, 475–488.
+[15] Zakir Durumeric, Eric Wustrow, and J. Alex Halderman. 2013. ZMap: Fast
+Internet-wide Scanning and Its Security Applications. In Proceedings of the 22th
+USENIX Security Symposium, Samuel T. King (Ed.). USENIX Association, 605–620.
+[16] Serge Egelman, Janice Y. Tsai, and Lorrie F. Cranor. 2010. Tell me lies: A method-
+ology for scientifically rigorous security user studies. In Workshop on Studying
+Online Behaviour at the Conference on Human Factors in Computing Systems 2010.
+ACM.
+[17] Steven Englehardt and Arvind Narayanan. 2016. Online Tracking: A 1-million-site
+Measurement and Analysis. In Proceedings of the 2016 ACM SIGSAC Conference on
+Computer and Communications Security, Edgar R. Weippl, Stefan Katzenbeisser,
+Christopher Kruegel, Andrew C. Myers, and Shai Halevi (Eds.). ACM, 1388–1401.
+[18] Meiko Jensen, Cedric Lauradoux, and Konstantinos Limniotis. 2019.
+Pseudonymization Techniques and Best Practices. ENISA. https://www.enisa.
+europa.eu/publications/pseudonymisation-techniques-and-best-practices
+[19] Jacob Leon Kröger, Jens Lindemann, and Dominik Herrmann. 2020. How do app
+vendors respond to subject access requests?: a longitudinal privacy study on iOS
+and Android Apps. In ARES 2020: The 15th International Conference on Availability,
+Reliability and Security, Melanie Volkamer and Christian Wressnegger (Eds.).
+ACM, 10:1–10:10.
+[20] Kat Krol, Jonathan M. Spring, Simon Parkin, and M. Angela Sasse. 2016. Towards
+Robust Experimental Design for User Studies in Security and Privacy. In The
+LASER Workshop: Learning from Authoritative Security Experiment Results (LASER
+2016). USENIX Association, San Jose, CA, 21–31.
+[21] Marc Kührer, Thomas Hupperich, Christian Rossow, and Thorsten Holz. 2014. Exit
+from Hell? Reducing the Impact of Amplification DDoS Attacks. In Proceedings of
+the 23rd USENIX Security Symposium, Kevin Fu and Jaeyeon Jung (Eds.). USENIX
+Association, 111–125.
+[22] Frank Li, Zakir Durumeric, Jakub Czyz, Mohammad Karami, Michael Bailey,
+Damon McCoy, Stefan Savage, and Vern Paxson. 2016. You’ve Got Vulnerability:
+Exploring Effective Vulnerability Notifications. In 25th USENIX Security Sym-
+posium, USENIX Security 16, Thorsten Holz and Stefan Savage (Eds.). USENIX
+Association, 1033–1050.
+[23] Frank Li, Grant Ho, Eric Kuan, Yuan Niu, Lucas Ballard, Kurt Thomas, Elie
+Bursztein, and Vern Paxson. 2016. Remedying Web Hijacking: Notification Effec-
+tiveness and Webmaster Comprehension. In Proceedings of the 25th International
+Conference on World Wide Web, WWW 2016, Jacqueline Bourdeau, Jim Hendler,
+Roger Nkambou, Ian Horrocks, and Ben Y. Zhao (Eds.). ACM, 1009–1019.
+[24] Max Maass, Marc-Pascal Clement, and Matthias Hollick. 2021. Snail Mail Beats
+Email Any Day: On Effective Operator Security Notifications in the Internet.
+In ARES 2021: The 15th International Conference on Availability, Reliability and
+Security, Virtual Event, August 17-20, 2021.
+[25] Max Maass, Anne Laubach, and Dominik Herrmann. 2017. PrivacyScore: Analyse
+von Webseiten auf Sicherheits- und Privatheitsprobleme. In 47. Jahrestagung der
+Gesellschaft für Informatik, Digitale Kulturen, INFORMATIK 2017 (LNI, Vol. P-275),
+Maximilian Eibl and Martin Gaedke (Eds.). GI, 1049–1060.
+[26] Max Maass, Alina Stöver, Henning Pridöhl, Sebastian Bretthauer, Dominik Her-
+rmann, Matthias Hollick, and Indra Spiecker. 2021. Effective Notification Cam-
+paigns on the Web: A Matter of Trust, Framing, and Support. In 30th USENIX
+Security Symposium, USENIX Security 21, Online, August 11-13, 2021. USENIX
+Association.
+[27] Max Maass, Nicolas Walter, Dominik Herrmann, and Matthias Hollick. 2019.
+On the Difficulties of Incentivizing Online Privacy through Transparency: A
+Qualitative Survey of the German Health Insurance Market. In Human Practice.
+Digital Ecologies. Our Future. 14. Internationale Tagung Wirtschaftsinformatik (WI
+2019), Thomas Ludwig and Volkmar Pipek (Eds.). University of Siegen, Germany
+/ AISeL, 1307–1321.
+[28] Johan Mazel, Romain Fontugne, and Kensuke Fukuda. 2017. Profiling internet
+scanners: Spatiotemporal structures and measurement ethics. In Network Traffic
+Measurement and Analysis Conference, TMA 2017. IEEE, 1–9.
+[29] Victor Le Pochat, Tom van Goethem, Samaneh Tajalizadehkhoob, Maciej Korczyn-
+ski, and Wouter Joosen. 2019. Tranco: A Research-Oriented Top Sites Ranking
+Hardened Against Manipulation. In 26th Annual Network and Distributed System
+Security Symposium, NDSS 2019. The Internet Society.
+[30] Henning Pridöhl, Pascal Wichmann, Dominik Herrmann, Max Maass, Martin
+Müller, and Malte. 2019. PrivacyScore/privacyscanner. https://doi.org/10.5281/
+zenodo.2555037
+[31] Quirin Scheitle, Oliver Hohlfeld, Julien Gamba, Jonas Jelten, Torsten Zimmer-
+mann, Stephen D. Strowes, and Narseo Vallina-Rodriguez. 2018. A Long Way to
+the Top: Significance, Structure, and Stability of Internet Top Lists. In Proceedings
+of the Internet Measurement Conference 2018, IMC 2018. ACM, 478–493.
+[32] Ben Stock, Giancarlo Pellegrino, Frank Li, Michael Backes, and Christian Rossow.
+2018. Didn’t You Hear Me? - Towards More Successful Web Vulnerability No-
+tifications. In 25th Annual Network and Distributed System Security Symposium,
+NDSS 2018. The Internet Society.
+[33] Ben Stock, Giancarlo Pellegrino, Christian Rossow, Martin Johns, and Michael
+Backes. 2016. Hey, You Have a Problem: On the Feasibility of Large-Scale Web
+Vulnerability Notification. In 25th USENIX Security Symposium, USENIX Security
+16, Thorsten Holz and Stefan Savage (Eds.). USENIX Association, 1015–1032.
+[34] Thorsten Holz and Alina Oprea on behalf of the S&P’21 Program Committee.
+2021. IEEE S&P’21 Program Committee Statement Regarding The “Hypocrite Com-
+mits” Paper. https://www.ieee-security.org/TC/SP2021/downloads/2021_PC_
+Statement.pdf
+[35] Marie Vasek and Tyler Moore. 2012. Do Malware Reports Expedite Cleanup? An
+Experimental Study. In 5th Workshop on Cyber Security Experimentation and Test,
+CSET ’12, Sean Peisert and Stephen Schwab (Eds.). USENIX Association.
+[36] Jessica Vitak, Katie Shilton, and Zahra Ashktorab. 2016. Beyond the Belmont
+Principles: Ethical Challenges, Practices, and Beliefs in the Online Data Research
+Community. In Proceedings of the 19th ACM Conference on Computer-Supported Co-
+operative Work & Social Computing, CSCW 2016, Darren Gergle, Meredith Ringel
+Morris, Pernille Bjørn, and Joseph A. Konstan (Eds.). ACM, 939–951.
+[37] Eric Zeng, Frank Li, Emily Stark, and Adrienne Porter Felt. 2019. Fixing HTTPS
+Misconfigurations at Scale: An Experiment with Security Notifications. In 18th
+Annual Workshop on the Economics of Information Security, WEIS 2019.
 

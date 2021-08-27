@@ -1,543 +1,544 @@
-This report is the result of studies performed at Lincoln Laboratory, a federally funded research and
-development center operated by Massachusetts Institute of Technology. This material is based upon work
-supported by the Under Secretary of Defense for Research and Engineering under Air Force Contract No.
-FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material
-are those of the author(s) and do not necessarily reflect the views of the Under Secretary of Defense for
-Research and Engineering.
-© 2021 MASSACHUSETTS INSTITUTE OF TECHNOLOGY
-Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS Part 252.227-7013 or 7014
-(Feb 2014). Notwithstanding any copyright notice, U.S. Government rights in this work are defined by
-DFARS 252.227-7013 or DFARS 252.227-7014 as detailed above. Use of this work other than as
-specifically authorized by the U.S. Government may violate any copyrights that exist in this work.
-This page intentionally left blank.
-EXECUTIVE SUMMARY
-The Department of Defense (DoD) has significantly increased its investment in the design,
-evaluation, and deployment of Artificial Intelligence and Machine Learning (AI/ML) capabilities to
-address national security needs [1,2]. While there are numerous AI/ML successes in the academic
-and commercial sectors, many of these systems have also been shown to be brittle and nonrobust [3].
-In a complex and ever-changing national security environment, it is vital that the DoD establish a
-sound and methodical process to evaluate the performance and robustness of AI/ML models before
-these new capabilities are deployed to the field [4].
-Without an effective evaluation process, the DoD may deploy AI/ML models that are assumed
-to be effective given limited evaluation metrics but actually have poor performance and robustness
-on operational data. Poor evaluation practices lead to loss of trust in AI/ML systems by model
-operators and more frequent—often costly—design updates needed to address the evolving security
-environment. In contrast, an effective evaluation process can drive the design of more resilient
-capabilities, flag potential limitations of models before they are deployed, and build operator trust
-in AI/ML systems.
-This paper reviews the AI/ML development process, highlights common best practices for
-AI/ML model evaluation, and makes the following recommendations to DoD evaluators to ensure
-the deployment of robust AI/ML capabilities for national security needs:
-• Develop testing datasets with sufficient variation and number of samples to effectively measure
-the expected performance of the AI/ML model on future (unseen) data once deployed,
-• Maintain separation between data used for design and evaluation (i.e., the test data is not
-used to design the AI/ML model or train its parameters) in order to ensure an honest and
-unbiased assessment of the model’s capability,
-• Evaluate performance given small perturbations and corruptions to data inputs to assess the
-smoothness of the AI/ML model and identify potential vulnerabilities, and
-• Evaluate performance on samples from data distributions that are shifted from the assumed
-distribution that was used to design the AI/ML model to assess how the model may perform
-on operational data that may differ from the training data.
-By following the recommendations for evaluation presented in this paper, the DoD can fully take
-advantage of the AI/ML revolution, delivering robust capabilities that maintain operational feasi-
-bility over longer periods of time, and increase warfighter confidence in AI/ML systems.
-iii
-This page intentionally left blank.
-TABLE OF CONTENTS
-Page
-Executive Summary iii
-List of Figures vii
-1. INTRODUCTION 1
-2. STANDARD AI/ML EVALUATION PRACTICES 2
-2.1 Training-Validation-Test Paradigm 2
-2.2 The AI/ML Development Process 3
-2.3 AI/ML Development and Evaluation in the DoD 3
-3. PRINCIPLES AND PRACTICES FOR DoD AI/ML MODEL EVALUATORS 5
-3.1 Selecting a Representative Data Distribution 5
-3.2 Evaluation of Generalization Capability 6
-3.3 Evaluation of Robustness to Sample Uncertainty 8
-3.4 Evaluation of Robustness to Distribution Uncertainty 11
-4. SUMMARY AND RECOMMENDATIONS 14
-References 16
-v
-This page intentionally left blank.
-LIST OF FIGURES
-Figure
-No. Page
-1 AI/ML model development process. 4
-2 Illustration of how sample diversity and sample size impact the bias and
-variance of the estimated out-of-sample performance metric. 6
-3 Notional performance as a function of model complexity. 8
-4 Notional depiction of models that are more robust and less robust to sample
-uncertainty. 9
-5 Notional performance as a function of a distance measure between training
-and test data. 10
-6 Depiction of the best practices for AI/ML model evaluation presented in this
-paper. 13
-vii
-This page intentionally left blank.
-1. INTRODUCTION
-Recent years have seen major academic and industry breakthroughs in the field of Artificial
-Intelligence and Machine Learning (AI/ML), and the Department of Defense (DoD) has identified
-the need to harness these advances to improve our national security and maintain a strategic
-advantage [2]. Despite numerous successes in AI/ML, many of these new technologies have been
-shown to be brittle, uninterpretable, and easily fooled [3]. The DoD recognizes the need to improve
-existing evaluation practices to measure and improve the resiliency, robustness, and reliability of
-AI/ML models before such models are deployed as an operational capability [1,4].
-We share the urgency to improve DoD AI/ML evaluation processes. We have observed that in
-many cases, the defense community has not adhered to best practices from the AI/ML community in
-evaluating model performance and robustness. Without proper evaluation practices, understanding
-of the capabilities of AI/ML models is biased, often assuming a larger capability than is warranted.
-Such a mismatch between predicted and operational performance can lead to warfighter distrust of
-AI/ML systems. Additionally, poor evaluation practices may in turn be incentivizing poor design
-approaches. For example, if the primary metric for evaluation is accuracy on a known set of testing
-data, a solution that memorizes that data may be selected over one that works against the full
-range of potential real-world variations of that data.
-In this paper, we discuss the AI/ML development process and provide recommendations on
-how the DoD can encourage the design of robust AI/ML models through its evaluation procedures.
-To be considered robust, an AI/ML model should exhibit the following properties:
-1. Generalization: An AI/ML model should be able to achieve good performance on data
-that is drawn from the same distribution as the training data but not used explicitly during
-training (i.e., generalize to unseen data).
-2. Robustness: An AI/ML model should maintain performance, with graceful degradation, as
-the unseen test data becomes increasingly different from the training data due to:
-(a) Sample Uncertainty: small perturbations or corruptions applied to the data, and
-(b) Distribution Uncertainty: variations between the expected and observed distribu-
-tions of the data, e.g., due to unanticipated changes in the scenario once deployed or the
-evolution of threat capabilities.
-An AI/ML model that exhibits these properties will perform well against expectations while
-being robust to unexpected variations once deployed operationally. Other concepts such as the
-ability to detect outliers and the ability to autonomously adapt once the model is deployed are
-also important for AI/ML model robustness, but are out of scope for this paper. Note that these
-properties apply whether we are assessing robustness of an entire AI/ML system involving many
-components, or a single component of that system that applies AI/ML. We adopt common termi-
-nology in referring to this system or algorithm as an AI/ML model, and provide some tools in this
-paper for model evaluators to apply in assessing the quality of these models.
-1
-2. STANDARD AI/ML EVALUATION PRACTICES
-The goal in a supervised AI/ML problem is to take a set of data examples containing labeled
-input-output pairs (e.g., images to class labels, audio signals to text transcriptions) that have been
-sampled from some data distribution and design an AI/ML model (e.g., neural network, decision
-tree) that can predict outputs given the inputs. The parameters of the model (e.g., weights of
-neural network, thresholds of decision tree) are typically learned through an optimization procedure
-using this set of training data. Note that the data inputs are often measurements collected by a
-sensor (e.g., camera, microphone), and the observations may contain both the signal of interest as
-well as other background signals and noise. An AI/ML model must learn to extract the relevant
-information from the noisy observations.
-2.1 TRAINING-VALIDATION-TEST PARADIGM
-Ideally, the learned AI/ML model is a close approximation of the true model from which the
-data is generated. The true model is almost always unknown, but given sample points (input-
-output pairs) in the training set, the predicted output by the learned model is compared with the
-true output for each sample to compute an estimate of the model’s performance. The error rate
-on the training set is called the in-sample error or training error. It is this error rate (or a similar
-measure computed on the training set) that is directly minimized via the optimization procedure.
-Matching the true model on this training set is not enough; the real objective is for the
-learned model to match the true model across the entire data distribution, so that it performs well
-on any operational data encountered once the model is deployed. The goal is to minimize the error
-rate on the full data distribution, called the out-of-sample error; however, this error rate cannot
-be computed via a fixed set of samples. Furthermore, since the model and its parameters can
-be adjusted based on observed performance on the training data, the measured in-sample error is
-often biased and does not reflect the expected performance on unseen data. Efforts to reduce the
-error on the training set may even increase the out-of-sample error, a phenomenon referred to as
-overfitting.
-The out-of-sample error can instead be estimated (before the model is deployed) with the use
-of test data, which is a set of samples that are drawn from the data distribution but are not part of
-the training set or used in any portion of the training process. The test error is the error rate on
-these previously-unseen data samples. The training and testing sets are both subject to sampling
-bias, since the true data distribution may not be completely known. As long as the test set is not
-also included in the model training process, however, there is no additional bias when estimating
-the out-of-sample error with a test set.
-Estimating the out-of-sample error is important, but the ultimate goal is to minimize this
-value. Knowing the perils of using the training set performance to solely predict an AI/ML model’s
-ability to generalize to unseen data, it is common to withhold a portion of the training data
-(typically 10-20%), called the validation data, from the training process. The learning algorithm
-uses the training data to search over the hypothesis space of models that minimize the validation
-error. Instead of selecting a fixed validation set, the model developer may choose to use an approach
-2
-called cross-validation, where the training set is repeatedly split into different disjoint training-
-validation subsets, and average validation error across these subsets is used as a prediction for the
-test error. These approaches are useful for training models that are able to generalize to new data
-rather than memorize the training set.
-This training-validation-test paradigm is a practice that is standard in the AI/ML community
-and should be fully embraced by the DoD. Additional practices are beginning to emerge in the
-AI/ML community that are aimed at evaluating model robustness to small perturbations of the
-data samples and larger shifts of the data distribution. These practices will also be useful for DoD
-to evaluate AI/ML model robustness, and are discussed further in Sections 3.3 and 3.4.
-2.2 THE AI/ML DEVELOPMENT PROCESS
-In Figure 1, we illustrate the training-validation-test paradigm within the AI/ML development
-process, which consists of three phases: design, evaluation, and deployment. During the design
-phase, the model developer designs an AI/ML model aimed at meeting the requirements established
-and verified by a separate model evaluator during the evaluation phase. The model developer uses
-training and validation data to design the model and predict its performance while the model
-evaluator verifies performance using a set of test data that is unseen by the developer. After a
-model is evaluated, the developer may have the opportunity to make additional updates to the
-model, after which it undergoes a new evaluation. This process is repeated until the evaluator is
-satisfied with the performance, at which point the model enters the deployment phase, where it
-becomes operational. The performance of the deployed model on operational data is then monitored
-by model operators, and further design updates and subsequent evaluations are conducted when
-deemed necessary.
-2.3 AI/ML DEVELOPMENT AND EVALUATION IN THE DoD
-In the defense industry, the model operator is the end user of the AI/ML system (e.g., military
-service members in the field). The model developer is often a defense contractor, a government
-research lab, or a team within the government itself. In some programs, there may even be multiple
-groups competing to develop the best model according to the evaluation criteria. The model
-evaluator is often a government team or an outside independent entity. The model evaluator’s goal
-is to determine the effectivity of the model against the types of data the model may encounter when
-it is deployed. The model developer has the goal of designing a model that performs well when
-deployed, but is very strongly motivated by the need to meet the evaluation criteria set forth by
-the evaluator. Though the developer may provide its own assessment of model performance, this
-should not replace the verification done by the model evaluator. A knowledgeable and independent
-model evaluator plays a vital role in ensuring the robustness of the AI/ML system.
-The remainder of this paper focuses on the evaluation stage of the development process. DoD
-model evaluators must recognize the ways in which assumptions made during the evaluation phase
-can influence the design phase for better or for worse. Such assumptions include the expected
-properties of the unseen data or specific requirements and scoring metrics that favor certain types
-3
-Figure 1. AI/ML model development process. (Left) Design Phase: model developers use training data
-to optimize model parameters and validation data to estimate performance. (Middle) Evaluation Phase:
-model evaluators verify performance and robustness of the delivered model using test data that was not seen
-by developers during the training process. (Right) Deployment Phase: model transitions to an operational
-capability and its performance on operational data is monitored by model operators. Updates to the design
-are made when the model is not performing as desired in either the evaluation or deployment phase.
-of solutions. While model developers have the ultimate responsibility of designing an AI/ML
-model to solve a particular problem for the model operators, the model evaluator can establish an
-evaluation process that motivates good design practices by the developers and increases the chance
-of a robust model being deployed. Additionally, model evaluators must clearly communicate any
-assumptions made during the evaluation process to model operators so that warfighters know under
-which conditions a model has been tested and is thus expected to have performance.
-It is easy, especially when faced with concerns about cost and schedule, to take shortcuts in
-the creation of test sets and the establishment and verification of requirements. It is critical for the
-DoD to realize that poor AI/ML evaluation processes may have significant negative effects on the
-robustness of a deployed model. We encourage model evaluators in the DoD to carefully consider
-their current assumptions and practices, and make improvements where necessary to ensure the
-robustness properties described in the intro of this paper are being properly evaluated and improved.
+arXiv:2105.02773v1
+[cs.GL]
 4
-3. PRINCIPLES AND PRACTICES FOR DoD AI/ML MODEL
-EVALUATORS
-In the following section, we present a set of principles and practices for model evaluators to
-appropriately assess and motivate the design of robust AI/ML models. These practices include
-selecting a representative data distribution, evaluating performance on unseen data, evaluating
-robustness to perturbations, and evaluating robustness to shifts in the data distribution. Model
-evaluators in the defense industry are encouraged to follow the lead of the AI/ML community in
-applying these evaluation practices.
-3.1 SELECTING A REPRESENTATIVE DATA DISTRIBUTION
-The purpose of the test set is to assess the performance of the model against unseen data and
-to provide an estimate of the out-of-sample error. Given that the true data distribution is often
-unknown and information about the make-up of the distribution is limited due to the nature of the
-contested security environments for the DoD, the following properties of a test set are necessary to
-provide a trustworthy estimate of the out-of-sample error:
-• Sample Diversity and Distribution: In order to achieve an unbiased estimate of the out-
-of-sample error, the model evaluator should develop a test set that represents a diverse set of
-the important characteristics of the data distribution and the likelihood of such characteristics
-being realized. This may include potential physical characteristics of targets of interest (e.g.,
-size, color, material), characteristics of the sensor (e.g., location, bandwidth, sensitivity),
-and environmental conditions (e.g., background clutter, time of day, weather). The actual
-range and distribution of potential inputs may not be fully known, and the bias from poorly
-estimating either of these components is difficult to quantify. It is important to reassess and
-adjust test set distributions if understanding and/or expectations about the real world threat
-change. Additionally, performance can be measured on different subsets of the full test set
-in order to gain insight into performance under different input conditions, even though the
-relative likelihood of those conditions may be uncertain. These efforts will allow the test error
-to be a more reliable and less biased indication of how the model will perform once deployed.
-• Sample Size: Even if the test set distribution were perfectly known, model performance on
-two different test sets drawn from that distribution would not be expected to be identical.
-The test dataset must be large enough that the expected fluctuations in performance due
-to random sampling are sufficiently small, providing confidence that the estimated error
-represents the expected performance once the model is deployed. Large fluctuations of the
-performance error on new sets of test data might be an indication that the test dataset is too
-small or that the model is not robust.
-Figure 2 shows an example of how sample diversity and size relate with regard to estimating
-the true out-of-sample error. Poor sampling (shown in orange and purple on the top and bottom,
-respectively) leads to large biases in the estimate of the true error, while improved sampling across
+May
+2021
+A Guide for New Program Committee Members at
+Theoretical Computer Science Conferences*
+Yfke Dulek1
+, Stacey Jeffery1
+, Christian Majenz1
+,
+Christian Schaffner2
+, Florian Speelman2
+, and Ronald de Wolf1,2
+1
+CWI, QuSoft
+2
+University of Amsterdam, QuSoft
+May 7, 2021
+Abstract
+In theoretical computer science, conferences play an important role in the scientific process. The deci-
+sions whether to accept or reject articles is taken by the program committee (PC) members. Serving on a
+PC for the first time can be a daunting experience. This guide will help new program-committee members
+to understand how the system works, and provide useful tips and guidelines. It discusses every phase of
+the paper-selection process, and the tasks associated to it.
+Introduction and Overview
+Scientific method and the role of conferences
+One of the core principles of modern scientific research is peer review. New research results are written up as
+articles and submitted to journals or conferences where they are reviewed by (usually multiple anonymous)
+experts in the field. These experts judge whether the article fulfills the scientific standards and fits the
+publication venue. Only after an article has passed this quality check by peers, it is considered published
+and becomes part of the scientific literature.
+Publication cultures differ vastly between different research fields. In computer science, it is common
+that research articles are first submitted to conferences, and only a subset of those articles are worked out
+to ”full versions” and later submitted to journals. In sharp contrast, the standard practice in mathematics
+and physics is to submit new research articles directly to journals.
+These differences in publication cultures lead to a very different understanding and experience of the
+role conferences play in this process. In computer science, conferences and their published proceedings are
+the main venues for publication and therefore very important. Researchers have quite a clear picture in their
+head about the ”ranking” or ”tier” of all conferences they submit to. The more prestigious conferences in
+theoretical computer science (TCS) like FOCS and STOC tend to receive hundreds of submissions, and have
+acceptance rates of around 30%, and the best conferences specialized in a particular subfield tend to have
+even lower acceptance rates. It is important for the career of junior researchers (PhD students and postdocs)
+in TCS to have articles published at good conferences, and the task of giving a conference presentation is
+often offered to these junior researchers in order to give them the opportunity to make their first contacts
+with the research community.
+*Feedback and suggestions are welcome and should be sent to c.schaffner@uva.nl.
+1
+For a long time, it has been common practice in some subfields of physics to make new research ar-
+ticles immediately available to the whole research community by putting them as pre-prints on servers
+like arxiv.org. It is great to see that almost all of computer science has adopted this practice by now. The
+two main effects are the following: On the one hand, it allows the research community to advance faster
+(without having to wait for the outcomes of the peer-review process). On the other hand, because all new
+research articles are freely available from these pre-print servers, it allows the community to move away
+from commercial publishers, making publicly funded research available to the whole world, and support-
+ing new open-access publication models such as overlay journals.
+What is a program committee (PC)?
+The reviewing process at a conference is coordinated by a program committee (PC). The members of this
+committee are themselves scientists that are active in the field of the conference. They are responsible
+for deciding which submissions will be accepted for a presentation and/or publication at the conference.
+Depending on the topic of your submission, a PC member can act as a reviewer themselves, or they can
+find a so-called subreviewer to give them an expert opinion about your submission.1
+Although some PC members stay on for multiple years, a new committee is generally formed for every
+new edition of a conference. The responsibilities of a PC member therefore center around a period of a few
+months in a single year.
+Note that TCS has a somewhat different conference process than other areas of computer science. A PC
+member in TCS roughly corresponds to ”area chair” in conferences in other areas such as machine learning.
+Timeline
+Most PCs follow a similar timeline, starting at the moment you receive your invitation, and ending at the
+conference itself. Most of the work is concentrated around the bidding, review, and discussion phase.
+Receive
+invitation
+Call for
+papers
+Submission
+deadline
+Bidding
+phase
+Review
+phase
+Review
+deadline
+Discussion
+phase
+Notification
+Wrap up
+Conference
+Click on the links to learn more about each phase.
+Abbreviations and terminology
+TCS Theoretical computer science
+PC Program committee (selects accepted papers)
+PC chair Program-committee chair (selects and leads PC), role is often fulfilled
+by two people
+SC Steering committee (selects PC chair, invited speakers, and is involved
+in organizing the conference)
+Local organizing commit-
+tee
+Takes care of the more practical details of organizing the conference
+(venue, food, website, etc.)
+Subreviewer Provides expert review on a submission (asked by a PC member)
+COI Conflict of interest
+1During the later stages of your PhD or beginning stages of a postdoc, you may have been contacted by someone requesting such
+a subreview – that person was serving on a PC.
+2
+Review score(s) Discrete value(s) attached to a review, indicating (scientific/editorial)
+quality of submission, confidence of the reviewer, etc.
+EasyChair, HotCRP Commonly used online tools for managing the review process.
+1 Invitation
+Before the call for submissions is published, the program committee chair has to assemble the members of
+the program committee. At this point in time, you may receive an invitation asking you to serve on the
+program committee for that year’s edition of the conference.
+During this phase:
+ You gather information to make a decision about whether you want to join the PC.
+ You respond to the PC chair to accept or decline.
+1.1 How to get invited to a PC?
+Usually it is up to the PC chair(s) to select the PC members, so you have to be on this person’s radar. PC
+chairs usually try to select a committee that covers all of the relevant research areas, is diverse in terms of
+people (in TCS, there is usually a higher demand for women and other minorities), and a good mix of more
+senior but also eager junior members. Senior members tend to provide more knowledgeable and more
+“expert” reviews, taking into account the broad picture, and all previous research. Junior members usually
+have more time and spend more effort to provide more extensive reviews, including closer reading and
+proof-checking.
+The following actions increase your chances to get invited to a PC:
+• Do good research, publish in good venues, and give good talks at conferences.
+• Provide good subreviews for conferences and journals, and be reliable as a subreviewer, e.g., by re-
+plying timely to review requests, stick to deadlines etc.
+• Happen to have a personal and/or professional connection with the PC chair. The PC chair often looks
+back on PCs which they have been on themselves, and checks the other PC members’ performances.
+Reliability is a very important factor in their decision.
+• Get recommended by somebody (usually more senior) who declines to be on the PC. You could ac-
+tively let your close colleagues/collaborators/supervisors know that you are looking for this oppor-
+tunity.
+• At some conferences, the steering committee keeps a list of “promising” young people who should be
+invited to serve on PCs soon. It is a bit pushy, but it might actually work to approach these members
+and offer to help on a next PC.
+1.2 Accept or reject the invitation
+Think carefully before accepting the invitation to join a program committee. Make sure to have gained
+some experience as a subreviewer before joining your first program committee, so you have some idea of
+the process and the expected time investment.
+3
+Advantages of serving on a program committee:
+• You actively contribute to a core part of the scientific process (namely to peer-review): serving on a
+PC is a service to the community and to science in general.
+• PC memberships increase your scientific credibility and visibility. It will be noticed by influential
+people if you are doing a good job on a PC.
+• You have (partial, but possibly quite a lot of) power to decide what is accepted to a conference. Ev-
+idently, with this power comes the responsibility to use it for the good of science and not for selfish
+motives.
+• You get an inside view of how the conference-review-and-selection process actually works (e.g. how
+much randomness is involved, what PC members care about in the discussion etc.), and can use this
+knowledge when preparing submissions for future conferences.
+• You get a sneak preview of the latest and greatest research results in the field.
+• You are externally motivated to read some interesting papers in depth.
+Disadvantages of serving on a program committee:
+• It costs a lot of time, energy and (potentially) nerves. Check carefully at what dates most of the work
+will be required (your highest workload will be right after the submission deadline, then it will be
+up to you how to balance the workload during the review phase, and then potentially high during
+the discussion phase), how many submissions you are expected to review, how close it will be to
+your core expertise etc. Expect to spend at least 2 to 3 hours on average on each paper you assign to
+yourself, excluding the discussion phase. As a junior PC member, you are likely to spend more time
+on the task.
+• If you do a bad job (like not providing reviews on time, not participating in the discussion, having
+vastly differing opinions), the community will notice, starting with the PC chair, and the other PC
+members you interacted with, and this will decrease your chances for being asked to join another PC,
+and, more generally, will negatively affect your colleagues’ opinion of you.
+• You are forced to read some bad submissions.
+Warning: Only consider serious offers, for conferences that you know and where you would consider
+submitting your own work. You should never have to pay to be part of a PC. Be wary of fake or spam
+invitations; when in doubt, ask a more senior member of your group for their opinion.
+2 Call for papers
+Once you accept the invitation, the PC chair draw up the “call for papers”, which will include your name
+and affiliation as a PC member. Sometimes a picture is included as well. The call for paper specifies
+the page limit, formatting, and whether simultaneous submission or submission of previously published
+papers are allowed. As PC member, you might voice your opinion on these issues to the PC chair. The
+call for papers also contains the deadlines and deadline for notification, so you might want to check if
+those dates make sense. Sometimes there will be an abstract submission deadline followed by a full paper
+submission deadline.
+During the rest of this phase, authors will prepare their manuscripts for submissions, so you do not
+have to do much. For most conferences, you are allowed to submit your own work as well (as an author).
+There may be limitations: for example, there may be a maximum number of allowed submissions, or your
+submission(s) may be held to higher standards.
+4
+During this phase:
+ You double-check that your name is spelled correctly and the affiliation says what you want.
+ You read the call for papers carefully and make sure your area of expertise is correctly repre-
+sented.
+3 Bidding phase
+Within a few days after the submission deadline, the PC chair will activate the bidding phase, where all
+PC members see a (usually very long and possibly intimidating) list of all submissions. You have a few
+days to indicate your preference for reviewing particular submissions. The goal is for the PC chair to assign
+three PC members to each paper (or more, typically five, for papers submitted by PC members), so you can
+calculate approximately how many papers will end up in your responsibility.
+During this phase:
+ You look at all submissions (titles, abstracts, and an occasional closer look).
+ You “bid” on submissions to express your interest in being responsible for reviewing them.
+ You indicate any conflicts of interest (COIs).
+Bidding is often done by assigning points to each submission, for example ranging from -20 (“I really
+don’t want to review this”) to +20 (“please please assign me to this one”). The system works best if you use
+the whole spectrum of points, and not just the two extremes.
+Go through the list of submissions (looking at titles and abstracts, sometimes downloading the PDF and
+having a closer look), and give clear indication of which submission you would actually like to review, and
+maybe even more importantly, which you do not want to review. If there is a search functionality, you can
+search for keywords (e.g., “quantum” or “cryptanalysis”) in order to make a rough distinction between
+your favourite topics and those you have no idea about.
+The most useful thing you can contribute are high-confidence reviews, either by yourself or by people you
+can ask as subreviewers. If you find there are not many papers in your area(s) of expertise, you can also
+bid on papers on topics that you have close colleagues working on, so you will know some subreviewers,
+and they are likely to accept your request. However, keep in mind that in the end, you are responsible for
+making sure a proper review is submitted, so you have to be able to form an opinion if necessary. You
+should also be able to contribute meaningfully to the discussion phase.
+You can (and should) bid on any paper that you think you can confidently review. This is not necessarily
+limited to papers under your expertise. For example, if there is a submission on Basket Weaving, and you
+are confident that Basket Weaving does not fall under the topics of the conference, you can confidently
+write a rejecting review without having any expertise in Basket Weaving.
+3.1 Conflicts of Interest
+During the bidding phase, you are also asked to indicate possible conflicts of interest (COI) that have not
+already been caught by the system. COIs are often handled slightly differently from conference to confer-
+ence, the PC chair will give you clear instructions about this. If in doubt, double-check with the chair. At
+pretty much any conference, submissions (co-)authored by
+• yourself,
+• a person from the same institute as yours,
+• your (former) PhD student(s) and recent postdocs, or (former) PhD or postdoc advisor,
 5
-the data distribution (shown in blue in the middle) lowers that bias. Increasing the number of
-samples in the test set reduces the variance (shaded regions) around the mean of the estimate
-(solid lines).
-Improving data variability, distribution, and sample size might take the form of gathering
-and labeling more real data across a wider variety of environmental conditions, consulting with
-experts and reviewing intelligence to determine the likelihood of observing various inputs, or gener-
-ating more simulation data that represent additional potential scenarios. The cost associated with
-collecting or generating more data samples and evaluating performance on these larger datasets
-is application-dependent, and in some situations this process has been considered cost-prohibitive.
-Given improvements in compute power, the ability to develop large datasets and analyze perfor-
-mance on those datasets has increased over time and will continue to increase. A balance always
-needs to be found between the added cost and the potential benefit of better performance, lower
-uncertainty, and more robustness.
-Figure 2. Illustration of how sample diversity and sample size impact the bias and variance of the estimated
-out-of-sample performance metric. If the data distribution for the test set is sampled with lower diversity
-(top/orange and bottom/purple), the performance metric is likely to be biased away from the true error in
-an unknown direction. More sample diversity (middle/blue) reduces this bias. Increasing the number of test
-data samples reduces the variance (shaded regions) on the estimate of the performance metric (solid lines).
-3.2 EVALUATION OF GENERALIZATION CAPABILITY
-In the training-validation-test paradigm that is ubiquitous in AI/ML model design, separating
-training data from testing data is fundamental. In some DoD applications, the cost of collecting or
-generating data can be high, and it can be tempting to ignore this principle and use all available data
-for training. However, if test data is provided and used during training, the reported performance
+• family members or close personal relationships
+should be indicated (by you) as COIs, as you cannot be impartial while judging these submissions. In
+general, mark any submission where you feel unable to be impartial as COI, e.g. because of “previous
+history” you have had with an author or a particular submission. If in doubt, discuss with the chair.
+Once you mark a submission as COI, it will completely disappear from your view. This can be weird,
+because other PC members still see the submission (and its discussion), and you might hear them discussing
+a certain number of submissions in a particular state, and those numbers might not add up for you because
+of COIs. Basically, only the PC chair has the complete view of the whole process. PC chairs are often not
+allowed to submit anything themselves, as this complicates things even further (a PC co-chair would have
+to handle the PC chair’s submissions).
+Some conferences distinguish between “hard COI” and “soft COI”. We described “hard COI” above,
+meaning that you should have completely no involvement in discussion of the paper, and it should disap-
+pear from your view. A “soft COI” means that you have some interaction with the paper (for example, you
+have a competing paper, or maybe you had some old collaboration or connection with the author that does
+not rise to a hard COI). In this case you should declare your COI in the comments to the PC, so people are
+aware of it.
+3.2 Ethical dilemmas
+At conferences with anonymous submissions, refrain from googling the title of the paper in order to find
+out author names. You can be more impartial if you do not know (exactly) who wrote the submission.
+You are likely to encounter submissions that are very related to your own work (such as your own
+submissions to this or other conferences, almost finished work in progress, ideas you had previously, work
+of your students, etc.). On the one hand, your closeness to the subject area makes you the ideal referee for
+such submissions. On the other hand, your closeness to the subject makes it impossible or very hard for
+you to be impartial. It is important to keep in mind that as a PC member, you are bound to confidentiality,
+and you are not allowed to use any information or research results you encounter in the review process
+for your own research until the submission appears publicly. In practice, you can hardly make your brain
+split in halves and only think about your own work in one half, and do the PC work in the other half. In
+most cases, the submitted results will appear publicly (on a pre-print server) not long after submission and
+most definitely after acceptance. You have several options:
+• The easiest way out is to declare a COI, the submission will disappear from your worldview, and you
+try to forget you have ever seen it (at least until it pops up on some pre-print server).
+• If you feel that you are able to give an (almost) impartial review (in particular if there are probably no
+other qualified referees available), you should do so, but clearly indicate in the “comments to the PC”
+what your potential COI is. The situation is easier if your review is positive, because a negative review
+can be seen as you shooting down submissions competing with your own submission or interests. In
+case of a negative review, try to give good technical reasons, and possibly even comparisons to your
+own work.
+Unfortunately, it has happened before that paper X is submitted, a PC member gets it for review, and
+then posts a paper X’ with very similar result, and to add insult to injury, the paper X gets rejected and
+now it has been scooped by X’. Such episodes should increase your motivation to post your results publicly
+right after the time of submission.
+4 Review phase
+After all the PC members have indicated their reviewing preferences, usually 5-7 days after the submission
+deadline, the PC chair runs some optimization algorithm that assigns papers to reviewers. There might
 6
-is a biased estimate of the true out-of-sample error rate. In this situation, the generalization error
-appears artificially low, leading to a misunderstanding about the actual capability of the model
-and loss of operator trust.
-Requiring performance against a test set that is truly unseen by the model developer en-
-courages a design approach that is not solely focused on optimization against the training set. It
-motivates the use of techniques that both improve test set performance and help to predict that
-performance, such as validation, cross-validation, and variants of cross-validation where entire cat-
-egories of the training data are held out instead of random subsets. These improved, stable AI/ML
-models reduce risk for model developers in the evaluation process and help model evaluators and
-operators build confidence in system performance metrics. Evaluators should also encourage model
-developers to report on their predictions of model performance during the design phase, even if
-there are no specific requirements for their predicted test set error to be close to the actual test set
-error.
-Note that the specific mechanics of performing the evaluation may impact future evaluations.
-If a model developer is ever provided the test data in order to perform their own evaluation and
-report performance, that data is no longer “unseen” and should not be used for future tests. If
-a test set is used to optimize model parameters in any way, it is considered training data and
-reintroduces bias into the estimate of out-of-sample error. Whenever possible, such a situation
-should be avoided. The model evaluator may trust the model developer to not use test data for
-anything but the evaluation, but a better practice is to provide a completely new test set for
-evaluation at the next test event or program milestone. In some cases, it may be possible for the
-evaluator to provide the model developer with an unlabeled test set, and have the developer return
-a set of predicted labels to the evaluator for scoring. Alternatively, the model evaluator may require
-a deliverable model, allowing them to perform the evaluation without sharing the test data with
-the developer, making future reuse of that test set possible.
-Figure 3 illustrates how generalization properties can be measured during the design and
-evaluation stages. Here, the model developer evaluates training (green) and validation (purple)
-errors across different model architectures of varying complexity (e.g., number of parameters or
-neural network layers) in order to select the model with the smallest validation error. The model
-evaluator then uses the delivered model to measure performance at a specific point along the test
-error curve (yellow line), which is an estimate of the true unknown error curve (black dashed
-line). A model based on minimizing the validation error (blue circle) is likely to be more robust
-and perform better against unseen data than a model based on minimizing the training error (red
-circle).
+also be a fair amount of manual adjustments. Then the reviewing phase starts, and generally lasts around a
+month. At the end of the reviewing phase, all your assigned submissions should have review score(s) and
+a review text. There is also an option for comments to the PC (visible to other PC members, but not the
+authors of the submission), or comments to the PC chair only. In addition to these three fields, there may
+be specific questions (e.g., about editorial quality of the submission) which can be free form or a numerical
+scale.
+During this phase:
+ You familiarize yourself further with the submissions that were assigned to you.
+ You review several submissions yourself.
+ You contact external subreviewers to review the other submissions under your responsibility.
+ You notify the PC chair of any bugs you or your subreviewers find in otherwise good submis-
+sions; they might give the authors a chance to rectify.
+ You remind your subreviewers that their reviews are due.
+ You edit and submit all reviews/scores before the deadline.
+ You allocate time for last-minute reviews in case one of your subreviewers fails to deliver.
+As soon as you receive your pile of papers, download them and familiarize yourself a little better with
+them. This pile of paper will entertain you for a substantial part of the following month. For each submis-
+sion, get a feeling of the following aspects:
+• How likely it is that you can provide a high-confidence review yourself?
+• How long would it take you to review this submission? You probably already have an idea of how
+long it takes you to conference-review a paper. As a guideline, a minimal review of a submission with
+chances of acceptance will take you at least half a work day.
+• Can you think of a person (or two) who could ideally subreview this submission, in case you cannot
+review it yourself?
+Decide how many submissions of your pile you have time to review yourself, and how many you want to
+outsource to subreviewers. This decision depends on the amount of time and energy you have available,
+but generally PC members review about half of their assigned papers themselves. Some types of papers are
+suitable for reviewing yourself: papers you have already read, papers you anyway want to read, papers
+close to your expertise, papers that are easy to dismiss (because they seem out of scope, very messily
+written, claim that P=NP, etc.).
+You can also ask for informal opinions from colleagues who may not have time to give a full subreview,
+but are well positioned to comment on the context of certain results. In that case, indicate that you have
+done so in the comments to the PC. Collecting such an informal opinion can also be an option if you are
+having trouble finding a subreviewer and the deadline is getting close, as someone might be willing to
+respond with an informal opinion, especially on some specific aspect of the paper, who would not otherwise
+commit to writing a full review in the short timeframe.
+4.1 Writing reviews yourself
+A must-read is Ian Parburry’s (very old, but timeless) Guide for New Referees in Theoretical Computer
+Science. Remember that the goal is to provide high-confidence reviews! A good conference review is not
+too long, and it summarizes the main contributions of the submissions which also benefits the other PC
 7
-Figure 3. Notional performance as a function of model complexity (e.g., number of neural network layers,
-number of features used in a decision tree). The model developer uses the training and validation data to
-select a model with the appropriate complexity to perform well against unseen data. The model evaluator
-then tests this model to determine the test error (yellow line), which is an estimate of the true unknown error
-(black dashed line). To minimize this true error, the model complexity should not be too low (underfitting) or
-too high (overfitting). Since training error (green line) almost always decreases as model complexity increases,
-a model chosen based on minimizing this error will tend to be less robust when testing on unseen data (red
-circle). The validation error curve (purple line) more closely tracks the true error, and a model chosen based
-on minimizing this error will likely be more robust (blue circle).
-3.3 EVALUATION OF ROBUSTNESS TO SAMPLE UNCERTAINTY
-The AI/ML community has found that evaluating performance on a withheld test set is
-not sufficient for fully characterizing a model’s performance against unseen data. Many AI/ML
-models have been shown to suffer significant drops in performance when presented with slightly
-perturbed data inputs due to common corruptions such as blurring in images [5], background noise
-in audio [6], and targeted manipulation of the inputs by an optimization procedure, often referred
-to as adversarial examples [3].
-A robust AI/ML model should be able to maintain performance in the presence of small
-changes in the data samples and performance should gracefully degrade as those changes become
-larger. In other words, if two inputs are considered close for a given domain, their corresponding
-outputs produced by the model should also be close. This property is sometimes referred to as
-smoothness, stability, or robustness to perturbations; in this paper, we refer to it as robustness to
-sample uncertainty.
+members, starting off the discussion. In case there is a rebuttal phase, clearly formulate questions that you
+would like the authors to answer.
+For conferences without proceedings, do not spend too much time giving feedback on the presentation,
+because the goal is not to produce a perfectly polished piece of writing in the proceedings. If a paper is
+badly written, especially if there are (many) typos in the mathematics, this can of course still affect the final
+score.
+As PC member, you should try to focus on what the central contributions of the paper are, rather than
+finding flaws in it. If a paper has a novel idea and would benefit the community to be aware of, then it
+might be worth accepting even if it has typos and some sloppy references. On the other hand, if the main
+result is boring, it does not matter how solid the execution is.
+Give rather extreme scores if you love or dislike submissions. Grades tend to be distributed normally
+around the mean, so a greater variance is appreciated. You can always adjust your grades later. Do not be
+afraid of indicating high confidence for submissions in your area, you actually are one of the experts in the
+field. Similarly, indicate (very) low confidence for submissions far outside of your expertise where your
+review is just a wild guess, try to avoid those anyways.
+The top submissions (clear accepts) and bottom submissions (clear rejects) are always easily identified,
+but the big bulk of the submissions will be in between. Be aware that the border between acceptance and
+rejection is not the middle score, but rather (usually) “weak accept”: some submissions with an average
+“weak accept” score may get in, most will not. Often, a submission needs at least one very positive opinion
+in order to get accepted.
+4.2 Managing subreviewers
+Do not wait for longer than a day with contacting potential subreviewers for a submission. Often there
+is one “obvious” reviewer for a paper, and other PC members will attempt to ask this person as well.
+Send along the review guidelines (and COI policy) to subreviewers. Often you can simply point them
+to a URL for this information. Give them a deadline which is 2-3 days before your own deadline, in case
+people are unreliable or something else goes wrong. This way, you have time to read through their review
+before entering it into the system, possibly adjusting the grades to what is expected, or mix in some of your
+own opinions. Some subreviewers fail to send in a review altogether, so reserve some time close to the
+deadline to do some last-minute reviews yourself.
+Depending on the type of conference and the size of your network, potential subreviewers might decline
+or never even respond. You can decrease this probability by:
+• sending out your requests as soon as possible, so that the subreviewer did not already agree to review
+for another PC member;
+• following up on your request if you don’t get a response to your request within approximately three
+days. Easychair (and other automated) emails sometimes end up in people’s spam folder or are
+otherwise ignored. You can use your own email to follow up, asking them to respond to the referee
+request;
+• asking potential subreviewers “informally” (via email or in-person) before sending out the official
+referee request. This partially resolves the spam-folder issue, but requires you to keep track of more
+communication channels;
+• adding a personalised message to the review request, rather than the standard message provided by
+the system;
+• asking people that you know personally, or for whom you have reviewed in the past.
+If you do not know any potential subreviewers with expertise in the topic of a given submission, you can
+look through the list of references for recent relevant papers and ask one of their authors. If the submission
+is a follow-up to a specific paper by different authors, you can ask one of those. You can also look at
 8
-Refer to Figure 4 for a depiction of this property. In this example, the less robust model
-incorrectly classifies the image after the background pixels of the image have been perturbed by a
-small amount. In contrast, the more robust model has learned a different feature representation
-of the input space such that this small perturbation does not cause the sample to be classified
-incorrectly. AI/ML models that are robust to sample uncertainty are not easily fooled by adversarial
-examples and do not suffer significant performance loss in the face of common input corruptions.
-Figure 4. Notional depiction of models that are more robust (right) and less robust (middle) to sample
-uncertainty, which is represented as a small perturbation to the pixels of the image of the number 7. The less
-robust model has learned a feature space and classification boundary where a small perturbation in the data
-space corresponds to a large perturbation in the feature space, causing the perturbed sample to be misclassified.
-The more robust model instead learns a feature representation and classification boundary that tolerates this
-perturbation.
-To assess robustness to sample uncertainty, we recommend creating robustness curves, which
-plot a model’s performance as a function of perturbation size. See Figure 5 for an example. A
-robust model has graceful degradation in performance as the size of perturbations applied to the
-testing samples is increased (blue curve in the figure). While such a model may sacrifice lower error
-on the original test set (distance = 0), it is preferred to a model where error rates quickly increase
-when encountering data that is slightly perturbed (red curve).
+the acknowledgement section, but those people could be “too close” to the submission. Avoid asking
+subreviewers from the same institute as the authors (this is a COI), other PC members, and of course the
+authors themselves. If the submissions are anonymous, you cannot avoid potentially doing so. In case that
+happens, the subreviewer will decline because of a COI.
+Ask your potential subreviewer for an explicit confirmation that they can commit to doing the review.
+If they do not respond, not even after a reminder, continue looking for another reviewer. Do not wait too
+long with this. You could even prepare a list of back-up subreviewers to ask, so that you can act quickly in
+case a request is declined or ignored.
+To the people that did respond and agree to review, send a reminder a few days before the deadline you
+have given them, and again if the review has not come in after the deadline is passed. Here is a template
+for a reminder email:
+Dear X,
+On [date] I sent you (via EasyChair) a referee request for the [conference
+name] submission [name of submission], which you kindly accepted.
+I didn’t get a reply yet. It is of course fine if you don’t want to do it,
+but could you please let me know either way, so that I know whether I have
+to look for someone else?
+Best regards,
+[you]
+Decide beforehand when to give up and switch to doing the review yourself. Usually, if one post-
+deadline reminder does not work, it is time to give up. Remember to reserve time to quickly review one or
+two papers yourself in case one of your subreviewers goes missing.
+When a subreviewer submits their review, do not just copy-paste it into the reviewing system, but
+instead:
+• Have a look at (at least) the introduction of the submission yourself. If the submission has only
+external reviewers and they are all positive, it may be wise to read the entire paper, so that at least
+one PC member has had a close look at it.
+• Edit and error-correct the review itself if needed. Doing so will also protect the privacy of your
+subreviewer: for example, it removes grammar mistakes that are typical to native speakers of specific
+languages.
+• Recalibrate the referee’s score(s) to ensure consistency among the submissions under your responsi-
+bility. If the acceptance rate of the conference is 20%, then roughly 20% of the submissions in your pile
+should receive an accepting score. But beware: this is by no means a hard rule, because your batch is
+biased: your area of expertise may be especially “hot” and fast-paced this year, you may have iden-
+tified many obvious rejects during bidding, etc. Often, recalibrating means toning over-enthusiastic
+scores down a notch to bring them in line with other scores in your batch.
+In case you make any changes to the text or scores of the subreview, you should specify and explain these
+changes concisely in the ”comments to the PC” field.
+4.3 Submissions by PC members (like yourself)
+Submissions by PC members often get more reviewers assigned (say, five instead of three), which usually
+means raising the difficulty to get accepted. The standards applied for those submissions are often a bit
+stricter than for other submissions. These higher standards can be a reason for preferring a competing
+submission of similar quality.
 9
-Figure 5. Notional performance as a function of a distance measure between training and test data (e.g., size
-of perturbations applied to training samples or distance between original and out-of-distribution data) for a
-more robust (blue) and less robust (red) ML model. While the more robust model may see small increases
-in error rates on the original test set (distance = 0), it tolerates much larger changes in test data before
-error rates increase above the notional performance threshold. Robust models have an increased operational
-capability and present a greater challenge to potential adversaries.
-There are many different ways a set of data samples can be perturbed for robustness assess-
-ment. For example, a perturbation can be applied in a linear, additive manner (e.g., increasing or
-decreasing the values of individual image pixels), or by passing the input through a nonlinear trans-
-formation function (e.g., rotating or compressing the resolution of an image). A model evaluator
-may need to create multiple separate tests by perturbing different aspects of the data to get a good
-understanding of the model’s overall sensitivity to perturbations. A few additional considerations
-when generating perturbed test sets include:
-• Perturbing Measurements vs. Real-World Phenomena: Model inputs are typically
-measurements of some real-world phenomena collected by a sensor. Robustness of an AI/ML
-model can be assessed by perturbing those measurements, or it can be assessed at the system
-level by perturbing the real phenomena directly. For example in an audio system, a pertur-
-bation to the audio signal could be applied using Gaussian noise, while a perturbation to the
-real phenomena could be emulated by having a human speaker repeat the same phrase with
-varying levels of background noise. In many applications, it is easier and less costly to assess
-robustness to uncertainty in measurements compared to real phenomena. It may be difficult,
+Often, there is a cap (usually around two) on the number of papers that a PC member is allowed to
+submit. This cap may interfere with your desired research output, especially if you are in the postdoc
+phase of your career. However, the benefits of serving on a PC of a relevant conference usually outweigh
+this drawback.
+5 Discussion phase
+You will not be able to see other PC member’s reviews until you have submitted your own. In most re-
+viewing systems, there is the option of putting submissions on a personal “watchlist”, which means that
+you get notified if there is a new comment in the discussion. Make sure all submissions on your pile (and
+others you are interested in) are on your watchlist. This does not always happen automatically.
+During this phase:
+ You read the other reviews on the submissions in your pile, and potentially revise your score.
+ You start and contribute to discussions on the papers in your pile, with the goal of clearing up
+any questions and reaching a consensus about acceptance or rejection.
+ You may be asked (or be interested) to contribute to certain discussions outside your pile. Proac-
+tive contributions on top of your own pile are highly appreciated in this phase.
+ You might give feedback to, or ask additional input from, your subreviewers.
+ In case the conference allows rebuttals, you read and consider the authors’ rebuttals.
+ You might vote or attend a physical PC meeting for the final decisions.
+ You polish (or revise) reviews at the end of this phase, before they are being sent to the authors.
+Once the discussion phase has started, read carefully through the reviews of the other PC members (or
+their subreviewers), and check the scores they have given. You might want to look up names of subreview-
+ers that are unfamiliar to you. Immediately start off the discussion in case you disagree with somebody
+else’s opinion. If another review provides you with new and relevant information that you had missed (for
+example, another reviewer finds an error in a proof that cannot easily be fixed), you may decide to revise
+your own score based on that new information. That will help the PC chair to identify submissions with a
+low (or high) score.
+If you have limited time, focus on the borderline cases, as the good and bad submissions will “automat-
+ically” get accepted or rejected. Contribute to the discussion where it is necessary and useful.
+In case of very similar submissions, there might be comparative discussion boards, where two or more
+submissions are directly compared to each other, and all PC members from the individual submissions
+can participate (except if they have COIs with any of the involved submissions). In these comparison
+discussions, expert opinions of people knowing the details of multiple submissions are highly appreciated.
+Again, such a joint discussion can be rather weird (like a game of Werewolf) if you or others have COI with
+one of these papers. If this is the case, you should exclude yourself from the discussion as much as possible.
+You may even consider avoiding both submissions if you can already foresee a possible merger during the
+bidding phase, to prevent an ethical dilemma.
+Sometimes, the PC chair will ask you explicitly to have a look at another submission (on top of those
+that you have already reviewed). Read at least the title, abstract, and introduction to form a general opinion
+before looking at the other reviews.
+During the discussion phase, you do not have to limit yourself to the papers initially assigned to you.
+You should look for other papers where discussion is incomplete (i.e., reviewers have presented conflicting
+opinions and have not responded to each other), you have relevant expertise and/or the ranking looks
 10
-however, to tie perturbations applied to measurements back to the underlying, real phenom-
-ena. Thus, when possible, performance should also be evaluated against perturbations to real
-phenomena.
-• Random vs. Worst-Case Perturbations: Model-agnostic perturbations can be applied
-randomly to estimate a model’s average robustness to common data corruptions such as sensor
-noise and environmental factors [5]. Alternatively, worst-case perturbations (i.e., those most
-likely to lead to performance degradation) for a specific model can be computed for each
-individual input via an optimization procedure [7]. Robustness curves computed using these
-optimized perturbations represent a lower bound or worst-case robustness for the model. This
-worst-case perturbation approach is becoming increasingly common in the AI/ML literature
-(often referred to as adversarial robustness), and is encouraged even when manipulation of
-inputs by an adversary is assumed to be unlikely, as it may reveal potential vulnerabilities of
-the model. Model evaluators should report performance given both average and worst-case
-perturbations.
-• Measure of Perturbation Size: Creating robustness curves requires not only producing
-the perturbed test sets and computing performance on those sets, but also measuring the
-distance between the perturbed and unperturbed samples. The distance metric will vary
-depending on the type of data being perturbed and the perturbation method. For example,
-when assessing the sensitivity of a model to rotations of an input image, the distance measure
-is simply the angle of rotation that was applied to the image. For perturbations to image
-pixels, a common distance measure is the Euclidean norm. When perturbing real phenomena,
-specialized measures may need to be designed to represent the size of perturbations between
-targets of interest and varying environmental conditions.
-Model evaluators will need to decide how to balance the cost of generating perturbed datasets
-with the valuable insight gained from assessing robustness to sample uncertainty. Upfront invest-
-ment in such evaluations will enable evaluators to identify any vulnerabilities in the model before
-it is made operational and reduce the risk of dangerous and costly model failures in deployment.
-Additionally, assessing robustness to sample uncertainty is not only useful to model evaluators, but
-also to developers as they make design decisions. The DoD should encourage and, when appropri-
-ate, require robustness curves like those depicted in Figure 5 to be reported on during the evaluation
-phase, and should prioritize models that can tolerate larger perturbations before dropping below a
-desired performance threshold. Such models, with demonstrated robustness to sample uncertainty,
-will be less sensitive to noise and more difficult for an adversary to fool.
-3.4 EVALUATION OF ROBUSTNESS TO DISTRIBUTION UNCERTAINTY
-So far, we have discussed measures and recommendations for assessing performance of AI/ML
-models under the assumption that the data in the evaluation set is sampled from the same data
-distribution as the training set and small perturbations of those samples. When a model is deployed,
-the operational data is often from a slightly (or entirely) different distribution than the one assumed
-during model training. This out-of-distribution data may be due to a variety of factors, including
+borderline. But also look for misclassified papers that are far from the borderline. You can also invite in
+other PC members to join the discussion. Try to watch out for papers in areas that are not ”fashionable”
+or are not well represented in the PC, and make sure they do not fall through the cracks due to lack of
+attention. In general you should be proactive and not assume that other people will take care of things
+that seem wrong.
+If you believe it has added value, you could ask the PC chair for the permission to forward the other
+reviews (without scores or names) to your subreviewer, and ask them for their input to the discussion. In
+particular, this could be useful for more junior subreviewers, also to give them a better idea how this whole
+reviewing process actually works, and what other (possibly much more senior) experts in the field have to
+say about the submission that they analyzed very carefully.
+5.1 Rebuttal phase
+Some conferences have a rebuttal phase, where the authors can read and respond to (“rebut”) reviews on
+their work. Depending on the settings, authors might not see the numerical scores, and no (final) decision
+has been made about acceptance or rejection at this point. The discussion phase continues after the rebuttal
+has been received.
+Read through the authors’ rebuttal. Do they address the concerns you had? If you believe it has added
+value, you might forward the authors’ rebuttal to your subreviewer and ask for input to the discussion.
+Instead of an explicit rebuttal phase, some conferences allow PC members to send questions to the
+authors via the PC chair, usually when there are narrow technical concerns about correctness, or other
+factual points.
+5.2 Decision phase
+As the discussion phase draws to a close, it is time to make decisions. Normally, the decisions about which
+submissions to accept will be initiated by the PC chair. Based on the given scores (possibly weighted with
+the confidence score), the PC chair will change the “status” of a submission to “preliminary accept”, or
+“preliminary reject”. If nobody speaks up in the discussion for a week or so, these decisions become final.
+Clear accepts and clear rejects are usually easy to handle. Most time will be spent on discussing submis-
+sions with diverging scores from different reviewers, and “borderline” papers.
+About a week before the date of notification, there are usually quite a bunch of (say 40) submissions left
+that are all competing for the remaining (say 20) spots. In this phase, pretty much any of the submissions in
+the running could make it in or not. If you want to, you can have a lot of influence in this phase by voicing
+a strong and well-argued opinion towards acceptance or rejection. PC members tend to be tired of all the
+hard work, and clear voices are appreciated.
+Often, the very last decisions are taken by a vote, e.g. an approval vote where you can vote for as many
+submissions as you want, and the ones with the most approvals get in. In some rare cases, there might be a
+physical PC meeting.
+5.3 Physical PC meetings
+Sometimes, the final decisions are taken at a physical PC meeting. Usually, it takes at least two days to
+go through all borderline cases, and it is very hard (or impossible) to have the same energy and thought
+level for all these cases. Outcomes of these meetings tend to be (even) more random than votes. At these
+meetings, you have a lot of influence by voicing good arguments at the right moment, it might feel like a
+political procedure. Of course, it is fun to meet all these clever PC members in person.
+5.4 Polishing reviews
+After the final decisions are taken, the PC chair will ask the PC members to “polish” their reviews. In
+addition, there might be one PC member per submission assigned to summarize the PC discussion for the
 11
-incorrect assumptions made during the design and evaluation stage and unexpected changes in the
-scenario once the model is deployed.
-To have a better understanding of how a model may perform given distribution uncertainty in
-the evaluation stage, the model evaluator should also attempt to estimate the model’s performance
-given out-of-distribution data. A robust model should gracefully degrade in performance as the out-
-of-distribution data becomes increasingly different from the distribution assumed during the model
-design phase. Similar to the previous section, this robustness property can be assessed by creating
-robustness curves, where the horizonal axis of Figure 5 now reflects the distance between the original
-and out-of-distribution datasets. This distance can be computed using common distance metrics
-for distributions, such as the Kullback-Leibler divergence [8], or hand-crafted measures designed
-by domain experts.
-To create a collection of test sets for such an assessment, the model evaluator needs to leverage
-domain expertise, intelligence information, and knowledge of the original training and testing data
-distribution to identify new datasets that represent realistic and feasible out-of-distribution data.
-For example, new distributions can be created using data from a new sensor, which may have
-different noise properties, or for a new threat that was not previously included in the training and
-testing datasets. Model evaluators also need to decide what level of performance to require on these
-more challenging datasets. For example, if the data in the new set is from sensors or threats that
-are significantly different from those assumed during model design, the accuracy requirement may
-be more lenient compared to a dataset that represents only a small deviation from the training set.
-Assessing robustness given distribution uncertainty may require significant upfront investment
-to create the additional testing sets and define appropriate requirements and distance measures.
-While it may not be necessary for all applications, it is useful in any domain where the true data
-distribution remains uncertain or is likely to evolve over time. Such an assessment may reveal
-potential vulnerabilities in the design that can be fixed before the AI/ML model is deployed, and
-increase operator confidence that the system will perform as desired during the entirety of its
-operation. AI/ML models that are shown to perform well in the presence of distribution shift
-during the evaluation stage will likely require fewer updates during the deployment stage.
-The principles and practices for DoD AI/ML model evaluators presented in the previous few
-sections are illustrated in Figure 6. The true and assumed data distributions (for training and
-generalization evaluation) are represented at the top. The bottom row depicts examples of how the
-different evaluation practices presented in this paper relate to the data distribution. Generalization
-is a measure of performance on new independently-drawn samples from the same data distribution
-(lower left). Robustness is a measure of performance degradation when perturbations are applied to
-individual data samples (lower middle) or when the test distribution shifts away from the assumed
-training distribution (lower right).
+authors. As a courtesy to the authors, it is useful to reflect some of the PC discussion in the reviews to be
+sent to the authors. You now had an “inside view” of how the decision to accept/reject has taken place, so
+try to convey the main message to the authors, in particular in case of a “reject”.
+In case of a “reject”, you should also consider toning down any very enthusiastic reviews in order to
+prevent the authors from being confused by the conflicting reviews.
+6 After the author notification
+After the decisions and reviews have been sent to the authors, most of the hard work is done! There are a
+few small tasks left before the conference is over.
+During this phase:
+ You help select invited speakers.
+ You help select submissions deserving of an award, longer talk slot, etc.
+ You might chair one or more sessions at the conference.
+6.1 Selecting invited speakers and best-(student)-paper awards
+One (pre-)final task of the PC, depending on the conference, is to help select the invited speakers. This
+process might happen together with input from the steering committee, or local organisers. Some of the
+accepted submissions might be upgraded to plenary talks.
+Often, you can select speakers or results you like, and argue why they should be invited, and some-
+times there will be a vote about it. Suggestions for suitable speakers are generally appreciated, as is any
+thoughtful input (also on issues of diversity). The PC chair should try to balance the topics/areas of invited
+speakers.
+6.2 Chairing a session at the conference
+PC members are the prime candidates for chairing a session at the conference, as they represent the body of
+people who have made the selection. You often get to chair the session closest to your own research, which
+can be fun. A few pointers:
+• Be on time for your session.
+• Make sure you can pronounce all author names (and titles) of your session. If you are unsure, it is OK
+to double-check with the speaker before the talk starts.
+• Pay attention to the talks.
+• Keep track of the time.
+• Ask the audience for questions, and if there is none (and time), ask at least one question yourself.
+Although you are welcome to attend the conference (especially if you authored an accepted work), being
+able to do so is not a requirement for serving on the PC.
+7 Further Resources
+The International Association for Cryptologic Research (IACR) maintains official guidelines for PC chairs
+and for reviewers as well as other documents relevant to this process.
 12
-Figure 6. Depiction of the best practices for AI/ML model evaluation presented in this paper. (Top) An
-illustration of the unknown, true data distribution and the assumed distribution from which training and
-test data are drawn, for an example AI/ML application of handwritten digit classification. The bottom row
-illustrates how the robustness properties outlined in this paper relate to the data distribution used for training
-and testing. (Lower left) Generalization is a measure of performance on unseen, or test data that is similar
-to the training data but independently sampled from the assumed distribution. Robustness is a measure
-of performance degradation when (lower middle) perturbations are applied to individual data samples, e.g.,
-injecting noise to samples or applying adversarial perturbations, and when (lower right) the test distribution
-shifts away from the assumed distribution during training, e.g., black and white images to color.
+2020 Ulle Endriss’ FAQ for submissions to AAMAS-2021
+July 2018 Aram Harrow on being QIP PC chair: What I learned from being QIP PC chair
+Aug 2017 Thomas Vidick on chairing the QCrypt PC: A beginner’s guide to PC chairing
+Mar 2015 Boaz Barak on chairing a STOC/FOCS committee: Tips for future FOCS/STOC program chairs
+Dec 2008 Graham Cormode on How NOT to review a paper: the tools and techniques of the adversarial
+reviewer
+Nov 1989 Ian Parberry on writing a high-quality review: A guide for new referees in theoretical computer
+science
+Acknowledgements
+The idea for this guide was conceived during the weekly group meeting of Christian Schaffner’s quantum-
+cryptography group at QuSoft. In autumn 2020, multiple group members were asked to serve on PCs for
+the first time. While a useful guide is readily available for first-time referees in TCS, we were unable to find
+an analogue document for first-time PC members. Reason enough to write our own! Most of the writing
+was done by CS, most of the editing by YD, all authors have contributed with their experiences and tips.
+We would like to thank Simon Apers, Boaz Barak, Léo Ducas, Ulle Endriss, Aram Harrow, Laura
+Mančinska, Nikhil Mande, Maris Ozols, and Bart Preneel for their insightful comments and additions.
+If you have any comments or suggestions, please let us know by email to c.schaffner@uva.nl. We are happy
+to incorporate and acknowledge those in future versions of this guide.
 13
-4. SUMMARY AND RECOMMENDATIONS
-This paper provides an overview of the fundamental concepts needed for the DoD to improve
-existing processes to evaluate the performance and robustness of AI/ML models. There are three
-major phases of development for AI/ML: design of a model for a desired function, the verification
-of the model performance during evaluation, and transition to a deployed operational capability.
-Evaluation helps avoid deploying models that appear to meet a desired performance threshold
-but, in fact, have limited capability in operational settings. An effective evaluation process helps
-build trust between developers and operators in the field, discover important limitations of a given
-model for iterations of the design, and drive design of a more robust and resilient AI/ML model
-before deploying as an operational capability. Robust AI/ML models are more likely to maintain
-operational feasibility for longer periods of time without the need for costly updates.
-Below we provide a list of recommended best practices for developing a process to evaluate
-models and drive designs toward more robust AI/ML capabilities. These recommendations are
-only a subset of possible approaches, but by implementing these recommended practices the DoD
-should be able to better estimate and improve the robustness of AI/ML models before deploying
-operationally. The recommendations are:
-• Develop large testing datasets with sufficient diversity to better represent the
-distribution of future, unseen data. The true data distribution is not typically known,
-thus test datasets have inherent assumptions that can result in biased and potentially varying
-estimates of the model’s true performance. Therefore, developing an appropriate sampling
-procedure to define the testing sets is essential to proper evaluation of the out-of-sample error.
-• Maintain separate testing and training datasets to ensure an honest and unbi-
-ased assessment against unseen data. Keeping the test set independent of the design
-process helps limit the bias in the estimate of the model’s true out-of-sample error. Given
-the iterative nature of the design and evaluation phase, vary the testing dataset (e.g., by
-randomizing) so the developer cannot utilize feedback on the test set performance to tune the
-model. Also, consider comparing the model developer’s predicted performance based on the
-training/validation data during the design phase to the evaluated performance on the test
-data. A large gap between these values is an indication of possible overfitting of the training
-data. Requiring the developer to provide an estimate of the expected performance on the
-unseen test set encourages a more robust model design before the model is delivered to the
-model evaluator.
-• Assess a model’s sensitivity to small input changes (corruptions and perturba-
-tions, random and worst-case). A robust model should be able to maintain performance
-in the presence of small changes in the data samples and performance should gracefully de-
-grade as those changes become larger. This type of assessment also verifies that the model has
-certain properties expected for a given application, such as invariance to rotation or scaling in
-image classification. It will be necessary to develop methods to generate these perturbations
-in order to perform these robustness tests.
-14
-• Assess a model’s capability against out-of-distribution data with respect to the
-training and test data. The expectation is that the model maintains performance on data
-that is similar, but out-of-distribution, and degrades gracefully as the data appears more
-dissimilar. This out-of-distribution data may be due to a variety of factors, including having
-an insufficient representation of the true distribution due to incorrect assumptions or modeling
-challenges, or unexpected changes in the scenario. Whenever possible, evaluate the model
-on data from new threats, sensors, or environmental conditions to build confidence that the
-model will perform as expected and require fewer updates once deployed.
-Model evaluators can motivate better design practices and create more robust systems by
-taking the proper approach to evaluation. Decisions about evaluation processes should be given
-careful consideration, and deviations from these best practices should be made only with a full
-understanding of the potential loss of capability and robustness. AI/ML evaluation processes in
-existing DoD programs should be assessed to determine any gaps between the status quo and the
-ideal. The next steps to address these gaps may depend on the application, in some cases requiring
-creative solutions depending on the status of current contracts. As evaluation processes improve, it
-is essential for the DoD to appropriately invest in tools and techniques that help model developers
-fully take advantage of the AI/ML revolution and devise robust solutions to our national security
-problems.
-15
-REFERENCES
-[1] Department of Defense, “Summary of the 2018 Department of Defense Artificial Intelligence
-Strategy,” Department of Defense (2018).
-[2] National Security Commission on Artificial Intelligence, “National Security Commis-
-sion on AI (NSCAI) Interim Report,” (2019), URL https://www.epic.org/foia/
-epic-v-ai-commission/AI-Commission-Interim-Report-Nov-2019.pdf.
-[3] C. Szegedy, W. Zaremba, I. Sutskever, J. Bruna, D. Erhan, I. Goodfellow, and R. Fergus,
-“Intriguing properties of neural networks,” arXiv preprint arXiv:1312.6199 (2013).
-[4] Defense Innovation Board, “AI Principles: Recommendations on the Ethical Use of Artificial
-Intelligence by the Department of Defense,” (2019), URL https://media.defense.gov/2019/
-Oct/31/2002204458/-1/-1/0/DIB_AI_PRINCIPLES_PRIMARY_DOCUMENT.PDF.
-[5] D. Hendrycks and T. Dietterich, “Benchmarking neural network robustness to common corrup-
-tions and perturbations,” arXiv preprint arXiv:1903.12261 (2019).
-[6] J. Li, L. Deng, Y. Gong, and R. Haeb-Umbach, “An overview of noise-robust automatic speech
-recognition,” IEEE/ACM Transactions on Audio, Speech, and Language Processing 22(4), 745–
-777 (2014).
-[7] A. Madry, A. Makelov, L. Schmidt, D. Tsipras, and A. Vladu, “Towards deep learning models
-resistant to adversarial attacks,” arXiv preprint arXiv:1706.06083 (2017).
-[8] S. Kullback and R.A. Leibler, “On information and sufficiency,” The annals of mathematical
-statistics 22(1), 79–86 (1951).
-16
 

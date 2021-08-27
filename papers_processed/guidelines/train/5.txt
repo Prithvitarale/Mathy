@@ -1,1680 +1,1383 @@
-Articles
-WINTER 2014 105
-Copyright © 2014, Association for the Advancement of Artificial Intelligence. All rights reserved. ISSN 0738-4602
-Power to the People:
-The Role of Humans in
-Interactive Machine Learning
-Saleema Amershi, Maya Cakmak, W. Bradley Knox, Todd Kulesza1
-M
-achine learning is a powerful tool for transforming
-data into computational models that can drive
-user-facing applications. However, potential users
-of such applications, who are often domain experts for the
-application, have limited involvement in the process of
-developing them. The intricacies of applying machine-learn-
-ing techniques to everyday problems have largely restricted
-their use to skilled practitioners. In the traditional applied
-machine-learning workflow, these practitioners collect data,
-select features to represent the data, preprocess and trans-
-form the data, choose a representation and learning algo-
-rithm to construct the model, tune parameters of the algo-
-rithm, and finally assess the quality of the resulting model.
-This assessment often leads to further iterations on many of
-the previous steps. Typically, any end-user involvement in
-this process is mediated by the practitioners and is limited to
-providing data, answering domain-related questions, or giv-
-ing feedback about the learned model. This results in a
-design process with lengthy and asynchronous iterations
-and limits the end users’ ability to affect the resulting mod-
-els.
-Consider the following case study of machine-learning
-practitioners working with biochemists to develop a protein
-taxonomy by clustering low-level protein structures (Carua-
-na et al. 2006). The project lead recounted their experience
-in an invited talk at the Intelligent User Interfaces’s 2013
-Workshop on Interactive Machine Learning (Amershi et al.
-2013). First, the practitioners would create a clustering of the
-protein structures. Then, they would meet with the bio-
-chemists to discuss the results. The biochemists would cri-
-tique the results (for example, “these two proteins should /
-should not be in the same cluster” or “this cluster is too
-small”), providing new constraints for the next iteration.
-Following each meeting, the practitioners would carefully
-adjust the clustering parameters to adhere to the given con-
-n Systems that can learn interactively from
-their end-users are quickly becoming wide-
-spread. Until recently, this progress has been
-fueled mostly by advances in machine learn-
-ing; however, more and more researchers are
-realizing the importance of studying users of
-these systems. In this article we promote this
-approach and demonstrate how it can result
-in better user experiences and more effective
-learning systems. We present a number of
-case studies that demonstrate how interactiv-
-ity results in a tight coupling between the sys-
-tem and the user, exemplify ways in which
-some existing systems fail to account for the
-user, and explore new ways for learning sys-
-tems to interact with their users. After giving
-a glimpse of the progress that has been made
-thus far, we discuss some of the challenges we
-face in moving the field forward.
-Articles
-106 AI MAGAZINE
-straints and recompute clusters for the next meeting.
-Frustrated by the inefficiency of this laborious
-process, Caruana and colleagues went on to develop
-learning algorithms that enable interactive explo-
-ration of the clustering space and incorporation of
-new clustering constraints (Cohn, Caruana, and
-McCallum 2003; Caruana et al. 2006). These algo-
-rithms were intended to give people the ability to
-rapidly iterate and inspect many alternative cluster-
-ings within a single sitting.
-Their later approach is an example of interactive
-machine learning, where learning cycles involve
-more rapid, focused, and incremental model updates
-than in the traditional machine-learning process.
-These properties enable everyday users to interac-
-tively explore the model space and drive the system
-toward an intended behavior, reducing the need for
-supervision by practitioners. Consequently, interac-
-tive machine learning can facilitate the democratiza-
-tion of applied machine learning, empowering end
-users to create machine-learning-based systems for
-their own needs and purposes. However, enabling
-effective end-user interaction with interactive
-machine learning introduces new challenges that
-require a better understanding of end-user capabili-
-ties, behaviors, and needs.
-This article promotes the empirical study of the
-users of interactive machine-learning systems as a
-method for addressing these challenges. Through a
-series of case studies, we illustrate the following
-propositions:
-Rapid, focused, and incremental learning cycles result
-in a tight coupling between the user and the system,
-where the two influence one another. As a result it is
-difficult to decouple their influence on the resulting
-model and study such systems in isolation.
-Explicitly studying user interaction can challenge
-assumptions of traditional learning systems about
-users and better inform the design of interactive learn-
-ing systems.
-The ways in which end users interact with learning
-systems can be expanded to ways in which practition-
-ers do (for example, tuning parameters or defining
-new constraints); however, novel interaction tech-
-niques should be carefully evaluated with potential
-end users.
-While the presented case studies paint a broad pic-
-ture of recent research in user interaction with inter-
-active machine learning, this article does not exhaus-
-tively survey the literature in this space. Rather, these
-case studies are selected to highlight the role and
-importance of the user within the interactive
-machine-learning process, serving as an introduction
-to the topic and a vehicle for considering this body of
-research altogether. We conclude this article with a
-discussion of the current state of the field, identifying
-opportunities and open challenges for future interac-
-tive machine-learning research.
-Interactive Machine Learning
-The applied machine-learning workflow often
-involves long and complex iterations. The process
-starts with data provided by domain experts or specifi-
-cally collected for the target application. Machine-
-learning practitioners then work with domain experts
-to identify features to represent the data. Next, the
-practitioners experiment with different machine-
-learning algorithms, iteratively tuning parameters,
-tweaking features, and sometimes collecting more
-data to improve target performance metrics. Results
-are then further examined both by practitioners and
-domain experts to inform the subsequent iteration. At
-the end of this long cycle, the model is updated in sev-
-eral ways and can be drastically different from the pre-
-vious iteration. Furthermore, this iterative exploration
-of the model space is primarily driven by the machine-
-learning practitioners, who rely on their understand-
-ing of machine-learning techniques to make informed
-model updates in each iteration.
-In contrast, model updates in interactive machine
-learning are more rapid (the model gets updated
-immediately in response to user input), focused (only
-a particular aspect of the model is updated), and incre-
-mental (the magnitude of the update is small; the
-model does not change drastically with a single
-update). This allows users to interactively examine the
-impact of their actions and adapt subsequent inputs to
-obtain desired behaviors. As a result of these rapid
-interaction cycles, even users with little or no
-machine-learning expertise can steer machine-learn-
-ing behaviors through low-cost trial and error or
-focused experimentation with inputs and outputs. Fig-
-ure 1 illustrates traditional applied machine learning
-and interactive machine learning, highlighting their
-contrasting characteristics.
-Perhaps the most familiar examples of interactive
-machine learning in real-world applications are rec-
-ommender systems such as Amazon product recom-
-mendations, Netflix movie recommendations, and
-Pandora music recommendations. Users of recom-
-mender systems are often asked targeted questions
-about their preferences for individual items2 (which
-they provide by liking or disliking them, for example).
-These preferences are then promptly incorporated in
-the underlying learning system for subsequent recom-
-mendations. If a recommender system begins recom-
-mending undesired items after incorporating new
-preferences, the user may attempt to redirect the sys-
-tem by correcting it or providing different preference
-information in the future.
-We next present two case studies that exemplify the
-interactive machine-learning process and demonstrate
-its potential as an end-user tool.
-Interactive Machine Learning
-for Image Segmentation
-Fails and Olsen (2003) were the first to introduce the
-Articles
-WINTER 2014 107
-term interactive machine learning in the human-com-
-puter interaction community, characterizing it with
-rapid train-feedback-correct cycles, where users itera-
-tively provide corrective feedback to a learner after
-viewing its output. They demonstrated this process
-with their Crayons system, which allowed users with
-no machine-learning background to train pixel clas-
-sifiers by iteratively marking pixels as foreground or
-background through brushstrokes on an image. After
-each user interaction, the system responded with an
-updated image segmentation for further review and
-corrective input.
-Evaluations of Crayons through user studies
-revealed that the immediate output provided by the
-system allowed users to quickly view and correct mis-
-classifications by adding new training data in the
-most problematic areas. As illustrated in figure 2,
-after an initial classification, the user provides
-Crayons with more data at the edges of the hand
-where the classifier failed. When asked what they
-were thinking while interacting with the system,
-most users stated that they were focused on seeing
-parts of the image that were classified incorrectly.
-Fails and Olsen’s work on Crayons demonstrated
-that users modify their behavior based on a learner’s
-outputs, which is an underlying premise for much of
-the following research on interactive machine learning.
-Interactive Machine Learning
-for Gesture-Based Music
-Another example of an interactive machine-learning
-system comes from the realm of music composition
-Figure 1. Traditional Applied and Interactive Machine Learning.
-In machine learning, people iteratively supply information to a learning system and then observe and interpret the outputs of the system
-to inform subsequent iterations. In interactive machine learning, these iterations are more focused, frequent, and incremental than tradi-
-tional machine learning. The tighter interaction between users and learning systems in interactive machine learning necessitates an
-increased focus on studying the user’s involvement in the process.
-data
-design
-parameters data
+Consensus Statement
+https://doi.org/10.1038/s41591-020-1037-7
+1
+Centre for Patient Reported Outcomes Research, Institute of Applied Health Research, University of Birmingham, Birmingham, UK. 2
+Institute of Applied
+Health Research, University of Birmingham, Birmingham, UK. 3
+Birmingham Health Partners Centre for Regulatory Science and Innovation, University
+of Birmingham, Birmingham, UK. 4
+Academic Unit of Ophthalmology, Institute of Inflammation and Ageing, University of Birmingham, Birmingham,
+UK. 5
+University Hospitals Birmingham NHS Foundation Trust, Birmingham, UK. 6
+Health Data Research UK, London, UK. 7
+Moorfields Eye Hospital NHS
+Foundation Trust, London, UK. 8
+Department of Medicine, Women’s College Research Institute, Women’s College Hospital, University of Toronto, Ontario,
+Canada. 9
+National Institute of Health Research Biomedical Research Centre for Ophthalmology, Moorfields Hospital London NHS Foundation Trust and
+University College London, Institute of Ophthalmology, London, UK. 10
+National Institute of Health Research Birmingham Biomedical Research Centre,
+University of Birmingham and University Hospitals Birmingham NHS Foundation Trust, Birmingham, UK. 11
+National Institute of Health Research Applied
+Research Collaborative West Midlands, Coventry, UK. 12
+National Institute of Health Research Surgical Reconstruction and Microbiology Centre, University
+of Birmingham and University Hospitals Birmingham NHS Foundation Trust, Birmingham, UK. *A list of authors and their affiliations appears at the end of
+the paper. ✉e-mail: a.denniston@bham.ac.uk
+A
+clinical trial protocol is an essential document produced by
+study investigators detailing a priori the rationale, proposed
+methodsandplansforhowaclinicaltrialwillbeconducted1,2
+.
+This key document is used by external reviewers (funding agencies,
+regulatory bodies, research ethics committees, journal editors, peer
+reviewers, institutional review boards and, increasingly, the wider
+public) to understand and interpret the rationale, methodological
+rigor and ethical considerations of the trial. Additionally, trial pro-
+tocols provide a shared reference point to support the research team
+in conducting a high-quality study.
+Despite their importance, the quality and completeness of pub-
+lished trial protocols are variable1,2
+. The SPIRIT statement was
+published in 2013 to provide guidance for the minimum reporting
+content of a clinical-trial protocol and has been widely endorsed
+as an international standard3–5
+. The SPIRIT statement published in
+2013 provides minimum guidance applicable for all clinical trial
+interventions but recognizes that certain interventions may require
+extension or elaboration of these items1,2
+. AI is an area of enormous
+interest, with strong drivers to accelerate new interventions through
+to publication, implementation and market6
+. While AI systems have
+been researched for some time, recent advances in deep learning
+and neural networks have gained considerable interest for their
+potential in health applications. Examples of such applications of
+these are wide ranging and include AI systems for screening and
+triage7,8
+, diagnosis9–12
+, prognostication13,14
+, decision support15
 and
-insight
-Learning
-System
-OUTPUTS
-INPUTS
-Learning
-System
-OUTPUTS
-INPUTS
-features,
-model choice,
-algorithm choice,
-thresholds, ...
-predictions,
-recommendations,
-clusters, ...
-precision/recall,
-visualizations, ...
-Traditional process for constructing
-machine learning systems
-data,design
-parameters, and other
-User
-predictions, recommendations,
-clusters, precision/recall
-visualizations, queries, ...
-Interactive machine learning process
-samples, labels, preferences,
-features, model and algorithm
-choice, thresholds, error
-preferences, corrections,
-guidance, answers...
-samples, labels, preferences, ...
-time time
-model
-update
-model
-update
-model
-update
-INPUTS
-OUTPUTS
-INPUTS
-OUTPUTS
-Model
-change
-Iteration
-cycles
-time
-Model
-change
-Iteration
-cycles
-time
-sample outputs
-questions, ...,
-usage (testing)
-development (training)
-simultaneous development & usage
-User
-Expert
-and performance. This domain is naturally interac-
-tive: musicians are accustomed to receiving immedi-
-ate feedback when interacting with a musical instru-
-ment. Fiebrink, Cook, and Trueman (2011)
-developed the Wekinator, a machine-learning system
-for enabling people to interactively create novel ges-
-ture-based instruments, such as moving an arm in
-front of a web camera to produce different sounds
-based on the arm’s position, speed, or rotation. In
-this system, a neural network receives paired gestures
-and sounds from the user as input and learns how to
-interpolate from unobserved gesture positions to a
-range of sounds. Users evaluate their instruments
-directly by gesturing and assessing the produced
-sounds.
-While observing students using Wekinator in an
-interdisciplinary music and computer science course,
-the authors found that as students trained their
-respective instruments, the interactive nature of the
-system also helped train the students. For example,
-the students learned how to recognize noise in their
-training samples and provide clearer examples to the
-learner. In some cases, students even adjusted their
-goals to match the observed capabilities of the learn-
-er. In a follow-up investigation with a professional
-cellist (Fiebrink, Cook, and Trueman 2011), the cellist
-identified flaws in her playing technique while try-
-ing to train a gesture recognizer. The process revealed
-that the cellist’s bowing articulation was not as pre-
-cise as she had believed. By observing the outputs of
-the system in real time, Wekinator users were able to
-modify their behavior in ways that allowed them to
-create instruments to their satisfaction.
-Summary
-These examples illustrate the rapid, focused, and
-incremental interaction cycles fundamental to inter-
-active machine learning; it is these cycles that facili-
-tate end-user involvement in the machine-learning
-process. These cycles also result in a tight coupling
-between the user and the system, making it impossi-
-ble to study the system in isolation from the user.
-This necessitates an increased focus on studying how
-users can effectively influence the machine-learning
-system and how the learning system can appropri-
-ately influence the users. The following section
-examines how explicitly studying end users can chal-
-lenge assumptions of traditional machine learning
-and better inform the development of interactive
-machine-learning systems. Many of the case studies
-to follow additionally consider less traditional types
-of input and output, moving beyond labeled exam-
-ples and observations of learner predictions.
-Articles
-108 AI MAGAZINE
-Figure 2. Interactive Training of the Crayons System.
-The system takes pixels labeled as background/foreground as input (provided through brush strokes), and gives a fully segmented image as
-output (obtained through a classifier that labels each pixel as foreground/background). The user’s input is focused on areas where the clas-
-sifier is failing in previous iterations (Fails and Olsen 2003).
-Input Data
-Segmentation
-Iteration 1 Iteration 2 Iteration 3
-Studying User Interaction with
-Interactive Machine Learning
-The increased interaction between users and learning
-systems in interactive machine learning necessitates
-an increased understanding of how end-user involve-
-ment affects the learning process. In this section, we
-present case studies illustrating how such an under-
-standing can ultimately lead to better-informed sys-
-tem designs. First, we present case studies demon-
-strating how people may violate assumptions made
-by traditional machine learners, resulting in unex-
-pected outcomes and user frustration. Next, we pres-
-ent case studies indicating that people may want to
-interact with machine-learning systems in richer
-ways than anticipated, suggesting new input and
-output capabilities. Finally, we present case studies
-that experiment with increasing transparency about
-how machine-learning systems work, finding that
-such transparency can improve the user experience
-in some scenarios, as well as the accuracy of resulting
-models.
-Users Are People, Not Oracles
-Active learning is a machine-learning paradigm in
-which the learner chooses the examples from which
-it will learn (Settles 2010). These examples are select-
-ed from a pool of unlabeled samples based on some
-selection criterion (for example, samples for which
-the learner has maximum uncertainty). For each
-selected sample the learner queries an oracle to
-request a label. This method has had success in accel-
-erating learning (that is, requiring fewer labels to
-reach a target accuracy) in applications like text clas-
-sification and object recognition, where oracles are
-often paid to provide labels over a long period of
-time. However, Cakmak and colleagues (2010) dis-
-covered that when applied to interactive settings,
-such as a person teaching a task to a robot by exam-
-ple, active learning can cause several problems.
-Cakmak’s study (figure 3) found that the constant
-stream of questions from the robot during the inter-
-action was perceived as imbalanced and annoying.
-The stream of questions also led to a decline in the
-user’s mental model of how the robot learned, caus-
-ing some participants to “turn their brain off” or
-“lose track of what they were teaching” (according
-to their self report) (Cakmak, Choa, and Thomaz
-2010). Guillory and Bilmes (2011) reported similar
-findings for an active movie recommendation sys-
-tem they developed for Netflix. These studies reveal
-that users are not necessarily willing to be simple
-oracles (that is, repeatedly telling the computer
-whether it is right or wrong), breaking a fundamen-
-tal assumption of active learning. Instead, these sys-
-tems need to account for human factors such as
-interruptibility or frustration when employing meth-
-ods like active learning.
-People Tend to Give More Positive
-Than Negative Feedback to Learners
-In reinforcement learning, an agent senses and acts
-in a task environment and receives numeric reward
-values after each action. With this experience, the
-learning agent attempts to find behavioral policies
-that improve its expected accumulation of reward. A
-Articles
-WINTER 2014 109
-Figure 3. Users Teaching New Concepts to a Robot by Providing Positive and Negative Examples.
-Left: Passive learning: examples are chosen and presented by the user. Right: Active learning: particular examples are requested by the learn-
-er. Although active learning results in faster convergence, users get frustrated from having to answer the learner’s long stream of questions
-and not having control over the interaction.
-number of research projects have investigated the
-scenario in which this reward comes as feedback
-from a human user rather than a function predefined
-by an expert (Isbell et al. 2006, Thomaz and Breazeal
-2008, Knox and Stone 2012). In evaluating the feasi-
-bility of nonexpert users teaching through reward
-signals, these researchers aimed to both leverage
-human knowledge to improve learning speed and
-permit users to customize an agent’s behavior to fit
-their own needs.
-Thomaz and Breazeal (2008) observed that people
-have a strong tendency to give more positive rewards
-than negative rewards. Knox and Stone (2012) later
-confirmed this positive bias in their own experi-
-ments. They further demonstrated that such bias
-leads many agents to avoid the goal that users are
-teaching it to reach (for example, the water in figure
-4). This undesirable consequence occurs with a com-
-mon class of reinforcement learning algorithms:
-agents that value reward accrued over the long term
-and are being taught to complete so-called episodic
-tasks. This insight provided justification for the pre-
-viously popular solution of making agents that hedo-
-nistically pursue only short-term human reward, and
-it led Knox and Stone (2013) to create an algorithm
-that successfully learns by valuing human reward
-that can be gained in the long term. Agents trained
-through their novel approach were more robust to
-environmental changes and behaved more appropri-
-ately in unfamiliar states than did more hedonistic
-(that is, myopic) variants. These agents and the algo-
-rithmic design guidelines Knox and Stone created
-were the result of multiple iterations of user studies,
-which identified positive bias and then verified its
-hypothesized effects.
-People Want to Demonstrate
-How Learners Should Behave
-In an experiment by Thomaz and Breazeal (2008)
-users trained a simulated agent to bake a cake
-through a reinforcement learning framework. In their
-interface, users gave feedback to the learner by click-
-ing and dragging a mouse — longer drags gave larg-
-er-magnitude reward values, and the drag direction
-determined the valence (+/–) of the reward value (fig-
-ure 4). Further, users could click on specific objects to
-signal that the feedback was specific to that object,
-but they were told that they could not communicate
-which action the agent should take.
-Thomaz and Breazeal found evidence that people
-nonetheless gave positive feedback to objects that
-they wanted the agent to manipulate, such as an
-empty bowl that the agent is in position to pick up.
-These users violated the instructions by applying
-what could be considered an irrelevant degree of free-
-dom — giving feedback to objects that had not been
-recently manipulated — to provide guidance to the
-agent about future actions, rather than actual feed-
-back about previous actions. After Thomaz and
-Breazeal adapted the agent’s interface and algorithm
-to incorporate such guidance, the agent’s learning
-performance significantly improved.
-Other researchers have reached similar conclu-
-sions. In a Wizard-of-Oz study (that is, the agent’s
-outputs were secretly provided by a human) by
-Kaochar and colleagues (2011), users taught a simu-
-Articles
-110 AI MAGAZINE
-Time: 16
-Figure 4. Two Task Domains for Reinforcement Learning Agents Taught by Human Users.
-Left: A cooking robot that must pick up and use the ingredients in an acceptable order (Thomaz and Breazeal 2006). The green vertical bar
-displays positive feedback given by a click-and-drag interface. Right: A simulated robot frog that users teach how to navigate to the water
-(Knox and Stone 2012).
-lated unmanned aerial vehicle (UAV) to conduct var-
-ious missions. At any time, these users chose whether
-to teach by demonstration, by feedback, or by pro-
-viding an example of a concept. They could also test
-the agent to see what it had learned. The authors
-found that users never taught exclusively by feed-
-back, instead generally using it after teaching by the
-other available means. Together, these two studies
-provide insight into the design of natural interfaces
-for teaching agents.
-People Naturally Want to
-Provide More Than Just Data Labels
-Labeling data remains the most popular method for
-end-user input to interactive machine-learning sys-
-tems because of its simplicity and ease of use. How-
-ever, as demonstrated in previous case studies, label-
-based input can have drawbacks (for example,
-negative attitudes toward being treated as an oracle).
-In addition, emerging research suggests that in some
-scenarios users may desire richer control over
-machine-learning systems than simply labeling data.
-For example, Stumpf and colleagues (2007) con-
-ducted a study to understand the types of input end
-users might provide to machine-learning systems if
-unrestricted by the interface. The authors generated
-three types of explanations for predictions from a
-text classification system operating over email mes-
-sages. These explanations were presented to people
-in the form of paper-based mockups to avoid the
-impression of a finished system and encourage peo-
-ple to provide more feedback. People were then asked
-to give free-form feedback on the paper prototypes
-with the goal of trying to correct the classifier’s mis-
-takes. This experiment generated approximately 500
-feedback instances from participants, which were
-then annotated and categorized. The authors found
-that people naturally provided a wide variety of input
-types to improve the classifier’s performance, includ-
-ing suggesting alternative features to use, adjusting
-the importance or weight given to different features,
-and modifying the information extracted from the
-text. These results present an opportunity to develop
-new machine-learning algorithms that might better
-support the natural feedback people want to provide
-to learners, rather than force users to interact in lim-
-ited, learner-centered ways.
-People Value Transparency in
-Learning Systems
-In addition to wanting richer controls, people some-
-times desire more transparency about how their
-machine-learning systems work. Kulesza and col-
-leagues (2012) provided users of a content-based
-music recommender with a 15-minute tutorial dis-
-cussing how the recommender worked and how var-
-ious feedback controls (for example, rating songs,
-steering toward specific feature values, and so on)
-would affect the learner. Surprisingly, participants
-responded positively to learning these details about
-the system. In addition, the researchers found that
-the more participants learned about the recom-
-mender while interacting with it, the more satisfied
-they were with the recommender’s output. This case
-study provides evidence that users are not always sat-
-isfied by “black box” learning systems — sometimes
-they want to provide nuanced feedback to steer the
-system, and they are willing and able to learn details
-about the system to do so.
-Examining transparency at a more social level,
-Rashid and colleagues (2006) examined the effect of
-showing users the value of their potential movie rat-
-ings to a broader community in the MovieLens rec-
-ommendation system. Users who were given infor-
-mation about the value of their contribution to the
-entire MovieLens community provided more ratings
-than those who were not given such information,
-and those given information about value to a group
-of users with similar tastes gave more ratings than
-those given information regarding the full Movie-
-Lens community.
-Transparency Can Help People
-Provide Better Labels
-Sometimes users make mistakes while labeling, thus
-providing false information to the learner. Although
-most learning systems are robust to the occasional
-human error, Rosenthal and Dey set out to solve this
-problem at the source. They sought to reduce user mis-
-takes by providing targeted information when a label
-is requested in an active learning setting. The infor-
-mation provided to the user included a combination
-of contextual features of the sample to be labeled,
-explanations of those features, the learner’s own pre-
-diction of the label for the sample, and its uncertainty
-in this prediction (Rosenthal and Dey 2010).
-They conducted two studies to determine the
-subset of such information that is most effective in
-improving the labeling accuracy of users. The first
-involved people labeling strangers’ emails into cat-
-egories, as well as labeling the interruptability of
-strangers’ activities; the second involved people
-labeling sensory recordings of their own physical
-activity. Both studies found that the highest label-
-ing accuracy occurred when the system provided
-sufficient contextual features and current predic-
-tions without uncertainty information. This line of
-research demonstrates that the way in which infor-
-mation is presented (for example, with or without
-context) can greatly affect the quality of the
-response elicited from the user. This case study also
-shows that not all types of transparency improve
-the performance of interactive machine-learning
-systems, and user studies can help determine what
-information is most helpful to the intended audi-
-ence.
-Articles
-WINTER 2014 111
-Summary
-Understanding how people actually interact — and
-want to interact — with machine-learning systems is
-critical to designing systems that people can use effec-
-tively. Exploring interaction techniques through user
-studies can reveal gaps in a designer’s assumptions
-about their end users and may suggest new algorith-
-mic solutions. In some of the cases we reviewed, peo-
-ple naturally violated assumptions of the machine-
-learning algorithm or were unwilling to comply with
-them. Other cases demonstrated that user studies can
-lead to helpful insights about the types of input and
-output that interfaces for interactive machine learning
-should support. In general, this type of research can
-produce design suggestions and considerations, not
-only for people building user interfaces and developing
-the overall user experience, but for the machine-learn-
-ing community as well.
-Novel Interfaces for Interactive
-Machine Learning
-As many of the case studies in the previous section
-showed, end users often desire richer involvement in
-the interactive machine-learning process than label-
-ing instances. In addition, research on cost-benefit
-trade-offs in human-computer interaction has shown
-that people will invest time and attention into com-
-plex tasks if they perceive their efforts to have greater
-benefits than costs (Blackwell 2002). For example,
-research on end-user programming has shown that
-end users program often (for example, through
-spreadsheets, macros, or mash-ups), but do so prima-
-rily to accomplish some larger goal (Blackwell 2002).
-The act of programming is an investment, and the
-expected benefit is using the program to accomplish
-their goal sooner or with less effort than doing it
-manually. Similarly, this theory suggests that people
-will invest time to improve their machine learners
-only if they view the task as more beneficial than
-costly or risky — that is, when they perceive the ben-
-efits of producing an effective learner as outweighing
-the costs of increased interaction. Therefore, we
-believe there is an opportunity to explore new, rich-
-er interfaces that can leverage human knowledge and
-capabilities more efficiently and effectively.
-In this section, we present case studies that explore
-novel interfaces for interactive machine-learning sys-
-tems and demonstrate the feasibility of richer inter-
-actions. Interface novelty in these cases can come
-from new methods for receiving input or providing
-output. New input techniques can give users more
-control over the learning system, allowing them to
-move beyond labeling examples. Such input tech-
-niques include methods for feature creation,
-reweighting of features, adjusting cost matrices, or
-modifying model parameters. Novel output tech-
-niques can make the system’s state more transparent
-or understandable. For example, a system could
-group unlabeled data to help users label the most
-informative items, or it could communicate uncer-
-tainty about the system’s predictions.
-These case studies also reinforce our proposition
-that interactive machine-learning systems should be
-evaluated with potential end users. Such evaluations
-are needed both to validate that these systems per-
-form well with real users and to gain insights for fur-
-ther improvement. Many of the novel interfaces
-detailed in this section were found to be beneficial,
-but some of the case studies also demonstrate that
-certain types of input or output may lead to obstacles
-for the user or reduce the accuracy of the resulting
-learner. Therefore, novel interfaces should be
-designed with care and appropriately evaluated
-before deployment.
-Supporting Assessment of Model Quality
-In each iteration of the interactive machine-learning
-process, the user may assess the quality of the current
-model and then decide how to proceed with further
-input. A common technique for conveying model
-quality in supervised learning is to present a person
-with all of the unlabeled data sorted by their predict-
-ed scores for some class (for example, classification
-probabilities or relevance rankings). After evaluating
-this presentation, a person then decides how to pro-
-ceed in training by selecting additional examples to
-label for further input. Although straightforward, this
-technique inefficiently illustrates learner quality and
-provides the user with no guidance in selecting addi-
-tional training examples.
-Fogarty and colleagues (2008) investigated novel
-techniques for presenting model quality in CueFlik,
-an interactive machine-learning system for image
-classification (figure 5). Through a user study, the
-authors demonstrated that a technique of presenting
-users with only the best- and worst-matching exam-
-ples enabled users to evaluate model quality more
-quickly and, in turn, train significantly better models
-than the standard technique of presenting the user
-with all of the data. In a follow-up investigation with
-CueFlik, Amershi and colleagues (2009) went on to
-show that presentation techniques designed to sum-
-marize model quality for users while providing them
-with high-value examples to choose from as further
-input to the model led users to train better models
-than the best- and worst-matching technique from
-previous work. These case studies demonstrate that
-presentation matters and designing interfaces that
-balance the needs of both end users and machine
-learners is more effective than optimizing user inter-
-faces for end users in isolation.
-Supporting Experimentation
-with Model Inputs
-Interactive machine learning enables rapid and incre-
-mental iterations between the end user and the
-Articles
-112 AI MAGAZINE
-machine learner. As a result, users may want to exper-
-iment with alternative inputs and examine resulting
-model outputs before committing to any model
-input. To support end-user experimentation, Amer-
-shi and colleagues (2010) augmented the CueFlik sys-
-tem (figure 6) discussed previously with a history
-visualization to facilitate model comparison and sup-
-port for model revision (through undo or redo,
-removing labels, and reverting to previous models
-using the history visualization). In a user study,
-Amershi et al. showed that end users used revision
-when it was available and this led them to achieve
-better final models in the same amount of time (even
-while performing more actions) compared to when
-these supports were unavailable. Furthermore, being
-able to examine and revise actions is consistent with
-how people expect to interact with their applica-
-tions. One participant in this study commented that
-without revision “it felt a little like typing on a key-
-board without a backspace key.” This case study illus-
-trates that end users may be willing and may expect
-options to experiment and revise their inputs to
-machine learners during the interactive machine-
-learning process.
-Appropriately Timing Queries to the User
-As discussed earlier, applying active learning to inter-
-active settings can be undesirable to the user when
-questions come in a constant stream from the learn-
-ing system. To address this problem, Cakmak and
-Thomaz (2010) proposed intermittently active learn-
-ing, in which only a subset of the examples provided
-by the user are obtained through queries. This brings
-a new challenge for the learner: deciding when to
-query as opposed to letting the user choose an exam-
-ple. Cakmak and Thomaz explored two approach-
-es. In the first, the learner made queries only when
-certain conditions were met. It took into account the
-quality of examples chosen by the user and the prob-
-ability that the user could randomly provide useful
-examples. In the second approach, the user decided
-when the learner was allowed to ask questions (that
-is, a query was made only when the user said “do you
-have any questions?”).
-A study comparing intermittently active learning
-with fully active and passive learning demonstrated
-its advantage over these two extremes (Cakmak,
-Chao, and Tomaz 2010). The study showed that both
-intermittent approaches resulted in learning as fast
-as the fully active approach, while being subjective-
-ly preferred over fully active or fully passive
-approaches. The interactions with the intermittent-
-ly active learners were found to be more balanced,
-enjoyable, and less frustrating. When asked to
-choose between the two alternative approaches,
-users preferred the teacher-triggered queries, men-
-tioning that they liked having full control over the
-learner’s queries. As exemplified in this case study,
-building interactive learning systems that fit user
-preferences can sometimes require the modification
-of existing methods in fundamental ways.
-Enabling Users to Query the Learner
-In addition to the learner querying the user as in the
-Articles
-WINTER 2014 113
-Standard presentation using
-a ranked list of examples
-Best and worst matching
-examples presentation
-Figure 5. Comparing the Quality of a Machine-Learned Visual Concept.
-Fogarty et al.’s work (2008) with CueFlik compared two methods of illustrating the quality of a machine-learned visual concept.The stan-
-dard method (left) presented users with examples ranked by their likelihood of membership to the positive class. The best and worst match-
-es method (right) instead showed examples predicted as positive or negative with high certainty by CueFlik. A user study showed that the
-best- and worst-matches technique led users to train significantly better learners than the standard presentation.
-active learning paradigm, sometimes the user may
-want to query the learner. Kulesza and colleagues
-(2011) developed an approach to let users ask a text
-classifier why it was behaving in a particular way (for
-example, “Why was this classified as X instead of
-Y?”). The learner’s responses were interactive, thus
-providing a way for users not only to understand
-why the system had made a particular prediction, but
-also to adjust the learner’s reasoning if its prediction
-was wrong. For example, the learner could display a
-bar graph showing that it associated the word “job”
-with the topic of “news” more than the topic of
-“résumés”; if the user disagreed with this reasoning,
-he or she could adjust the graph to tell the learner
-that “jobs” should be associated with “résumés”
-more than “news”.
-Most participants exposed to this why-oriented
-interaction approach significantly increased the
-accuracy of their naïve Bayes text classifiers; howev-
-er, every participant encountered a number of barri-
-ers while doing so. In particular, participants had
-trouble selecting features to modify from the thou-
-sands in the bag-of-words feature set. Also, once par-
-ticipants did select features to adjust, they had trou-
-ble understanding how changes to a single feature
-altered the learner’s predictions for seemingly unre-
-lated items. This study suggests that for learners with
-large feature sets or complex interactions between
-features, users will need additional support to make
-sense of which features are most responsible for an
-item’s classification.
-Enabling Users to Critique Learner Output
-Some machine-learning systems help users navigate
-an otherwise unnavigable search space. For example,
-recommender systems help people find specific
-items of interest, filtering out irrelevant items. Vig,
-Sen, and Riedl (2011) studied a common problem in
-this domain: recommending results that are close,
-but not quite close enough, to what the user was
-looking for. Researchers developed a prototype to
-support tag-based “critiques” of movie recommen-
-dations. Users could respond to each recommenda-
-tion with refinements such as “Like this, but less vio-
-lent” or “Like this, but more cerebral,” where violent
-and cerebral are tags that users had applied to vari-
-ous movies. A k-nearest-neighbor approach was then
-used to find similar items that included the user-
-specified tags.
-This relatively simple addition to the MovieLens
-website garnered an overwhelmingly positive reac-
-tion, with 89 percent of participants in a user study
-saying that they liked it, and 79 percent requesting
-that it remain a permanent feature on the site. This
-example helps illustrate both the latent desire
-among users for better control over machine-learn-
-Articles
-114 AI MAGAZINE
-Labeled positive and
-negative examples
-Undo and redo
-All images
-ranked
-History
-visualization
-Figure 6. CueFlik.
-CueFlik augmented with a history visualization to facilitate model comparison and support for model revision. Amershi et al. (2010) showed
-that these supports for experimentation during interactive machine learning enabled end users to train better quality models than when
-these supports were unavailable.
-Articles
-WINTER 2014 115
-ing systems and that, by supporting such control in
-an interactive fashion, user attitudes toward the
-learner can be greatly enhanced.
-Allowing Users to Specify
-Preferences on Errors
-People sometimes want to refine the decision bound-
-aries of their learners. In particular, for some classi-
-fiers it might be critical to detect certain classes cor-
-rectly, while tolerating errors in other classes (for
-example, misclassifying spam as regular email is typ-
-ically less costly than misclassifying regular email as
-spam). However, refining classifier decision bound-
-aries is a complex process even for experts, involving
-iterative parameter tweaking, retraining, and evalua-
-tion. This is particularly difficult because among
-parameters there are often dependencies that lead to
-complex mappings between parameter values and
-the behavior of the system.
-To address these difficulties, Kapoor and colleagues
-(2010) created ManiMatrix (figure 7), a tool for people
-to specify their preferences on decision boundaries
-through interactively manipulating a classifier’s con-
-fusion matrix (that is, a breakdown of the correct and
-incorrect predictions it made for each class). Given
-these preferences, ManiMatrix employs Bayesian deci-
-sion theory to compute decision boundaries that min-
-imize the expected cost of different types of errors, and
-then visualizes the results for further user refinement.
-A user study with machine-learning novices demon-
-strated that participants were able to quickly and effec-
-tively modify decision boundaries as desired with the
-ManiMatrix system. This case study demonstrates that
-nonexperts can directly manipulate a model’s learn-
-ing objective, a distinctly different form of input than
-choosing examples and labeling them.
-Combining Models
-An ensemble classifier is a classifier that builds its pre-
-diction from the predictions of multiple subclassi-
-fiers, each of which are functions over the same space
-as the ensemble classifier. Such ensembles often out-
-perform all of their subclassifiers and are a staple of
-applied machine learning (for example, AdaBoost by
-Freund and Schapire [1995]). A common workflow
-for creating ensemble classifiers is to experiment with
-different features, parameters, and algorithms
-through trial and error or hill-climbing through the
-model space. Even for machine-learning experts,
-however, this approach can be inefficient and lead to
-suboptimal performance.
-To facilitate the creation of ensemble classifiers,
-Talbot and colleagues (2009) developed Ensem-
-bleMatrix, a novel tool for helping people interac-
-tively build, evaluate, and explore different ensem-
-bles (figure 8). EnsembleMatrix visualizes the current
-ensemble of individual learners through a confusion
-matrix. The user can then experiment with and eval-
-uate different linear combinations of individual
-learners by interactively adjusting the weights of all
-models through a single two-dimensional interpola-
-tion widget (top right in figure 8). EnsembleMatrix’s
-novel interface also allows people to make use of
-their visual processing capabilities to partition the
-confusion matrix according to its illustrated per-
-formance, effectively splitting the ensemble into
-subensembles that can be further refined as neces-
-sary. A user study showed that EnsembleMatrix
-enabled people to create ensemble classifiers on par
-with the best published ensembles on the same data
-set. Furthermore, they managed to do so in a single,
-one-hour session. The study involved participants
-ranging from machine-learning novices to experts.
-Figure 7. ManiMatrix System.
-The ManiMatrix system displays the confusion matrix of the classifier and allows the user to directly increase or decrease the different types
-of errors using arrows on the matrix cells. ManiMatrix provides feedback to the user by highlighting cells that change value as a result of
-the user’s click (red indicates a decrease and green indicates an increase).
-Rain
-Rain
-loud
-unn
-Rain
-loud
-unn
-Rain
-loud
-unn
-Rain
-loud
-unn
-350 13 12
-350 13 12
-350 13 12
-358 10 7
-5 205 18
-5 205 16
-5 205 16
-6 204 16
-11 16 158
-11 16 193
-11 16 193
-15 14 195
-Cloudy Sunny
-Rain Cloudy Sunny
-Rain Cloudy Sunny
-Rain Cloudy Sunny
-This case study illustrates that effectively combining
-human intuition and input with machine processing
-can enable people to create better classifiers in less
-time than standard approaches that ignore these
-powerful human capabilities.
-Summary
-Whether a new interface will improve the user’s
-experience or the system’s performance can only be
-assessed through evaluation with potential end
-users. In the case studies above, permitting richer
-user interactions was often beneficial, but not always
-so. Different users have different needs and expecta-
-tions of the systems they employ. In addition, rich
-interaction techniques may be appropriate for some
-scenarios and not others. Thus, conducting user
-studies of novel interactive machine-learning sys-
-tems is critical not only for discovering promising
-modes of interaction, but also to uncover obstacles
-that users may encounter in different scenarios and
-unspoken assumptions they might hold about
-machine learners. The accumulation of such research
-can facilitate the development of design guidelines
-for building future interactive machine-learning sys-
-tems, much like those that exist for traditional soft-
-ware systems (for example, Shneiderman et al.
-[2009]).
+treatment recommendation16
+. However, in most recent cases, the
+majority of published evidence has consisted of in silico, early-phase
+validation. It has been recognized that most recent AI studies are
+inadequately reported and existing reporting guidelines do not fully
+cover potential sources of bias specific to AI systems17
+. The welcome
+emergence of randomized controlled trials seeking to evaluate the
+clinical efficacy of newer interventions based on, or including, an
+Guidelines for clinical trial protocols for
+interventions involving artificial intelligence:
+the SPIRIT-AI extension
+Samantha Cruz Rivera1,2,3
+, Xiaoxuan Liu 3,4,5,6,7
+, An-Wen Chan8
+, Alastair K. Denniston 1,3,4,5,6,9 ✉,
+Melanie J. Calvert 1,2,3,6,10,11,12
+, The SPIRIT-AI and CONSORT-AI Working Group*, SPIRIT-AI and
+CONSORT-AI Steering Group and SPIRIT-AI and CONSORT-AI Consensus Group
+The SPIRIT 2013 statement aims to improve the completeness of clinical trial protocol reporting by providing evidence-based
+recommendations for the minimum set of items to be addressed. This guidance has been instrumental in promoting transpar-
+ent evaluation of new interventions. More recently, there has been a growing recognition that interventions involving artifi-
+cial intelligence (AI) need to undergo rigorous, prospective evaluation to demonstrate their impact on health outcomes. The
+SPIRIT-AI (Standard Protocol Items: Recommendations for Interventional Trials–Artificial Intelligence) extension is a new
+reporting guideline for clinical trial protocols evaluating interventions with an AI component. It was developed in parallel with
+its companion statement for trial reports: CONSORT-AI (Consolidated Standards of Reporting Trials–Artificial Intelligence).
+Both guidelines were developed through a staged consensus process involving literature review and expert consultation to
+generate 26 candidate items, which were consulted upon by an international multi-stakeholder group in a two-stage Delphi
+survey (103 stakeholders), agreed upon in a consensus meeting (31 stakeholders) and refined through a checklist pilot (34 par-
+ticipants). The SPIRIT-AI extension includes 15 new items that were considered sufficiently important for clinical trial protocols
+of AI interventions. These new items should be routinely reported in addition to the core SPIRIT 2013 items. SPIRIT-AI recom-
+mends that investigators provide clear descriptions of the AI intervention, including instructions and skills required for use, the
+setting in which the AI intervention will be integrated, considerations for the handling of input and output data, the human–AI
+interaction and analysis of error cases. SPIRIT-AI will help promote transparency and completeness for clinical trial protocols
+for AI interventions. Its use will assist editors and peer reviewers, as well as the general readership, to understand, interpret
+and critically appraise the design and risk of bias for a planned clinical trial.
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine 1351
+Consensus Statement NATuRe MeDICIne
+AI component (called ‘AI interventions’ here)15,18–23
+has similarly
+been met with concerns about design and reporting17,24–26
+. This has
+highlighted the need to provide reporting guidance that is ‘fit for
+purpose’ in this domain.
+SPIRIT-AI (as part of the SPIRIT-AI and CONSORT-AI initia­
+tive) is an international initiative supported by SPIRIT and the
+EQUATOR (Enhancing the Quality and Transparency of Health
+Research) Network to extend or elaborate on the existing SPIRIT
+2013 statement where necessary, to develop consensus-based
+AI-specific protocol guidance27,28
+. It is complementary to the
+CONSORT-AI statement, which aims to promote high-quality
+reporting of AI trials. This Consensus Statement describes the
+methods used to identify and evaluate candidate items and gain
+consensus. In addition, it also provides the full SPIRIT-AI checklist,
+including new items and their accompanying explanations.
+Methods
+The SPIRIT-AI and CONSORT-AI extensions were simultaneously
+developed for clinical trial protocols and trial reports. An announce-
+ment for the SPIRIT-AI and CONSORT-AI initiative was published
+in October 2019 (ref. 27
+), and the two guidelines were registered as
+reporting guidelines under development on the EQUATOR library
+of reporting guidelines in May 2019. Both guidelines were devel-
+oped in accordance with the EQUATOR Network’s methodological
+framework29
+. The SPIRIT-AI and CONSORT-AI Steering Group,
+consisting of 15 international experts, was formed to oversee the
+conduct and methodology of the study. Definitions of key terms are
+provided in the glossary (Box 1).
+Ethical approval
+This study was approved by the ethical review committee at the
+University of Birmingham, UK (ERN_19-1100). Participant infor-
+mation was provided to Delphi participants electronically before
+survey completion and before the consensus meeting. Delphi par-
+ticipants provided electronic informed consent, and written consent
+was obtained from consensus meeting participants.
+Literature review and candidate item generation
+An initial list of candidate items for the SPIRIT-AI and
+CONSORT-AI checklists was generated through review of the
+published literature and consultation with the Steering Group and
+known international experts. A search was performed on 13 May
+2019 using the terms ‘artificial intelligence’, ‘machine learning’ and
+‘deep learning’ to identify existing clinical trials for AI interventions
+listed within the US National Library of Medicine’s clinical trial reg-
+istry (ClinicalTrials.gov). There were 316 registered trials, of which
+62 were completed and 7 had published results22,30–35
+. Two studies
+were reported with reference to the CONSORT statement22,34
+, and
+one study provided an unpublished trial protocol34
+. The Operations
+Team (X.L., S.C.R., M.J.C. and A.K.D.) identified AI-specific consid-
+erations from these studies and reframed them as candidate report-
+ing items. The candidate items were also informed by findings from
+a previous systematic review that evaluated the diagnostic accuracy
+of deep-learning systems for medical imaging17
+. After consulta-
+tion with the Steering Group and additional international experts
+(n=19), 29 candidate items were generated, 26 of which were rel-
+evant for both SPIRIT-AI and CONSORT-AI and 3 of which were
+relevant only for CONSORT-AI. The Operations Team mapped
+these items to the corresponding SPIRIT and CONSORT items,
+revising the wording and providing explanatory text as required to
+contextualize the items. These items were included in subsequent
+Delphi surveys.
+Delphi consensus process
+In September 2019, 169 key international experts were invited to
+participate in the online Delphi survey to vote upon the candidate
+items and suggest additional items. Experts were identified and
+contacted via the Steering Group and were allowed one round of
+‘snowball’ recruitment in which contacted experts could suggest
+additional experts. In addition, individuals who made contact fol-
+lowing publication of the announcement were included27
+. The
+Steering Group agreed that individuals with expertise in clini-
+cal trials and AI and machine learning (ML), as well as key users
+of the technology, should be well represented in the consultation.
+Stakeholders included healthcare professionals, methodologists,
+statisticians, computer scientists, industry representatives, journal
+editors, policy makers, health ‘informaticists’, experts in law and
+ethics, regulators, patients and funders. Participant characteristics
+are described in Supplementary Table 1. Two online Delphi sur-
+veys were conducted. DelphiManager software (version 4.0), devel-
+oped and maintained by the COMET (Core Outcome Measures in
+Effectiveness Trials) initiative, was used to undertake the e-Delphi
+surveys. Participants were given written information about the
+study and were asked to provide their level of expertise within the
+fields of (i) AI/ML, and (ii) clinical trials. Each item was presented
+for consideration (26 for SPIRIT-AI and 29 for CONSORT-AI).
+Participants were asked to vote on each item using a 9-point
+scale, as follows: 1–3, not important; 4–6, important but not critical;
+and 7–9, important and critical. Respondents provided separate
+ratings for SPIRIT-AI and CONSORT-AI. There was an option
+to opt out of voting for each item, and each item included space
+for free text comments. At the end of the Delphi survey, partici-
+pants had the opportunity to suggest new items. 103 responses
+were received for the first Delphi round, and 91 responses (88% of
+participants from round one) were received for the second round.
+The results of the Delphi surveys informed the subsequent inter-
+national consensus meeting. 12 new items were proposed by the
+Delphi study participants and were added for discussion at the
+consensus meeting. Data collected during the Delphi survey were
+anonymized, and item-level results were presented at the consensus
+meeting for discussion and voting.
+The two-day consensus meeting took place in January 2020 and
+was hosted by the University of Birmingham, UK, to seek consensus
+on the content of SPIRIT-AI and CONSORT-AI. 31 international
+stakeholders from among the Delphi survey participants were
+invited to discuss the items and vote on their inclusion. Participants
+were selected to achieve adequate representation from all the stake-
+holder groups. 38 items were discussed in turn, comprising the 26
+items generated in the initial literature review and item-generation
+phase (these 26 items were relevant to both SPIRIT-AI and
+CONSORT-AI; 3 extra items relevant only to CONSORT-AI were
+also discussed) and the 12 new items proposed by participants dur-
+ing the Delphi surveys. Each item was presented to the consensus
+group, alongside its score from the Delphi exercise (median and
+interquartile ranges) and any comments made by Delphi partici-
+pants related to that item. Consensus meeting participants were
+invited to comment on the importance of each item and whether
+the item should be included in the AI extension. In addition, partic-
+ipants were invited to comment on the wording of the explanatory
+text accompanying each item and the position of each item relative
+to the SPIRIT 2013 and CONSORT 2010 checklists. After open dis-
+cussion of each item and the option to adjust wording, an electronic
+vote took place, with the option to include or exclude the item. An
+80% threshold for inclusion was pre-specified and deemed reason-
+able by the Steering Group to demonstrate majority consensus. Each
+stakeholder voted anonymously using Turning Point voting pads
+(Turning Technologies, version 8.7.2.14).
+Checklist pilot
+Following the consensus meeting, attendees were given the oppor-
+tunity to make final comments on the wording and agree that the
+updated SPIRIT-AI and CONSORT-AI items reflected discussions
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine
+1352
+Consensus Statement
+NATuRe MeDICIne
+from the meeting. The Operations Team assigned each item as an
+extension or elaboration item on the basis of a decision tree and
+produced a penultimate draft of the SPIRIT-AI and CONSORT-AI
+checklists (Supplementary Fig. 1). A pilot of the penultimate check-
+lists was conducted with 34 participants to ensure clarity of word-
+ing. Experts participating in the pilot included the following: (a)
+Delphi participants who did not attend the consensus meeting,
+and (b) external experts who had not taken part in the develop-
+ment process but who had reached out to the Steering Group after
+the Delphi study commenced. Final changes were made on word-
+ing only to improve clarity for readers, by the Operations Team
+(Supplementary Fig. 2).
+Recommendations
+SPIRIT-AI checklist items and explanation. The SPIRIT-AI
+extension recommends that, in conjunction with existing SPIRIT
+2013 items, 15 items (12 extensions and 3 elaborations) should
+be addressed for trial protocols of AI interventions. These items
+were considered sufficiently important for clinical-trial proto-
+cols for AI interventions that they should be routinely reported
+in addition to the core SPIRIT 2013 checklist items. Table 1 lists
+the SPIRIT-AI items.
+All 15 items included in the SPIRIT-AI Extension passed the
+threshold of 80% for inclusion at the consensus meeting. SPIRIT-AI
+6a (i), SPIRIT-AI 11a (v) and SPIRIT-AI 22 each resulted from
+the merging of two items after discussion. SPIRIT-AI 11a (iii)
+did not fulfil the criteria for inclusion on the basis of its initial
+wording (73% vote to include); however, after extensive discus-
+sion and rewording, the consensus group unanimously supported
+a re-vote, at which point it passed the inclusion threshold (97%
+to include).
+Administrative information
+SPIRIT-AI 1 (i) Elaboration: Indicate that the intervention
+involves artificial intelligence/machine learning and specify the
+type of model. Explanation. Indicating in the protocol title and/or
+abstract that the intervention involves a form of AI is encouraged, as
+it immediately identifies the intervention as an AI/ML intervention
+and also serves to facilitate indexing and searching of the trial proto-
+col in bibliographic databases, registries and other online resources.
+The title should be understandable by a wide audience; therefore, a
+broader umbrella term such as ‘artificial intelligence’ or ‘machine
+learning’ is encouraged. More precise terms should be used in the
+abstract, rather than the title, unless they are broadly recognized as
+Box 1 | Glossary
+Artificial intelligence The science of developing computer systems that can perform tasks normally requiring human intelligence.
+AI intervention A health intervention that relies upon an AI/ML component to serve its purpose.
+CONSORT Consolidated Standards of Reporting Trials.
+CONSORT-AI extension item An additional checklist item to address AI-specific content that is not adequately covered by CONSORT 2010.
+Class-activation map Class-activation maps are particularly relevant to image classification AI interventions. Class-activation maps are
+visualizations of the pixels that had the greatest influence on predicted class, by displaying the gradient of the predicted
+outcome from the model with respect to the input. They are also referred to as ‘saliency maps’ or ‘heat maps’.
+Health outcome Measured variables in the trial that are used to assess the effects of an intervention.
+Human–AI interaction The process of how users (humans) interact with the AI intervention, for the AI intervention to function as intended.
+Clinical outcome Measured variables in the trial that are used to assess the effects of an intervention.
+Delphi study A research method that derives the collective opinions of a group through a staged consultation of surveys,
+questionnaires, or interviews, with an aim to reach consensus at the end.
+Development environment The clinical and operational settings from which the data used for training the model is generated. This includes all
+aspects of the physical setting (such as geographical location, physical environment), operational setting (such as
+integration with an electronic record system, installation on a physical device) and clinical setting (such as primary,
+secondary and/or tertiary care, patient disease spectrum).
+Fine-tuning Modifications or additional training performed on the AI intervention model, done with the intention of improving its
+performance.
+Input data The data that need to be presented to the AI intervention to allow it to serve its purpose.
+Machine learning A field of computer science concerned with the development of models/algorithms which can solve specific tasks by
+learning patterns from data, rather than by following explicit rules. It is seen as an approach within the field of AI.
+Operational environment The environment in which the AI intervention will be deployed, including the infrastructure required to enable the AI
+intervention to function.
+Output data The predicted outcome given by the AI intervention based on modeling of the input data. The output data can
+be presented in different forms, including a classification (including diagnosis, disease severity or stage, or
+recommendation such as referability), a probability, a class activation map, etc. The output data typically provide
+additional clinical information and/or trigger a clinical decision.
+Performance error Instances in which the AI intervention fails to perform as expected. This term can describe different types of failures,
+and it is up to the investigator to specify what should be considered a performance error, preferably based on prior
+evidence. This can range from small decreases in accuracy (compared to expected accuracy) to erroneous predictions
+or the inability to produce an output, in certain cases.
+SPIRIT Standard Protocol Items: Recommendations for Interventional Trials.
+SPIRIT-AI An additional checklist item to address AI-specific content that is not adequately covered by SPIRIT 2013.
+SPIRIT-AI elaboration item Additional considerations to an existing SPIRIT 2013 item when applied to AI interventions.
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine 1353
+Consensus Statement NATuRe MeDICIne
+Table 1 | SPIRIT-AI checklist
+Section Item SPIRIT 2013 itema
+SPIRIT-AI item Addressed
+on page
+numberb
+Administrative information
+Title 1 Descriptive title identifying the study design,
+population, interventions, and, if applicable, trial
+acronym
+SPIRIT-AI 1 (i)
+Elaboration
+Indicate that the intervention involves
+artificial intelligence/machine
+learning and specify the type of
+model.
+SPIRIT-AI 1 (ii)
+Elaboration
+Specify the intended use of the AI
+intervention.
+Trial registration 2a Trial identifier and registry name. If not yet
+registered, name of intended registry
+2b All items from the World Health Organization
+Trial Registration Dataset
+Protocol version 3 Date and version identifier
+Funding 4 Sources and types of financial, material, and other
+support
+Roles and
+responsibilities
+5a Names, affiliations, and roles of protocol
+contributors
+5b Name and contact information for the trial
+sponsor
+5c Role of study sponsor and funders, if any, in study
+design; collection, management, analysis, and
+interpretation of data; writing of the report; and
+the decision to submit the report for publication,
+including whether they will have ultimate
+authority over any of these activities
+5d Composition, roles, and responsibilities of the
+coordinating center, steering committee, endpoint
+adjudication committee, data management
+team, and other individuals or groups overseeing
+the trial, if applicable (see Item 21a for data
+monitoring committee)
+Introduction
+Background and
+rationale
+6a Description of research question and justification
+for undertaking the trial, including summary of
+relevant studies (published and unpublished)
+examining benefits and harms for each
+intervention
+SPIRIT-AI 6a (i)
+Extension
+Explain the intended use of the AI
+intervention in the context of the
+clinical pathway, including its purpose
+and its intended users (for example,
+healthcare professionals, patients,
+public).
+SPIRIT-AI 6a (ii)
+Extension
+Describe any pre-existing evidence
+for the AI intervention.
+6b Explanation for choice of comparators
+Objectives 7 Specific objectives or hypotheses
+Trial design 8 Description of trial design including type of trial
+(for example, parallel group, crossover, factorial,
+single group), allocation ratio, and framework (for
+example, superiority, equivalence, noninferiority,
+exploratory)
+Methods: participants, interventions and outcomes
+Study setting 9 Description of study settings (for example,
+community clinic, academic hospital) and list of
+countries where data will be collected. Reference
+to where list of study sites can be obtained
+SPIRIT-AI 9
+Extension
+Describe the onsite and offsite
+requirements needed to integrate the
+AI intervention into the trial setting.
+Eligibility criteria 10 Inclusion and exclusion criteria for participants.
+If applicable, eligibility criteria for study
+centers and individuals who will perform
+the interventions (for example, surgeons,
+psychotherapists)
+SPIRIT-AI 10 (i)
+Elaboration
+State the inclusion and exclusion
+criteria at the level of participants.
+SPIRIT-AI 10 (ii)
+Extension
+State the inclusion and exclusion
+criteria at the level of the input data.
+Continued
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine
+1354
+Consensus Statement
+NATuRe MeDICIne
+Section Item SPIRIT 2013 itema
+SPIRIT-AI item Addressed
+on page
+numberb
+Interventions 11a Interventions for each group with sufficient detail
+to allow replication, including how and when
+they will be administered
+SPIRIT-AI 11a (i)
+Extension
+State which version of the AI
+algorithm will be used.
+SPIRIT-AI 11a (ii)
+Extension
+Specify the procedure for acquiring
+and selecting the input data for the AI
+intervention.
+SPIRIT-AI 11a
+(iii) Extension
+Specify the procedure for assessing
+and handling poor-quality or
+unavailable input data.
+SPIRIT-AI 11a
+(iv) Extension
+Specify whether there is human–AI
+interaction in the handling of the
+input data, and what level of expertise
+is required for users.
+SPIRIT-AI 11a (v)
+Extension
+Specify the output of the AI
+intervention.
+SPIRIT-AI 11a
+(vi) Extension
+Explain the procedure for how the AI
+intervention’s output will contribute
+to decision-making or other elements
+of clinical practice.
+11b Criteria for discontinuing or modifying allocated
+interventions for a given trial participant (for
+example, drug dose change in response to harms,
+participant request, or improving/worsening
+disease)
+11c Strategies to improve adherence to intervention
+protocols, and any procedures for monitoring
+adherence (for example, drug tablet return,
+laboratory tests)
+11d Relevant concomitant care and interventions that
+are permitted or prohibited during the trial
+Outcomes 12 Primary, secondary, and other outcomes,
+including the specific measurement variable
+(for example, systolic blood pressure), analysis
+metric (for example, change from baseline, final
+value, time to event), method of aggregation (for
+example, median, proportion), and time point
+for each outcome. Explanation of the clinical
+relevance of chosen efficacy and harm outcomes
+is strongly recommended
+Participant
+timeline
+13 Time schedule of enrollment, interventions
+(including any run-ins and washouts), assess­
+ments, and visits for participants. A schematic
+diagram is highly recommended (Fig. 1)
+Sample size 14 Estimated number of participants needed
+to achieve study objectives and how it was
+determined, including clinical and statistical
+assumptions supporting any sample size
+calculations
+Recruitment 15 Strategies for achieving adequate participant
+enrollment to reach target sample size
+Methods: assignment of interventions (for controlled trials)
+Sequence
+generation
+16a Method of generating the allocation sequence
+(for example, computer-generated random
+numbers), and list of any factors for stratification.
+To reduce predictability of a random sequence,
+details of any planned restriction (for example,
+blocking) should be provided in a separate
+document that is unavailable to those who enroll
+participants or assign interventions
+Continued
+Table 1 | SPIRIT-AI checklist (Continued)
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine 1355
+Consensus Statement NATuRe MeDICIne
+Section Item SPIRIT 2013 itema
+SPIRIT-AI item Addressed
+on page
+numberb
+Allocation
+concealment
+mechanism
+16b Mechanism of implementing the allocation
+sequence (for example, central telephone;
+sequentially numbered, opaque, sealed
+envelopes), describing any steps to conceal the
+sequence until interventions are assigned
+Implementation 16c Who will generate the allocation sequence,
+who will enroll participants, and who will assign
+participants to interventions
+Blinding
+(masking)
+17a Who will be blinded after assignment to interven­
+tions (for example, trial participants, care
+providers, outcome assessors, data analysts),
+and how
+17b If blinded, circumstances under which unblinding
+is permissible, and procedure for revealing a
+participant’s allocated intervention during the trial
+Methods: data collection, management and analysis
+Data collection
+methods
+18a Plans for assessment and collection of outcome,
+baseline, and other trial data, including any
+related processes to promote data quality (for
+example, duplicate measurements, training of
+assessors) and a description of study instruments
+(for example, questionnaires, laboratory tests)
+along with their reliability and validity, if known.
+Reference to where data collection forms can be
+found, if not in the protocol
+18b Plans to promote participant retention and
+complete follow-up, including list of any outcome
+data to be collected for participants who
+discontinue or deviate from intervention protocols
+Data management 19 Plans for data entry, coding, security, and storage,
+including any related processes to promote data
+quality (for example, double data entry; range
+checks for data values). Reference to where
+details of data management procedures can be
+found, if not in the protocol
+Statistical
+methods
+20a Statistical methods for analyzing primary and
+secondary outcomes. Reference to where other
+details of the statistical analysis plan can be
+found, if not in the protocol
+20b Methods for any additional analyses (for example,
+subgroup and adjusted analyses)
+20c Definition of analysis population relating to protocol
+non-adherence (for example, as randomized
+analysis), and any statistical methods to handle
+missing data (for example, multiple imputation)
+Methods: monitoring
+Data monitoring 21a Composition of data monitoring committee
+(DMC); summary of its role and reporting
+structure; statement of whether it is independent
+from the sponsor and competing interests;
+and reference to where further details about
+its charter can be found, if not in the protocol.
+Alternatively, an explanation of why a DMC is not
+needed
+21b Description of any interim analyses and stopping
+guidelines, including who will have access to
+these interim results and make the final decision
+to terminate the trial
+Continued
+Table 1 | SPIRIT-AI checklist (Continued)
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine
+1356
+Consensus Statement
+NATuRe MeDICIne
+Section Item SPIRIT 2013 itema
+SPIRIT-AI item Addressed
+on page
+numberb
+Harms 22 Plans for collecting, assessing, reporting, and
+managing solicited and spontaneously reported
+adverse events and other unintended effects of
+trial interventions or trial conduct
+SPIRIT-AI 22
+Extension
+Specify any plans to identify and
+analyze performance errors. If there
+are no plans for this, justify why not.
+Auditing 23 Frequency and procedures for auditing trial
+conduct, if any, and whether the process will be
+independent from investigators and the sponsor
+Ethics and dissemination
+Research ethics
+approval
+24 Plans for seeking research ethics committee/
+institutional review board (REC/IRB) approval
+Protocol
+amendments
+25 Plans for communicating important protocol
+modifications (for example, changes to eligibility
+criteria, outcomes, analyses) to relevant parties
+(for example, investigators, REC/IRBs, trial
+participants, trial registries, journals, regulators)
+Consent or ascent 26a Who will obtain informed consent or assent
+from potential trial participants or authorized
+surrogates, and how (see Item 32)
+26b Additional consent provisions for collection and
+use of participant data and biological specimens
+in ancillary studies, if applicable
+Confidentiality 27 How personal information about potential and
+enrolled participants will be collected, shared,
+and maintained in order to protect confidentiality
+before, during, and after the trial
+Declaration of
+interests
+28 Financial and other competing interests for
+principal investigators for the overall trial and
+each study site
+Access to data 29 Statement of who will have access to the final
+trial dataset, and disclosure of contractual
+agreements that limit such access for
+investigators
+SPIRIT-AI 29
+Extension
+State whether and how the AI
+intervention and/or its code can be
+accessed, including any restrictions to
+access or re-use.
+Ancillary and
+post-trial care
+30 Provisions, if any, for ancillary and post-trial care,
+and for compensation to those who suffer harm
+from trial participation
+Dissemination
+policy
+31a Plans for investigators and sponsor to
+communicate trial results to participants,
+healthcare professionals, the public, and other
+relevant groups (for example, via publication,
+reporting in results databases, or other data
+sharing arrangements), including any publication
+restrictions
+31b Authorship eligibility guidelines and any intended
+use of professional writers
+31c Plans, if any, for granting public access to the
+full protocol, participant-level dataset, and
+statistical code
+Appendices
+Informed consent
+materials
+32 Model consent form and other related
+documentation given to participants and
+authorized surrogates
+Biological
+specimens
+33 Plans for collection, laboratory evaluation, and
+storage of biological specimens for genetic or
+molecular analysis in the current trial and for
+future use in ancillary studies, if applicable
+a
+It is strongly recommended that this checklist be read in conjunction with the SPIRIT 2013 Explanation & Elaboration for important clarification on the items. b
+Indicates page numbers to be completed by
+authors during protocol development.
+Table 1 | SPIRIT-AI checklist (Continued)
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine 1357
+Consensus Statement NATuRe MeDICIne
+being a form of AI/ML. Specific terminology relating to the model
+type and architecture should be detailed in the abstract.
+SPIRIT-AI 1 (ii) Elaboration: State the intended use of the AI
+intervention. Explanation. The intended use of the AI intervention
+should be made clear in the protocol’s title and/or abstract. This
+should describe the purpose of the AI intervention and the disease
+context19,36
+. Some AI interventions may have multiple intended uses,
+or the intended use may evolve over time. Therefore, documenting
+this allows readers to understand the intended use of the algorithm
+at the time of the trial.
+Introduction
+SPIRIT-AI 6a (i) Extension: Explain the intended use of the AI
+intervention in the context of the clinical pathway, including its
+purpose and its intended users (for example, healthcare profes-
+sionals, patients, public). Explanation. In order to clarify how the
+AI intervention will fit into a clinical pathway, a detailed description
+of its role should be included in the protocol background. AI inter-
+ventions may be designed to interact with different users, includ-
+ing healthcare professionals, patients and the public, and their
+roles can be wide-ranging (for example, the same AI interven-
+tion could theoretically be replacing, augmenting or adjudicating
+components of clinical decision-making). Clarifying the intended
+use of the AI intervention and its intended user helps readers
+understand the purpose for which the AI intervention will be
+evaluated in the trial.
+SPIRIT-AI 6a (ii) Extension: Describe any pre-existing evidence
+for the AI intervention. Explanation. Authors should describe in
+the protocol any pre-existing published evidence (with supporting
+references) or unpublished evidence relating to validation of the
+AI intervention or lack thereof. Consideration should be given to
+whether the evidence was for a use, setting and target population
+similar to that of the planned trial. This may include previous devel-
+opment of the AI model, internal and external validations and any
+modifications made before the trial.
+Participants, interventions and outcomes
+SPIRIT-AI 9 Extension: Describe the onsite and offsite require-
+ments needed to integrate the AI intervention into the trial set-
+ting. Explanation. There are limitations to the generalizability of
+AI algorithms, one of which is when they are used outside of their
+development environment37,38
+. AI systems are dependent on their
+operational environment, and the protocol should provide details of
+the hardware and software requirements to allow technical integra-
+tion of the AI intervention at each study site. For example, it should
+be stated if the AI intervention requires vendor-specific devices,
+if there is a need for specialized computing hardware at each site,
+or if the sites must support cloud integration, particularly if this
+is vendor specific. If any changes to the algorithm are required at
+each study site as part of the implementation procedure (such as
+fine-tuning the algorithm on local data), then this process should
+also be clearly described.
+SPIRIT-AI 10 (i) Elaboration: State the inclusion and exclusion
+criteria at the level of participants. Explanation. The inclusion and
+exclusion criteria should be defined at the participant level as per
+usual practice in protocols of non-AI interventional trials. This is
+distinct from the inclusion and exclusion criteria made at the input
+data level, which are addressed in item 10 (ii).
+SPIRIT-AI 10 (ii) Extension: State the inclusion and exclusion
+criteria at the level of the input data. Explanation. ‘Input data’
+refers to the data required by the AI intervention to serve its pur-
+pose (for example, for a breast cancer diagnostic system, the input
+data could be the unprocessed or vendor-specific post-processing
+mammography scan upon which a diagnosis is being made; for an
+early-warning system, the input data could be physiological mea-
+surements or laboratory results from the electronic health record).
+The trial protocol should pre-specify if there are minimum require-
+ments for the input data (such as image resolution, quality metrics
+or data format) that would determine pre-randomization eligibility.
+It should specify when, how and by whom this will be assessed. For
+example, if a participant met the eligibility criteria for lying flat for
+a CT scan as per item 10 (i), but the scan quality was compromised
+(for any given reason) to such a level that it is no longer fit for use by
+the AI system, this should be considered as an exclusion criterion at
+the input-data level. Note that where input data are acquired after
+randomization (addressed by SPIRIT-20c), any exclusion is consid-
+ered to be from the analysis, not from enrollment (Fig. 1).
+SPIRIT-AI 11a (i) Extension: State which version of the AI algo-
+rithm will be used. Explanation. Similar to other forms of software
+as a medical device, AI systems are likely to undergo multiple itera-
+tions and updates in their lifespan. The protocol should state which
+version of the AI system will be used in the clinical trial and whether
+this is the same version that was used in previous studies that have
+been used to justify the study rationale. If applicable, the protocol
+should describe what has changed between the relevant versions
+and the rationale for the changes. Where available, the protocol
+should include a regulatory marking reference, such as an unique
+device identifier, that requires a new identifier for updated versions
+of the device39
+.
+SPIRIT-AI 11a (ii) Extension: Specify the procedure for
+acquiring and selecting the input data for the AI intervention.
+Explanation. The measured performance of any AI system may be
+critically dependent on the nature and quality of the input data40
+.
+The procedure for how input data will be handled, including data
+acquisition, selection and pre-processing before analysis by the AI
+system, should be provided. Completeness and transparency of this
+process is integral to feasibility assessment and to future replication
+of the intervention beyond the clinical trial. It will also help to iden-
+tify whether input-data-handling procedures will be standardized
+across trial sites.
+SPIRIT-AI 11a (iii) Extension: Specify the procedure for assess-
+ing and handling poor-quality or unavailable input data.
+Explanation. As with SPIRIT-AI 10 (ii), ‘input data’ refers to the data
+required by the AI intervention to serve its purpose. As noted in
+item 10 (ii), the performance of AI systems may be compromised as
+a result of poor quality or missing input data41
+(for example, exces-
+sive movement artifact on an electrocardiogram). The study proto-
+col should specify if and how poor quality or unavailable input data
+will be identified and handled. The protocol should also specify a
+minimum standard required for the input data and the procedure
+for when the minimum standard is not met (including the impact
+on, or any changes to, the participant care pathway).
+Poor quality or unavailable data can also affect non-AI interven-
+tions. For example, sub-optimal quality of a scan could affect a radi-
+ologist’s ability to interpret it and make a diagnosis. It is therefore
+important that this information is reported equally for the control
+intervention, where relevant. If this minimum quality standard is
+different from the inclusion criteria for input data used to assess
+eligibility pre-randomization, this should be stated.
+SPIRIT-AI 11a (iv) Extension: Specify whether there is human–
+AI interaction in the handling of the input data, and what level
+of expertise is required for users. Explanation. A description of the
+human–AI interface and the requirements for successful interaction
+when input data are handled should be provided. Examples include
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine
+1358
+Consensus Statement
+NATuRe MeDICIne
+clinician-led selection of regions of interest from a histology slide
+that is then interpreted by an AI diagnostic system42
+, or an endos-
+copist’s selection of a colonoscopy video clips as input data for an
+algorithm designed to detect polyps21
+. A description of any planned
+user training and instructions for how users will handle the input
+data provides transparency and replicability of trial procedures.
+Poor clarity on the human–AI interface may lead to a lack of a stan-
+dard approach and may carry ethical implications, particularly in
+the event of harm43,44
+. For example, it may become unclear whether
+an error case occurred due to human deviation from the instructed
+procedure, or if it was an error made by the AI system.
+SPIRIT-AI 11a (v) Extension: Specify the output of the AI inter-
+vention. Explanation. The output of the AI intervention should
+be clearly defined in the protocol. For example, an AI system may
+output a diagnostic classification or probability, a recommended
+action, an alarm alerting to an event, an instigated action in a
+closed-loop system (such as titration of drug infusions) or another
+output. The nature of the AI intervention’s output has direct impli-
+cations on its usability and how it may lead to downstream actions
+and outcomes.
+SPIRIT-AI 11a (vi) Extension: Explain the procedure for how
+the AI intervention’s outputs will contribute to decision-making
+or other elements of clinical practice. Explanation. Since health
+outcomes may also critically depend on how humans interact with
+the AI intervention, the trial protocol should explain how the out-
+puts of the AI system are used to contribute to decision-making or
+other elements of clinical practice. This should include adequate
+description of downstream interventions that can impact outcomes.
+As with SPIRIT-AI 11a (iv), any effects of human–AI interaction
+on the outputs should be described in detail, including the level
+of expertise required to understand the outputs and any training
+and/or instructions provided for this purpose. For example, a skin
+cancer detection system that produces a percentage likelihood as
+output should be accompanied by an explanation of how this out-
+put should be interpreted and acted upon by the user, specifying
+both the intended pathways (for example, skin lesion excision if the
+diagnosis is positive) and the thresholds for entry to these pathways
+(for example, skin lesion excision if the diagnosis is positive and
+the probability is >80%). The information produced by comparator
+interventions should be similarly described, alongside an explana-
+tion of how such information was used to arrive at clinical decisions
+for patient management, where relevant.
+Monitoring
+SPIRIT-AI 22 Extension: Specify any plans to identify and ana-
+lyze performance errors. If there are no plans for this, explain
+why not. Explanation. Reporting performance errors and failure
+case analysis is especially important for AI interventions. AI sys-
+tems can make errors that may be hard to foresee but that, if allowed
+to be deployed at scale, could have catastrophic consequences45
+.
+Therefore, identifying cases of error and defining risk-mitigation
+strategies is important for informing when the intervention can be
+safely implemented, and for which populations. The protocol should
+specify whether there are any plans to analyze performance errors.
+If there are no plans for this, a justification should be included in
+the protocol.
+Assessed for elibibility at participant level
+Assessed for elibibility at input data level
+Excluded (n = )
+• Not meeting participant level inclusion criteria (n = )
+• Declined to participate (n = )
+• Other reasons (n = )
+Excluded (n = )
+• Not meeting participant level inclusion criteria (n = )
+• Declined to participate (n = )
+• Other reasons (n = )
+Allocated to intervention (n = )
+• Received allocated intervention (n = )
+• Did not receive allocated intervention
+(give reasons) (n = )
+• Missing or inadequate input data (n = )
+Allocated to intervention (n = )
+• Received allocated intervention (n = )
+• Did not receive allocated intervention
+(give reasons) (n = )
+• Missing or inadequate input data (n = )
+Randomisation (n = )
+10 (i)
+10 (ii)
+13
+Enrollment
+Allocation
+Follow-up
+Lost to follow-up (give reasons) (n = )
+• Discontinued intervention
+(give reasons) (n = )
+• Missing or inadequate input data (n = )
+Lost to follow-up (give reasons) (n = )
+• Discontinued intervention
+(give reasons) (n = )
+• Missing or inadequate input data (n = )
+13
+Analysis
+Lost to follow-up (give reasons) (n = )
+• Discontinued intervention
+(give reasons) (n = )
+Lost to follow-up (give reasons) (n = )
+• Discontinued intervention
+(give reasons) (n = )
+13
+Fig. 1 | CONSORT 2010 flow diagram — adapted for AI clinical trials. SPIRIT-AI 10 (i): State the inclusion and exclusion criteria at the level of participants.
+SPIRIT-AI 10 (ii): State the inclusion and exclusion criteria at the level of the input data. SPIRIT 13 (core CONSORT item): Time schedule of enrollment,
+interventions (including any run-ins and washouts), assessments, and visits for participants. A schematic diagram is highly recommended.
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine 1359
+Consensus Statement NATuRe MeDICIne
+Ethics and dissemination
+SPIRIT-AI 29 Extension: State whether and how the AI inter-
+vention and/or its code can be accessed, including any restric-
+tions to access or re-use. Explanation. The protocol should make
+clear whether and how the AI intervention and/or its code can be
+accessed or re-used. This should include details about the license
+and any restrictions to access.
 Discussion
-Interactive machine learning is a potentially power-
-ful technique for enabling end-user interaction with
-machine learning. As this article illustrates, studying
-how people interact with interactive machine-learn-
-ing systems and exploring new techniques for
-enabling those interactions can result in better user
-experiences and more effective machine learners.
-However, research in this area has only just begun,
-and many opportunities remain to improve the
-interactive machine-learning process. This section
-Articles
-116 AI MAGAZINE
-Figure 8. EnsembleMatrix.
-EnsembleMatrix visualizes the current ensemble (left) of individual learners (bottom right) through a confusion matrix. Users can adjust
-the weights of individual models through a linear combination widget (top right) to experiment with different ensembles. Users can also
-partition the confusion matrix to split and refine subensembles.
-caltech101_1
-caltech101_1
-caltech101_2
-caltech101_2
-caltech101_3
-caltech101_3
-caltech101_4
-caltech101_4
-caltech101_5
-caltech101_5
-caltech101_6
-caltech101_6
-caltech101_7
-caltech101_7
-caltech101_8
-caltech101_8
-Selected Node Accuracy
-Overall Accuracy
-describes open challenges and opportunities for
-advancing the state of the art in human interaction
-with interactive machine-learning systems.
-Developing a Common Language
-Across Diverse Fields
-As shown by the variety of case studies presented in
-this article, many fields of computer science already
-employ interactive machine learning to solve differ-
-ent problems, such as search in information retrieval,
-filtering in recommender systems, and task learning
-in human-robot interaction. However, different fields
-often refer to interactive machine learning or parts of
-the interactive machine-learning process in domain-
-specific terms (for example, relevance feedback, pro-
-gramming by demonstration, debugging machine-
-learned programs, socially guided machine learning).
-This diversity in terminology impedes awareness of
-progress in this common space and can potentially
-lead to duplicate work. Seeking to develop a common
-language and facilitate the development of new
-interactive machine-learning systems, some
-researchers have begun to examine this body of work
-and abstract away domain-specific details from exist-
-ing solutions to characterize common variables and
-dimensions of the interactive machine-learning
-process itself (for example, Amershi [2012]; Porter,
-Theiler, and Hush [2013]).
-For example, Amershi (2012) examined interactive
-machine-learning systems across several fields
-(including information retrieval, context-aware com-
-puting, and adaptive and intelligent systems) and
-identified specific design factors influencing human
-interaction with machine-learning systems (for
-example, the expected duration of model use, the
-focus of a person’s attention during interaction, the
-source and type of data over which the machine will
-learn) and design dimensions that can be varied to
-address these factors (for example, the type and visi-
-bility of model feedback, the granularity and direc-
-tion of user control, and the timing and memory of
-model input). In another example, Porter, Theiler,
-and Hush (2013) break down the interactive
-machine-learning process into three dimensions: task
-decomposition (defining the level of coordination
-and division of labor between the end user and the
-machine learner), training vocabulary (defining the
-type of input end users can provide the machine
-learner), and the training dialogue (defining the lev-
-el and frequency of interaction between the end user
-and the learner). Design spaces such as these can help
-to form a common language for researchers and
-developers to communicate new interactive
-machine-learning solutions and share ideas. Howev-
-er, there are many ways to dissect and describe the
-various interaction points between people and
-machine learners within the interactive machine-
-learning process. Therefore, an important opportuni-
-ty remains for converging on and adopting a com-
-mon language across these fields to help accelerate
-research and development in this space.
-Distilling Principles and Guidelines for
-How to Design Human Interaction with
-Machine Learning
-In addition to developing a common language, an
-opportunity remains for generalizing from existing
-solutions and distilling principles and guidelines for
-how we should design future human interaction
-with interactive machine learning, much like we
-have for designing traditional interfaces (for exam-
-ple, Schneiderman et al. [2009]; Moggridge and
-Smith [2007]; Dix et al. [2004]; Winograd [1996];
-Norman [1988]). For example, Schneiderman’s gold-
-en rules of interface design advocate for designating
-the users as the controllers of the system and offer-
-ing them informative feedback after each interac-
-tion.
-Some principles for designing traditional inter-
-faces can directly translate to the design of interac-
-tive machine learning interfaces — interactive
-machine-learning systems inherently provide users
-with feedback about their actions and, as this article
-discusses, giving users more control over machine-
-learning systems can often improve a user’s experi-
-ence. However, interactive machine-learning sys-
-tems also often inherently violate many existing
-interface design principles. For example, research has
-shown that traditional interfaces that support under-
-standability (that is, systems that are predictable or
-clear about how they work) and actionability (that
-is, systems that make it clear how a person can
-accomplish his or her goals and give the person the
-freedom to do so) are generally more usable than
-interfaces that do not support these principles. Many
-machine-learning systems violate both principles:
-they are inherently difficult for users to understand
-fully and they largely limit the control given to the
-end user. Thus, there is an opportunity to explore
-how current design principles apply to the human-
-computer interaction in interactive machine learn-
-ing.
-Some researchers have started to suggest new prin-
-ciples for designing end-user interaction with gener-
-al artificial intelligence systems, many of which
-could translate to end-user interaction with interac-
-tive machine learning (for example, Norman [1994];
-Höök [2000]; Horvitz [1999]; Jameson [2009]). For
-example, Norman (1994) and Höök (2000) both
-identified safety and trust as key factors to consider
-when designing intelligent systems, referring to the
-assurance against and prevention of unwanted adap-
-tations or actions. Others have stated that artificial-
-ly intelligent and machine-learning-based systems
-should manage expectations to avoid misleading or
-frustrating the user during interaction (for example,
-Norman [1994]; Höök [2000]; Jameson [2009]). In
-Horvitz’s formative paper on mixed-initiative inter-
-Articles
-WINTER 2014 117
-can deal with this problem through
-more iterations, algorithms that are
-both fast and accurate would improve
-the quality of learned models and
-reduce the number of iterations need-
-ed to obtain useful models. Second, as
-some of the case studies described in
-this article showed, users may desire to
-interact with machine-learning sys-
-tems in ways that are not supported by
-existing machine-learning methods.
-Addressing this challenge requires the
-development of new frameworks and
-algorithms that can handle different
-inputs and outputs that are desirable
-and natural for end users.
-Increasing Collaboration
-Across the Fields of Human
-Computer Interaction and
-Machine Learning
-The inherent coupling of the human
-and machine in interactive machine
-learning underscores the need for col-
-laboration across the fields of human-
-computer interaction and machine
-learning. This collaboration will bene-
-fit human-computer interaction
-researchers in solving the algorithmic
-problems discussed above and provide
-more powerful tools to end users. In
-turn, machine-learning researchers
-would benefit by having new methods
-evaluated with potential users to
-address practical issues and by devel-
-oping new frameworks that support
-realistic assumptions about users.
-Finally, we believe that the diversity
-of perspectives will benefit both com-
-munities. For example, when dealing
-with noisy problems, machine-learn-
-ing researchers have often attempted
-to develop algorithms that work
-despite the noise, whereas human-
-computer interaction researchers often
-try to develop interaction techniques
-to reduce the noise that end users
-induce. Collaboration between these
-two communities could leverage the
-benefits of both solutions.
-Conclusion
-The case studies presented in this arti-
-cle support three key points. First,
-interactive machine learning differs
-from traditional machine learning.
-The interaction cycles in interactive
-machine learning are typically more
-faces (1999), he proposed several prin-
-ciples for balancing artificial intelli-
-gence with traditional direct-manipu-
-lation constructs. For example, Horvitz
-emphasized consideration of the tim-
-ing of interactive intelligent services,
-limiting the scope of adaptation or
-favoring direct control under severe
-uncertainty, and maintaining a work-
-ing memory of recent interactions.
-While these suggestions can help guide
-the design of future systems, more
-work remains to develop a compre-
-hensive set of guidelines and principles
-that work in various settings. Often
-such design principles are distilled
-from years of experience developing
-such interactions. Alternatively, we
-may accelerate the development of
-such guidelines by extracting dimen-
-sions that can be manipulated to
-design interactive machine-learning
-systems and systematically evaluating
-general solutions in varying settings.
-Developing Techniques and
-Standards for Appropriately
-Evaluating Interactive
-Machine-Learning Systems
-Although systematic evaluation can
-facilitate generalization and transfer of
-ideas across fields, the interleaving of
-human interaction and machine-
-learning algorithms makes reductive
-study of design elements difficult. For
-example, it is often difficult to tease
-apart whether failures of proposed
-solutions are due to limitations of the
-particular interface or interaction
-strategies used, the particular algo-
-rithm chosen, or the combination of
-the interaction strategy with the par-
-ticular algorithm used. Likewise, inap-
-propriately attributing success or fail-
-ure to individual attributes of
-interactive machine-learning solutions
-can be misleading. Therefore, new
-evaluation techniques may be neces-
-sary to appropriately gauge the effec-
-tiveness of new interactive machine-
-learning systems. In addition, as our
-case studies illustrated, some interac-
-tion techniques may be appropriate for
-certain scenarios of use but not others.
-Evaluations should therefore be careful
-not to overgeneralize successes or fail-
-ures of specific interaction techniques.
-Rather, the scenarios and contexts of
-use should be generalized to better
-understand when to apply certain
-techniques over others.
-Leveraging the Masses During
-Interaction with Machine
-Learning
-Most of the case studies in this article
-focused on a single end user interact-
-ing with a single machine-learning sys-
-tem. However, the increasing prolifera-
-tion of networked communities and
-crowd-powered systems provides evi-
-dence of the power of the masses to
-collaborate and produce content. An
-important opportunity exists to inves-
-tigate how crowds of people might col-
-laboratively drive interactive machine-
-learning systems, potentially scaling
-up the impact of such systems. For
-example, as interactive machine learn-
-ing becomes more prevalent in our
-everyday applications, people should
-be able to share and reuse machine
-learners rather than have to start from
-scratch. Moreover, people should be
-able to bootstrap, build upon, and
-combine learners to configure more
-sophisticated data processing and
-manipulation. A few have started to
-explore such opportunities (for exam-
-ple, Hoffman et al. [2009]; Kamar,
-Hacker, and Horvitz [2012]; Law and
-von Ahn [2009]), but more work
-remains to fully understand the poten-
-tial of multiple end users interacting
-with machine-learning systems. For
-example, work remains in understand-
-ing how people can meaningfully
-describe, compare, and search for exist-
-ing machine learners in order to build
-upon them, in understanding how
-learners can be generalized or trans-
-formed for new situations and purpos-
-es, in understanding how we can cre-
-ate composable learners to enable
-more powerful automation, and in
-understanding how we can coordinate
-the efforts of multiple people interact-
-ing with machine-learning systems.
-Algorithmic Problems in
-Interactive Machine Learning
-Research on user interactions with
-interactive machine learning raises two
-important technical challenges. First,
-the requirement for rapid model
-updates often necessitates trading off
-accuracy with speed. The resulting
-models are therefore suboptimal.
-Although interactive machine learning
-Articles
-118 AI MAGAZINE
-rapid, focused, and incremental than
-in traditional machine learning. This
-increases the opportunities for users to
-affect the learner and, in turn, for the
-learner to affect the users. As a result,
-the contributions of the system and
-the user to the final outcome cannot
-be decoupled, necessitating an
-increased need to study the system
-together with its potential users.
-Second, explicitly studying the users
-of learning systems is critical to
-advancing this field. Formative user
-studies can help identify user needs
-and desires, and inspire new ways in
-which users could interact with
-machine-learning systems. User stud-
-ies that evaluate interactive machine-
-learning systems can reveal false
-assumptions about potential users and
-common patterns in their interaction
-with the system. User studies can also
-help to identify common barriers
-faced by users when novel interfaces
-are introduced.
-Finally, the interaction between
-learning systems and their users need
-not be limited. We can build powerful
-interactive machine-learning systems
-by giving more control to end users
-than the ability to label instances, and
-by providing users with more trans-
-parency than just the learner’s predict-
-ed outputs. However, more control for
-the user and more transparency from
-the learner do not automatically result
-in better systems, and in some situa-
-tions may not be appropriate or
-desired by end users. We must contin-
-ue to evaluate novel interaction meth-
-ods with real users to understand
-whether they help or hinder users’
-goals.
-In addition to demonstrating the
-importance and potential of research
-in interactive machine learning, this
-article characterized some of the chal-
-lenges and opportunities that current-
-ly confront this field. By acknowledg-
-ing and embracing these challenges,
-we can move the field of interactive
-machine learning forward toward
-more effective interactions. We believe
-this will lead not only to more capable
-machine learners, but also more capa-
-ble end users.
-Notes
-1. All authors contributed equally to this
-article.
-Articles
-WINTER 2014 119
-2. In this article we examine interactive
-machine-learning systems in which the
-human is consciously interacting with the
-machine learner in order to improve it. That
-is, we do not consider interactive machine-
-learning systems that obtain user feedback
-implicitly (for example, websites that may
-automatically adapt their presentation to a
-user’s click history without the user’s
-knowledge).
+The SPIRIT-AI extension provides international consensus-based
+guidance on AI-specific information that should be reported
+in clinical trial protocols, alongside SPIRIT 2013 and other
+relevant SPIRIT extensions4,46
+. It comprises of 15 items: 3 elabo-
+rations to the existing SPIRIT 2013 guidance in the context of
+AI trials, and 12 new extensions. The guidance does not aim to
+be prescriptive about the methodological approach to AI trials;
+instead, it aims to promote transparency in reporting the design and
+methods of a clinical trial to facilitate understanding, interpretation
+and peer review.
+A number of extension items relate to the intervention (items
+11 (i)–11 (vi)), its setting (item 9) and intended role (item 6a (i)).
+Specific recommendations were made pertinent to AI systems
+related to algorithm version, input and output data, integration
+into trial settings, expertise of the users and protocol for act-
+ing upon the AI system’s recommendations. It was agreed that
+these details are critical for independent evaluation of the study
+protocol. Journal editors reported that despite the importance
+of these items, they are currently often missing from trial proto-
+cols and reports at the time of submission for publication, which
+provides further weight to their inclusion as specifically listed
+extension items.
+A recurrent focus of the Delphi comments and consensus group
+discussion was the safety of AI systems. This is in recognition that
+these systems, unlike other health interventions, can unpredictably
+yield errors that are not easily detectable or explainable by human
+judgement. For example, changes to medical imaging that are invis-
+ible, or appear random, to the human eye may change the likeli-
+hood of the resultant diagnostic output entirely47,48
+. The concern
+is that given the theoretical ease with which AI systems could be
+deployed at scale, any unintended harmful consequences could
+be catastrophic. Two extension items were added to address this.
+SPIRIT-AI item 6a (ii) requires specification of the prior level of
+evidence for validation of the AI intervention. SPIRIT-AI item 22
+requires specification of any plans to analyze performance errors, to
+emphasize the importance of anticipating systematic errors made by
+the algorithm and their consequences.
+One topic that was raised in the Delphi survey responses and
+consensus meeting that is not included in the final guidelines is
+‘continuously evolving’ AI systems (also known as ‘continuously
+adapting’ or ‘continuously learning’ AI systems). These are AI
+systems with the ability to continuously train on new data, which
+may cause changes in performance over time. The group noted
+that, while of interest, this field is relatively early in its develop-
+ment without tangible examples in healthcare applications, and
+that it would not be appropriate for it to be addressed by SPIRIT-AI
+at this stage49
+. This topic will be monitored and revisited in future
+iterations of SPIRIT-AI. It is worth noting that incremental software
+changes, whether continuous or iterative, intentional or uninten-
+tional, could have serious consequences on safety performance after
+deployment. It is therefore of vital importance that such changes are
+documented and identified by software version and that a robust
+post-deployment surveillance plan is in place.
+This study is set in the current context of AI in health; therefore,
+several limitations should be noted. First, at the time of SPIRIT-AI
+development, there were only seven published trials and no pub-
+lished trial protocols in the field of AI for healthcare. Thus, the
+discussion and decisions made during the development of
+SPIRIT-AIarenotalwayssupportedbyexistingreal-worldexamples.
+This arises from our stated aim of addressing the issues of poor pro-
+tocol development in this field as early as possible, recognizing the
+strong drivers in the field and the specific challenges of study design
+and reporting for AI. As the science and study of AI evolves, we
+welcome collaboration with investigators to co-evolve these report-
+ing standards to ensure their continued relevance. Second, the lit-
+erature search of AI randomized controlled trials used terminology
+such as ‘artificial intelligence’, ‘machine learning’ and ‘deep learning’,
+but not terms such as ‘clinical decision support systems’ and ‘expert
+systems’, which were more commonly used in the 1990s for techno­
+logies underpinned by AI systems and share risks similar to those of
+recent examples50
+. It is likely that such systems, if published today,
+would be indexed under ‘artificial intelligence’ or ‘machine learn-
+ing’; however, clinical decision support systems were not actively
+discussed during this consensus process. Third, the initial candi-
+date items list was generated by a relatively small group of experts
+consisting of Steering Group members and additional international
+experts. However, additional items from the wider Delphi group
+were taken forward for consideration by the consensus group, and
+no new items were suggested during the consensus meeting or
+post-meeting evaluation.
+As with the SPIRIT statement, the SPIRIT-AI extension is
+intended as a minimum reporting guidance, and there are addi-
+tional AI-specific considerations for trial protocols that may war-
+rant consideration (Supplementary Table 2). This extension is
+aimed particularly at investigators planning or conducting clinical
+trials; however, it may also serve as useful guidance for develop-
+ers of AI interventions in earlier validation stages of an AI system.
+Investigators seeking to report studies developing and validating the
+diagnostic and predictive properties of AI models should refer to
+TRIPOD-ML (Transparent Reporting of a Multivariable Prediction
+Model for Individual Prognosis or Diagnosis–Machine Learning)24
+and STARD-AI (Standards For Reporting Diagnostic Accuracy
+Studies–Artificial Intelligence)51
+, both of which are currently under
+development. Other potentially relevant guidelines, which are
+agnostic to study design, are registered with the EQUATOR net-
+work52
+. The SPIRIT-AI extension is expected to encourage careful
+early planning of AI interventions for clinical trials and this, in con-
+junction with CONSORT-AI, should help to improve the quality of
+trials for AI interventions.
+There is widespread recognition that AI is a rapidly evolving
+field, and there will be the need to update SPIRIT-AI as the technol-
+ogy, and newer applications for it, develop. Currently, most appli-
+cations of AI/ML involve disease detection, diagnosis and triage,
+and this is likely to have influenced the nature and prioritization
+of items within SPIRIT-AI. As wider applications that utilize ‘AI as
+therapy’ emerge, it will be important to re-evaluate SPIRIT-AI in
+the light of such studies. Additionally, advances in computational
+techniques and the ability to integrate them into clinical workflows
+will bring new opportunities for innovation that benefits patients.
+However, they may be accompanied by new challenges of study
+design and reporting to ensure transparency, minimize potential
+biases and ensure that the findings of such a study are trustworthy
+and the extent to which they may be generalizable. The SPIRIT-AI
+and CONSORT-AI Steering Group will continue to monitor the
+need for updates.
+Data availability
+Data requests should be made to the corresponding author and
+release will be subject to consideration by the SPIRIT-AI and
+CONSORT-AI Steering Group.
+Received: 24 April 2020; Accepted: 23 July 2020;
+Published online: 9 September 2020
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine
+1360
+Consensus Statement
+NATuRe MeDICIne
 References
-Amershi, S. 2012. Designing for Effective
-End-User Interaction with Machine Learn-
-ing. Ph.D. Dissertation, Department of
-Computer Science. University of Washing-
-ton, Seattle, WA.
-(hdl.handle.net/1773/22006)
-Amershi, S.; Cakmak, M.; Knox, W. B.;
-Kulesza, T.; and Lau, T. 2013. IUI Work-
-shop on Interactive Machine Learning.
-In Proceedings of the Companion Publication
-of the 2013 International Conference on Intel-
-ligent User Interfaces, 121–124. New York:
-Association for Computing Machinery.
-dx.doi.org/10.1145/2451176.2451230
-Amershi, S.; Fogarty, J.; Kapoor, A.; and Tan,
-D. 2010. Examining Multiple Potential
-Models in End-User Interactive Concept
-Learning. In Proceedings of the SIGCHI Con-
-ference on Human Factors in Computing Sys-
-tems, 2010 (CHI 2010), 1357–1360. New
-York: Association for Computing Machin-
-ery.
-Amershi, S.; Fogarty, J.; Kapoor, A.; and Tan,
-D. 2009. Overview-Based Example Selection
-in Mixed-Initiative Concept Learning. In
-Proceedings of the ACM Symposium on User
-Interface Software and Technology, 2009 (UIST
-2009), 47–256. New York: Association for
-Computing Machinery.
-Blackwell, A. F. 2002. First Steps in Pro-
-gramming: A Rationale for Attention
-Investment Models. In Proceedings of the
-2002 IEEE Symposium on Human Centric
-Computing Languages and Environments, 2–
-10. Piscataway, NJ: Institute for Electrical
-and Electronics Engineers.
-Cakmak, M., and Thomaz, A. L. 2010.
-Optimality of Human Teachers for Robot
-Learners. In Proceedings of the 2010 IEEE 9th
-International Conference on Development and
-Learning (ICDL), 64–69. Piscataway, NJ:
-Institute for Electrical and Electronics Engi-
-neers.
-Cakmak, M.; Chao, C.; and Thomaz, A. L.
-2010. Designing Interactions for Robot
-Active Learners. Autonomous Mental Devel-
-opment 2(2): 108–118. dx.doi.org/10.1109/
-TAMD.2010.2051030
-Caruana, R.; Elhaway, M.; Nguyen, N.; and
-Smith, C. 2006. Meta Clustering. In Proceed-
-ings of the Sixth IEEE International Conference
-on Data Mining, 2006. (ICDM’06), 107–118.
-Piscataway, NJ: Institute for Electrical and
-Electronics Engineers.
-Cohn, D.; Caruana, R.; and McCallum, A.
-2003. Semi-Supervised Clustering with User
-Feedback. Constrained Clustering: Advances in
-Algorithms, Theory, and Applications 4(1): 17–
-32.
-Dix, A.; Finlay, J.; Abowd, G. D.; and Beal, R.
-2004. Interaction Design Basics. In Human
-Computer Interaction, 3rd edition, chapter 5,
-189–224. Harlow, England: Pearson Educa-
-tion Ltd.
-Fails, J. A., and Olsen Jr, D. R. 2003. Inter-
-active Machine Learning. In Proceedings of
-the 8th International Conference on Intelligent
-User Interfaces, 39–45. New York: Associa-
-tion for Computing Machinery.
-Fiebrink, R.; Cook, P. R.; and Trueman, D.
-2011. Human Model Evaluation in Interac-
-tive Supervised Learning. In Proceedings of
-the Conference on Human Factors in Comput-
-ing Systems (CHI 2011), 147–156. New York:
-Association for Computing Machinery.
-dx.doi.org/10.1145/1978942.1978965
-Fogarty, J.; Tan, D.; Kapoor, A.; and
-Winder, S. 2008. CueFlik: Interactive Con-
-cept Learning in Image Search. In Proceed-
-ings of the SIGCHI Conference on Human Fac-
-tors in Computing Systems, 29–38. New York:
-Association for Computing Machinery.
-Freund, Y., and Schapire, R. E. (1995). A
-Decision-Theoretic Generalization of On-
-Line Learning and an Application to Boost-
-ing. In Proceedings of the Second European
-Conference on Computational Learning Theo-
-ry, 23–37. Berlin, Heidelberg: Springer.
-dx.doi.org/10.1007/3-540-59119-2_166
-Guillory, A., and Bilmes, J. A. 2011. Simul-
-taneous Learning and Covering with Adver-
-sarial Noise. In Proceedings of the 28th Inter-
-national Conference on Machine Learning
-(ICML-11), 369–376). Princeton, NJ: Inter-
-national Machine Learning Society, Inc.
-Hoffman R.; Amershi, S.; Patel, K.; Wu, F.;
-Fogarty, J.; and Weld, D. S. 2009. Amplify-
-ing Community Content Creation with
-Mixed-Initiative Information Extraction. In
-Proceedings of the SIGCHI Conference on
-Human Factors in Computing Systems (CHI
-2009), 1849–1858. New York: Association
-for Computing Machinery.
-Höök, K. 2000. Steps to Take Before Intelli-
-gent User Interfaces Become Real. Interacting
-with Computers 12(4): 409–426. dx.doi.org/
-10.1016/S0953-5438(99)00006-5
-Horvitz, E. 1999. Principles of Mixed-Initia-
-tive User Interfaces. In Proceedings of the
-SIGCHI Conference on Human Factors in Com-
-puting Systems, 159–166. New York: Associa-
-tion for Computing Machinery.
-Isbell Jr., C. L.; Kearns, M.; Singh, S.; Shel-
-ton, C. R.; Stone, P.; and Kormann, D.
-2006. Cobot in LambdaMOO: An Adaptive
-Social Statistics Agent. Autonomous Agents
-and Multi-Agent Systems 13(3): 327–354.
-dx.doi.org/10.1007/s10458-006-0005-z
-Jameson, A. 2009. Adaptive Interfaces and
-Agents. Human-Computer Interaction: Design
-Issues, Solutions, and Applications, 105. Boca
-Raton, FL: CRC Press.
-Kamar, E.; Hacker, S.; and Horvitz, E. 2012.
-Combining Human and Machine Intelli-
-gence in Large-Scale Crowdsourcing. In Pro-
-ceedings of the International Conference on
-Autonomous Agents and Multi-Agent Systems
-(AAMAS 2012). Richland, SC: International
-Foundation for Autonomous Agents and
-Multiagent Systems.
-Kaochar, T.; Peralta, R. T.; Morrison, C. T.;
-Fasel, I. R.; Walsh, T. J.; and Cohen, P. R.
-2011. Towards Understanding How
-Humans Teach Robots. In User Modeling,
-Adaption and Personalization, Lecture Notes
-in Computer Science Volume 6787, 347–
-352. Berlin: Springer. dx.doi.org/10.1007/
-978-3-642-22362-4_31
-Kapoor, A.; Lee, B.; Tan, D.; and Horvitz, E.
-2010. Interactive Optimization for Steering
-Machine Classification. In Proceedings of the
-SIGCHI Conference on Human Factors in Com-
-puting Systems, 1343–1352. New York: Asso-
-ciation for Computing Machinery.
-Knox, W. B., and Stone, P. 2013. Learning
-Non-Myopically from Human-Generated
-Reward. In Proceedings of the 2013 Interna-
-tional Conference on Intelligent User Interfaces,
-191–202. New York: Association for Com-
-puting Machinery. dx.doi.org/10.1145/
-2449396.2449422
-Knox, W. B., and Stone, P. 2012. Reinforce-
-ment Learning from Human Reward: Dis-
-counting in Episodic Tasks. In Proceedings of
-the 2012 IEEE International Workshop on
-Robots and Human Interactive Communications
-(RO-MAN), 878–885. Piscataway, NJ: Insti-
-tute for Electrical and Electronics Engineers.
-Kulesza, T.; Stumpf, S.; Burnett, M.; and
-Kwan, I. 2012. Tell Me More?: The Effects of
-Mental Model Soundness on Personalizing
-an Intelligent Agent. In Proceedings of the
-SIGCHI Conference on Human Factors in Com-
-puting Systems, 1–10. New York: Association
-for Computing Machinery.
-Kulesza, T.; Stumpf, S.; Wong, W. K.; Bur-
-nett, M. M.; Perona, S.; Ko, A.; and Oberst,
-I. 2011. Why-Oriented End-User Debugging
-of Naive Bayes Text Classification. ACM
-Transactions on Interactive Intelligent Systems
-1(1): 2. dx.doi.org/10.1145/2030365.
-2030367
-Law, E., and von Ahn, R. 2009. Input-
-Agreement: A New Mechanism for Data
-Collection Using Human Computation
-Games. In Proceedings of the SIGCHI Confer-
-ence on Human Factors in Computing Systems
-(CHI 2009). New York: Association for Com-
-puting Machinery.
-Moggridge, B., and Smith, G. C.
-2007. Designing Interactions, Volume 17.
-Cambridge, MA: The MIT Press.
-Norman, D. A. 1994. How Might People
-Interact with Agents. Communications of the
-ACM 37(7): 68–71. dx.doi.org/10.1145/
-176789.176796
-Norman, D. A. 1988. The Design of Every-
-day Things. New York: Basic Books.
-Porter, R.; Theiler, J.; and Hush, D.
-2013. Interactive Machine Learning in Data
-Exploitation. Technical Report. Los Alamos
-National Laboratories, Los Alamos, NM.
-dx.doi.org/10.2172/1060903
-Pu, P., and Chen, L. 2009. User-Involved
-Preference Elicitation for Product Search
-and Recommender Systems. AI Magazine
-29(4): 93.
-Rashid, A. M.; Ling, K.; Tassone, R. D.;
-Resnick, P.; Kraut, R.; and Riedl, J. 2006.
-Motivating Participation by Displaying the
-Value of Contribution. In Proceedings of the
-SIGCHI Conference on Human Factors in Com-
-puting Systems, 955–958. New York: Associa-
-tion for Computing Machinery.
-Rosenthal, S. L., and Dey, A. K. 2010.
-Towards Maximizing the Accuracy of
-Human-Labeled Sensor Data. In Proceedings
-of the 15th International Conference on Intelli-
-gent User Interfaces, 259–268. New York:
-Association for Computing Machinery.
-dx.doi.org/10.1145/1719970.1720006
-Settles, B. 2010. Active Learning Literature
-Survey. Technical Report, Department of
-Computer Science, University of Wisconsin,
-Madison, Madison, WI.
-Shneiderman, B.; Plaisant, C.; Cohen, M.;
-and Jacobs, S. 2009. Designing the User Inter-
-face: Strategies for Effective Human-Computer
-Interaction, 5th edition. Reading, MA: Addi-
-son-Wesley.
-Stumpf, S.; Rajaram, V.; Li, L.; Burnett, M.;
-Dietterich, T.; Sullivan, E.; Drummond, R.;
-and Herlocker, J. 2007. Toward Harnessing
-User Feedback for Machine Learning. In Pro-
-ceedings of the 12th International Conference
-on Intelligent User Interfaces, 82–91. New
-York: Association for Computing Machin-
-ery. dx.doi.org/10.1145/1216295.1216316
-Talbot, J.; Lee, B.; Kapoor, A.; and Tan, D. S.
-2009. EnsembleMatrix: Interactive Visualiza-
-tion to Support Machine Learning with Mul-
-tiple Classifiers. In Proceedings of the 27th
-International Conference on Human Factors in
-Computing Systems, 1283–1292. New York:
-Association for Computing Machinery.
-Thomaz, A. L., and Breazeal, C. 2008.
-Teachable Robots: Understanding Human
-Teaching Behavior to Build More Effective
-Robot Learners. Artificial Intelligence 172(6):
-716–737.
-Vig, J.; Sen, S.; and Riedl, J. 2011. Navigat-
-ing the Tag Genome. In Proceedings of the
-Articles
-120 AI MAGAZINE
-16th International Conference on Intelligent
-User Interfaces, 93–102. New York: Associa-
-tion for Computing Machinery.
-dx.doi.org/10.1145/1943403.1943418
-Winograd, T. 1996. Bringing Design to Soft-
-ware. New York: Association for Computing
-Machinery.
-Saleema Amershi is a researcher in the
-Computer Human Interactive Learning
-(CHIL) group at Microsoft Research. Her
-research lies at the intersection of human-
-computer interaction and machine learn-
-ing. In particular, her work involves design-
-ing and developing new techniques to
-support effective end-user interaction with
-interactive machine-learning systems.
-Amershi received her Ph.D. in computer sci-
-ence from the University of Washington’s
-Computer Science and Engineering Depart-
-ment in 2012.
-Maya Cakmak is an assistant professor at
-the University of Washington, Computer
-Science and Engineering Department,
-where she directs the Human-Centered
-Robotics lab. She received her Ph.D. in
-robotics from the Georgia Institute of Tech-
-nology in 2012. Her research interests are in
-human-robot interaction and end-user pro-
-gramming. Her work aims to develop assis-
-tive robots that can be programmed and
-controlled by end users, in the context of
-use.
-W. Bradley Knox recently completed a
-postdoctoral researcher position at the MIT
-Media Lab. His research interests span
-machine learning, human-robot interac-
-tion, and psychology, especially machine-
-learning algorithms that learn through
-human interaction. Knox received a Ph.D.
-in computer science at the University of
-Texas at Austin and a BS in psychology from
-Texas A&M University.
-Todd Kulesza is a computer science Ph.D.
-candidate at Oregon State University, work-
-ing under the guidance of Margaret Burnett.
-His research interests are in human interac-
-tions with intelligent systems, with a focus
-on enabling end users to personalize such
-systems efficiently and effectively.
+1. Chan, A.-W. et al. SPIRIT 2013 statement: defining standard protocol items
+for clinical trials. Ann. Intern. Med. 158, 200–207 (2013).
+2. Chan, A.-W. et al. SPIRIT 2013 explanation and elaboration: guidance for
+protocols of clinical trials. Br. Med. J. 346, e7586 (2013).
+3. Sarkis-Onofre, R. et al. Use of guidelines to improve the quality and
+transparency of reporting oral health research. J. Dent. 43, 397–404 (2015).
+4. Calvert, M. et al. Guidelines for inclusion of patient-reported outcomes in
+clinical trial protocols: The SPIRIT-PRO Extension. J. Am. Med. Assoc. 319,
+483–494 (2018).
+5. Dai, L. et al. Standard protocol items for clinical trials with traditional
+Chinese medicine 2018: recommendations, explanation and elaboration
+(SPIRIT-TCM Extension 2018). Chin. J. Integr. Med. 25, 71–79 (2019).
+6. He, J. et al. The practical implementation of artificial intelligence technologies
+in medicine. Nat. Med. 25, 30–36 (2019).
+7. McKinney, S. M. et al. International evaluation of an AI system for breast
+cancer screening. Nature 577, 89–94 (2020).
+8. Abràmoff, M. D. et al. Improved automated detection of diabetic retinopathy
+on a publicly available dataset through integration of deep learning.
+Invest. Ophthalmol. Vis. Sci. 57, 5200–5206 (2016).
+9. De Fauw, J. et al. Clinically applicable deep learning for diagnosis and referral
+in retinal disease. Nat. Med. 24, 1342–1350 (2018).
+10. Esteva, A. et al. Dermatologist-level classification of skin cancer with deep
+neural networks. Nature 542, 115–118 (2017).
+11. Rajpurkar, P. et al. Deep learning for chest radiograph diagnosis: A retrospective
+comparison of the CheXNeXt algorithm to practicing radiologists. PLoS Med.
+15, e1002686 (2018).
+12. Fleuren, L. M. et al. Machine learning for the prediction of sepsis: a systematic
+review and meta-analysis of diagnostic test accuracy. Intensive Care Med. 46,
+383–400 (2020).
+13. Yim, J. et al. Predicting conversion to wet age-related macular degeneration
+using deep learning. Nat. Med. 26, 892–899 (2020).
+14. Kim, H., Goo, J. M., Lee, K. H., Kim, Y. T. & Park, C. M. Preoperative
+CT-based deep learning model for predicting disease-free survival in patients
+with lung adenocarcinomas. Radiology 296, 216–224 (2020).
+15. Wang, P. et al. Real-time automatic detection system increases colonoscopic
+polyp and adenoma detection rates: a prospective randomised controlled
+study. Gut 68, 1813–1819 (2019).
+16. Tyler, N. S. et al. An artificial intelligence decision support system for the
+management of type 1 diabetes. Nat. Metab. 2, 612–619 (2020).
+17. Liu, X. et al. A comparison of deep learning performance against health-care
+professionals in detecting diseases from medical imaging: a systematic review
+and meta-analysis. Lancet Digit. Health 1, e271–e297 (2019).
+18. Wu, L. et al. Randomised controlled trial of WISENSE, a real-time quality
+improving system for monitoring blind spots during
+esophagogastroduodenoscopy. Gut 68, 2161–2169 (2019).
+19. Wijnberge, M. et al. Effect of a machine learning-derived early warning
+system for intraoperative hypotension vs standard care on depth and duration
+of intraoperative hypotension during elective noncardiac surgery: The HYPE
+randomized clinical trial. J. Am. Med. Assoc. 323, 1052–1060 (2020).
+20. Gong, D. et al. Detection of colorectal adenomas with a real-time
+computer-aided system (ENDOANGEL): a randomised controlled study.
+Lancet Gastroenterol. Hepatol. 5, 352–361 (2020).
+21. Wang, P. et al. Effect of a deep-learning computer-aided detection system on
+adenoma detection during colonoscopy (CADe-DB trial): a double-blind
+randomised study. Lancet Gastroenterol. Hepatol. 5, 343–351 (2020).
+22. Lin, H. et al. Diagnostic efficacy and therapeutic decision-making capacity
+of an artificial intelligence platform for childhood cataracts in eye clinics:
+a multicentre randomized controlled trial. EClinicalMedicine 9,
+52–59 (2019).
+23. Su, J.-R. et al. Impact of a real-time automatic quality control system
+on colorectal polyp and adenoma detection: a prospective randomized
+controlled study (with videos). Gastrointest. Endosc. 91, 415–424.e4 (2020).
+24. Collins, G. S. & Moons, K. G. M. Reporting of artificial intelligence
+prediction models. Lancet 393, 1577–1579 (2019).
+25. Gregory, J., Welliver, S. & Chong, J. Top 10 reviewer critiques of radiology
+artificial intelligence (AI) articles: qualitative thematic analysis of reviewer
+critiques of machine learning/deep learning manuscripts submitted to JMRI.
+J. Magn. Reson. Imaging 52, 248–254 (2020).
+26. Nagendran, M. et al. Artificial intelligence versus clinicians: systematic
+review of design, reporting standards, and claims of deep learning studies.
+Br. Med. J. 368, m689 (2020).
+27. CONSORT-AI and SPIRIT-AI Steering Group. Reporting guidelines for
+clinical trials evaluating artificial intelligence interventions are needed.
+Nat. Med. 25, 1467–1468 (2019).
+28. Liu, X., Faes, L., Calvert, M. J. & Denniston, A. K. Extension of the CONSORT
+and SPIRIT statements. Lancet 394, 1225 (2019).
+29. Moher, D., Schulz, K. F., Simera, I. & Altman, D. G. Guidance for developers
+of health research reporting guidelines. PLoS Med. 7, e1000217 (2010).
+30. Caballero-Ruiz, E. et al. A web-based clinical decision support system for
+gestational diabetes: Automatic diet prescription and detection of insulin
+needs. Int. J. Med. Inform. 102, 35–49 (2017).
+31. Kim, T. W. B., Gay, N., Khemka, A. & Garino, J. Internet-based exercise
+therapy using algorithms for conservative treatment of anterior knee pain:
+a pragmatic randomized controlled trial. JMIR Rehabil. Assist. Technol. 3,
+e12 (2016).
+32. Labovitz, D. L., Shafner, L., Reyes Gil, M., Virmani, D. & Hanina, A. Using
+artificial intelligence to reduce the risk of nonadherence in patients on
+anticoagulation therapy. Stroke 48, 1416–1419 (2017).
+33. Nicolae, A. et al. Evaluation of a machine-learning algorithm for treatment
+planning in prostate low-dose-rate brachytherapy. Int. J. Radiat. Oncol. Biol.
+Phys. 97, 822–829 (2017).
+34. Voss, C. et al. Effect of wearable digital intervention for improving
+socialization in children with autism spectrum disorder: a randomized
+clinical trial. JAMA Pediatr. 173, 446–454 (2019).
+35. Mendes-Soares, H. et al. Assessment of a personalized approach to predicting
+postprandial glycemic responses to food among individuals without diabetes.
+JAMA Netw. Open 2, e188102 (2019).
+36. Choi, K. J. et al. Development and validation of a deep learning system for
+staging liver fibrosis by using contrast agent-enhanced CT images in the liver.
+Radiology 289, 688–697 (2018).
+37. Kelly, C. J., Karthikesalingam, A., Suleyman, M., Corrado, G. & King, D. Key
+challenges for delivering clinical impact with artificial intelligence. BMC Med.
+17, 195 (2019).
+38. Pooch, E. H. P., Ballester, P. L. & Barros, R. C. Can we trust deep learning
+models diagnosis? The impact of domain shift in chest radiograph
+classification. arXiv http://arxiv.org/abs/1909.01940 (2019)
+39. International Medical Device Regulators Forum. Unique device identification
+system (UDI System) application guide. http://www.imdrf.org/documents/
+documents.asp (2019).
+40. Sabottke, C. F. & Spieler, B. M. The effect of image resolution on deep
+learning in radiography. Radiology: Artif. Intell. 2, e190015 (2020).
+41. Heaven, D. Why deep-learning AIs are so easy to fool. Nature 574,
+163–166 (2019).
+42. Kiani, A. et al. Impact of a deep learning assistant on the histopathologic
+classification of liver cancer. NPJ Digit. Med. 3, 23 (2020).
+43. Wiens, J. et al. Do no harm: a roadmap for responsible machine learning for
+health care. Nat. Med. 25, 1337–1340 (2019).
+44. Habli, I., Lawton, T. & Porter, Z. Artificial intelligence in health care:
+accountability and safety. Bull. World Health Organ. https://www.who.int/
+bulletin/online_first/BLT.19.237487.pdf (2020).
+45. Oakden-Rayner, L., Dunnmon, J., Carneiro, G. & Ré, C. Hidden stratification
+causes clinically meaningful failures in machine learning for medical imaging.
+arXiv http://arxiv.org/abs/1909.12475 (2019).
+46. SPIRIT. Publications & Downloads. https://www.spirit-statement.org/
+publications-downloads/ (accessed 24 March 2020).
+47. Zech, J. R. et al. Confounding variables can degrade generalization
+performance of radiological deep learning models. arXiv http://arxiv.org/
+abs/1807.00431 (2018).
+48. Finlayson, S. G. et al. Adversarial attacks on medical machine learning.
+Science 363, 1287–1289 (2019).
+49. Lee, C. S. & Lee, A. Y. Clinical applications of continual learning machine
+learning. Lancet Digit. Health 2, e279–e281 (2020).
+50. Sutton, R. T. et al. An overview of clinical decision support systems: benefits,
+risks, and strategies for success. NPJ Digit. Med. 3, 17 (2020).
+51. Sounderajah, V. et al. Developing specific reporting guidelines for diagnostic
+accuracy studies assessing AI interventions: The STARD-AI Steering Group.
+Nat. Med. 26, 807–808 (2020).
+52. Talmon, J. et al. STARE-HI–Statement on reporting of evaluation studies in
+Health Informatics. Int. J. Med. Inform. 78, 1–9 (2009).
+Acknowledgements
+We thank the participants who were involved in the Delphi study and Pilot study
+(Supplementary Note); E. Marston (University of Birmingham, UK) for strategic
+support; and C. Radovanovic (University Hospitals Birmingham NHS Foundation Trust,
+UK) and A. Walker (University of Birmingham, UK) for administrative support. The
+views expressed in this publication are those of the authors, Delphi participants and
+stakeholder participants and may not represent the views of the broader stakeholder
+group or host institution. This work was funded by a Wellcome Trust Institutional
+Strategic Support Fund: Digital Health Pilot Grant Research England (part of UK
+Research and Innovation), Health Data Research UK and the Alan Turing Institute.
+The study was sponsored by the University of Birmingham, UK. The study funders and
+sponsors had no role in the design and conduct of the study; collection, management,
+analysis and interpretation of the data; preparation, review or approval of the manuscript;
+or decision to submit the manuscript for publication. M.J.C. is a National Institute for
+Health Research (NIHR) Senior Investigator and receives funding from the National
+Institute for Health Research (NIHR) Birmingham Biomedical Research Centre; the
+NIHR Surgical Reconstruction and Microbiology Research Centre and NIHR ARC West
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine 1361
+Consensus Statement NATuRe MeDICIne
+SPIRIT-AI and CONSORT-AI Steering Group
+Alastair K. Denniston1,3,4,5,6,9
+, An-Wen Chan8
+,
+Ara Darzi13,14
+, Christopher Holmes15,16
+, Christopher Yau15,17
+, David Moher18,19
+, Hutan Ashrafian13,14
+,
+Jonathan J. Deeks2,10
+, Lavinia Ferrante di Ruffano2
+, Livia Faes20
+, Melanie J. Calvert1,2,3,6,10,11,12
+,
+Pearse A. Keane1
+, Samantha Cruz Rivera1,2,3
+, Sebastian J. Vollmer15,21
+and Xiaoxuan Liu3,4,5,6,7
+13
+Patient Safety Translational Research Centre, Imperial College London, London, UK. 14
+Institute of Global Health Innovation, Imperial College London,
+London, UK. 15
+Alan Turing Institute, London, UK. 16
+Department of Statistics and Nuffield Department of Medicine, University of Oxford, Oxford, UK.
+17
+University of Manchester, Manchester, UK. 18
+Centre for Journalology, Clinical Epidemiology Program, Ottawa Hospital Research Institute, Ottawa,
+Canada. 19
+School of Epidemiology and Public Health, Faculty of Medicine, University of Ottawa, Ottawa, Canada. 20
+Department of Ophthalmology,
+Cantonal Hospital Lucerne, Lucerne, Switzerland. 21
+University of Warwick, Coventry, UK.
+SPIRIT-AI and CONSORT-AI Consensus Group
+Aaron Y. Lee22
+, Adrian Jonas23
+, Andre Esteva24
+, Andrew L. Beam25
+, An-Wen Chan8
+,
+Maria Beatrice Panico26
+, Cecilia S. Lee22
+, Charlotte Haug27
+, Christophe J. Kelly28
+, Christopher Yau15,17
+,
+Cynthia Mulrow29
+, Cyrus Espinoza30
+, John Fletcher31
+, David Moher18,19
+, Dina Paltoo32
+, Elaine Manna33
+,
+Gary Price34
+, Gary S. Collins35
+, Hugh Harvey36
+, James Matcham37
+, Joao Monteiro38
+,
+M. Khair ElZarrad39
+, Lavinia Ferrante di Ruffano2
+, Luke Oakden-Rayner40
+, Melanie J. Calvert1,2,3,6,10,11,12
+,
+Melissa McCradden41
+, Pearse A. Keane1
+, Richard Savage42
+, Robert Golub43
+, Rupa Sarkar44
+and
+Samuel Rowley45
+22
+Department of Ophthalmology, University of Washington, Seattle, WA, USA. 23
+The National Institute for Health and Care Excellence, London, UK.
+24
+Salesforce Research, San Francisco, CA, USA. 25
+Harvard T.H. Chan School of Public Health, Boston, MA, USA. 26
+Medicines and Healthcare products
+Midlands at the University of Birmingham and University Hospitals Birmingham NHS
+Foundation Trust; Health Data Research UK; Innovate UK (part of UK Research and
+Innovation); the Health Foundation; Macmillan Cancer Support; and UCB Pharma.
+A.D. and J.D. are also NIHR Senior Investigators. The views expressed in this article
+are those of the author(s) and not necessarily those of the NIHR, or the Department
+of Health and Social Care. S.J.V. receives funding from the Engineering and Physical
+Sciences Research Council, UK Research and Innovation (UKRI), Accenture, Warwick
+Impact Fund, Health Data Research UK and European Regional Development Fund.
+S.R. is an employee of the Medical Research Council (UKRI). D.M. is supported by a
+University of Ottawa Research Chair. A.B. is supported by a National Institutes of Health
+(NIH) award (7K01HL141771-02). M.K.E. is supported by the U.S. Food and Drug
+Administration (FDA), and D.P. is supported in part by the Office of the Director at
+the National Library of Medicine (NLM), US National Institutes of Health (NIH). This
+article may not be consistent with NIH and/or FDA’s views or policies. It reflects only the
+views and opinions of the authors.
+Author contributions
+Concept and design, and acquisition, analysis and interpretation of data, all authors;
+drafting of the manuscript, X.L., S.C.R., A.W.C., M.J.C. and A.K.D.; obtaining of funding,
+A.K.D., M.J.C., C.Y. and C.H. The SPIRIT-AI and CONSORT-AI Working Group
+consists of two groups that have been key in the development of the guidelines: the
+SPIRIT-AI and CONSORT-AI Steering Group, which was responsible for overseeing
+the consensus process and guidelines development methodology (Alastair K. Denniston,
+An-Wen Chan, Ara Darzi, Christopher Holmes, Christopher Yau, David Moher,
+Hutan Ashrafian, Jonathan J. Deeks, Lavinia Ferrante di Ruffano, Livia Faes, Melanie J.
+Calvert, Pearse A. Keane, Samantha Cruz Rivera, Sebastian J. Vollmer and Xiaoxuan Liu);
+and the SPIRIT-AI and CONSORT-AI Consensus Group, which was responsible
+for reaching consensus on the content and wording of the items within the checklists
+(Aaron Y. Lee, Adrian Jonas, Andre Esteva, Andrew L. Beam, An-Wen Chan, Maria
+Beatrice Panico, Cecilia S. Lee, Charlotte Haug, Christopher J. Kelly, Christopher Yau,
+Cynthia Mulrow, Cyrus Espinoza, David Moher, Dina Paltoo, Elaine Manna, Gary Price,
+Gary S Collins, Hugh Harvey, James Matcham, Joao Monteiro, John Fletcher, M. Khair
+ElZarrad, Lavinia Ferrante Di Ruffano, Luke Oakden-Rayner, Melanie J. Calvert,
+Melissa McCradden, Pearse A. Keane, Richard Savage, Robert Golub, Rupa Sarkar and
+Samuel Rowley).
+Competing interests
+M.J.C. has received personal fees from Astellas, Takeda, Merck, Daiichi Sankyo, Glaukos,
+GlaxoSmithKline and the Patient-Centered Outcomes Research Institute (PCORI)
+outside the submitted work. P.A.K. is a consultant for DeepMind Technologies, Roche,
+Novartis and Apellis, and has received speaker fees or travel support from Bayer,
+Allergan, Topcon and Heidelberg Engineering. C.J.K. is an employee of Google and
+owns Alphabet stock. A.E. is an employee of Salesforce CRM. R.S. is an employee of
+Pinpoint Science. J. Matcham was an employee of AstraZeneca at the time of this study.
+J. Monteiro is Chief Editor of the journal Nature Medicine; he has recused himself from
+any aspect of decision-making on this manuscript and played no part in the assignment
+of this manuscript to in-house editors or peer reviewers, and was also separated and
+blinded from the editorial process from submission inception to decision.
+Additional information
+Supplementary information is available for this paper at https://doi.org/10.1038/
+s41591-020-1037-7.
+Correspondence and requests for materials should be addressed to A.K.D.
+Peer review information Javier Carmona was the primary editor on this article, and
+managed its editorial process and peer review in collaboration with the rest of the
+editorial team.
+Reprints and permissions information is available at www.nature.com/reprints.
+Open Access This article is licensed under a Creative Commons
+Attribution 4.0 International License, which permits use, sharing, adap-
+tation, distribution and reproduction in any medium or format, as long
+as you give appropriate credit to the original author(s) and the source, provide a link to
+the Creative Commons license, and indicate if changes were made. The images or other
+third party material in this article are included in the article’s Creative Commons license,
+unless indicated otherwise in a credit line to the material. If material is not included in
+the article’s Creative Commons license and your intended use is not permitted by statu-
+tory regulation or exceeds the permitted use, you will need to obtain permission directly
+from the copyright holder. To view a copy of this license, visit http://creativecommons.
+org/licenses/by/4.0/.
+© The Author(s) 2020
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine
+1362
+Consensus Statement
+NATuRe MeDICIne
+Regulatory Agency, London, UK. 27
+New England Journal of Medicine, Waltham, MA, USA. 28
+Google Health, London, UK. 29
+Annals of Internal Medicine,
+Philadelphia, PA, USA. 30
+Patient Partner, Birmingham, UK. 31
+British Medical Journal, London, UK. 32
+National Institutes of Health, Bethesda, MD, USA.
+33
+Patient Partner, London, UK. 34
+Patient Partner, Centre for Patient Reported Outcome Research, Institute of Applied Health Research, University of
+Birmingham, Birmingham, UK. 35
+Centre for Statistics in Medicine, University of Oxford, Oxford, UK. 36
+Hardian Health, London, UK. 37
+AstraZeneca,
+Cambridge, UK. 38
+Nature Research, New York, NY, USA. 39
+Food and Drug Administration, Silver Spring, MD, USA. 40
+Australian Institute for Machine
+Learning, North Terrace, Adelaide, Australia. 41
+The Hospital for Sick Children, Toronto, Canada. 42
+PinPoint Data Science, Leeds, UK. 43
+Journal of the
+American Medical Association, Chicago, IL, USA. 44
+The Lancet Group, London, UK. 45
+Medical Research Council, London, UK.
+Nature Medicine | VOL 26 | September 2020 | 1351–1363 | www.nature.com/naturemedicine 1363
 

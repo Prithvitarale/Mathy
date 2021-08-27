@@ -1,1 +1,2892 @@
-UniversityofPennsylvaniaScholarlyCommonsStatisticsPapersWhartonFacultyResearch2001ANaturalPolicyGradientShamM.KakadeUniversityofPennsylvaniaFollowthisandadditionalworksat:http://repository.upenn.edu/statistics_papersPartoftheBiostatisticsCommons,andtheStatisticalMethodologyCommonsThispaperispostedatScholarlyCommons.http://repository.upenn.edu/statistics_papers/471Formoreinformation,pleasecontactrepository@pobox.upenn.edu.RecommendedCitationKakade,ANaturalPolicyGradientShamKakadeGatsbyComputationalNeuroscienceUnit17QueenSquare,London,UKWC1N3ARhttp://www.gatsby.ucl.ac.uksham@gatsby.ucl.ac.ukAbstractWeprovideanaturalgradientmethodthatrepresentsthesteepestdescentdirectionbasedontheunderlyingstructureoftheparam-eterspace.Althoughgradientmethodscannotmakelargechangesinthevaluesoftheparameters,weshowthatthenaturalgradi-entismovingtowardchoosingagreedyoptimalactionratherthanjustabetteraction.Thesegreedyoptimalactionsarethosethatwouldbechosenunderoneimprovementstepofpolicyiterationwithapproximate,compatiblevaluefunctions,asdefinedbySut-tonetal.[9].WethenshowdrasticperformanceimprovementsinsimpleMDPsandinthemorechallengingMDPofTetris.1thedistribution).Wemaketheassumptionthateverypolicy7risergodic,iehasawell-definedstationarydistributionp7f.Underthisassumption,theaveragereward(orundiscountedreward)is1](7r)==2::s,ap7f(s)7r(a;S)R(s,a),thestate-actionvalueis3TheNaturalGradientandPolicyIterationWenowcomparepolicyimprovementunderthenaturalgradienttopolicyiteration.Foranappropriatecomparison,considerthecaseinwhichQ7r(s,a)isapproximatedbysomecompatiblefunctionapproximatorr(s,a;w)parameterizedbyw[9,6].3.1CompatibleFunctionApproximationForvectors(),wE~m,wedefine:'IjJ(s,a)7r=\7logn(a;s,()),r(s,a;w)=wT'ljJ7r(s,a)(5)where[\7logn(a;s,())]i=8logn(a;s,())!8()i.Letwminimizethesquarederrorf(W,n)==L,s,ap7r(s)n(a;s,())(r(s,a;w)_Q7r(s,a))2.Thisfunctionapproximatoriscompatiblewiththepolicyinthesensethatifweusetheapproximationsf7r(s,a;w)inlieuoftheirtruevaluestocomputethegradient(equation1),thentheresultwouldstillbeexact[9,6](andisthusasensiblechoicetouseinactor-criticschemes).Theorem1.Letwminimizethesquarederrorf(W,no).Thenw=~1}(()).Proof.Sincewminimizesthesquarederror,itsatisfiesthecondition8f!8wi=0,whichimplies:LP7r(s)n(a;s,())'ljJ7r(s,a)('ljJ7r(s,a?w-Q7r(s,a))=O.s,aorequivalently:s,as,aBydefinitionof'ljJ7r,\7n(a;s,())=n(a;s,())'ljJ7r(s,a)andsotherighthandsideisequaltospeaking,theprobabilitymanifoldof7r(a;s,0)couldbecurved,soatranslationofapointbyatangentvectorwouldnotnecessarilykeepthepointonthemanifold(suchasonasphere).Weconsiderthegeneral(non-exponential)caselater.Wenowshow,4MetricsandCurvaturesObviously,ourchoiceofFisnotuniqueandthequestionarisesastowhetherornotthereisabettermetrictousethanF.Inthedifferentsettingofparameterestimation,theFisherinformationconvergestotheHessian,soB~aC21rlD-unsealed-8'I'--''''''~''$=10s=1......i1r______-11',05..•~......12"EI-'::',$,=1$2=10_.--(',\2~":.~R=O)~0'::-0--0~5C------:-'-----:-':'5C------::'2"\::.:-.h~21timex107/:--------1.Q-"\""::>:"W~,L--------------.\';20--"-,-,~L---::-,::::;·7J~========-~L_-=--2--':-'':::::;0:::=:::'~2:=':3=::l4'0a0.511.522.5358.,1015I0910(time)timeFigure1:A)ThecostVs.10glo(time)foranLQG(with20timesteptrajectories).Thepolicyusedwas7f(u;x,())ex:exp(()lslX2+()2S2X)wheretherescalingconstants,SlandS2,areshowninthelegend.Underequivalentstartingdistributions(()lSl=()2S2=-.8),theright-mostthreecurvesaregeneratedusingthestandardgradientmethodandtherestusethenaturalgradient.B)Seetext.Ctop)Theaveragerewardvs.time(ona107scale)ofapolicyunderstandardgradientdescentusingthesigmoidalpolicyparameterization(7f(I;s,()i)ex:exp(()i)/(1+exp(()i)),withtheinitialconditions7f(i,1)=.8and7f(j,1)=.1.Cbottom)Theaveragerewardvs.time(unscaled)understandardgradientdescent(solidline)andnaturalgradientdescent(dashedline)foranearlywindowoftheaboveplot.D)Phasespaceplotforthestandardgradientcase(thesolidline)andthenaturalgradientcase(dashedline).faster.Alsonoticethatthecurvesunderdifferentrescalingarenot
+Manifold Coordinates with Physical Meaning
+Samson J. Koelle1
+sjkoelle@uw.edu
+Hanyu Zhang1
+hanyuz6@uw.edu
+Marina Meilă1,2
+mmp@stat.washington.edu
+Yu-Chia Chen2
+yuchaz@uw.edu
+1
+Department of Statistics
+University of Washington
+Seattle, WA 98195-4322, USA
+2
+Department of Electrical and Computer Engineering
+University of Washington
+Seattle, WA 98195, USA
+Editor: Francis Bach, David Blei, and Bernhard Schölkopf
+Abstract
+Manifold embedding algorithms map high-dimensional data down to coordinates in a much lower-
+dimensional space. One of the aims of dimension reduction is to find intrinsic coordinates that
+describe the data manifold. The coordinates returned by the embedding algorithm are abstract,
+and finding their physical or domain-related meaning is not formalized and often left to domain
+experts. This paper studies the problem of recovering the meaning of the new low-dimensional
+representation in an automatic, principled fashion. We propose a method to explain embedding
+coordinates of a manifold as non-linear compositions of functions from a user-defined dictionary.
+We show that this problem can be set up as a sparse linear Group Lasso recovery problem, find
+sufficient recovery conditions, and demonstrate its effectiveness on data.
+Keywords: Dimension reduction, manifold learning, functional regression, gradient, group lasso
+Manifold learning (ML) algorithms, also known as embedding or unsupervised learning algorithms,
+map data from high or infinite-dimensional spaces to coordinates of a much lower-dimensional space.
+In the sciences, one of the motivating goals of dimension reduction is the discovery of descriptors
+of the data generating process. Linear dimension reduction algorithms like Principal Component
+Analysis (PCA) and non-linear algorithms such as Diffusion Maps (Coifman and Lafon, 2006) are
+used in applications from genomics to astronomy to uncover the variables describing large-scale
+properties of the interrogated system.
+For example, in chemistry, a common problem is to discover so-called collective coordinates describ-
+ing the evolution of molecular configurations at long time scales, which correspond to macroscopically
+interesting transformations of the molecule, and can explain some of its properties (Clementi et al.,
+2000; Noé and Clementi, 2017). The molecular configuration is represented by the 3Na vector of
+spatial locations of the Na atoms comprising the molecule. A Molecular Dynamics (MD) simulation
+produces a sample of molecular configurations; the distribution of this sample describes the molecule’s
+behavior in the given experimental conditions. It has been shown empirically that manifolds approxi-
+mate these high-dimensional distributions (Dsilva et al., 2013). Figure 1a shows the toluene molecule,
+consisting of Na = 15 atoms, and 1d shows the mapping of an MD simulated trajectory into m = 2
+dimensions (the embedding coordinates) by a manifold learning algorithm. Visual inspection shows
+that this configuration space is well-approximated by a one-dimensional manifold parametrized by
+a geometric quantity, the torsion g1 of the methyl bond, which is the angle formed by the planes
+inscribing the first three and last three atoms of the colored lines joining four atoms in Figure 1d.
+Thus, g1 is a collective coordinate which explains the large scale shape of the data manifold by the
+rotation of the CH3 methyl group relative to the plane of the other carbon atoms, filtered out from
+1
+arXiv:1811.11891v3
+[stat.ML]
+29
+Jul
+2021
+the faster modes of vibration by the manifold learning algorithm. Similarly, the large scale geometry
+of the ethanol and malonaldehyde MD data is explained by two rotation angles each.
+(a) Toluene (b) Ethanol (c) Malonaldehyde
+(d) (e) (f)
+(g) Torsion example (h) (i)
+Figure 1: Manifold coordinates with physical meaning in Molecular Dynamics (MD) simulations. 1a-1c
+Diagrams of the toluene (C7H8), ethanol (C2H5OH), and malonaldehyde (C3H4O2) molecules, with the
+carbon (C) atoms in grey, the oxygen (O) atoms in red, and the hydrogen (H) atoms in white. Bonds defining
+important torsions gj are marked in orange and blue (see Section 6 for more details). The bond torsion is
+the angle of the planes inscribing the first three and last three atoms on the line (1g). 1d Embedding of the
+configurations of toluene into m = 2 dimensions, showing a manifold of d = 1. The color corresponds to the
+values of the orange torsion g1. 1e, 1h Embedding of the configurations of the ethanol in m = 3 dimensions,
+showing a manifold of dimension d = 2, respectively colored by the blue and orange torsions in Figure 1b.
+1f, 1i. Embedding of the configurations of the malonaldehyde in m = 3 dimensions, showing a manifold of
+dimension d = 2, respectively colored by the blue and orange torsions in Figure 1c.
+In this example, while the embedding algorithm was able to uncover the manifold structure of
+the data, finding the physical meaning of the manifold coordinates was done by visual inspection.
+In general, a scientist scans through many torsions and other functions of the configuration, in
+order to find ones that can be identified with the abstract coordinates output by a PCA or ML
+2
+algorithm. Manual inspection of such denoised coordinates for correspondences with features of
+interest is pervasive in a variety of scientific fields (Chen et al., 2016; Herring et al., 2018). The
+goal of this paper is to put this process on a formal basis and to devise a method for automating
+this identification, thus removing the time consuming visual inspections from the shoulders of the
+scientist. We introduce a method to automate association of the meaningless abstract coordinates
+output by an embedding algorithm with functions of the data that are meaningful or interesting in
+the domain of the problem.
+In our paradigm, the scientist has a dictionary G of functions to be considered as possible manifold
+coordinates. For the examples in Figure 1, G could be a set of candidate torsions. In other applications
+like single-cell genomics or astronomy, data are measurements in high-dimensional feature spaces
+such as gene counts, or spectra of stars and galaxies. The dictionary G then consists of functions
+like cell-type specific signatures for the former, or element-specific spectral signatures for the latter
+(Blanton and Bershady; McQueen et al., 2016; Zhang et al., 2020).
+In each case, we assume that the data lies on a low dimensional, smooth manifold M and that
+some embedding algorithm maps the data to coordinates denoted by φ. We propose an algorithm,
+ManifoldLasso, that replaces the abstract data-driven coordinates φ with an “equivalent” set of
+coordinates consisting of functions g1, . . . gs from G. Finding this set of new coordinates, which have
+physical meaning, can be considered as finding an explanation for the manifold structure M of the
+data.
+To keep the approach as general as possible, we do not rely on a particular embedding algorithm,
+making only the minimal assumption that it produces a smooth embedding. We also do not assume
+a parametric relationship between the embedding and the functions in the dictionary G. We only
+assume that the mapping between the data manifold and the functions is sufficiently smooth.
+The next section defines the problem formally, and Section 2 presents the necessary background in
+manifold estimation. Section 3 develops our method, ManifoldLasso. The relationship to previous
+work is discussed in Section 4. Section 5 presents theoretical recovery results, Section 6 presents
+experiments, and Section 7 concludes the paper. The Appendices present additional information
+including details about the functional dictionaries used, adaptions necessary to make our method
+work in the rotation and translation invariant molecular configuration space, and a useful adaptation
+to our main algorithm for when support recovery conditions are violated.
+1. Problem formulation, assumptions and challenges
+We make a number of standard manifold learning assumptions. Observed data D = {ξi ∈ RD
+: i ∈
+1 . . . n} are sampled i.i.d. from a smooth manifold 1
+M of intrinsic dimension d embedded in a feature
+space RD
+by the inclusion map. In this paper, we will call smooth any function or manifold of class
+at least C4
+. The precise notion of near varies with the embedding approach, and is beyond the scope
+of this paper. We assume that the intrinsic dimension d of M is known; for example, by having been
+estimated previously by one method in Kleindessner and von Luxburg (2015). The manifold M is a
+Riemannian manifold with Riemannian metric inherited from the ambient space RD
+. Furthermore,
+we assume the existence of a smooth embedding map φ : M → φ(M) ⊂ Rm
+, where typically m << D.
+That is, φ restricted to M is a diffeomorphism onto its image, and φ(M) is a submanifold of Rm
+.
+We call the coordinates φ(ξi) in this m dimensional ambient space the embedding coordinates φ1:m.
+In practice, the mapping of the data D onto φ(D) represents the output of an embedding algorithm,
+and we only have access to M and φ via D and its image φ(D).
+As mentioned in the previous section, we are given a dictionary of user-defined and domain-related
+smooth functions G = {g1, . . . gp, with gj : U ⊆ RD
+→ R}, where U is an open set containing M.
+We assume that φ(x) = h(gj1
+(x), . . . gjs
+(x)), where h : O ⊆ Rs
+→ Rm
+is a smooth function of s
+variables, defined on a open subset of Rs
+containing the ranges of gj1
+, . . . gjs
+. Let S = {j1, . . . js},
+1. The reader is referred to Lee (2003) for the definitions of the differential geometric terms used in this paper.
+3
+and gS = [gj1
+(x), . . . gjs
+(x)]T
+. We call this set the functional support or explanation. In differential
+geometric terms, gS is strongly related to finding coordinate systems, charts and parameterizations
+of M. For example, in the toluene example, the functions in G are all the torsions in the molecule,
+s = 1, and gS = g1 is a chart for the 1-dimensional manifold traced by the configurations. Hence, it
+is natural to associate s = d.
+Indeterminacies Since the map φ given by the embedding algorithm is determined only up to
+diffeomorphism, the map h cannot be uniquely determined, and it can therefore be overly restrictive to
+assume a parametric form for h. Hence, this paper aims to find the support set S while circumventing
+the estimation of h. Indeterminacies w.r.t. the support S itself are also possible. For instance, the
+support S may not be unique whenever the relationship g1 = t(g2), where t is a smooth monotonic
+function, holds for two functions in G. In Section 5 we give conditions under which S can be recovered
+uniquely; intuitively, they consist of functional independencies between the functions in G. For
+instance, it is sufficient to assume that that the dictionary G is a functionally independent set, i.e.
+there is no g ∈ G that can be obtained as a smooth function of other functions in G.
+2. Manifold learning and intrinsic geometry
+Our method relies on statistical estimators of several geometric quantities. One of the most essential
+is estimation of the embedding map φ. In addition to the embedding map itself, we also estimate the
+tangent spaces of M and φ(M). This will allow us to perform support recovery on the differential
+level. These estimation tasks are accomplished as follows.
+The neighborhood graph and kernel matrix The neighborhood graph is a data structure that
+encodes topological information about the dataset. It associates to each data point ξi ∈ D its set of
+neighbors Ni = {i0
+∈ [n], with ||ξi0 − ξi|| ≤ rN }, where rN is a neighborhood radius parameter. The
+neighborhood relation is symmetric, and determines an undirected graph with nodes represented by
+the data points ξ1:n. We denote |Ni| by ki.
+This graph is used in construction of the local position matrices Ξi = [ξi0 : i0
+∈ Ni] ∈ Rki×D
+, local
+embedding coordinate matrices Φi = [φ(ξi0 ) : i0
+∈ Ni] ∈ Rki×m
+, and the kernel matrix K ∈ Rn×n
+whose elements are
+Ki,i0 =
+(
+exp
+
+−||ξi−ξi0 ||
+2
+N
+
+if i0
+∈ Ni
+0 otherwise.
+(1)
+These matrices encode geometric information about the dataset, and so are of crucial importance; K
+is sparse, with sparsity structure induced by the neighborhood graph. Typically, the radius rN and
+the bandwidth parameter N are related by rN = cN with c a small constant greater than 1. This
+value ensures that the entries in K that are zeroed out are small. Rows of the kernel matrix K will
+be denoted Ki,Ni
+to emphasize that when a particular row is passed to an algorithm, only ki values
+need to be passed. Next, we show how the neighborhood graph, local position matrices, and kernel
+matrix are used in manifold estimation algorithms.
+The renormalized graph Laplacian The neighborhood graph and kernel matrix play essential
+roles in estimation of the renormalized graph Laplacian, also known as the sample Laplacian, or
+Diffusion Maps Laplacian L. This estimator, constructed by the Laplacian algorithm, converges to
+the manifold Laplace operator ∆M; Coifman and Lafon (2006) shows that this estimator is unbiased
+w.r.t. the sampling density on M (see also Hein et al. (2005), Hein et al. (2007); Ting et al. (2010)).
+L is a sparse matrix; its i-th row contains non-zero values only for i0
+∈ Ni. Thus, as for K, elements
+and rows of this matrix will be denoted by Li,i0 and Li,Ni
+, respectively, and the sparsity pattern of L
+is given by the neighborhood graph. Construction of this neighborhood graph is the computationally
+expensive component of this algorithm.
+We use the m principal eigenvectors of L (or alternatively, of the matrix L̃ of Algorithm Laplacian)
+corresponding to its smallest non-zero eigenvalues as embedding coordinates. This embedding is
+4
+known as the Diffusion Map (Coifman and Lafon, 2006) or the Laplacian Eigenmap (Belkin and
+Niyogi, 2002) of D. Although any algorithm which asymptotically generates a smooth embedding is
+acceptable for our general support recovery method, use of the eigenfunctions of the Laplacian as
+manifold embedding coordinates has special relevance to quantum systems (Heller, 1983; Zelditch,
+2006; Landsman; Sogge, 2014).
+Laplacian (neighborhoods Ni:n, local data Ξ1:n, bandwidth N )
+1: Compute kernel matrix K using (1)
+2: Compute normalization weights wi ←
+P
+i0∈Ni
+Ki,i0 , i = 1, . . . n, W ← diag(wi i = 1 : n)
+3: Normalize L̃ ← W−1
+KW−1
+4: Compute renormalization weights w̃i ←
+P
+i0∈Ni
+L̃i,i0 , i = 1, . . . n, W̃ = diag(w̃i i = 1 : n)
+5: Renormalize L ← 4
+2
+N
+(W̃−1
+L̃ − In)
+6: Output Kernel matrix K, Laplacian L, [optionally w̃1:n]
+Estimating tangent spaces in the ambient space RD
+The differential quantities associated
+with φ and G that are used in our support estimation approach are computed w.r.t. the tangent
+bundle of M. Since M is a submanifold of RD
+, the tangent space at data point ξi, denoted Tξi
+M is
+representable by an orthogonal basis matrix Ti ∈ RD×d
+. The estimation of this matrix by Weighted
+Local Principal Component Analysis (Chen et al., 2013) is described in the LocalPCA algorithm.
+For this algorithm and others we define the SVD algorithm SV D(X, d) of a symmetrical matrix X
+as outputting V, Λ, where Λ and V are the largest d eigenvalues and their eigenvectors, respectively.
+Denote a column vector of ones of length k by 1k.
+LocalPCA (local data Ξi, kernel row Ki,Ni
+, intrinsic dimension d)
+1: Compute normalization weights wi ←
+P
+i0∈Ni
+Ki,i0
+2: Compute weighted mean ¯
+ξi ← 1
+wi
+Ki,Ni
+Ξi
+3: Compute weighted local differences
+Zi ← diag(K
+1/2
+i,Ni
+)(Ξi − 1ki
+¯
+ξi)
+4: Compute Ti, Λ ← SVD(ZT
+i Zi, d)
+5: Output Ti
+The pushforward Riemannian metric Geometric quantities such as angles and lengths of
+vectors in the tangent bundle T M and distances along curves in M are captured by Riemannian
+geometry. Recall our assumption that (M, id) is a Riemannian manifold, with the metric id induced
+from RD
+. With this we associate to φ(M) a Riemannian metric g which preserves the geometry of
+(M, id). This metric - the pushforward metric - is defined by
+hu, vig = hDφ−1
+(ξ)u, Dφ−1
+(ξ)vi for all u, v ∈ Tφ(ξ)φ(M). (2)
+In the above, D denotes the differential operator, Dφ−1
+(ξ) the pull-back operator that maps vectors
+from Tφ(ξ)φ(M) to TξM, and h, i the Euclidean scalar product.
+For each φ(ξi), the pushforward Riemannian metric expressed in the coordinates of Rm
+is a
+symmetric, semi-positive definite m × m matrix Gi of rank d. The scalar product hu, vig takes the
+form uT
+Giv. The matrices Gi can be estimated by the algorithm RMetric of Perrault-Joncas and
+Meila (2013). The algorithm uses only local information, and thus can be run efficiently using the
+Laplacian, the neighborhood graph, and local embedding coordinate matrices. In the next section,
+we will use the output of this algorithm to estimate the differential Dφ.
+5
+RMetric (Laplacian row Li,Ni
+, local embedding coordinates Φi, intrinsic dimension d)
+1: Compute centered local embedding coordinates
+Φ̃i = Φi − 1ki
+φ(ξi)T
+2: Form matrix Hi by
+Hi ← [Hi,k,k0 ]k,k0∈1:m with Hi,k,k0 =
+P
+i0∈Ni
+Li,i0 Φ̃i,i0,kΦ̃i,i0,k0 for k, k0
+= 1 : m.
+3: Compute Vi, Λi ← SVD(Hi, d)
+4: Gi ← ViΛ−1
+i V T
+i .
+5: Output Gi, optionally Vi, Λi
+3. The ManifoldLasso algorithm
+The main idea of our approach is to exploit the well-known mathematical fact that, for any differen-
+tiable functions f, g, h, when f = h ◦ g, the differentials Df, Dh, Dg at any point are in the linear
+relationship Df = DhDg. Since, given coordinate functions φ1:m and dictionary functions g1:p on
+a smooth manifold M, our goal is to recover a subset gS of g1:p such that φ1:m = h ◦ gS without
+knowing h, we propose to recover the subset gS by solving a set of dependent linear sparse recovery
+problems, one for each data point. This linear relationship Dφ = DhDgS will be written in terms of
+gradients gradM φ1:m and gradM g1:p. This section describes how to obtain the relevant gradients
+and solve the resulting set of dependent linear sparse recovery problems.
+3.1 Algorithm Overview
+The ManifoldLasso algorithm, the main algorithm of this paper, implements this idea. It takes as
+input data D sampled from an unknown manifold M, a dictionary G of functions defined on M (or
+alternatively on an open subset of the ambient space RD
+that contains M), and an embedding φ(D)
+in Rm
+. The output of ManifoldLasso is a set S of indices in G, representing the functions in G
+that explain M.
+The first part of the algorithm contains preparatory steps for geometric analysis covered in Section
+2. Steps 1 and 2 construct the neighborhood graph and the Laplacian matrix used for manifold
+learning and tangent space estimation.
+The second part of ManifoldLasso calculates the necessary gradients; this comprises Steps
+9–11. In Step 9, we estimate orthogonal bases of tangent subspaces by the LocalPCA algorithm
+described in Section 2. The gradients of the dictionary w.r.t. the manifold are then obtained as
+columns of the d × p matrix Xi in Steps 5, 6, and 10. These operations are described in detail in
+Section 3.3. In Step 11, the gradients at ξi of the coordinates φ1:m, also w.r.t. M, are calculated as
+columns of the d × m matrix Yi by the PullBackDPhi algorithm described in Section 3.4.
+In the last part of ManifoldLasso, Step 14 finds the support S by solving the sparse regression.
+A GroupLasso algorithm is called to perform the sparse regression of the manifold coordinates’
+gradients Y1:n on the gradients of the dictionary functions, represented by X1:n. The indices of those
+dictionary functions whose β coefficients are not identically null represent the support set supp β.
+This is described in Section 3.5. Scaling of functions is addressed through normalization in Steps 6
+and 13; this procedure is described in more detail in Section 3.6.
+6
+ManifoldLasso (Dataset D, dictionary G, embedding coordinates φ(D), intrinsic dimension d,
+kernel bandwidth N , neighborhood cutoff size rN , regularization parameter λ)
+1: Construct Ni for i = 1 : n; i0
+∈ Ni iff ||ξi0 − ξi|| ≤ rN , and local data matrices Ξ1:n
+2: Construct kernel matrix and Laplacian K, L ← Laplacian(N1:n, Ξ1:n, N )
+3: [Optionally compute embedding: φ(ξ1:n) ←EmbeddingAlg(D, N1:n, m, . . .)]
+4: for j = 1, 2, . . . p do
+5: Compute ∇ξgj(ξi) for i = 1, . . . n
+6: Compute ζ2
+j by (21) and normalize ∇ξgj(ξi) ← (1/ζj)∇ξgj(ξi) for i = 1, . . . n
+7: end for
+8: for i = 1, 2, . . . n do
+9: Compute basis TM
+i ←LocalPCA(Ξi, Ki,Ni
+, d)
+10: Project Xi ← (TM
+i )T
+∇ξg1:p
+11: Compute Yi ←PullBackDPhi(Ξi, Φi, TM
+i , Li,Ni , d)
+12: end for
+13: Compute ζ2
+k ← 1
+n
+Pn
+i=1 kyikk2
+(i.e. (20)), for k = 1, . . . m and
+normalize Yi ← Yi diag{1/ζ1:m}, for i = 1, . . . n.
+14: β ← GroupLasso(X1:n, Y1:n, λ
+√
+mn)
+15: Output S = supp β
+There are several optional steps and substitutions in our algorithm. An embedding can be
+computed in Step 3, or input separately by the user - we denote this step generically as Embeddin-
+gAlg. Finally, although we explicitly describe tangent space estimation methods of both Tξi M and
+Tφ(ξi)φ(M) in our algorithms, other approaches to estimate them may be used.
+3.2 Gradients and coordinate systems
+Our algorithm regresses the gradients of the embedding coordinate functions against the gradients
+of the dictionary functions. Both sets of gradients are with respect to the manifold M, and so this
+requires calculating or estimating various gradients in the same d-dimensional coordinate system.
+This and the following two sections explain these procedures.
+First, note that by assumption we have two Euclidean spaces RD
+and Rm
+, in which manifolds M
+and φ(M) of dimension d are embedded. Denote gradients w.r.t. the Euclidean coordinate systems
+in RD
+and Rm
+by ∇ξ and ∇φ, respectively. Since our interest is in functions on manifolds, we also
+define the gradient of a function on a manifold M. The gradient of f at ξ, on a Riemannian manifold
+(M, g), denoted gradM f(ξ) ∈ TξM, is defined by the identity
+hgradM f(ξ), vig = Df(ξ)u for any u ∈ TξM. (3)
+At each data point ξi, we fix bases TM
+i in Tξi
+M and Tφ
+i in Tφ(ξi)φ(M). Gradients expressed in these
+coordinate systems are denoted by gradT M
+i ,g and gradT φ
+i ,g respectively. For a manifold M which is
+a submanifold of RD
+, we denote by gradT M
+i
+(ξ) the value of gradT M
+i ,id(ξ) w.r.t. the identity metric
+id inherited from RD
+, and by h, i the Euclidean scalar product.
+Note that in coordinates, gradM f depends on the metric g, but at the same time, this definition
+shows that gradM f as a linear operator on Tξi M is invariant to the metric; it is just the first order
+derivative reflecting how f changes along the manifold. Hence, the left hand side must also be
+invariant to the metric. It follows that Df(ξ)u = uT
+gradT M
+i
+(ξi) for any u ∈ TξM, and, furthermore,
+that gradT M
+i ,g = G−1
+i gradT M
+i
+for any other Riemannian metric g.
+7
+3.3 Calculating the gradients of the dictionary functions
+Our goal is to obtain Xi, the matrix defined by
+Xi = [gradT M
+i
+gj(ξi)]j=1:p ∈ Rd×p
+. (4)
+Let gj be a function in the dictionary G. By definition, for any basis TM
+i ∈ RD×d
+of Tξi
+M,
+gradT M
+i
+gj(ξi) = (TM
+i )T
+∇ξgj(ξi). (5)
+In other words, gradT M
+i
+gj is the projection of ∇ξgj on the basis TM
+i . These bases of Tξi
+M, for
+every i, are estimated by LocalPCA as described in Section 2. The gradients ∇ξgj(ξi) are known
+analytically, by assumption. We thus construct matrices Xi, for i = 1, . . . n, with p columns
+representing the gradients of the p dictionary functions as Xi = (TM
+i )T
+∇ξg1:p, as in Step 10 of
+Algorithm ManifoldLasso. Now we turn to obtaining the manifold gradients of the coordinate
+functions φk in the same coordinate system.
+3.4 Estimating the coordinate gradients by pull-back
+Since φ is implicitly determined by a manifold embedding algorithm, the gradients of φk are often
+not analytically available, and φk is known only through its values at the data points. We therefore
+introduce an estimator of these gradients based on the notion of vector pull-back between tangent
+spaces. Instead of estimating these gradients naively from differences φk(ξi) − φk(ξi0 ) between
+neighboring points, we first estimate their values in Tφ(ξi)φ(M), where they have a simple expression,
+then pull them back in the coordinate system TM
+i . This estimation method is novel, and of some
+independent interest. A schematic of this approach is given in Figure 2.
+The PullBackDPhi Algorithm takes as inputs the local neighborhoods Ξi, Φi of point ξi in the
+original and embedding spaces, respectively, the basis TM
+i of Tξi M, and the row of the Laplacian
+matrix corresponding to i, Li,Ni
+. From this local information, the algorithm first computes the
+tangent space Tφ(ξi)φ(M), then obtains the gradients of the coordinate functions φ in this space by
+projection, and finally pulls back these gradients in the coordinate system given by TM
+i by solving a
+least squares regression.
+The tangent space Tφ(ξi)φ(M) When m = d, this space is trivially equal to Rd
+, so the problem
+is interesting in the case m > d. If the embedding induced by φ were an isometry, the estimation
+of Tφ(ξi)φ(M) could be performed by LocalPCA, and the subsequent pull-back could be done as
+described in Luo et al. (2009). Here we do not assume that φ is isometric.
+The method we introduce uses the push-forward Riemannian metric g, expressed as Gi in the
+coordinates φ at ξi, to estimate the Tφ(ξi)φ(M). By definition, the theoretical rank of Gi equals
+d and the d principal eigenvectors of Gi represent an orthonormal basis of Tφ(ξi)φ(M). Gi and its
+decomposition are estimated by the RMetric algorithm described in Section 2. We denote this
+basis Tφ
+i ∈ Rm×d
+.
+The gradient gradφ(M) φk Trivially, the gradients of φ1:m in the embedding space Rm
+, are equal
+to the m basis vectors of Rm
+, i.e. ∇φφ1:m = Im. Therefore gradφ(M) φk, expressed in the basis Tφ
+i ,
+given by the top d the eigenvectors of Gi, is equal to the projection of the corresponding basis vector
+onto the tangent subspace Tφ(ξi)φ(M). In matrix form we have
+[gradT φ
+i
+φk(ξi)]m
+k=1 = (Tφ
+i )T
+Im. (6)
+Pulling back gradφ(M) φ into Tξi M In order to bring these gradients into the same coordinate
+system as our dictionary functions, we define the following matrices, with ProjT v denoting the
+Euclidean projection of vector v onto subspace T.
+Yi = [yik]m
+k=1 = [gradT M
+i
+φk(ξi)]m
+k=1 ∈ Rd×m
+, (7)
+8
+Ai =
+h
+ProjTξi
+M(ξi0 − ξi)
+i
+i0∈Ni
+∈ Rd×ki
+, (8)
+and
+Bi = [φ(ξi0 ) − φ(ξi)]i0∈Ni
+∈ Rm×ki
+, B̃i =
+h
+ProjTφ(ξi)φ(M) [φ(ξi0 ) − φ(ξi)]
+i
+i0∈Ni
+, ∈ Rd×ki
+. (9)
+The columns of Ai and Yi are vectors in Tξi
+M, the columns of Bi are in Rm
+and the columns of
+B̃i are in Tφ(ξi)φ(M). These vectors are shown schematically in Figure 2. Note that when m = d,
+Bi = B̃i.
+The key property that enables our estimator of Yi is that the columns of Ai and B̃i are in
+correspondence, because they represent (approximately) the same vectors in two different coordinate
+systems, namely the logarithmic maps of point i0
+in M and φ(M) with respect to point i. The
+accuracy of this approximation is shown in Appendix A. The idea of the algorithm is then to use this
+correspondence in order to pull back the gradient of the coordinate function φk into the coordinates
+TM
+i .
+Specifically, since Dφk, the differential of φk : M → R, as a linear functional on the tangent
+bundle T M is invariant to coordinate system, we calculate its value on the columns of B̃i in the
+coordinate system given by φ itself, and equate these values with gradT M
+i
+φk applied to the columns
+of Ai, an expression in the coordinates TM
+i . By (3) and Appendix A, we have that
+(gradT M
+i
+φk(ξi))T
+Ai = (gradT φ
+i
+φk(ξi))T
+B̃i + o(rN ). (10)
+In coordinates, Ai = (TM
+i )T
+(ΞT
+i − ξi1T
+ki
+) and B̃i = (Tφ
+i )T
+(ΦT
+i − φ(ξi)1T
+ki
+). These matrices are
+computed by Steps 2 and 3 of Algorithm PullBackDPhi, while Yi contains the gradients we want
+to estimate. The error term comes from approximating the logarithmic map applied to points ξi0
+and φ(ξi0 ) for i0
+∈ Ni with the columns of Ai and B̃i. Recalling that Yi = [gradT M
+i
+φk(ξi)]k=1:m we
+obtain
+Y T
+i Ai = [(Tφ
+i )T
+Im]T
+(Tφ
+i )T
+Bi + o(rN ). (11)
+We solve this linear system in the least squares sense
+Yi = arg min
+Y ∈Rd×m
+kAT
+i Y − BT
+i Tφ
+i (Tφ
+i )T
+k2
+(12)
+to obtain
+Yi = A†
+i BT
+i Tφ
+i (Tφ
+i )T
+. (13)
+This solution is effectively the regression of the columns of BiTφ
+i (Tφ
+i )T
+on the columns of Ai at
+each data point ξi. We call estimator (13) the pullback gradient estimator because of its implicit
+invocation of the notion of vector pullback.
+To see this a different way, note that by equation (2), for any function f : φ(M) → R,
+hDφ−1
+u, Dφ−1
+gradφ(M) fi = hu, gradφ(M) fig, for all u ∈ Tφ(ξi)φ(M) (14)
+where g is the push-forward metric associated with φ. Using this fact, and the invariance of gradient
+to metric, we have that, for any w ∈ Tξi
+M, Dφ−1
+gradφ(M) f = gradM(f ◦ φ) for any smooth
+function f : φ(M) → R. The above claims give us hDφ−1
+u, gradM(f ◦ φ)i = hu, gradφ(M) fi
+where u ∈ Tφ(ξi)φ(M) is an arbitrary tangent vector. In coordinates Tφ
+i and TM
+i , we can write this
+equivalence as
+hDφ−1
+u, gradT M
+i
+(f ◦ φ)i = hu, gradT φ
+i
+fi. (15)
+If we then replace values of (Tφ
+i )T
+ek
+, (TM
+i )T
+(ξi0 −ξi) and (Tφ
+i )T
+(φ(ξi0 )−φ(ξi)) for gradT φ
+i
+φk, Dφ−1
+u
+and Du, respectively, we obtain (11).
+9
+PullBackDPhi local data Ξi, local embedding coordinates Φi, basis TM
+i (Optional: Tφ
+i or
+Laplacian row Li,Ni
+, intrinsic dimension d)
+1: Compute pushforward metric eigendecomposition Tφ
+i , Gi ← RMetric(Li,Ni
+, Φi, d).
+2: Compute Bi ← (ΦT
+i − φ(ξi)1T
+ki
+)
+3: Compute Ai ← (TM
+i )T
+(ΞT
+i − ξi1T
+ki
+)
+4: Calculate Yi ← A†
+i BT
+i Tφ
+i (Tφ
+i )T
+by solving linear system (12)
+5: Output Yi
+Figure 2: Left: M with a tangent subspace at ξi, ξi0 − ξi (in black, dotted), the projection ProjTξi
+M(ξi0 − ξi)
+(in red), and the manifold gradient gradM φ1(ξi) of the first embedding coordinate φ1 (in black). Right:
+φ(M) and tangent subspace at φ(ξi), with φ(ξi0 ) − φ(ξi) (in black, dotted), ProjTφ(ξi)φ(M)(φ(ξi0 ) − φ(ξi)) (in
+red) and the manifold gradient gradφ(M) φ1 (in black). Ai,i0 is the (approximate) mapping of Bi,i0 through
+Dφ−1
+(ξi), as in (2). The gradient gradφ(M) φ1 is the the projection of the first unit vector onto Tφ(ξi)φ(M).
+3.5 The GroupLasso formulation
+With the estimated gradients, we are now ready to resolve the functional support problem. Recall
+that Xi defined in (4) contains the gradients of the dictionary functions gj, and that yik ∈ Rd
+, the
+k-th column of Yi, represents the coordinates of gradM φk(ξi) in the chosen basis of Tξi
+M. Further,
+given our assumption that φ = h ◦ gS, let hk be the k-th component of the vector valued function h,
+and denote
+βijk =
+∂hk
+∂gj
+(gj(ξi)), β = [βijk]n,m,p
+i,k,j=1, (16)
+βj = vec(βijk, i = 1 : n, k = 1 : m) ∈ Rmn
+, βik = vec(βijk, j = 1 : p) ∈ Rp
+. (17)
+Then, from the identity gradM φk = gradM (hk ◦ gS) and the chain rule, one obtains the following
+linear model.
+yik =
+p
+X
+j=1
+βijkxij + ik = Xiβik + ik for all i = 1 : n, and k = 1 : m. (18)
+In the above regression of Y1:n on X1:n, βik is the set of regression coefficients of yik onto Xi. If there
+is some h such that φ = h ◦ gS, then the non-zero βijk coefficients are estimates of ∂h
+∂gj
+for j ∈ S.
+Further, βj represents the vector of regression coefficients corresponding to the effect of function gj;
+10
+therefore, the zero βj vectors indicate that j 6∈ S. Hence, in each βik, only |S| elements are non-zero.
+The term ik is added to account for noise or model misspecification.
+The key characteristic of the functional support that we leverage is that the same set S of
+coefficients will be non-zero for all i and k. Since finding this set S ⊂ [p] is underdetermined, we
+use a sparsity inducing regularization that simultaneously zeros out entire βj vectors. Thus, our
+problem can be naturally expressed as a Group Lasso (Yuan and Lin, 2006), with p groups of size
+mn, consisting of the β1:p groups of coefficients of gradM g1:p. To solve it we minimize the following
+objective function w.r.t. β:
+Jλ(β) =
+1
+2
+n
+X
+i=1
+m
+X
+k=1
+||yik − Xiβik||2
++
+λ
+√
+mn
+p
+X
+j=1
+||βj||. (19)
+The first term of the objective is the least squares loss of regressing Y1:n onto X1:n. The second is a
+regularization term, which penalizes each group βj by its Euclidean norm. This encourages most βj
+groups to be identically 0. The normalization of the regularization coefficient λ by the group size mn
+follows Yuan and Lin (2006) takes into account that the least squares loss also grows proportionally
+to mn. The use of Group Lasso for sparse functional regression was introduced in Meila et al. (2018).
+Note that Jλ(β) is convex in β and invariant to the change of basis Ti. Let T̃i = TiΓ be a different
+basis, with Γ ∈ Rd×d
+a unitary matrix. Then, ỹik = ΓT
+yik, X̃i = ΓT
+Xi, and ||ỹik − X̃iβik||2
+=
+||yik − Xiβik||2
+for any βik ∈ Rp
+.
+3.6 Computation, normalization, and tuning
+Computation The first two steps of ManifoldLasso are construction of the neighborhood graph
+and estimation of the Laplacian L. As shown in Section 2, L is a sparse matrix, hence RMetric can
+be run efficiently by only passing values corresponding to one neighborhood at a time. Note that in our
+examples and experiments, Diffusion Maps is our chosen embedding algorithm, so the neighborhoods
+and Laplacian are already available, though in general this is not the case. The second part of
+the algorithm estimates the gradients and constructs matrices Y1:n, X1:n. The gradient estimation
+runtime, with Cholesky decomposition-based solvers, is O(qd2
++ nd3
+) where q =
+Pn
+i=1 ki is the
+number of edges in the neighborhood graph. The last major step is a call to the GroupLasso solver,
+which estimates the support S of φ. The computation time of each iteration in GroupLasso is
+O(nmpd). Note that when using a standard group lasso solver, the computation time is O(n2
+m2
+pd)
+due to the block-diagonal structure of the problem implicit in flattening the n by p by d covariate
+tensor. We therefore use our own implementation of proximal FISTA to solve this problem (Boyd
+and Vandenberghe, 2004; Jas et al., 2020). Finally, for large data sets, we perform the ’for’ loop over
+a subset I ⊂ [n] of the original data while retaining the geometric information from the full data set.
+This replaces the n in the computation time with the smaller factor |I|.
+Normalization As with many sparse regression methods, normalization is necessary to balance the
+relative influence of dictionary elements and embeddings coordinates. Multiplying gj by a non-zero
+constant and dividing its corresponding βj by the same constant leaves the reconstruction error of all
+y’s invariant, but affects the norm ||βj||. Therefore, the relative scaling of the dictionary functions
+gj can influence the recovered support S, by favoring the dictionary functions whose columns have
+larger norm. A similar effect is present if a particular embedding coordinate φk is rescaled by a
+constant. For example, multiplying a certain φk by a number close to zero will cause the penalty
+accrued by learned coefficients for that coordinate to be smaller than for the other coefficients, and
+for that φk to dominate support recovery.
+We therefore normalize all gradT M
+i
+φ1:m and gradT M
+i
+g1:p as follows. Denote f a function on M,
+which can be either a coordinate function or a dictionary function. When f is defined on M, but not
+11
+outside M, we calculate the normalizing constant
+ζ2
+=
+1
+n
+n
+X
+i=1
+k gradT M
+i
+f(ξi)||2
+; (20)
+then we set f ← f/ζ. The above ζ is the finite sample version of k gradT fkL2(M), integrated w.r.t.
+the data density on M. We apply this normalization to coordinate functions φk, but it could also be
+applied to functions gj when they are defined only on M. A similar approach was used in Haufe
+et al. (2009).
+When function f is defined on a neighborhood around M in RD
+, we compute the normalizing
+constant with respect to ∇ξf. That is,
+ζ2
+=
+1
+n
+n
+X
+i=1
+k∇ξf(ξi)k2
+. (21)
+Then, once again, we set f ← f/ζ. We apply this normalization to our dictionary functions gj. This
+favors dictionary functions whose gradients are nearly tangent to the manifold M, and penalizes the
+gj’s which have large gradient components perpendicular to M.
+Tuning Tuning parameters are often selected by cross-validation in Lasso-type problems. However,
+in our setting, the recovered support generally span the tangent space, and as discussed in Section 5, we
+are theoretically motivated to identify a size d support. Since the cardinality of the support decreases
+as the tuning parameter λ is increased, we thus base our choice of λ on matching the cardinality of
+the support to d. Sufficient conditions for this estimation strategy are given in Section 5. To identify
+this λ, which we call λ0, we perform a simple binary search over λ in the range [0, λmax] where λmax,
+the theoretical maximum λ value, is λmax = maxj(
+Pn
+i=1
+Pm
+k=1(gradT M
+i
+gj(ξi))T
+(gradT M
+i
+φm(ξi)))1/2
+.
+Variants and extensions The ManifoldLasso algorithm presented here can be extended in
+several interesting ways.
+First, our current approach explains the embedding coordinates φ produced by a particular
+embedding algorithm. However, the same approach can be used to directly explain the tangent
+subspace of M, independently of any embedding. Second, one could set up GroupLasso problems
+that explain a single coordinate function. In general, manifold coordinates may not have individual
+meaning, so it will not always be possible to find a good explanation for a single φk. However, Figure
+1 shows that for the ethanol molecule, whose manifold is a torus, there exists a canonical association
+of certain coordinates to particular torsions.
+It is well-established in the support recovery and sparse coding literature (Scott Shaobing Chen
+and David L. Donoho and Michael A. Saunders, 2001; Hesterberg et al., 2008; Breheny and Huang,
+2011; Lederer and Müller, 2015; Hastie and Tibshirani, 2015) that at large λ, shrinkage can cause
+problems including variable selection inconsistency; and furthermore that intermediate λ values can
+have desirable properties as a variable pruning rather than selection step. Therefore, as a third
+possible extension of this work, in future research we plan to pursue a combination of the Group
+Lasso formulation (19) with Group Sparse Basis Pursuit (Qu et al., 2018). The so-called basis pursuit
+problems (Chen et al., 1998), intimately related to regularized regression, are discussed in more detail
+in Appendix E. In the case of ManifoldLasso, the corresponding basis pursuit problem is
+arg min
+β:s=d
+p
+X
+j=1
+kβjks.t. gradT M
+i
+φk(ξi) =
+p
+X
+j=1
+βijk gradT M
+i
+gj(ξi) for all i = 1 : n, and k = 1 : m. (22)
+This problem is evidently not tractable, as it involves searching over all d-sets of dictionary functions.
+We suggest, following Hesterberg et al. (2008), to initially use an intermediate λ values in Mani-
+foldLasso, in order to prune the dictionary to a smaller size. Subsequently, we can solve problem
+(22) with the pruned dictionary.
+12
+4. Related work
+We draw a firm distinction between our approach and purely non-parametric methods that attempt
+to learn a parameterization of M. For example, the early works of Saul and Roweis (2003) and Teh
+and Roweis (2002) (and references therein) propose parametrizing the manifold by finite mixtures
+of local linear models, aligned so as to provides global coordinates, in a way reminiscent of Local
+Tangent Space Alignment (Zhang and Zha, 2004). Another idea is to use d eigenfunctions of the
+Laplace-Beltrami operator ∆M as a parametrization of M. Hence, the Diffusion Maps coordinates
+could be considered such a parametrization (Coifman and Lafon, 2006; Coifman et al., 2005; Gear,
+2012). However, these are not in and of themselves interpretable, and it is not clear how many
+such coordinates are needed (Chen and Meilă, 2019). In Mohammed and Narayanan (2017), it was
+shown that principal curves and surfaces can provide an approximate manifold parametrization.
+These methods can often be used as embedding algorithms in our approach, but make no attempts
+at synergizing with an interpretable dictionary. Dsilva et al. (2018) tackle the related problem
+of choosing among the infinitely many Laplacian eigenfunctions d which provide a d-dimensional
+parametrization of the manifold. Their approach is to solve a set of Local Linear Embedding (Roweis
+and Saul, 2000) problems, each aiming to represent an eigenfunction as a combination of the preceding
+ones. Similarly, Chen and Meilă (2019) is another method for reducing the number of ”covarying”
+eigenfunctions. However, these methods fail to provide physical meaning for the selected functions.
+Our work differs from the above entirely non-parametric methods in two key ways: (1) the expla-
+nations we obtain are endowed with the meaning of the domain specific dictionaries, (2) less obviously,
+descriptors like principal curves or Laplacian eigenfunctions are generally still non-parametric (i.e
+exist in infinite dimensional function spaces), while the parameterizations by dictionaries we obtain
+(e.g. the torsions) are in finite dimensional spaces. This distinction is mirrored in comparison with
+the many so-called dictionary learning methods in which a low-dimensional transformation is learned
+simultaneously with its inverse. We note that our method is not dictionary learning per se, but
+rather sparse coding, in which the dictionary is given (Szabo et al., 2011).
+The symbolic regression methods of Brunton et al. (2016), Rudy et al. (2019), and Champion
+et al. (2019) for estimating governing laws of dynamical systems are perhaps most similar to this
+work. These methods use sparse regression with respect to a dictionary and the idea of differential
+composition. Their goal is to identify the functional equations of non-linear dynamical systems by
+regressing the time derivatives of the state variables on a subset of functions in the dictionary selected
+using a sparsity inducing penalty. This provides a natural interpretability. However, although these
+methods can loosely be considered univariate analogs, they do not consider the multidimensional
+data-manifold, and their synergies with dimension-reduction algorithms are developed in separate
+directions.
+With respect to sparse regression, the seminal group lasso paper of Yuan and Lin (2006) and
+support recovery analyses of Elyaderani et al. (2017); Wainwright (2009) are central to our approach.
+However, our use of replicates in experiments is reminiscent of the Stability Selection method of
+Meinshausen and Bühlmann (2010). Such methods address instabilities of the variable selection,
+in particular, when restrictive theoretical conditions are violated (Zhao and Yu, 2006; Huan Xu
+et al., 2012). The empirically-based two-stage OLS-hybrid approach we elucidate in Appendix E for
+resolving this issue is based on ideas in Efron et al. (2004); Meinshausen (2007); Hesterberg et al.
+(2008). Some attractive alternate approaches to this problem that we do not pursue are the use of
+non-convex penalties such as SCAD (Fan and Li, 2001; Breheny and Huang, 2011) and weighted data
+points in the Adaptive Lasso (Zou, 2006). We specifically note the method of Haufe et al. (2009),
+which applies group lasso to analyze sparse decomposition of vectors fields, albeit in a different
+setting.
+As for our method, gradient estimation on manifolds is typically derived from the perspective
+of local linear regression and tangent space estimation (Mukherjee and Zhou, 2006; Aswani et al.,
+2011). However, as in Luo et al. (2009), we make explicit the logarithmic map by estimating and
+13
+projecting upon the tangent space of φ(M), and our estimates of this tangent space are made using
+the pushforward metric of Perraul-Joncas and Meila (2013).
+The role of our work with in the molecular dynamics literature is particularly relevant to enhanced
+sampling methods (Rohrdanz et al., 2011, 2013; Fiorin et al., 2013; Fleming et al., 2016). In these
+methods, exploration of the molecular state space is accelerated through biasing of simulation towards
+directions of large scale variation, which are typically identified through visual inspection. Note that
+this method is practically useful despite the need to perform initial simulations in order to identify
+collective coordinates. More recently, reinforcement-learning type syntheses of these ideas have been
+applied (Wang et al., 2019; Pant et al., 2020; Sidky et al., 2020).
+Although in our application our dictionary consists of functions with physical meaning, our general
+principal of finding parametric geometrically-motivated approximations of learned representations is
+relevant to a range of machine learning contexts. Examining functions in embedding coordinates is
+quite typical in genomics (Amir et al., 2013), and much deep learning work also makes use of explicit
+traversal of a latent space (Lin et al., 2019; Shukla et al., 2019). It is also known in a range of settings
+that learned gradients provide interpretable (Adebayo et al., 2018) or otherwise statistically-useful
+information (Wu et al., 2010; Constantine et al., 2014; Yang, 2020). In Yang (2020), the gradient
+of the loss actually forms a type of tangent space estimator. However, our approach relies on the
+classical weighted local PCA method for tangent space estimation (Joncas et al., 2017; Aamari and
+Levrard, 2019). Improvement of this estimator in the presence of noise is an active area of research
+(Puchkin and Spokoiny, 2019).
+5. Theoretical results
+Here we first study the conditions under which f = h ◦ gS can be represented over a dictionary G
+that contains gS. Not surprisingly, we will show that these are functional independency conditions
+on the dictionary. Subsequently, we prove recovery conditions in the finite sample case.
+5.1 Functional dependency
+We first study when a set of functions on an open subset U ⊂ Rd
+can be almost smoothly represented
+with a subset of functionally independent functions. The following lemma implies that if a set of
+non-full-rank smooth functions has a constant rank in a neighborhood, then locally we can choose a
+subset of these functions such that the other functions can be smoothly represented by them. This is
+a direct result from the constant rank theorem.
+Lemma 1 (Remark 2 after Zorich (2004) Theorem 2 in Section 8.6.2) Let f : U → Rm
+be
+a mapping defined in an open neighborhood U ⊂ Rd
+of a point x?
+∈ Rd
+. Suppose f ∈ C`
+, the rank of
+the mapping f is k at every point in U, and k < m. Moreover, assume that the principal minor of
+order k of the matrix Df is not zero at x?
+. Then in some neighborhood Ux? ⊂ U there exist m−k C`
+functions gi, i = k + 1, · · · , m such that for any x = (x1, · · · , xd) ∈ U(x?
+),
+fi(x1, x2, · · · , xd) = gi(f1(x1, x2, · · · , xd), f2(x1, x2, · · · , xd), · · · , fk(x1, x2, · · · , xd)). (23)
+Applying this lemma we can construct a local representation of a subset in gS. Partitions of unity
+enable us to expand the above lemma from local to global. Mathematically, a smooth partition of
+unity subordinate to {Uα} is an indexed family (ψα)α∈A of smooth functions ψα : M → R with the
+following properties:
+(i) 0 ≤ ψα(ξ) for all α ∈ A and all ξ ∈ M;
+(ii) supp ψα ⊂ Uα for each α ∈ A;
+14
+(iii) Every ξ ∈ M has a neighborhood that intersects supp ψα for only finitely many values of α;
+(iv)
+P
+α∈A ψα(ξ) = 1 for all ξ ∈ M.
+Lemma 2 (Lee (2003) Theorem 2.23) Suppose that M is a smooth manifold, and {Uα}α∈A is
+any indexed open cover of M. Then there exists a smooth partition of unity subordinate to {Uα}.
+Now we state our main results.
+Theorem 3 Assume G = {gi}p
+i=1 is the dictionary where g1:p are C`
+functions in an open set
+U ⊂ Rd
+. For a subset S ⊂ [p], let gS is defined as {gi : i ∈ S}. Consider S0
+⊂ [p], S0
+6= S, |S0
+| < d
+such that rank DgS0 = |S0
+| at a point. Suppose that ` ≥ d + 1. Then there exists a function
+τ : R|S0
+|
+→ R|S|
+that is almost everywhere C`
+on the range of gS0 , w.r.t. Lebesgue measure on R|S0
+|
+,
+such that gS = τ ◦ gS0 if
+rank
+
+DgS
+DgS0
+
+= rank DgS0 on U (24)
+holds globally. If τ is smooth everywhere on the range of gS0 , then (24) holds globally.
+Proof First, we show the existence of τ. We claim that it suffices to prove the existence of function
+composition on the set where rank DgS0 = |S0
+|. Consider U = U1 ∪U2, where U1 := {x : rank DgS0 =
+|S0
+|}, and U2 = U − U1. U1 is not empty by the assumption. Note that we can select an |S0
+| × |S0
+|
+submatrix AS0,ξ in DgS0 and det AS0,ξ is a continuous function (and thus nonzero) in a neighborhood.
+This shows that U1 is a nonempty open set. Locally, gS0 is a diffeomorphism to its image; therefore
+gS0 (U1) contains an interior point, and thus has positive measure in R|S0
+|
+. From Sard’s theorem (Lee,
+2003), we know that the range of gS0 (U2) is of Lebesgue measure zero in R|S0
+|
+. Therefore it suffices
+to show that there exists a τ ∈ C`
+on gS0 (U1). To simplify the notation we use U to denote U1 in
+the following proof. By definition of U, we know that gS0 is a diffeomorphism between U and gS0 (U).
+So the inverse g−1
+S0 is well defined and C`
+. Also denote s = |S| and s0
+= |S0
+|. Let
+gS0tS(ξ) =
+
+gS0 (ξ)
+gS(ξ)
+
+, (25)
+and use DgS0tS to denote the l.h.s. matrix in (24). Here t means disjoint union. To be specific, we
+use gji
+to denote the i−th function in the collection [gS0 ; gS] When the rank of DgStS0 equals the
+rank of DgS0 , Lemma 1 implies that there exists some neighborhood Ux ∈ Rd
+of x and C`
+functions
+τi
+x : R|S0
+|
+→ R, i = s0
++ 1, s0
++ 2, · · · , s0
++ s such that
+gji
+(ξ) = τi
+x(gj1
+(ξ), · · · , gjs0 (ξ)) = τi
+x(gS0 (ξ)), for i = s0
++ 1, s0
++ 2, · · · , s0
++ s, ξ ∈ Ux. (26)
+Here we should notice that τi
+x is defined only on gS0 (Ux). Since this holds for every x ∈ U, we can
+find an open cover {Ux} of the original open set U. Since each open set in Rd
+is a manifold, the
+result of partition of unity in Lemma 2 holds, namely that U admits a smooth partition of unity
+subordinate to the cover {Ux}. We denote this partition of unity by ψx(·).
+Hence we can define
+τi
+(y) =
+X
+x∈U
+ψx(g−1
+S0 (y))τi
+x(y), y ∈ gS0 (U). (27)
+where τi
+is a function mapping from gS0 (U) → R. For each fixed x ∈ U, the function y →
+ψx(g−1
+S0 (y))τi
+x(y) for y ∈ gS0 (U) is C`
+. According to the properties of partition of unity, in a local
+neighborhood of each point, this is a summation of finitely many smooth functions. Then this τi
+will be a C`
+function on gS0 (U). Also, by 1 =
+P
+x ψx(ξ), it holds that τi
+(gS0 (ξ)) = gji
+(ξ) for any
+i = s0
++ 1, · · · , s0
++ s.
+15
+Therefore, globally in U we have
+gi
+StS0 (ξ) = τi
+(g1(ξ), · · · , gs0 (ξ)), for i = s0
++ 1, s0
++ 2, · · · , s0
++ s, ξ ∈ U. (28)
+Now we prove the reverse implication. If rank DgStS0 > rank DgS0 , then there is j ∈ S, so that
+Dgj 6∈ rowspan DgS0 . Pick ξ0
+∈ U such that Dgj(ξ0
+) 6= 0; such an ξ0
+must exist because otherwise it
+will be in rowspan DgS0 . By the theorem’s assumption, DgS = DτDgS0 . This implies that (DgS)T
+is in rowspan(DgS0 )T
+for any ξ. But this is impossible at ξ0
+.
+This theorem essentially gives a condition for the existence of the explanation. Further, if S is the
+set found by ManifoldLasso, then checking that there is no subset satisfying the rank condition
+implies that the explanation is unique in the dictionary. We say that a set of functions gS on a metric
+space X is C`
+(smooth) functionally dependent at ξ if there is a subset S0
+⊂ S, S0
+6= S, a function
+τ : R|S0
+|
+→ R|S|
+and a neighborhood U around ξ such that
+(i) gS = τ ◦ gS0 on U;
+(ii) τ is C`
+(smooth) globally on gS0 (U) ⊂ R|S0
+|
+;
+(iii) y − τ(yS0 ) 6≡ 0 on any neighborhood O(gS(ξ)) ⊂ R|S|
+. Here y = (y1, · · · , y|S|) ∈ R|S|
+, yS0 =
+(yi)i∈S0 ∈ R|S0
+|
+.
+The condition (iii) here eliminates the possibility of a trivial τ. S is functionally independent if it is
+nowhere functionally dependent. Based on Theorem 3, we formulate the rank condition below as a
+necessary and sufficient condition of functional independence.
+Corollary 4 (Functional Independence) Suppose M is a d−dimensional smooth manifold and
+gS : M → Rd
+are d C`
+functions. Suppose gS(M) has a positive measure in Rd
+. Then they are
+functionally independent on M iff rank DgS(ξ) is d everywhere on M except for a closed subset
+W ⊂ M with no interior point.
+Proof First we show that the rank condition implies functional independence. Suppose gS is
+functionally dependent. Then by definition we have that gS = τ ◦ gS0 on a neighborhood for some S0
+with |S0
+| < |S| = d. Then on this neighborhood rank DgS ≤ rank DgS0 ≤ d − 1. This contradicts
+the assumption. On the other hand, suppose DgS is functionally independent. We claim that for
+any ξ0
+∈ V0, rank DgS(ξ0
+) ≥ rank DgS(ξ): For any ξ there is a rank DgS × rank DgS non-degenerate
+submatrix of DgS(ξ) whose determinant is non-zero. Therefore, by the smoothness of gS, there exists
+a neighborhood V0 such that this submatrix of the Jacobian is invertible in this neighborhood and
+the claim holds.
+We therefore start from a point ξ where rank DgS = d − 1. Select functions that are full rank at
+this point, and denote them by gS0 . There is a neighborhood V1 of ξ with rank gS0 (ξ) = d − 1. If
+rank DgS = d − 1 holds on some neighborhood V2 of ξ, then after selecting a chart (U, ϕ) containing
+V1 ∩ V0, we have that
+rank
+
+DgS ◦ ϕ−1
+DgS0 ◦ ϕ−1
+
+= rank DgS0 ◦ ϕ−1
+(29)
+holds on V2 ∩ V1 ∩ V0. Thus, Theorem 3 implies that gS cannot be functionally independent (consider
+a composition with ϕ). Therefore, the set {x : rank DgS = d − 1} has empty interior in M. Similarly,
+in every neighborhood Vk of any point where 0 ≤ rank DgS = k < d − 1, there must be a point such
+that rank DgS = k + 1. Then in every neighborhood Vk+1 ∩ Vk of this new point there must be a
+point such that rank DgS = k + 2. By induction, there must be a point in Vk such that rank DgS = d.
+Therefore we conclude that the set W = {ξ : rank DgS ≤ d − 1} contains no interior point. Also, it
+is closed because {ξ : rank DgS = d} is open.
+16
+Theorem 5 Let G and gS be defined as before. M is a smooth manifold with dimension d embedded
+in RD
+. Suppose that ψ : M ⊂ RD
+→ Rm
+is also an embedding of M and has a decomposition
+ψ(ξ) = h ◦ gS(ξ) for every ξ ∈ M where h is smooth. If the dictionary gS contains d functions
+denoted by gS0 , that are smooth functionally independent on M, then there exists a e
+h such that
+ψ = e
+h ◦ gS0 on every ξ ∈ M. Here, the function e
+h is smooth almost everywhere in the range of gS0 .
+Proof Consider the set U = {x : rank DgS0 = d}. It is an open subset of the manifold M and
+therefore a smooth manifold. For each point x ∈ U, select a local chart (V, ϕ) such that V ⊂ U.
+With the same argument in the proof of Corollary 4, we know that there exists a smooth functions
+τx on V such that gS = τ ◦ gS0 holds on V. Also, since V is an open neighborhood, we conclude
+that the measure of gS0 (U) ≥ gS0 (V ) should be strictly positive. Therefore the partition of unity
+technique used in the proof of Theorem 3 can show that there exists a function τ on U that is smooth
+over gS0 (U) such that gS = τ ◦ gS0 holds globally on U. We can define τ on M \ U to be anything,
+and Sard’s theorem implies that gS0 (U) would be a measure zero set in Rd
+. Finally, we just write
+e
+h = h ◦ τ
+The assumptions of these theorems are reasonable. Even though any smooth map f : M → Rd
+on a compact manifold M must have at least one singular point, Theorem 3 will still hold almost
+everywhere as long as gS is smooth almost everywhere. The existence of such functions gS with rank
+d almost everywhere is guaranteed by the fact that a single coordinate chart can cover any compact
+manifold except for a set of measure zero, known as the cut-locus of the chart (Sheng, 2009; Bishop,
+2013). One can, for example, find one function explaining the whole circle S1
+embedded in R2
+except
+one point. Thus, these theoretical results should be considered conditions on the dictionary, rather
+than the manifold itself.
+5.2 Discussion of practical recovery from samples
+In a finite sample setting, Theorem 3 states that S and S0
+are equivalent explanations for f whenever
+(24) holds on open sets around the sample points. In this situation, it is very likely to find many
+subsets S0
+⊂ [p] of cardinality d that are full rank in neighborhoods of all data points. Still assuming
+that all gradients are exact, for all such S0
+the first term of Jλ(β) in (19) will be zero; in other words
+there will be many equivalent explanations of φ in G. However, one can define a subset S as the
+expected minimizer in (22), or in a purely oracle sense. For our theoretical analyses, we thus fix a
+subset S and regard it as the true support throughout this section.
+The tendency of ManifoldLasso to select a support with a low value of
+Pp
+j=1 kβjk is reasonable,
+and even desirable because, according to Obozinski et al. (2011), a particular group S will be recovered
+by Group Lasso methods, if (i) it is close to perpendicular to the linear subspace generated by all
+other groups, and (ii) group features in S are close to orthogonal matrix. The first condition will be
+discussed later in this Section. As for condition (ii), we note that if a set S0
+is not full rank on M,
+the Jacobian DgS0 will be ill-conditioned at the data near the critical points, which will result in
+very large βji values. Hence, such a subset will be heavily penalized. Moreover, features gj which
+vary much in a direction normal to M will have, due to the gradient normalization, smaller values
+for gradT M
+i
+gj; therefore their βj coefficients will be large relatively to the coefficients of functions
+that vary within M.
+We now analyze the situation when gradT M
+i
+gj and gradT M
+i
+φk are estimated with noise, showing
+that it is qualitatively similar to noiseless case. Specifically, we provide recovery guarantees for the
+(GroupLasso) problem that highlight the influence of the aforementioned factors, as well as of
+condition (i). The guarantees are deteriministic, but they depend on the noise sample variance, hence
+they can lead to statistical guarantees holding w.h.p. in the usual way. For simplicity, we analyze
+support recovery for m = 1, hence for a single dependent variable y. Namely we assume that that
+17
+the data y1:n ∈ Rd
+satisfy
+yi =
+p
+X
+j=1
+β∗
+ijxij + i for i = 1 : n (30)
+and we rewrite the GroupLasso problem as
+min
+β
+1
+2
+n
+X
+i=1
+||yi − Xiβi||2
+2 + λ
+√
+n
+p
+X
+j=1
+||βj||, (31)
+according to the notations of equation (19) with the index k dropped. A first theorem deals with
+support recovery, proving that all coefficients outside the support are zeroed out, under conditions
+that depend only on the dictionary, the fixed support S and the noise. The second result completes the
+previous with error bounds on the estimates β̂j, assuming an additional condition on the magnitude of
+the true βj coefficients. Since these coefficients are partial derivatives w.r.t. the dictionary functions,
+the condition implies that the dependence on each function must be strong enough to allow the
+accurate estimation of the partial derivatives.
+We introduce the following quantitites. The incoherence of G is defined as
+µ = max
+i=1:n,j∈[p],j0∈S,j6=j0
+|xT
+ijxij0 |
+kxijkkxij0 k
+. (32)
+This definition differs in two ways from the standard definition of incoherence as maxi maxj,j0∈[p] |xT
+ijxij0 |.
+First, here we do not make the common assumption that the columns of the GroupLasso design
+matrix are norm 1 (details to be found in the proof of Theorem 7). Rather, the recovery result
+we pursue assumes the normalizations in Section 3.6; hence to preserve a measure of incoherence
+independent of the column norms, we must rescale by kxijkkxij0 k. Second, because we condition on
+the set S, it is not necessary to require that the gradients outside the support S be incoherent.
+We further consider the internal collinearity of the support S as follows. Let
+Σi =
+
+xT
+ijxij0
+
+j,j0∈S
+and Σ = diag{Σ1:n}. (33)
+Lemma 6
+kΣ−1
+i k ≤
+1
+(minj∈S kxijk2)[1 − (s − 1)µ]
+for all i = 1 : n.
+Proof It is easy to see that
+Σi = diag{kxijkj∈S}Σ̃i diag{kxijkj∈S} with Σ̃i =
+"
+|xT
+ijxij0 |
+kxijkkxij0 k
+#
+i,j∈S
+. (34)
+By the Gershgorin Theorem, since all the off-diagonal elements of Σ̃i are bounded in absolute value
+by µ, the minumum eigenvalue of Σ̃i is bounded below by 1−(s−1)µ. When this quantity is positive,
+then the maximum eigenvalue of Σ̃−1
+i is
+kΣ̃−1
+i k ≤
+1
+1 − (s − 1)µ
+= ν. (35)
+A smaller ν means that the xij gradients are closer to being orthogonal at each datapoint i.
+Furthermore, kΣ−1
+i k ≤ kΣ̃−1
+i kk diag{kxijk−1
+j∈S}k2
+≤ ν
+minj∈S kxij k2 . 
+Finally, the noise level σ is defined by
+max
+i=1:n
+||i||2
+= dσ2
+. (36)
+18
+Theorem 7 (Support recovery) Assume that equation (30) holds, and that
+Pn
+i=1 ||xij||2
+= γ2
+j
+for all j = 1 : p. Let γmax = maxj6∈S γj, κS = maxi=1:n
+maxj∈S kxij k
+minj∈S kxij k . Denote by β̄ the solution of
+(31) for some λ > 0. If 1 − (s − 1)µ > 0 and
+γmax
+µ
+1 − (s − 1)µ
+κS
+minn
+i=1 minj0∈S kxij0 k
++
+σ
+√
+d
+λ
+√
+n
+!
+≤ 1 (37)
+then β̄ij = 0 for j 6∈ S and all i = 1, . . . n.
+Proof We structure equation (30) in the form
+y = ¯
+X̄β̄∗
++ ¯
+ with y = [yi]i=1:n ∈ Rnd
+, β̄ = [βi]i=1:n ∈ Rnp
+, (38)
+X̃ij ∈ Rnd
+is obtained from xij by padding with zeros for the entries not in the i-th segment,
+¯
+X̄ = [[X̃ij]j=1:p]i=1:n ∈ Rnd×np
+, and ¯
+X̄j = [X̃ij]i=1:n ∈ Rnd×n
+collects the colums of ¯
+X̄ that
+correspond to the j-th dictionary entry. Note that
+X̃T
+ijX̃ij0 = xT
+ijxij0 and X̃T
+ijX̃i0j0 = 0 whenever i 6= i0
+. (39)
+The proof is by the Primal Dual Witness method, following Elyaderani et al. (2017); Obozinski
+et al. (2011). It can be shown Elyaderani et al. (2017); Wainwright (2009) that β̄ is a solution to
+(GroupLasso) iff, for all j = 1 : p,
+¯
+X̄T
+j
+¯
+X̄(β̄ − β̄∗
+) − ¯
+X̄T
+j ¯
+ + λzj = 0 ∈ Rn
+with zj =
+βj
+||βj||
+if βj 6= 0 and ||zj|| < 1 otherwise. (40)
+The matrix ¯
+X̄T
+j
+¯
+X̄ is a diagonal matrix with n blocks of size 1×p, hence the first term in (40) becomes
+[xT
+ijXi(β̄i: − β̄∗
+i:)]i=1:n ∈ Rn
+. (41)
+Similarly ¯
+X̄T
+j ¯
+ = [xT
+iji]i=1:n ∈ Rn
+.
+We now consider the solution β̂ to problem (31) under the additional constraint that βij0 = 0 for
+j0
+6∈ S. In other words, β̂ is the solution we would obtain if S was known. Let ẑ be the optimal dual
+variable for this problem, and let ẑS = [ẑj]j∈S.
+We will now complete ẑS to a z ∈ Rnp
+so that the pair (β̂, z) satisfies (40). If we succeed, then
+we will have proved that β̂ is the solution to the original GroupLasso problem, and in particular
+that the support of β̂ is included in S. For simplicity we denote λ0
+= λ
+√
+n.
+From (40) we obtain values for zj when j 6∈ S.
+zj =
+−1
+λ0
+¯
+X̄T
+j
+h
+¯
+X̄T
+(β̂ − β̄∗
+) − ¯
+
+i
+. (42)
+In the same time, if we consider all j ∈ S, we obtain from (40) that ¯
+X̄S = [ ¯
+X̄j]j∈S (here the vectors
+βS, βS∗ and all other vectors are size ns, with entries sorted by j, then by i).
+¯
+X̄T
+S
+¯
+X̄S(β̂S − β∗
+S) − ¯
+X̄T
+S ¯
+ + λ0
+ẑS = 0. (43)
+Solving for β̂S − β∗
+S in (43), we obtain
+β̂S − β∗
+S = ( ¯
+X̄T
+S
+¯
+X̄S)−1
+
+¯
+X̄T
+S ¯
+ − λ0
+ẑS
+
+= Σ−1
+
+¯
+X̄T
+S ¯
+ − λ0
+ẑS
+
+. (44)
+After replacing the above in (42) we have
+zj =
+−1
+λ0
+¯
+X̄T
+j
+h
+¯
+X̄SΣ−1 ¯
+X̄T
+S w − ¯
+X̄SΣ−1
+λ0
+ẑS − ¯
+
+i
+= ¯
+X̄T
+j
+¯
+X̄SΣ−1
+ẑS +
+1
+λ0
+¯
+X̄T
+j (I − ¯
+X̄SΣ−1 ¯
+X̄T
+S )¯
+. (45)
+19
+Finally, by noting that Π = I − ¯
+X̄SΣ−1 ¯
+X̄T
+S is the projection operator on the subspace span( ¯
+X̄S)⊥
+,
+we obtain that
+zj = ( ¯
+X̄T
+j
+¯
+X̄S)Σ−1
+ẑS +
+1
+λ0
+¯
+X̄T
+j Π¯
+, for j 6∈ S. (46)
+We must show that ||zj|| < 1 for j 6∈ S. To bound the first term, we note that ¯
+X̄T
+j
+¯
+X̄S is n × ns,
+block diagonal, with blocks of size 1 × s, and with all non-zero entries bounded in absolute value by
+µ. Hence, for any vector v = [vi]i=1:n ∈ Rns
+,
+|| ¯
+X̄T
+j
+¯
+X̄Sv||2
+= ||[(xT
+ijxiS)vi]i=1:n||2
+≤
+n
+X
+i=1
+||(xT
+ijxiS)vi||2
+≤
+n
+X
+i=1
+k(xT
+ijxiS)k2
+kvik2
+. (47)
+In our case vi = Σ−1
+i ẑiS, hence by by Lemma 6
+kvik ≤ ||Σ−1
+i ||||ẑiS|| ≤ ν
+1
+minj0∈S kxij0 k2
+. (48)
+On the other hand,
+kxT
+ijxiSk2
+=
+X
+j0∈S
+(xT
+ijxij0 )2
+≤
+X
+j0∈S
+µkxijk2
+kxij0 k2
+≤ µ max
+j0∈S
+(kxij0 k2
+)kxijk2
+. (49)
+Bounds (48) and (49) together with equation (47) yield
+( ¯
+X̄T
+j
+¯
+X̄S)Σ−1
+ẑS ≤ ν2
+µ2
+n
+X
+i=1
+kxijk2
+max
+j0∈S
+(kxij0 k2
+)
+1
+(minj0∈S kxij0 k2)2
+≤ ν2
+µ2
+κ2
+S
+n
+X
+i=1
+kxijk2 1
+minj0∈S kxij0 k2
+(50)
+≤ ν2
+µ2
+κ2
+S
+1
+minn
+i=1 minj0∈S kxij0 k2
+n
+X
+i=1
+kxijk2
+= ν2
+µ2
+κ2
+S
+1
+minn
+i=1 minj0∈S kxij0 k2
+γ2
+j (51)
+To bound the second term, we note that Π is a block diagonal matrix, Π = diag{Π1:n}, with Πi = Id −
+xT
+iSΣ−1
+i xiS. Hence, the norm squared of this term is bounded above by
+Pn
+i=1 ||Πii||2
+||xij||2
+/(λ0
+)2
+≤
+Pn
+i=1 ||i||2
+||xij||2
+/(λ0
+)2
+≤ dσ2
+/(λ0
+)2
+Pn
+i=1 ||xij||2
+= (dσ2
+/(λ0
+)2
+)γ2
+j .
+Replacing these bounds in (46) we obtain that
+||zj|| ≤ || ¯
+X̄T
+j
+¯
+X̄SΣ−1
+ẑS|| + ||
+1
+λ0
+¯
+X̄T
+j Π¯
+|| ≤
+µνκS
+minn
+i=1 minj0∈S kxij0 k
++
+σ
+√
+d
+λ0
+!
+γj for any j 6∈ S. (52)
+
+The first term inside the parenthesis relates to the properties of the support S. The factor µ
+1−(s−1)µ
+measures the near-orthogonality of the gradients in S, while the factors (minn
+i=1 minj0∈S kxij0 k)−1
+and κS measure the conditioning of S with respect to the gradient norms. They are optimal when all
+gradients in S are bounded away from 0, and when their sizes are relatively equal. The second term
+depends on the noise amplitude, and can be made arbitrarily small by increasing the regularization
+coefficient λ.
+We now consider the recovery of all the non-zero coefficients, which will complete the exact support
+recovery proof. From the result below, we shall see that having non-zero β̂j for a j ∈ S requires that
+the original βj is large enough w.r.t. noise level and condition numbers of the problem. This conflicts
+with the requirement that βj is small, suggesting one possible way that the GroupLasso recovery
+may fail, namely that the smallest of the non-zero βj’s may be “regularized out” before all the
+nuisance β̂j are.
+20
+Corollary 8 Assume that equation (31) and condition (37) hold. Let κ = µ
+1−(s−1)µ
+κS
+minn
+i=1 minj0∈S kxij0 k
+and γS = k ¯
+X̄Sk. Denote by β̂ the solution to problem (31) for some λ > 0. If (1) λ = c γmaxσ
+√
+d
+1−κγ max ,
+c > 1, and (2) ||β∗
+j || > σ
+√
+d(γmax + γS) + λ(1 +
+√
+s) for all j ∈ S, then the support S is recovered
+exactly and
+||β̂j − β∗
+j || < σ
+√
+d(γmax + γS) + λ(1 +
+√
+s) = σ
+√
+dγmax
+
+1 + γS/γmax + c
+1 +
+√
+s
+1 − κγmax
+
+for all j ∈ S.
+(53)
+Proof of Corollary 8 According to Theorem 7, β̂j = 0 for j 6∈ S. It remains to prove the error
+bound for j ∈ S. According to Lemma V.2 of Elyaderani et al. (2017), for any j ∈ S,
+||β̂j − β∗
+j || ≤ || ¯
+X̄T
+j ¯
+|| + || ¯
+X̄T
+S ¯
+|| + λ(1 +
+√
+s) (54)
+≤ (|| ¯
+X̄j|| + || ¯
+X̄S||)||¯
+|| + λ(1 +
+√
+s) (55)
+≤ σ
+√
+d(γmax + γS) + λ(1 +
+√
+s) (56)
+= σ
+√
+dγmax
+
+1 + γS/γmax + c
+1 +
+√
+s
+1 − κγmax
+
+. (57)
+Hence, if ||β∗
+j || is greater than the r.h.s. of the above, β̂j 6= 0 and the support is recovered exactly. 
+In equation (53), the factor σ
+√
+d represents the noise amplitude, while γmax bounds the amplitude
+of the nuisance covariates ¯
+X̄j outside of S. A smaller γmax means that the contribution of these
+nuisance covariates will be smaller. The term γS bounds the collinearity of the noise with the true
+support covariates. The last term measures the bias introduced in β̂j by the regularization; note that
+λ itself depends on the noise amplitude σ
+√
+d.
+Recall from Sections 3.5 and 3.6 that γj represents the finite sample estimate of the L2 norm of
+gradT M
+i
+gj. When the dictionary functions gj are defined on M, but not outside M, then gradT M
+i
+gj
+is normalized by equation (20) and consequently γj =
+√
+n for all j. If first the gradients ∇ξgj are
+computed, then normaled in ambient space RD
+by (21), after projection on the tangent bundle T M,
+γj ≤
+√
+n. Thus, by explicitly considering the variability in the norms of kxijk for j 6∈ S, we see that
+features gj whose gradient ∇ξgj is not tangent to the manifold are easier to rule out. Regarding
+scaling of the l.h.s. of equation (37), it is easy to see that the term σ
+√
+dγmax
+λ
+√
+n
+is O(1) w.r.t. n; the first
+term κγmax is invariant to any rescaling of the ¯
+X̄ by a scalar.
+6. Experiments
+We demonstrate the ability of ManifoldLasso to identify explanations of manifolds and their
+embedding coordinates in both toy and scientific manifold learning problems. Section 6.1 describes
+the general experimental procedure, while Section 6.2 describes some specific adjustments to this
+protocol necessary for analyzing molecular dynamics (MD) data. Sections 6.3–6.4 describe our
+experimental results. 2
+6.1 Experimental setup
+For all of the following experiments, the data consist of n data points in D dimensions, as well
+an embedding φ1:m(D). We assume access to the manifold dimension d, a kernel bandwidth N
+used in the estimation of the tangent spaces, and p dictionary functions. Except where otherwise
+specified, m and M are used in the preliminary step of generating embeddings φ1:m using the
+2. Code to run experiments is available at https://github.com/sjkoelle/manifoldflasso_jmlr.
+21
+Dataset n Na D d N m n0
+p ω
+SwissRoll 10000 NA 49 2 .18 2 100 51 1
+RigidEthanol 10000 9 50 2 3.5 3 100 12 25
+Ethanol 50000 9 50 2 3.5 3 100 12 25
+Malonaldehyde 50000 9 50 2 3.5 3 100 12 25
+Toluene 50000 16 50 1 1.9 2 100 30 25
+Ethanol 50000 9 50 2 3.5 3 100 756 25
+Malonaldehyde 50000 9 50 2 3.5 3 100 756 25
+Table 1: Summary of experiments. SwissRoll and RigidEthanol are toy data, while Toluene, Ethanol,
+and Malonaldehyde are from quantum molecular dynamics simulations by Chmiela et al. (2017). The
+columns list the following experimental parameters: n is the sample size for manifold embedding, Na is the
+number of atoms in the molecule, D is the dimension of ξ, d is the intrinsic dimension, N is the kernel
+bandwidth, m is the embedding dimension, n0
+is the size of the subsample used for ManifoldLasso, p is
+the dictionary size, and ω is the number of independent repetitions of ManifoldLasso. More details are in
+Section 6.1
+Diffusion Maps algorithm as EmbeddingAlg. ManifoldLasso is applied to a uniformly random
+subset of size n0
+= |I| and this process is repeated ω number of times. These parameters are passed
+to the Laplacian, LocalPCA, RMetric, and PullBackDPhi algorithms, and are summarized
+in Table 1. The regularization parameter λ ranges over [0, λmax] as described in Section 3.6. We
+note that d < 3 in all cases, and so Theorem 7 applies.
+6.2 Molecular dynamics data
+The method of MD simulations is one of the principal tools in the study of molecular systems.
+Such simulations provide detailed information on the fluctuations and conformational changes
+of the simulated system, and are now routinely used to investigate the structure, dynamics and
+thermodynamics of biological macromolecules and their complexes. In such simulations, the positions
+of atoms within a molecule are sampled as they proceed through time from some initial conditions
+according to interatomic effects. The distribution of this sample describes the molecule’s behavior
+in the given experimental conditions. It has been shown empirically that manifolds approximate
+these high-dimensional distributions (Dsilva et al., 2013). Furthermore, substantial theoretical work
+is dedicated to demonstrating this property, i.e. that the states arising from dynamical systems
+concentrate around a slow manifold describing the evolution of configurations at long time scales.
+Accordingly, application of manifold learning to find what are in this setting called the collective
+coordinates has achieved great success. Even though the vector of atomic coordinates can take any
+value, due to interatomic interactions, the relative positions of atoms within the molecule lie near a
+low-dimensional manifold. Performing manifold learning on these data separates the conformational
+changes, modeled by the manifold, from the fluctuations represented by the “noise” around the
+manifold.
+Representing molecular configurations Our MD data are quantum-simulations from Chmiela
+et al. (2017). The raw data consists of X, Y, Z coordinates for each of the Na atoms of the chosen
+molecule. For a single observation, we denote these by ri ∈ R3Na
+. The first step in our data analysis
+pipeline is to featurize the configuration in a way that is invariant to rotation and translation. In the
+present experiments, we follow Chen et al. (2019) and represent a molecular configuration as a vector
+ai ∈ R3(Na
+3 ) of the planar angles formed by triplets of atoms. We then perform an SVD on this
+featurization, and project the data onto the top D = 50 singular vectors to remove linear redundancies;
+we denote the new data points by ξ1:n. The EmbeddingAlg and LocalPCA algorithms work
+directly with ξ in dimension D. Other possible representations such as applying a Procrustes
+22
+transform to each configuration to align it with the first one give similar results, and no matter which
+low level representation we choose, large-scale conformational changes are described by the relative
+rotations of groups of atoms - the bond torsions illustrated in Figure 1 (Chen et al., 2019).
+Dictionaries for MD data Therefore, in the RigidEthanol, Ethanol, Malonaldehyde, and
+Toluene MD datasets, we construct dictionaries consisting of bond torsions. We then apply
+ManifoldLasso to select combinations of these higher-level torsion features that explain the
+manifold in the lower-level planar angle feature space. Given an ordered 4-tuple of atoms ABCD,
+the torsion gABCD is the angle of the planes defined by the locations of ABC and BCD. Note that
+gABCD ≡ gDBCA ≡ gDCBA ≡ gACBD. Any torsion g is expressible in closed form as functions of
+the planar angles feature vector a. In particular, a torsion gABCD is a function of the angles of the
+triangles ABC, ABD, ACD, and BCD, and we compute the gradients of the torsions by automatic
+differentiation (Paszke et al., 2019).
+One cannot use the obtained gradients directly in ManifoldLasso, since the angular features
+overparameterize the molecular shape space ΣNa
+3 (Addicoat and Collins, 2010; Kendall, 1989) of
+dimension D0
+= 3Na − 7, and off-manifold gradients are therefore not well-defined. For example,
+whether one chooses to use triangles ABC, ABD, and ACD, or ABC, ABD, and BCD to compute
+gABCD has no effect on the value of gABCD, but changes the value of the gradient in RD
+. We
+therefore project the gradients on the tangent bundle of the shape space as it is embedded in RD
+.
+Details are given in Appendix B. It is on these gradients that we perform the normalization as
+described in Section 3.6. Remaining specifics of our MD data analytics pipeline are in Appendix C.
+6.3 Synthetic data results
+ManifoldLasso on SwissRoll We use the well known swiss roll dataset to demonstrate that
+ManifoldLasso is invariant to the choice of embedding algorithm. Our SwissRoll dataset consists
+of points sampled from a two dimensional rectangle and rolled up along one of the two axes, then
+randomly rotated in D = 49 dimensions. We learn the manifold using three techniques: Local Tangent
+Space Alignment, Diffusion Maps, and Isomap, shown in Figures 3c, 3e and 3g. For comparison,
+we also analyze the “trivial embedding” consisting of coordinates given by projection onto the
+rectangle edges (Figure 3a). These rectilinear coordinates are colored in red and blue, and show clear
+associations with individual embedding coordinates.
+The dictionary G consists of g1,2, the two rectilinear coordinates, as well as gj+2 = ξj, for
+j = 1, . . . 49, the coordinates of the feature space. Applying ManifoldLasso to the embeddings
+identifies the set S = {g1, g2} as the manifold explanation, and identifies the association of the
+recovered support with individual embedding coordinates φ1,2. By visual inspection of Figures 3a,
+3c, 3e, and 3g, we see that all embedding algorithms recover the original manifold, although the
+embeddings φIso
+, φDM
+, . . . are not isometric (this is more noticeable with Diffusion Maps), and sign
+changes are possible. However, Figures 3b, 3d, 3f and 3h demonstrate that ManifoldLasso recovers
+the two manifold-specific coordinate functions in each case, while the coefficients β3:51 decay rapidly
+to 0 with λ. Furthermore, each of g1,2 is always mapped to the correct embedding coordinate. The
+regularization paths are virtually identical for all embeddings, even though the embeddings are not
+isometric.
+23
+(a) (b)
+(c) (d)
+(e) (f)
+(g) (h)
+Figure 3: Results for SwissRoll embedded using a variety of manifold learning algorithms. Figure 3a
+shows the data mapped w.r.t. the edges of the rectangle. Figures 3c, 3e, and 3g display embeddings of
+SwissRoll generated by several different manifold learning methods, colored by the rectilinear coordinates
+in red and blue. Figures 3b, 3d, 3f, and 3h display the regularization paths of ManifoldLasso for these
+embeddings. The combined norms kβjk used in ManifoldLasso are given on the left, and the norms for
+the individual embedding coordinates kβjkk on the right.
+24
+ManifoldLasso on a Rigid Ethanol skeleton As a prelude to real MD data, we demonstrate
+the workings of ManifoldLasso in a controlled setting by applying it to a simple non-dynamical
+simulation of a rigidly-rotating ethanol molecule. We first construct an ethanol skeleton composed of
+the atoms shown in Figure 4a. We then sample as we rotate the atoms around the C-C and C-O
+bonds. In contrast with the MD trajectories, which are simulated according to quantum dynamics,
+these two angles are distributed uniformly over a grid, and Gaussian noise is added to the position of
+each atom. We call the resultant dataset RigidEthanol. As expected given our two a priori known
+degrees of freedom, Figures 4b and 4c show that the estimated manifold is a two-dimensional surface
+with a torus topology parameterized by bond torsions g1 and g2 similar to that observed for the MD
+Ethanol in Figure 1.
+The dictionary consists of the twelve torsions implicitly defined by the bond diagram3
+in Figure
+4a. All of these torsions circumscribe one of the central C-C and C-O bonds. Counting permutations
+of peripheral hydrogens, we can see that there are 9 of the former, and 3 of the latter, which we
+denote g0:8 and g9:11 in Figure 4d. Hence, any pair {gj, gj0 } with j ∈ {0 : 8}, j0
+∈ {9 : 11} is an
+equally correct coordinate system for this manifold. This is shown in Figure 4d by the incoherences
+µjj0 , i.e. mean pairwise cosines of the dictionary functions. Comparing the row and column labels of
+Figure 4d with Figure 4a shows that the collinearities of these gradients clearly cluster by central
+bond. Thus, we expect ManifoldLasso to recover one torsion from each group. Indeed, in the
+regularization path of an individual replicate of ManifoldLasso shown in Figure 4e, collinear
+torsions are killed off, and a representative torsion is selected from each group. Finally, Figure 4f
+shows that ManifoldLasso selects such orthogonal pairs in 18 out of 25 random replicates of the
+n0
+points.
+3. These are all 4-tuples of atoms connected by a path in the figure, modulo the natural equivalence relation on
+torsions previously described.
+25
+(a) (b) (c)
+(d) (e) (f)
+Figure 4: Results of ManifoldLasso for RigidEthanol. Figure 4a shows the simplified dynamics of our
+rigid molecular simulation. Atoms in the rigid ethanol skeleton are articulated around the C-O and C-C
+bonds by a torus of rotations. Figure 4b shows the learned torus, colored by C-C torsion g1 from Figure
+1. Figure 4c shows the same torus, colored by the C-O torsion g2 from Figure 1. Figure 4d displays the
+incoherences, i.e. pairwise collinearities of dictionary gradients; C-C torsions are in orange, C-O torsions in
+blue. Figure 4e shows regularization paths kβjk vs. λ for a single replicate. The chord diagram in Figure 4f
+represents the frequency of selecting each pair of torsions in replicate experiments. The listed frequencies
+with which individual torsions are selected are given by the sizes of the perimeter dots corresponding to each
+dictionary element, while the frequencies with which pairs of torsions are selected are given by the line widths
+connecting the dots. Frequencies are also given by the numbers next to the respective graphical indicators.
+6.4 Molecular Dynamics results
+In the same manner, we use ManifoldLasso to identify torsions that govern the dynamics of
+the molecules in Figure 1. From the machine learning point of view, MD data from well-studied
+molecules are an excellent testbed: the manifold hypothesis is believed to hold approximately, there is
+sufficient data to learn a manifold, and the ground truth is available and can validate our algorithms.
+Moreover, MD data are challenging problems for manifold learning. Appendix D displays Toluene,
+Malonaldehyde, and Ethanol in the ξ representation, showing high amplitude noise outside the
+manifold; indeed, MD data has multiscale structure and the “noise” is non-uniformly distributed
+and highly correlated in the RD
+space. Since the gradients of the dictionary functions are calculated
+analytically from the ξ coordinates, and the data does not lie exactly on M, the values of gradT M
+i
+gj
+will necessarily be noisy as well.
+From the scientific point of view, high quality MD data are highly expensive to generate, taking
+weeks or months of supercomputer time (Bowers et al., 2006; Fiorin et al., 2013). Fast automated
+analysis of these data by identification of so called collective variables serves both in the scientific
+understanding of the data and in acceleration sampling methods (Rohrdanz et al., 2013). Moreover,
+every new simulation represents a new manifold, and a new manifold explanation problem.
+26
+We first show that ManifoldLasso can distinguish groups that correspond to the chemical
+bonds in Figure 1, as would typically be done by a scientist using prior domain knowledge. Next, we
+repeat the analysis with no prior knowledge, including all distinct 4-tuples of atoms in the dictionary.
+Dictionaries based on bond diagrams Bond diagrams such as the ones in Figure 1 are based on
+a priori information about molecular structure garnered from historical work. Building a dictionary
+based on this structure is akin to many other methods in the field (Krenn et al., 2020; Xie et al.,
+2019). As in the case of RigidEthanol, our dictionaries consist of all equivalence classes of 4-
+tuples of atoms implicitly defined by bond diagrams, and the incoherence plots for Ethanol and
+Malonaldehyde in Figures 5a and 5d show two groups of highly dependent torsions, corresponding
+to the two bonds between heavy atoms in the molecules. Therefore, success means recovering a pair
+of incoherent torsions out of these dictionaries. For Toluene, the manifold dimension is d = 1 and
+success means recovering one of the 6 torsions associated with the peripheral methyl group bond.
+For this molecule, there are also p − 6 = 24 torsions that to not explain the data manifold. We apply
+ManifoldLasso with these dictionaries to the embeddings shown in Figure 1.
+As Figure 5 shows, ManifoldLasso is always able to identify torsions corresponding to the
+expected labelled bonds. Figures 5b, 5e, and 5g show regularization paths for single replicates of
+ManifoldLasso, and Figures 5c, 5f and 5h show frequencies of support recovery of sets of size d
+over w = 25 replicates. ManifoldLasso finds that the toroidal Ethanol manifold is explained by
+pairs of torsions from the C-O and C-C bonds, while Malonaldehyde is explained by one of each of
+the two central bonds. Toluene is explained by the torsion of the peripheral methyl group. These
+agree with our domain-expert validated parameterizations from Figure 1. Torsion association with
+individual embedding coordinates is examined in Appendix F
+For all quantum MD experiments, we examine the support recovery condition Theorem 7. We
+first note that Figures 5a and 5d show that even without foreknowledge of a unique true support, the
+incoherence parameter µ must be quite close to 1, since it is a maximum over set of cosines whose
+mean is plotted. The empirical distributions of the parameters of this Theorem across replicates are
+listed in Appendix F. The high values of the incoherence parameter µ and otherwise unfavorable
+empirical support recovery parameters listed in the table indicate that we cannot expect a unique
+recovery. However, ManifoldLasso is still successful in obtaining representative torsions from the
+desired bonds in Figure 1. The similarity between the results on this real data, with more challenging
+noise and variable sampling density, and the result on the synthetic RigidEthanol are witness to
+the robustness of the ManifoldLasso method.
+Results from full dictionary Now we test ManifoldLasso in the extreme case when the
+dictionary consists off all possible torsions, i.e. all Na
+4
+
+4-tuples modulo equivalence. For Ethanol and
+Malonaldehyde we obtain p = 756 torsions4
+. Such a large p is challenging for l1 regularized
+estimation, due to the bias mentioned Section 3.6 for large λ. Moreover, examining Figures 6a and
+6e, we see that, besides the two groups of collinear torsions in the previous dictionary, there are other
+torsions, about a fourth of the 756, that are coherent with both groups. While we do not necessarily
+expect ManifoldLasso to succeed, or to be used in such a way in practice, this experiment will
+inform us on the robustness of ManifoldLasso in a situation that is challenging for any type of
+sparsity inducing regularization.
+The results of ManifoldLasso with the full dictionary for Ethanol and Malonaldehyde are
+displayed in Figure 6. For consistency between replications, we choose a priori the ground truth to be
+represented by torsions g74,176 and g0,8, which are representative torsions for Ethanol, respectively
+for Malonaldehyde, depicted in Figure 1. We can evaluate the selected d = 2 functions for
+coherence with this ground truth. In this most challenging setting, ManifoldLasso identifies
+supports with mean incoherences with the true support of .68 ± .32 and .95 ± .1 for Ethanol and for
+Malonaldehyde, respectively. This is apparent from comparing selected torsions in Figures 6c and
+4. We do not analyze Toluene, because for d = 1 the solution is available analytically, making this example somewhat
+trivial.
+27
+(a) (b) (c)
+(d) (e) (f)
+(g) (h)
+Figure 5: Results for MD data with a priori dictionaries given by the bond diagrams in Figure 1. The
+three rows correspond to Ethanol, Malonaldehyde, and Toluene, respectively. Figures 5a and 5d display
+pairwise collinearities of dictionary gradients, colored by bond as in Figure 1. Toluene, a 1 − d manifold, has
+trivial cosines, and so these are not shown. Figures 5b, 5e, and 5g show overall regularization paths of kβjk
+for single replicates. Figures 5c, 5f, and 5h show chord diagrams displaying frequency of support recovery of
+sets of size d for 25 replicates. As for RigidEthanol, two-dimensional support recovery frequency is denoted
+by chord width, and one-dimensional support recovery frequency is denoted by size of perimeter dot. Note
+that ’blue’ in toluene corresponds to torsions in the benzene ring.
+6g with their collinearities in Figures 6d and 6h. Thus, we can see that ManifoldLasso performs
+preferably on Malonaldehyde.
+In the latter figures, collinearities of the selected supports with example functions from the
+representative true support are also plotted. We can see that the selected support functions are
+often strongly coherent with the ground truth functions, both when the selected support is almost
+orthogonal, and when the selected support functions are not. In the latter case, both selected support
+functions are strongly coherent with only one of the ground truth functions. Note that when both
+selected functions are more coherent with a single element of the true support, we use the pairwise
+coherences with higher mean. The results are visualized in Appendix F, which shows the embeddings
+colored by the selected torsions. There is a clear visual correspondence between coherences between
+28
+torsions and their colorings of the manifolds learned from Ethanol and Malonaldehyde; thus,
+when orthogonal pairs are selected, we capture information that would otherwise necessarily be
+obtained visually from the embeddings. However, the Malonaldehyde plots also demonstrate that
+even for this simple manifold, associating manifold coordinates to dictionary functions by visual
+inspection is delicate work. From a chemistry perspective, orthogonal recovered torsions generally
+flank pairs of hydrogens of which each is attached to one of the central atoms in the putatively true
+bonds. Thus, it makes sense that these peripheral torsions could geometrically describe the same
+motion as the putative true support.
+Examination of the selected regularization paths in Figures 6b and 6f shows that a small number of
+unselected functions persist quite far into the regularization path. Thus, when ManifoldLasso fails
+to select orthogonal functions, for example due to the documented support recovery instability and
+bias at high values of λ for Lasso methods in general (Meinshausen, 2007; Hesterberg et al., 2008;
+Huan Xu et al., 2012), it it is natural to consider a two-stage variable selection procedure in which a
+secondary variable selection step is applied after initial pruning, as in Hesterberg et al. (2008). To test
+this, we perform a two-stage sparse regression. In the first stage we heuristically choose λ = λmax/2,
+which eliminates most dictionary functions; in the second stage we perform an exhaustive search
+over the remaining dictionary to optimize (22). This approach is described in detail in Appendix E.
+In all cases, this simple variation recovers an explanation with functions that are highly collinear
+with the ground truth. In the plotted replicate, the number p0
+of dictionary elements selected at
+λmax/2 is about 10 for Ethanol and 4 for Malonaldehyde. Here, collinearities with the true
+support are .97 ± .03 for Ethanol and .96 ± .01 for Malonaldehyde, and we avoid selecting pairs
+of functions that are collinear with the same element of the true support. Visual inspection of the
+colored embeddings for Ethanol in Appendix F also confirms that these conform to our visual
+intuition of orthogonally varying torsions, and as for Malonaldehyde, these hydrogen-hydrogen
+torsions tend to abut the true central bonds. Together, these experiments show that on noisy, large
+p problems, and with massive violations of the incoherence conditions, ManifoldLasso, while
+sometimes not successful on its own, can robustly prune the dictionary.
+29
+(a) (b) (c) (d)
+(e) (f) (g) (h)
+Figure 6: Results for MD data with full dictionaries consisting of all possible torsions. The top and bottom
+rows show results for Ethanol and Malonaldehyde, respectively. Figures 6a and 6e show mean cosine
+collinearity of dictionary gradients ordered by heirarchical clustering. Figures 6b and 6f show examples of
+regularization paths for single replicates that select relatively orthogonal functions. The tuning parameter
+at which |S| = d is indicated as λ0. Functions are colored if they are selected in any replicate. Figure 6c
+and 6g shows support recoveries given by ManifoldLasso over different replicates. Figure 6d and 6h and
+shows mean cosine collinearity of selected supports. g74,176 and g0,8 are representative torsions from the true
+support, while the others are selected in any replicate. Pairs that are selected in any replicate are marked
+with a blue box.
+30
+7. Conclusion
+The approach of ManifoldLasso is to reconstruct the differentials of the manifold coordinates
+from differentials of functional covariates. It is robust to non-linearity in both the algorithm and
+the covariates. It requires functions that are smooth, as well as the assumption that the data
+lie near a smooth manifold. We estimate the differentials of the manifold embedding algorithm,
+but use differentials of functional covariates that are available analytically. We demonstrate this
+approach on molecular dynamics simulations that generate high-dimensional point clouds sampled
+from the configuration space of a given molecule. Our functional covariates are bond torsions, and the
+embedding coordinates display a denoised version of the data. Together, these examples demonstrate
+the efficacy of ManifoldLasso for high-dimensional automated attribution of higher-level features
+such as bond torsions with data geometry in a feature space given by lower-level features such as
+planar angles. It is able to associate high-level features with other functions such as the individual
+embedding coordinates, as well as the overall geometry determined by the tangent space estimation
+and entire embedding. Its limitations are consistent with the general behavior of l1-regularized
+methods, thus circumventing them with existing tools appears promising.
+Both linear and non-linear dimension reduction methods map data to abstract coordinates, derived
+from agnostic, intrinsic data properties, such as the covariance matrix, in the case of PCA, or the
+Laplacian, in the case of the Laplacian Eigenmaps algorithm. By regressing the abstract coordinate
+functions on a dictionary G of functions of the data that have meaning in the domain of the problem,
+we automatically establish relationships between the learned manifold and domain knowledge. The
+expert is freed from the tedious work of visually inspecting each possible function g with the manifold
+coordinates; her expertise is used by specifying covariate functions of the data. The recovered results
+come with guarantees which can be partially checked in practice. With the obvious simplifications,
+ManifoldLasso could also be used to assign explanations to coordinates obtained by PCA.
+Variations of the methods and results presented here could solve a variety of related problems.
+For example, suppose that two different experiments produce data sets in the same ambient space RD
+and that, from these, we learn manifolds M1 and M2 which are both 2-tori. Explaining M1,2 with a
+dictionary G can tell us if the manifolds are “the same” from the physics point of view. Moreover, one
+can seek common or overlapping explanations from a single dictionary for different data sources. In
+other words, by explaining manifolds estimated purely from data with domain-dependent dictionaries,
+we produce transferable knowledge, that does not depend on the particularities of the sample, or
+embedding algorithm, and that can be communicated between experts in the language of their
+domain.
+Acknowledgement
+Samson Koelle was funded by NSF DMS 2015272, NSF DMS 1810975. Hanyu Zhang was funded by
+NSF DMS 2015272, NSF DMS 1810975 Yu-Chia Chen was funded by NSF DMS 2015272 and the
+U.S. Department of Energy, Solar Energy Technology Office award DE-EE0008563.
+References
+Eddie Aamari and Clément Levrard. Nonasymptotic rates for manifold, tangent space and curvature
+estimation. Ann. Stat., 47(1):177–204, February 2019.
+Matthew A. Addicoat and Michael A. Collins. Potential energy surfaces: the forces of chemistry. In Mark
+Brouard and Claire Vallance, editors, Tutorials in Molecular Reaction Dynamics, chapter 2, pages 28–49.
+Royal Society of Chemistry Publishing, London, 2010.
+Julius Adebayo, Justin Gilmer, Michael Muelly, Ian Goodfellow, Moritz Hardt, and Been Kim. Sanity checks
+for saliency maps. October 2018.
+31
+El-Ad David Amir, Kara L Davis, Michelle D Tadmor, Erin F Simonds, Jacob H Levine, Sean C Bendall,
+Daniel K Shenfeld, Smita Krishnaswamy, Garry P Nolan, and Dana Pe’er. viSNE enables visualization of
+high dimensional single-cell data and reveals phenotypic heterogeneity of leukemia. Nat. Biotechnol., 31
+(6):545–552, June 2013.
+Anil Aswani, Peter Bickel, and Claire Tomlin. Regression on manifolds: Estimation of the exterior derivative.
+March 2011.
+M. Belkin and P. Niyogi. Laplacian eigenmaps and spectral techniques for embedding and clustering. In
+Advances in Neural Information Processing Systems 14, Cambridge, MA, 2002. MIT Press.
+Richard L Bishop. Riemannian geometry. March 2013.
+Michael R Blanton and Matthew A Bershady. Sloan digital sky survey IV: Mapping the milky way, nearby
+galaxies, and the distant universe.
+K. J. Bowers, D. E. Chow, H. Xu, R. O. Dror, M. P. Eastwood, B. A. Gregersen, J. L. Klepeis, I. Kolossvary,
+M. A. Moraes, F. D. Sacerdoti, J. K. Salmon, Y. Shan, and D. E. Shaw. Scalable algorithms for molecular
+dynamics simulations on commodity clusters. In SC ’06: Proceedings of the 2006 ACM/IEEE Conference
+on Supercomputing, pages 43–43, 2006. doi: 10.1109/SC.2006.54.
+Stephen Boyd and Lieven Vandenberghe. Convex Optimization. Cambridge University Press, USA, 2004.
+ISBN 0521833787.
+Patrick Breheny and Jian Huang. COORDINATE DESCENT ALGORITHMS FOR NONCONVEX PE-
+NALIZED REGRESSION, WITH APPLICATIONS TO BIOLOGICAL FEATURE SELECTION. Ann.
+Appl. Stat., 5(1):232–253, January 2011.
+Steven L. Brunton, Joshua L. Proctor, and J. Nathan Kutz. Discovering governing equations from data by
+sparse identification of nonlinear dynamical systems. Proceedings of the National Academy of Sciences,
+113(15):3932–3937, 2016. ISSN 0027-8424. doi: 10.1073/pnas.1517384113. URL http://www.pnas.org/
+content/113/15/3932.
+Kathleen Champion, Bethany Lusch, J Nathan Kutz, and Steven L Brunton. Data-driven discovery of
+coordinates and governing equations. Proc. Natl. Acad. Sci. U. S. A., 116(45):22445–22451, November
+2019.
+Guangliang Chen, Anna V. Little, and Mauro Maggioni. Multi-Resolution Geometric Analysis for Data
+in High Dimensions, pages 259–285. Birkhäuser Boston, Boston, 2013. ISBN 978-0-8176-8376-4. doi:
+10.1007/978-0-8176-8376-4-13. URL https://doi.org/10.1007/978-0-8176-8376-4-13.
+Scott Shaobing Chen, David L Donoho, and Michael A Saunders. Atomic decomposition by basis pursuit.
+SIAM J. Sci. Comput., 20(1):33–61, January 1998.
+Xi Chen, Yan Duan, Rein Houthooft, John Schulman, Ilya Sutskever, and Pieter Abbeel. InfoGAN:
+Interpretable representation learning by information maximizing generative adversarial nets. June 2016.
+Yu-Chia Chen and Marina Meilă. Selecting the independent coordinates of manifolds with large aspect ratios.
+July 2019.
+Yu-Chia Chen, James McQueen, Samson J. Koelle, Marina Meila, Stefan Chmiela, and Alexandre
+Tkatchenko. Modern manifold learning methods for md data – a step by step procedural overview.
+www.stat.washington.edu/mmp/Papers/mlcules-arxiv.pdf, July 2019.
+Stefan Chmiela, Alexandre Tkatchenko, Huziel Sauceda, Igor Poltavsky, Kristof T. Schütt, and Klaus-Robert
+Müller. Machine learning of accurate energy-conserving molecular force fields. Science Advances, March
+2017.
+32
+C. Clementi, H. Nymeyer, and J.N. Onuchic. Topological and energetic factors: what determines the
+structural details of the transition state ensemble and “en-route” intermediates for protein folding? an
+investigation for small globular proteins. Journal of molecular biology, 2000. says topology (of protein)
+more important than energy wells.
+R. R. Coifman and S. Lafon. Diffusion maps. Applied and Computational Harmonic Analysis, 30(1):5–30,
+2006.
+R. R. Coifman, S. Lafon, A. Lee, Maggioni, Warner, and Zucker. Geometric diffusions as a tool for harmonic
+analysis and structure definition of data: Diffusion maps. In Proceedings of the National Academy of
+Sciences, pages 7426–7431, 2005.
+P. Constantine, E. Dow, and Q. Wang. Active subspace methods in theory and practice: Applications to
+kriging surfaces. SIAM Journal on Scientific Computing, 36(4):A1500–A1524, 2014. doi: 10.1137/130916138.
+URL https://doi.org/10.1137/130916138.
+Carmeline J. Dsilva, Ronen Talmon, Neta Rabin, Ronald R. Coifman, and Ioannis G. Kevrekidis. Nonlinear
+intrinsic variables and state reconstruction in multiscale simulations. The Journal of Chemical Physics,
+139(18):184109, 2013. doi: 10.1063/1.4828457. URL https://doi.org/10.1063/1.4828457.
+Carmeline J Dsilva, Ronen Talmon, Ronald R Coifman, and Ioannis G Kevrekidis. Parsimonious representation
+of nonlinear dynamical systems through manifold learning: A chemotaxis case study. Appl. Comput.
+Harmon. Anal., 44(3):759–773, May 2018.
+Bradley Efron, Trevor Hastie, Iain Johnstone, Robert Tibshirani, and Others. Least angle regression. Ann.
+Stat., 32(2):407–499, 2004.
+M.K. Elyaderani, S.Jain, J.M.Druce, S.Gonella, and J.D.Haupt. Improved support recovery guarantees for
+the group lasso with applications to structural health monitoring. CoRR, abs/1708.08826, 2017.
+Jianqing Fan and Runze Li. Variable selection via nonconcave penalized likelihood and its oracle properties.
+J. Am. Stat. Assoc., 96(456):1348–1360, December 2001.
+Giacomo Fiorin, Michael L Klein, and Jérôme Hénin. Using collective variables to drive molecular dynamics
+simulations. Mol. Phys., 111(22-23):3345–3362, December 2013.
+Kelly L Fleming, Pratyush Tiwary, and Jim Pfaendtner. New approach for investigating reaction dynamics
+and rates with ab initio calculations. J. Phys. Chem. A, 120(2):299–305, January 2016.
+C W Gear. Parameterization of non-linear manifolds. August 2012.
+Trevor Hastie and Robert Tibshirani. Statistical learning with sparsity : the lasso and generalizations.
+Monographs on statistics and applied probability, no. 143. CRC Press, special indian ed. edition, 2015.
+Stefan Haufe, Vadim V Nikulin, Andreas Ziehe, Klaus-Robert Müller, and Guido Nolte. Estimating vector
+fields using sparse basis field expansions. In D Koller, D Schuurmans, Y Bengio, and L Bottou, editors,
+Advances in Neural Information Processing Systems 21, pages 617–624. Curran Associates, Inc., 2009.
+Matthias Hein, Jean-Yves Audibert, and Ulrike von Luxburg. From graphs to manifolds - weak and strong
+pointwise consistency of graph laplacians. In Learning Theory, 18th Annual Conference on Learning Theory,
+COLT 2005, Bertinoro, Italy, June 27-30, 2005, Proceedings, pages 470–485, 2005. doi: 10.1007/11503415 32.
+URL http://dx.doi.org/10.1007/11503415_32.
+Matthias Hein, Jean-Yves Audibert, and Ulrike von Luxburg. Graph laplacians and their convergence
+on random neighborhood graphs. Journal of Machine Learning Research, 8:1325–1368, 2007. URL
+http://dl.acm.org/citation.cfm?id=1314544.
+Eric J Heller. The correspondence principle and intramolecular dynamics. Faraday Discuss. Chem. Soc., 75
+(0):141–153, January 1983.
+33
+Charles A Herring, Amrita Banerjee, Eliot T McKinley, Alan J Simmons, Jie Ping, Joseph T Roland, Jeffrey L
+Franklin, Qi Liu, Michael J Gerdes, Robert J Coffey, and Ken S Lau. Unsupervised trajectory analysis
+of Single-Cell RNA-Seq and imaging data reveals alternative tuft cell origins in the gut. Cell Syst, 6(1):
+37–51.e9, January 2018.
+Tim Hesterberg, Nam Hee Choi, Lukas Meier, and Chris Fraley. Least angle and `1 penalized regression: A
+review. February 2008.
+Huan Xu, C Caramanis, and S Mannor. Sparse algorithms are not stable: A No-Free-Lunch theorem. IEEE
+Trans. Pattern Anal. Mach. Intell., 34(1):187–193, January 2012.
+Mainak Jas, Titipat Achakulvisut, Aid Idrizović, Daniel E Acuna, Matthew Antalek, Vinicius Marques,
+Tommy Odland, Ravi Prakash Garg, Mayank Agrawal, Yu Umegaki, Peter Foley, Hugo L Fernandes, Drew
+Harris, Beibin Li, Olivier Pieters, Scott Otterson, Giovanni De Toni, Chris Rodgers, Eva Dyer, Matti
+Hamalainen, Konrad Kording, and Pavan Ramkumar. Pyglmnet: Python implementation of elastic-net
+regularized generalized linear models, February 2020.
+Dominique Joncas, Marina Meila, and James McQueen. Improved graph laplacian via geometric Self-
+Consistency. In I Guyon, U V Luxburg, S Bengio, H Wallach, R Fergus, S Vishwanathan, and R Garnett,
+editors, Advances in Neural Information Processing Systems 30, pages 4457–4466. Curran Associates, Inc.,
+2017.
+D G Kendall. A survey of the statistical theory of shape. Stat. Sci., 1989.
+Matthäus Kleindessner and Ulrike von Luxburg. Dimensionality estimation without distances. In AISTATS,
+2015.
+Mario Krenn, Florian Häse, Akshatkumar Nigam, Pascal Friederich, and Alan Aspuru-Guzik. Self-referencing
+embedded strings (SELFIES): A 100% robust molecular string representation. Mach. Learn.: Sci. Technol.,
+1(4):045024, October 2020.
+N P Landsman. Between classical and quantum? http://philsci-archive.pitt.edu/2328/1/handbook.
+pdf. Accessed: 2021-1-25.
+Johannes Lederer and Christian Müller. Don’t fall for tuning parameters: Tuning-free variable selection
+in high dimensions with the TREX. Proceedings of the Twenty-Ninth AAAI Conference on Artificial
+Intelligenc, January 2015.
+John M. Lee. Introduction to Smooth Manifolds. Springer-Verlag New York, 2003.
+Zinan Lin, Kiran Koshy Thekumparampil, Giulia Fanti, and Sewoong Oh. InfoGAN-CR and ModelCentrality:
+Self-supervised model training and selection for disentangling GANs. June 2019.
+Chuanjiang Luo, Issam Safa, and Yusu Wang. Approximating gradients for meshes and point clouds via
+diffusion metric. Comput. Graph. Forum, 28(5):1497–1508, July 2009.
+J. McQueen, M. Meila, J. VanderPlas, and Z. Zhang. megaman: Manifold Learning with Millions of points.
+ArXiv e-prints, March 2016.
+Marina Meila, Samson Koelle, and Hanyu Zhang. A regression approach for explaining manifold embedding
+coordinates. (1811.11891), 2018. URL http://arxiv.org/abs/1811.11891.
+Nicolai Meinshausen. Relaxed lasso. Comput. Stat. Data Anal., 52(1):374–393, September 2007.
+Nicolai Meinshausen and Peter Bühlmann. Stability selection: Stability selection. J. R. Stat. Soc. Series B
+Stat. Methodol., 72(4):417–473, July 2010.
+Kitty Mohammed and Hariharan Narayanan. Manifold learning using kernel density estimation and local
+principal components analysis. arxiv, 1709.03615, 2017.
+34
+Sayan Mukherjee and Ding-Xuan Zhou. Learning coordinate covariances via gradients. J. Mach. Learn. Res.,
+7(Mar):519–549, 2006.
+Frank Noé and Cecilia Clementi. Collective variables for the study of long-time kinetics from molecular
+trajectories: theory and methods. Curr. Opin. Struct. Biol., 43:141–147, April 2017.
+Guillaume Obozinski, Martin J. Wainwright, and Michael I. Jordan. Support union recovery in high-
+dimensional multivariate regression. The Annals of Statistics, 39(1):1–47, 2011. ISSN 00905364. URL
+http://www.jstor.org/stable/29783630.
+Shashank Pant, Zachary Smith, Yihang Wang, Emad Tajkhorshid, and Pratyush Tiwary. Confronting pitfalls
+of AI-augmented molecular dynamics using statistical physics. J. Chem. Phys., 153(23):234118, December
+2020.
+Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen,
+Zeming Lin, Natalia Gimelshein, Luca Antiga, Alban Desmaison, Andreas Köpf, Edward Yang, Zach
+DeVito, Martin Raison, Alykhan Tejani, Sasank Chilamkurthy, Benoit Steiner, Lu Fang, Junjie Bai, and
+Soumith Chintala. PyTorch: An imperative style, High-Performance deep learning library. December 2019.
+Dominique Perraul-Joncas and Marina Meila. Non-linear dimensionality reduction: Riemannian metric
+estimation and the problem of geometric discovery. May 2013.
+D. Perrault-Joncas and M. Meila. Non-linear dimensionality reduction: Riemannian metric estimation and
+the problem of geometric discovery. ArXiv e-prints, May 2013.
+Nikita Puchkin and Vladimir Spokoiny. Structure-adaptive manifold estimation. June 2019.
+Lele Qu, Shimiao An, Tianhong Yang, and Yanpeng Sun. Group sparse basis pursuit denoising reconstruction
+algorithm for polarimetric Through-the-Wall radar imaging. Int. J. Antennas Propag., 2018, August 2018.
+M. A. Rohrdanz, W. Zheng, M. Maggioni, and C. Clementi. Determination of reaction coordinates via locally
+scaled diffusion map. The Journal of chemical physics, 134(12), 2011.
+Mary A. Rohrdanz, Wenwei Zheng, and Cecilia Clementi. Discovering mountain passes via torchlight:
+Methods for the definition of reaction coordinates and pathways in complex macromolecular reactions.
+Annual Review of Physical Chemistry.64:295-316, 64:295–316, 2013.
+Sam Roweis and Lawrence Saul. Nonlinear dimensionality reduction by locally linear embedding. Science,
+290(5500):2323–2326, December 2000.
+Samuel Rudy, Alessandro Alla, Steven L Brunton, and J Nathan Kutz. Data-Driven identification of
+parametric partial differential equations. SIAM J. Appl. Dyn. Syst., 18(2):643–660, January 2019.
+Lawrence K. Saul and Sam T. Roweis. Think globally, fit locally: Unsupervised learning of low di-
+mensional manifolds. J. Mach. Learn. Res., 4:119–155, December 2003. ISSN 1532-4435. doi:
+10.1162/153244304322972667. URL https://doi.org/10.1162/153244304322972667.
+Scott Shaobing Chen and David L. Donoho and Michael A. Saunders. Atomic decomposition by basis pursuit.
+SIAM REVIEW, 43(1):129, February 2001.
+Weimin Sheng. Section 5. geodesics and the exponential map, December 2009.
+Ankita Shukla, Shagun Uppal, Sarthak Bhagat, Saket Anand, and Pavan Turaga. Geometry of deep generative
+models for disentangled representations. February 2019.
+Hythem Sidky, Wei Chen, and Andrew L Ferguson. Machine learning for collective variable discovery and
+enhanced sampling in biomolecular simulation. Mol. Phys., 118(5):e1737742, March 2020.
+Christopher D Sogge. Hangzhou Lectures on Eigenfunctions of the Laplacian. Princeton University Press,
+2014.
+35
+Z Szabo, B Poczos, and A Lorincz. Online group-structured dictionary learning. In CVPR 2011, pages
+2865–2872, 2011. doi: 10.1109/CVPR.2011.5995712.
+Yee Whye Teh and Sam T. Roweis. Automatic alignment of local representations. In NIPS, 2002.
+Daniel Ting, Ling Huang, and Michael I. Jordan. An analysis of the convergence of graph laplacians. In
+Proceedings of the 27th International Conference on Machine Learning (ICML-10), pages 1079–1086, 2010.
+URL http://www.icml2010.org/papers/554.pdf.
+Martin J. Wainwright. Sharp thresholds for high-dimensional and noisy sparsity recovery using `1 -constrained
+quadratic programming (lasso). IEEE Transactions on Information Theory, 55:2183–2202, 2009.
+Yihang Wang, João Marcelo Lamim Ribeiro, and Pratyush Tiwary. Past-future information bottleneck for
+sampling molecular reaction coordinate simultaneously with thermodynamics and kinetics. Nat. Commun.,
+10(1):3573, August 2019.
+Q Wu, J Guinney, M Maggioni, and S Mukherjee. Learning gradients: predictive models that infer geometry
+and statistical dependence. J. Mach. Learn. Res., 2010.
+Tian Xie, Arthur France-Lanord, Yanming Wang, Yang Shao-Horn, and Jeffrey C Grossman. Graph dynamical
+networks for unsupervised learning of atomic scale dynamics in materials. Nat. Commun., 10(1):2667,
+June 2019.
+Greg Yang. Tensor programs II: Neural tangent kernel for any architecture. June 2020.
+M Yuan and Y Lin. Model selection and estimation in regression with grouped variables. J. R. Stat. Soc.
+Series B Stat. Methodol., 2006.
+S Zelditch. Quantum ergodicity and mixing of eigenfunctions. In Encyclopedia of Mathematical Physics,
+pages 183–196. Elsevier, 2006.
+Shu Zhang, Yueli Cui, Xinyi Ma, Jun Yong, Liying Yan, Ming Yang, Jie Ren, Fuchou Tang, Lu Wen, and
+Jie Qiao. Single-cell transcriptomics identifies divergent developmental lineage trajectories during human
+pituitary development. Nat. Commun., 11(1):5275, October 2020.
+Zhenyue Zhang and Hongyuan Zha. Principal manifolds and nonlinear dimensionality reduction via tangent
+space alignment. SIAM J. Scientific Computing, 26(1):313–338, 2004.
+Peng Zhao and Bin Yu. On model selection consistency of lasso. J. Mach. Learn. Res., 7:2541–2563, 2006.
+Vladimir A. Zorich. Mathematical Analysis I. Springer-Verlag Berlin Heidelberg, 2004.
+Hui Zou. The adaptive lasso and its oracle properties. J. Am. Stat. Assoc., 101(476):1418–1429, December
+2006.
+References
+Eddie Aamari and Clément Levrard. Nonasymptotic rates for manifold, tangent space and curvature
+estimation. Ann. Stat., 47(1):177–204, February 2019.
+Matthew A. Addicoat and Michael A. Collins. Potential energy surfaces: the forces of chemistry. In Mark
+Brouard and Claire Vallance, editors, Tutorials in Molecular Reaction Dynamics, chapter 2, pages 28–49.
+Royal Society of Chemistry Publishing, London, 2010.
+Julius Adebayo, Justin Gilmer, Michael Muelly, Ian Goodfellow, Moritz Hardt, and Been Kim. Sanity checks
+for saliency maps. October 2018.
+El-Ad David Amir, Kara L Davis, Michelle D Tadmor, Erin F Simonds, Jacob H Levine, Sean C Bendall,
+Daniel K Shenfeld, Smita Krishnaswamy, Garry P Nolan, and Dana Pe’er. viSNE enables visualization of
+high dimensional single-cell data and reveals phenotypic heterogeneity of leukemia. Nat. Biotechnol., 31
+(6):545–552, June 2013.
+36
+Anil Aswani, Peter Bickel, and Claire Tomlin. Regression on manifolds: Estimation of the exterior derivative.
+March 2011.
+M. Belkin and P. Niyogi. Laplacian eigenmaps and spectral techniques for embedding and clustering. In
+Advances in Neural Information Processing Systems 14, Cambridge, MA, 2002. MIT Press.
+Richard L Bishop. Riemannian geometry. March 2013.
+Michael R Blanton and Matthew A Bershady. Sloan digital sky survey IV: Mapping the milky way, nearby
+galaxies, and the distant universe.
+K. J. Bowers, D. E. Chow, H. Xu, R. O. Dror, M. P. Eastwood, B. A. Gregersen, J. L. Klepeis, I. Kolossvary,
+M. A. Moraes, F. D. Sacerdoti, J. K. Salmon, Y. Shan, and D. E. Shaw. Scalable algorithms for molecular
+dynamics simulations on commodity clusters. In SC ’06: Proceedings of the 2006 ACM/IEEE Conference
+on Supercomputing, pages 43–43, 2006. doi: 10.1109/SC.2006.54.
+Stephen Boyd and Lieven Vandenberghe. Convex Optimization. Cambridge University Press, USA, 2004.
+ISBN 0521833787.
+Patrick Breheny and Jian Huang. COORDINATE DESCENT ALGORITHMS FOR NONCONVEX PE-
+NALIZED REGRESSION, WITH APPLICATIONS TO BIOLOGICAL FEATURE SELECTION. Ann.
+Appl. Stat., 5(1):232–253, January 2011.
+Steven L. Brunton, Joshua L. Proctor, and J. Nathan Kutz. Discovering governing equations from data by
+sparse identification of nonlinear dynamical systems. Proceedings of the National Academy of Sciences,
+113(15):3932–3937, 2016. ISSN 0027-8424. doi: 10.1073/pnas.1517384113. URL http://www.pnas.org/
+content/113/15/3932.
+Kathleen Champion, Bethany Lusch, J Nathan Kutz, and Steven L Brunton. Data-driven discovery of
+coordinates and governing equations. Proc. Natl. Acad. Sci. U. S. A., 116(45):22445–22451, November
+2019.
+Guangliang Chen, Anna V. Little, and Mauro Maggioni. Multi-Resolution Geometric Analysis for Data
+in High Dimensions, pages 259–285. Birkhäuser Boston, Boston, 2013. ISBN 978-0-8176-8376-4. doi:
+10.1007/978-0-8176-8376-4-13. URL https://doi.org/10.1007/978-0-8176-8376-4-13.
+Scott Shaobing Chen, David L Donoho, and Michael A Saunders. Atomic decomposition by basis pursuit.
+SIAM J. Sci. Comput., 20(1):33–61, January 1998.
+Xi Chen, Yan Duan, Rein Houthooft, John Schulman, Ilya Sutskever, and Pieter Abbeel. InfoGAN:
+Interpretable representation learning by information maximizing generative adversarial nets. June 2016.
+Yu-Chia Chen and Marina Meilă. Selecting the independent coordinates of manifolds with large aspect ratios.
+July 2019.
+Yu-Chia Chen, James McQueen, Samson J. Koelle, Marina Meila, Stefan Chmiela, and Alexandre
+Tkatchenko. Modern manifold learning methods for md data – a step by step procedural overview.
+www.stat.washington.edu/mmp/Papers/mlcules-arxiv.pdf, July 2019.
+Stefan Chmiela, Alexandre Tkatchenko, Huziel Sauceda, Igor Poltavsky, Kristof T. Schütt, and Klaus-Robert
+Müller. Machine learning of accurate energy-conserving molecular force fields. Science Advances, March
+2017.
+C. Clementi, H. Nymeyer, and J.N. Onuchic. Topological and energetic factors: what determines the
+structural details of the transition state ensemble and “en-route” intermediates for protein folding? an
+investigation for small globular proteins. Journal of molecular biology, 2000. says topology (of protein)
+more important than energy wells.
+R. R. Coifman and S. Lafon. Diffusion maps. Applied and Computational Harmonic Analysis, 30(1):5–30,
+2006.
+37
+R. R. Coifman, S. Lafon, A. Lee, Maggioni, Warner, and Zucker. Geometric diffusions as a tool for harmonic
+analysis and structure definition of data: Diffusion maps. In Proceedings of the National Academy of
+Sciences, pages 7426–7431, 2005.
+P. Constantine, E. Dow, and Q. Wang. Active subspace methods in theory and practice: Applications to
+kriging surfaces. SIAM Journal on Scientific Computing, 36(4):A1500–A1524, 2014. doi: 10.1137/130916138.
+URL https://doi.org/10.1137/130916138.
+Carmeline J. Dsilva, Ronen Talmon, Neta Rabin, Ronald R. Coifman, and Ioannis G. Kevrekidis. Nonlinear
+intrinsic variables and state reconstruction in multiscale simulations. The Journal of Chemical Physics,
+139(18):184109, 2013. doi: 10.1063/1.4828457. URL https://doi.org/10.1063/1.4828457.
+Carmeline J Dsilva, Ronen Talmon, Ronald R Coifman, and Ioannis G Kevrekidis. Parsimonious representation
+of nonlinear dynamical systems through manifold learning: A chemotaxis case study. Appl. Comput.
+Harmon. Anal., 44(3):759–773, May 2018.
+Bradley Efron, Trevor Hastie, Iain Johnstone, Robert Tibshirani, and Others. Least angle regression. Ann.
+Stat., 32(2):407–499, 2004.
+M.K. Elyaderani, S.Jain, J.M.Druce, S.Gonella, and J.D.Haupt. Improved support recovery guarantees for
+the group lasso with applications to structural health monitoring. CoRR, abs/1708.08826, 2017.
+Jianqing Fan and Runze Li. Variable selection via nonconcave penalized likelihood and its oracle properties.
+J. Am. Stat. Assoc., 96(456):1348–1360, December 2001.
+Giacomo Fiorin, Michael L Klein, and Jérôme Hénin. Using collective variables to drive molecular dynamics
+simulations. Mol. Phys., 111(22-23):3345–3362, December 2013.
+Kelly L Fleming, Pratyush Tiwary, and Jim Pfaendtner. New approach for investigating reaction dynamics
+and rates with ab initio calculations. J. Phys. Chem. A, 120(2):299–305, January 2016.
+C W Gear. Parameterization of non-linear manifolds. August 2012.
+Trevor Hastie and Robert Tibshirani. Statistical learning with sparsity : the lasso and generalizations.
+Monographs on statistics and applied probability, no. 143. CRC Press, special indian ed. edition, 2015.
+Stefan Haufe, Vadim V Nikulin, Andreas Ziehe, Klaus-Robert Müller, and Guido Nolte. Estimating vector
+fields using sparse basis field expansions. In D Koller, D Schuurmans, Y Bengio, and L Bottou, editors,
+Advances in Neural Information Processing Systems 21, pages 617–624. Curran Associates, Inc., 2009.
+Matthias Hein, Jean-Yves Audibert, and Ulrike von Luxburg. From graphs to manifolds - weak and strong
+pointwise consistency of graph laplacians. In Learning Theory, 18th Annual Conference on Learning Theory,
+COLT 2005, Bertinoro, Italy, June 27-30, 2005, Proceedings, pages 470–485, 2005. doi: 10.1007/11503415 32.
+URL http://dx.doi.org/10.1007/11503415_32.
+Matthias Hein, Jean-Yves Audibert, and Ulrike von Luxburg. Graph laplacians and their convergence
+on random neighborhood graphs. Journal of Machine Learning Research, 8:1325–1368, 2007. URL
+http://dl.acm.org/citation.cfm?id=1314544.
+Eric J Heller. The correspondence principle and intramolecular dynamics. Faraday Discuss. Chem. Soc., 75
+(0):141–153, January 1983.
+Charles A Herring, Amrita Banerjee, Eliot T McKinley, Alan J Simmons, Jie Ping, Joseph T Roland, Jeffrey L
+Franklin, Qi Liu, Michael J Gerdes, Robert J Coffey, and Ken S Lau. Unsupervised trajectory analysis
+of Single-Cell RNA-Seq and imaging data reveals alternative tuft cell origins in the gut. Cell Syst, 6(1):
+37–51.e9, January 2018.
+Tim Hesterberg, Nam Hee Choi, Lukas Meier, and Chris Fraley. Least angle and `1 penalized regression: A
+review. February 2008.
+38
+Huan Xu, C Caramanis, and S Mannor. Sparse algorithms are not stable: A No-Free-Lunch theorem. IEEE
+Trans. Pattern Anal. Mach. Intell., 34(1):187–193, January 2012.
+Mainak Jas, Titipat Achakulvisut, Aid Idrizović, Daniel E Acuna, Matthew Antalek, Vinicius Marques,
+Tommy Odland, Ravi Prakash Garg, Mayank Agrawal, Yu Umegaki, Peter Foley, Hugo L Fernandes, Drew
+Harris, Beibin Li, Olivier Pieters, Scott Otterson, Giovanni De Toni, Chris Rodgers, Eva Dyer, Matti
+Hamalainen, Konrad Kording, and Pavan Ramkumar. Pyglmnet: Python implementation of elastic-net
+regularized generalized linear models, February 2020.
+Dominique Joncas, Marina Meila, and James McQueen. Improved graph laplacian via geometric Self-
+Consistency. In I Guyon, U V Luxburg, S Bengio, H Wallach, R Fergus, S Vishwanathan, and R Garnett,
+editors, Advances in Neural Information Processing Systems 30, pages 4457–4466. Curran Associates, Inc.,
+2017.
+D G Kendall. A survey of the statistical theory of shape. Stat. Sci., 1989.
+Matthäus Kleindessner and Ulrike von Luxburg. Dimensionality estimation without distances. In AISTATS,
+2015.
+Mario Krenn, Florian Häse, Akshatkumar Nigam, Pascal Friederich, and Alan Aspuru-Guzik. Self-referencing
+embedded strings (SELFIES): A 100% robust molecular string representation. Mach. Learn.: Sci. Technol.,
+1(4):045024, October 2020.
+N P Landsman. Between classical and quantum? http://philsci-archive.pitt.edu/2328/1/handbook.
+pdf. Accessed: 2021-1-25.
+Johannes Lederer and Christian Müller. Don’t fall for tuning parameters: Tuning-free variable selection
+in high dimensions with the TREX. Proceedings of the Twenty-Ninth AAAI Conference on Artificial
+Intelligenc, January 2015.
+John M. Lee. Introduction to Smooth Manifolds. Springer-Verlag New York, 2003.
+Zinan Lin, Kiran Koshy Thekumparampil, Giulia Fanti, and Sewoong Oh. InfoGAN-CR and ModelCentrality:
+Self-supervised model training and selection for disentangling GANs. June 2019.
+Chuanjiang Luo, Issam Safa, and Yusu Wang. Approximating gradients for meshes and point clouds via
+diffusion metric. Comput. Graph. Forum, 28(5):1497–1508, July 2009.
+J. McQueen, M. Meila, J. VanderPlas, and Z. Zhang. megaman: Manifold Learning with Millions of points.
+ArXiv e-prints, March 2016.
+Marina Meila, Samson Koelle, and Hanyu Zhang. A regression approach for explaining manifold embedding
+coordinates. (1811.11891), 2018. URL http://arxiv.org/abs/1811.11891.
+Nicolai Meinshausen. Relaxed lasso. Comput. Stat. Data Anal., 52(1):374–393, September 2007.
+Nicolai Meinshausen and Peter Bühlmann. Stability selection: Stability selection. J. R. Stat. Soc. Series B
+Stat. Methodol., 72(4):417–473, July 2010.
+Kitty Mohammed and Hariharan Narayanan. Manifold learning using kernel density estimation and local
+principal components analysis. arxiv, 1709.03615, 2017.
+Sayan Mukherjee and Ding-Xuan Zhou. Learning coordinate covariances via gradients. J. Mach. Learn. Res.,
+7(Mar):519–549, 2006.
+Frank Noé and Cecilia Clementi. Collective variables for the study of long-time kinetics from molecular
+trajectories: theory and methods. Curr. Opin. Struct. Biol., 43:141–147, April 2017.
+Guillaume Obozinski, Martin J. Wainwright, and Michael I. Jordan. Support union recovery in high-
+dimensional multivariate regression. The Annals of Statistics, 39(1):1–47, 2011. ISSN 00905364. URL
+http://www.jstor.org/stable/29783630.
+39
+Shashank Pant, Zachary Smith, Yihang Wang, Emad Tajkhorshid, and Pratyush Tiwary. Confronting pitfalls
+of AI-augmented molecular dynamics using statistical physics. J. Chem. Phys., 153(23):234118, December
+2020.
+Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen,
+Zeming Lin, Natalia Gimelshein, Luca Antiga, Alban Desmaison, Andreas Köpf, Edward Yang, Zach
+DeVito, Martin Raison, Alykhan Tejani, Sasank Chilamkurthy, Benoit Steiner, Lu Fang, Junjie Bai, and
+Soumith Chintala. PyTorch: An imperative style, High-Performance deep learning library. December 2019.
+Dominique Perraul-Joncas and Marina Meila. Non-linear dimensionality reduction: Riemannian metric
+estimation and the problem of geometric discovery. May 2013.
+D. Perrault-Joncas and M. Meila. Non-linear dimensionality reduction: Riemannian metric estimation and
+the problem of geometric discovery. ArXiv e-prints, May 2013.
+Nikita Puchkin and Vladimir Spokoiny. Structure-adaptive manifold estimation. June 2019.
+Lele Qu, Shimiao An, Tianhong Yang, and Yanpeng Sun. Group sparse basis pursuit denoising reconstruction
+algorithm for polarimetric Through-the-Wall radar imaging. Int. J. Antennas Propag., 2018, August 2018.
+M. A. Rohrdanz, W. Zheng, M. Maggioni, and C. Clementi. Determination of reaction coordinates via locally
+scaled diffusion map. The Journal of chemical physics, 134(12), 2011.
+Mary A. Rohrdanz, Wenwei Zheng, and Cecilia Clementi. Discovering mountain passes via torchlight:
+Methods for the definition of reaction coordinates and pathways in complex macromolecular reactions.
+Annual Review of Physical Chemistry.64:295-316, 64:295–316, 2013.
+Sam Roweis and Lawrence Saul. Nonlinear dimensionality reduction by locally linear embedding. Science,
+290(5500):2323–2326, December 2000.
+Samuel Rudy, Alessandro Alla, Steven L Brunton, and J Nathan Kutz. Data-Driven identification of
+parametric partial differential equations. SIAM J. Appl. Dyn. Syst., 18(2):643–660, January 2019.
+Lawrence K. Saul and Sam T. Roweis. Think globally, fit locally: Unsupervised learning of low di-
+mensional manifolds. J. Mach. Learn. Res., 4:119–155, December 2003. ISSN 1532-4435. doi:
+10.1162/153244304322972667. URL https://doi.org/10.1162/153244304322972667.
+Scott Shaobing Chen and David L. Donoho and Michael A. Saunders. Atomic decomposition by basis pursuit.
+SIAM REVIEW, 43(1):129, February 2001.
+Weimin Sheng. Section 5. geodesics and the exponential map, December 2009.
+Ankita Shukla, Shagun Uppal, Sarthak Bhagat, Saket Anand, and Pavan Turaga. Geometry of deep generative
+models for disentangled representations. February 2019.
+Hythem Sidky, Wei Chen, and Andrew L Ferguson. Machine learning for collective variable discovery and
+enhanced sampling in biomolecular simulation. Mol. Phys., 118(5):e1737742, March 2020.
+Christopher D Sogge. Hangzhou Lectures on Eigenfunctions of the Laplacian. Princeton University Press,
+2014.
+Z Szabo, B Poczos, and A Lorincz. Online group-structured dictionary learning. In CVPR 2011, pages
+2865–2872, 2011. doi: 10.1109/CVPR.2011.5995712.
+Yee Whye Teh and Sam T. Roweis. Automatic alignment of local representations. In NIPS, 2002.
+Daniel Ting, Ling Huang, and Michael I. Jordan. An analysis of the convergence of graph laplacians. In
+Proceedings of the 27th International Conference on Machine Learning (ICML-10), pages 1079–1086, 2010.
+URL http://www.icml2010.org/papers/554.pdf.
+Martin J. Wainwright. Sharp thresholds for high-dimensional and noisy sparsity recovery using `1 -constrained
+quadratic programming (lasso). IEEE Transactions on Information Theory, 55:2183–2202, 2009.
+40
+Yihang Wang, João Marcelo Lamim Ribeiro, and Pratyush Tiwary. Past-future information bottleneck for
+sampling molecular reaction coordinate simultaneously with thermodynamics and kinetics. Nat. Commun.,
+10(1):3573, August 2019.
+Q Wu, J Guinney, M Maggioni, and S Mukherjee. Learning gradients: predictive models that infer geometry
+and statistical dependence. J. Mach. Learn. Res., 2010.
+Tian Xie, Arthur France-Lanord, Yanming Wang, Yang Shao-Horn, and Jeffrey C Grossman. Graph dynamical
+networks for unsupervised learning of atomic scale dynamics in materials. Nat. Commun., 10(1):2667,
+June 2019.
+Greg Yang. Tensor programs II: Neural tangent kernel for any architecture. June 2020.
+M Yuan and Y Lin. Model selection and estimation in regression with grouped variables. J. R. Stat. Soc.
+Series B Stat. Methodol., 2006.
+S Zelditch. Quantum ergodicity and mixing of eigenfunctions. In Encyclopedia of Mathematical Physics,
+pages 183–196. Elsevier, 2006.
+Shu Zhang, Yueli Cui, Xinyi Ma, Jun Yong, Liying Yan, Ming Yang, Jie Ren, Fuchou Tang, Lu Wen, and
+Jie Qiao. Single-cell transcriptomics identifies divergent developmental lineage trajectories during human
+pituitary development. Nat. Commun., 11(1):5275, October 2020.
+Zhenyue Zhang and Hongyuan Zha. Principal manifolds and nonlinear dimensionality reduction via tangent
+space alignment. SIAM J. Scientific Computing, 26(1):313–338, 2004.
+Peng Zhao and Bin Yu. On model selection consistency of lasso. J. Mach. Learn. Res., 7:2541–2563, 2006.
+Vladimir A. Zorich. Mathematical Analysis I. Springer-Verlag Berlin Heidelberg, 2004.
+Hui Zou. The adaptive lasso and its oracle properties. J. Am. Stat. Assoc., 101(476):1418–1429, December
+2006.
+Appendix A. Approximating the logarithmic map by orthogonal
+projection
+In this appendix, we illustrate the details of the approximation to logarithmic map by orthogonal
+projection in section 3.4. We assume that M is a submanifold isometrically embedded in RD
+. Also
+M is assumed to be at least C4
+and compact. The function φ is assumed to be at least C3
+.
+Let γ(s) be the geodesic pass through a point ξ at s = 0 and a different point ξ0
+in M for some
+s > 0, where s is the arc length parameter of the geodesic. Then, the logarithmic map (?) of ξ0
+w.r.t. to ξ is defined as the vector l := sγ0
+(0) ∈ TξM. We denote it by logξ ξ0
+. Also, denote by u the
+orthogonal projection ProjTξM(ξ0
+− ξ). Then,
+Proposition 9 For all ξ not on the boundary of M and all ξ0
+such that kξ0
+− ξk≤ r for some r > 0,
+it holds that
+kProjTξM(ξ0
+− ξ) − logξ ξ0
+k= o(r), kProjTφ(ξ)φ(M)(φ(ξ0
+) − φ(ξ)) − logφ(ξ) φ(ξ0
+)k= o(r)
+.
+Proof
+This proposition follows the results in Appendix B. in Coifman and Lafon (2006). First, from the
+assumption it follows that the geodesic γ ∈ C3
+The Christofel symbol will be C3
+if the manifold is
+C4
+. And hence the solution of geodesic equation will be C3
+according to standard ODE theory.
+41
+Therefore by Taylor expansion, γ(s) = γ(0) + sγ0
+(0) + s2
+2 γ(2)
+(0) + γ(3)
+(s̃)
+6 s3
+, where s̃ ∈ (0, s).
+Recall that γ(2)
+is a vector orthogonal to TξM for a geodesic; moreover, when the manifold M is C3
+and compact, the magnitudes of γ(3)
+is uniformly bounded on M. Note that γ(0) = ξ, γ(s) = ξ0
+, so
+ξ0
+− ξ = l + O(s3
+), i.e. l = ξ0
+− ξ + O(s3
+).
+Lemma 7 in Coifman and Lafon (2006) implies kuk2
+= s2
++ O(r4
+). Therefore, s2
+= kuk2
++
+O(r4
+) ≤ kξ − ξ0
+k2
++ O(r4
+) ≤ r2
++ O(r4
+) = O(r2
+). Hence, s3
+= O(r3
+). Now consider l, u and
+ξ0
+− ξ as points in RD
+. We have that kξ0
+− ξ − uk ≤ kξ0
+− ξ − lk, and by triangle inequality,
+kl − uk ≤ kξ0
+− ξ − uk + kξ0
+− ξ − lk ≤ 2kξ0
+− ξ − lk = o(r). Hence, we have shown the first part of
+the desired result.
+Now we turn to ProjTφ(ξ)
+(φ(ξ0
+) − φ(ξ)). In the pushforward Riemannian metric G, φ(γ) is the
+geodesic between φ(ξ) and φ(ξ0
+) in φ(M). When M is compact, and φ ∈ C3
+(M), then φ and the
+derivatives φ0
+1:m are uniformly continuous, hence the derivatives of φ(γ) remain bounded by the
+derivatives of γ, and kφ(ξ0
+) − φ(ξ)k = O(r). Therefore, we can apply the previous argument to
+complete the proof.
+Appendix B. The shape space
+Here we define the shape space, and show how to obtain the gradient of a function gj of a molecular
+configuration, at a non-singular point, in the tangent bundle of this space.
+We define the shape space
+ΣNa
+3 = R3Na
+/(E(3) × R+
+),
+where E(3) is the three dimensional Euclidean group composed of rigid rotations and translations in
+R3
+, and R+
+is a dilation factor relative to the mean position of the Na atoms. That is, ΣNa
+3 is the
+space of positions of Na atoms in R3
+with equivalences given by translation, rotation, and dilation.
+Away from singularities of measure zero, ΣNa
+3 is a Riemannian manifold (?Addicoat and Collins,
+2010).
+Denote the Euclidean coordinates of R3Na
+by r, and the Euclidean position of each data point by
+ri. Recall that we compute ai = a(ri) for i ∈ 1, . . . n, where a is the vector-valued function
+a : R3Na
+→ R3(Na
+3 )
+that computes the angles formed by all triples of atoms in the molecule. This angular featurization
+of the data respects the symmetries of the shape space, and embeds the shape space. We compute
+bases for the tangent spaces of ΣNa
+3 as follows. For every analyzed point i, we compute the matrix of
+partial derivatives, also known as the Wilson B-matrix,
+Wi =
+∂a
+∂r
+(ri) ∈ R3Na×R
+3(Na
+3 )
+.
+Note that Wi is the transpose Jacobian of a. This computation is done using automatic differentiation.
+We then calculate the reduced Singular Value Decomposition
+Wi = UiΛiV T
+i
+where Λi is a diagonal matrix of dimension 3Na − 7, containing the non-zero singular values of Wi.
+A deductive explanation for the rank of Wi is that translation, rotation, and dilation correspond to a
+total of 7 degrees of freedom. The 3Na − 7 corresponding singular vectors in Vi are a basis for the
+tangent space TiΣNa
+3 in R3(Na
+3 ) (Addicoat and Collins, 2010). Let ai = a(ri) for i ∈ 1, . . . n. We can
+then project
+gradΣNa
+3
+gj(ai) = ViV T
+i ∇agj(ai),
+42
+where ∇agj(ai) is obtained with automatic differentiation using a close-form expression for the
+dictionary function in the angular coordinates a of R3(Na
+3 ), and gradΣNa
+3
+is the gradient on the shape
+manifold in the angular coordinates.
+Recall that we apply Principal Component Analysis to the angular features matrix a1:n ∈ Rn×D
+.
+To perform PCA, we use Singular Value Decomposition:
+a1:n = MΠNT
+.
+Denote by P the matrix formed with the first D columns of N; P projects the angular features into
+a lower dimension space that reduces redundancy while capturing the vast majority of the variability.
+That is,
+ξi = aiP, for i = 1, . . . n.
+The gradient of gj with respect to coordinates ξ are given by
+gradξ gj(ξi) = PT
+gradΣNa
+3
+gj(ai).
+We use gradξ gj(ξi) as ∇ξgj(ξi) in ManifoldLasso.
+Figure 7: This diagram shows a simplified representation of the neighborhood of a point in the shape space
+Σ3
+2. Up to rotation, dilation, and translation, the shape of a triangle is determined by two angles, so we can
+see that this is a two-dimensional space. The diagram represents the logarithmic map of a region of Σ3
+2, with
+the red line indicating the logarithmic map of the subspace of right triangles, in a coordinate system given by
+α1 and α2, two angles in the triangle.
+43
+Appendix C. Torsion Computation
+For molecular dynamics analyses, our dictionary G consists of bond torsions g (see Figure 1), which
+are computed from planar angles of the faces of the circumscribing triangles. These gradients are
+obtained using automatic differentiation in Pytorch. Diagrams 8 - 10 imply the identities of the
+bonds input as functional dictionaries to ManifoldLasso as a priori-known dictionaries: for these
+a priori dictionaries, only torsions explicitly shown by 3 ordered line segments are included. For
+example, in Figure , the ordered atom 4-tuple [9, 3, 1, 5] describes a torsion corresponding to the
+hydroxyl rotor containing the red oxygen.
+As described in Section 6.2, association of an ordered atom 4-tuple (A, B, C, D) to a torsion
+g(A, B, C, D) (where B and C are central, and A and D distal) is not unique. This is a separate
+issue from that of merely collinear torsions, and reflects the basic geometric properties of the analysis.
+There is an equivalence
+g(A, B, C, D) = g(A, C, B, D) = g(D, C, B, A) = g(D, B, C, A).
+For example, if [9, 3, 1, 5] is explicitly included in our dictionary, then [5, 1, 3, 9] is not, since these are
+in fact the same function. Thus, each set of 4 atoms defines 6 torsions upon ordering, since we have
+4
+4
+
+ordered 4-tuples, and equivalences of groups of 4. This is understandable geometrically by the
+fact that a tetrahedron (the shape defined by 4 points) has 6 edges, and therefore 6 torsions.
+The following figures show zoomed in versions of the molecules with atomic numberings.
+Figure 8: Bond diagram of ethanol.
+44
+Figure 9: Bond diagram of malonaldehyde
+45
+Figure 10: Bond diagram of toluene.
+46
+Appendix D. Feature space
+In order to demonstrate the multiscale non-i.i.d. noise and non-trivial topology and geometry of our
+data in the PCA feature space, we display scatterplots of pairs of the top features in our feature
+space RD
+containing data points ξ. Recall that PCA is applied as a preprocessing step prior to
+ManifoldLasso, and so the PCA coordinates therefore form our feature space. PCA coordinates
+have a natural ordering given by their corresponding eigenvalues, and so we are able to plot the ’top’
+coordinates. Note also that the manifolds are relatively thin in comparison to some noise dimensions;
+in other words the manifold reach is of the same scale as the noise.
+Figure 11: First 6 coordinates in RD
+output by PCA for Toluene.
+47
+Figure 12: First 6 coordinates in RD
+output by PCA for Ethanol.
+48
+Figure 13: First 6 coordinates in RD
+output by PCA for Malonaldehyde.
+49
+Appendix E. Group sparse basis pursuit
+As mentioned in section 3.6, the combinatorial group sparse basis pursuit problem
+arg min
+β:s=d
+p
+X
+j=1
+kβjks.t. grad φk(ξi) =
+p
+X
+j=1
+βijk gradT M
+i
+gj(ξi) for all i = 1 : n, and k = 1 : m. (58)
+has a natural duality with our approach. That is, for each value of λ, there is a corresponding
+constraint ball of radius  such the solution of the lasso problem is also the solution of the
+arg min
+β
+p
+X
+j=1
+kβjks.t.
+n
+X
+i=1
+m
+X
+k=1
+k grad φk(ξi) −
+p
+X
+j=1
+βijk gradT M
+i
+gj(ξi)k2
+2 < . (59)
+This is a combinatorial problem without restriction on the cardinality of the selected support. It can
+be exactly solved using the convex regularized approach.
+This cardinality-unrestricted version of Program (58) has several interesting properties (?). First,
+it favors gradients that are orthogonal and evenly varying. This matches our intuitively notion of
+what is a “good” explanation and mathematically corresponds to the notion of isometry. Second, it
+has a clear but not entirely obvious relation to the l2 error of our method applied to gradients in
+RD
+rather than Rd
+, in the sense that dictionary functions which are non-tangent to M will accrue a
+higher penalty. Third, expected minimizers of such dual problems are used to define optima for sparse
+estimation ?. We can thus use the empirical estimate of this minimizer in the cardinality-restricted
+setting to provide a useful notion of what is a “good” support beyond simply having low pairwise
+collinearity.
+Compared with the standard duality, the major distinguishing feature of our support recovery
+setup is our theoretical knowledge of the cardinality of the desired support. Unfortunately, we
+sometimes observe that the shrinkage caused by using a high λ to restrict support size causes the
+recovered support to not be close to the sample optimum of (58). Dictionary functions with large
+projection (
+Pn
+i=1
+Pm
+k=1(gradT M
+i
+gj(ξi))T
+(gradT M
+i
+φm(ξi)))1/2
+tend to appear early the regularization
+path, regardless of their orthogonality or consistency of variation. Problems with shrinkage including
+variable selection inconsistency at large λ, as well as the desirable properties of an intermediate value,
+are well-established in the support recovery and sparse coding literature (Scott Shaobing Chen and
+David L. Donoho and Michael A. Saunders, 2001; Hesterberg et al., 2008; Breheny and Huang, 2011;
+Lederer and Müller, 2015; Hastie and Tibshirani, 2015).
+We can empirically adapt our method to respond to this problem while still leveraging the
+advantages of the convex algorithm. We follow Hesterberg et al. (2008) in using an intermediate λ as
+a variable filtering step prior to variable selection, in our case, using (58). In this adapted approach,
+we initially prune the dictionary using a ManifoldLasso-type step at an intermediate λ value. We
+then run Program (58) on the pruned dictionary. Initial selection of d0
+<< p using our approach prior
+to selection of d variables using (58) is often more effective in obtaining the empirical minimizer of
+(58) than ManifoldLasso on its own, and is much more computationally feasible than running (58)
+on the entire dictionary. The λ at which these d0
+functions are obtained is somewhat arbitrary, since
+a fully data-driven approach would require computation of Program (58) on the entire dictionary, but
+relatively generic theoretical arguments provide blanket arguments in favor of λ > O(log p) (Scott
+Shaobing Chen and David L. Donoho and Michael A. Saunders, 2001). We in general find relatively
+wide regions of relatively low cardinality, and substantial improvements in the combinatorial loss with
+minimal computational burden at λ = λmax/2. Results for this two-stage method for Ethanol and
+Malonaldehyde are displayed in Figure 16.
+50
+Appendix F. Supplemental Experiments
+Coordinate-association in a priori dictionaries We show the association of individual em-
+bedding coordinates to dictionary functions in Ethanol and Malonaldehyde. In contrast to
+Malonaldehyde, but similar to SwissRoll, Ethanol has a distinct association of embedding
+coordinates with dictionary functions. In particular, φ3 is associated with different torsions from φ1
+and φ2. This is clearly evident in Figure 1. In Malonaldehyde, there is no clear association with
+embeddings coordinates. Note that this would also be true for Toluene, as Figure 1 clearly shows a
+circular manifold symmetric in φ1 and φ2.
+Figure 14: Combined and coordinate-specific regularization paths in five replicates of ManifoldLasso for
+Ethanol with dictionary given by the bond diagram. There is a clear association of the blue torsion with
+φ3, and orange with φ1,2.
+51
+Figure 15: Combined and coordinate-specific regularization paths in five replicates of ManifoldLasso for
+Malonaldehyde with dictionary given by the bond diagram. There is no clear association of embedding
+coordinates and covariates.
+52
+Two-stage method results The two-stage approach has great success at obtaining highly orthog-
+onal solutions collinear with the true support at minimal computational cost. Selected functions can
+be compared with visualizations in Appendix F. This shows a clear correspondence between variable
+selection using the two-stage method and our visual intuition (based on the colored embedding)
+about what is a good support.
+(a) (b) (c)
+(d) (e) (f)
+Figure 16: Two-stage results for Ethanol and Malonaldehyde, respectively, with dictionaries given by
+all possible torsions. Figures 16a and 16d show individual replicates, with intermediate tuning parameter
+value λmax/2. Colors are plotted for functions selected by subsequent combinatorial analysis. Figure 16c
+and 6g shows support recoveries given by subset selection using group lasso at λmax/2 followed by Program
+(58) over ω = 25 different replications. Figure 6d and 6h and shows mean cosine collinearity of selected
+supports. g74,176 and g0,8 are representative torsions from the true support, while the others are selected in
+any replicate. Pairs that are selected in any replicate are marked with a blue box.
+53
+Visualizing functions selected by ManifoldLasso from full dictionaries We can visualize
+the selected torsions in the manifold embedding coordinates. The identities of the selected torsions
+can be compared with the bond diagrams in Appendix C. We first visualize the functions selected
+using ManifoldLasso from Figure 6.
+Figure 17: Ethanol support estimated using ManifoldLasso with full dictionary. Colors should be
+compared with Figure 6.
+54
+Figure 18: Malonaldehyde support using using ManifoldLasso with full dictionary. Colors should be
+compared with Figure 6.
+55
+Visualizing functions selected by the two-stage method from full dictionaries We also
+visualize the functions selected using ManifoldLasso from Figure 16. Selected pairs of functions
+are in Ethanol more orthogonal than found using ManifoldLasso.
+Figure 19: Ethanol support using basis pursuit on superset obtained using ManifoldLasso. Colors should
+be compared with Figure 16.
+56
+Figure 20: Malonaldehyde support using basis pursuit on superset obtained using ManifoldLasso.
+Colors should be compared with Figure 16.
+57
+Calculated theoretical quantities In practice, we do not know theoretical quantities like µ,
+γmax, κS, and minn
+i=1 minj0∈S kxijk since we do not have access to S. However, we are able to
+calculate these quantities using the putative true support. These are listed in the following table.
+µ̄ σµ ¯
+κS σκS
+γmax σγmax
+¯
+minn
+i=1 minj∈S ||xij|| σminn
+i=1 minj∈S ||xij ||
+Ethanol (a priori) ∼1.0 8.348332e-08 10.029410 9.815921 44.110696 1.825407 0.970851 0.530601
+Malonaldehyde (a priori) ∼1.0 9.752936e-08 2.220002 0.771986 26.189684 0.477759 2.709132 0.464913
+Toluene (a priori) 15.576112 0.407799 1.449570 0.914012
+Ethanol (agnostic) ∼1.0 4.801062e-11 4.138372 2.113210 57.300602 1.360244 1.932001 1.605302
+Malonaldehyde (agnostic) ∼1.0 2.016285e-09 2.204895 0.589812 66.019168 1.044451 3.955157 0.853646
+Table 2: Mean and standard deviation of theoretical quantities across replicates
+58
+

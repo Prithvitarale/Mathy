@@ -1,1 +1,1166 @@
-JournalofMachineLearningResearch15(2014)2773-2832Submitted2/13;Revised3/14;Published8/14TensorDecompositionsforLearningLatentVariableModelsAnimashreeAnandkumara.anandkumar@uci.eduElectricalEngineeringandComputerScienceUniversityofCalifornia,Irvine2200EngineeringHallIrvine,CA92697RongAnandkumar,Ge,Hsu,Kakade,andTelgarskyKeywords:latentvariablemodels,tensordecompositions,mixturemodels,topicmodels,methodofmoments,powermethod1.IntroductionThemethodofmomentsisaclassicalparameterestimationtechnique(Pearson,1894)fromstatisticswhichhasprovedinvaluableinanumberofapplicationdomains.Thebasicparadigmissimpleandintuitive:(i)computecertainstatisticsofthedata—oftenempiricalmomentssuchasmeansandcorrelations—and(ii)findmodelparametersthatgiveriseto(nearly)thesamecorrespondingpopulationquantities.InanumberofTensorDecompositionsforLearningLatentVariableModelsOneapproachforobtainingtheorthogonaldecompositionisthetensorpowermethodofLathauweretal.(2000,Remark3).Weprovideaconvergenceanalysisofthismethodfororthogonallydecomposablesymmetrictensors,aswellasadetailedperturbationanalysisforarobust(andacomputationallytractable)variant(Theorem5.1).ThisperturbationanalysiscanbeviewedasananalogueofWedin’sperturbationtheoremforsingularvectorsofmatrices(Wedin,1972),providingaboundontheerroroftherecovereddecompositionintermsoftheoperatornormofthetensorperturbation.Thisanalysisissubtleinatleasttwoways.First,unlikeformatrices(whereeverymatrixhasasingularvaluedecomposi-tion),anorthogonaldecompositionneednotexistfortheperturbedtensor.Ourrobustvariantusesrandomrestartsanddeflationtoextractanapproximatedecompositioninacomputationallytractablemanner.Second,theanalysisofthedeflationstepsisnon-trivial;anaı̈veargumentwouldentailerroraccumulationineachdeflationstep,whichweshowcaninfactbeavoided.Whenthismethodisappliedforparameterestimationinlatentvariablemodelspreviouslydiscussed,improvedsamplecomplexitybounds(overpreviouswork)canbeobtainedusingthisperturbationanalysis.Finally,wealsoaddresscomputationalissuesthatarisewhenapplyingthetensorde-compositionapproachestoestimatinglatentvariablemodels.Specifically,weAnandkumar,Ge,Hsu,Kakade,andTelgarskycorrespondtolocalextremaoftheso-called“contrastfunctions”whichdistinguishGaussianvariablesfromnon-Gaussianvariables.Thismethodcanbeeffectivelyimplementedusingfastdescentalgorithms(Hyvarinen,1999).Whenusingtheexcesskurtosis(i.e.,TensorDecompositionsforLearningLatentVariableModelsRegalia,2002)—thespecialsymmetricorthogonalstructureweconsiderpermitssimplealgorithmstoefficientlyandstablyrecoverthedesireddecomposition.Inparticular,agen-eralizationofthematrixpowermethodtosymmetrictensors,introducedbyLathauweretal.(2000,Remark3)andanalyzedbyKofidisandRegalia(2002),providessuchade-composition.ThisisinfactimpliedbythecharacterizationofZhangandGolub(2001),whichshowsthatiterativelyobtainingthebestrank-1approximationofsuchorthogonallydecomposabletensorsalsoyieldstheexactdecomposition.Wenotethatingeneral,ob-tainingsuchapproximationsforgeneral(symmetric)tensorsisNP-hard(HillarandLim,2013).1.2.2LatentVariableModelsThisworkfocusesontheparticularapplicationoftensordecompositionmethodstoestimat-inglatentvariablemodels,asignificantdeparturefrommanypreviousapproachesinthemachinelearningandstatisticsliterature.ByfarthemostpopularheuristicforparameterestimationforsuchmodelsistheExpectation-Maximization(EM)algorithm(Dempsteretal.,1977;RednerandWalker,1984).AlthoughEMhasanumberofmerits,itmaysufferfromslowconvergenceandpoorqualitylocaloptima(RednerandWalker,1984),requir-ingpractitionerstoemploymanyadditionalheuristicstoobtaingoodsolutions.Forsomemodelssuchaslatenttrees(Roch,2006)andtopicmodels(Aroraetal.,2012a),maximumlikelihoodestimationisNP-hard,whichsuggeststhatotherestimationapproachesmaybemoreattractive.Morerecently,algorithmsfromtheoreticalcomputerscienceandmachinelearninghaveaddressedcomputationalandsamplecomplexityissuesrelatedtoestimatingcertainlatentvariablemodelssuchasGaussianmixturemodelsandHMMs(Dasgupta,1999;AroraandKannan,2005;DasguptaandSchulman,2007;VempalaandWang,2004;Kannanetal.,2008;AchlioptasandMcSherry,2005;ChaudhuriandRao,2008;BrubakerandVempala,2008;Kalaietal.,2010;BelkinandSinha,2010;MoitraandValiant,2010;HsuandKakade,2013;Chang,1996;MosselandRoch,2006;Hsuetal.,2012b;Anandkumaretal.,2012c;Aroraetal.,2012a;Anandkumaretal.,2012a).SeetheworksbyAnandku-maretal.(2012c)andHsuandKakade(2013)foradiscussionofthesemethods,togetherwiththecomputationalandstatisticalhardnessbarriersthattheyface.Thepresentworkreviewsabroadrangeoflatentvariableswhereamildnon-degeneracyconditionimpliesthesymmetricorthogonaldecompositionstructureinthetensorsoflow-orderobservablemoments.Notably,anotherclassofmethods,basedonsubspaceidentification(OverscheeandMoor,1996)andobservableoperatormodels/multiplicityautomata(Schützenberger,1961;Jaeger,2000;Littmanetal.,2001),havebeenproposedforanumberoflatentvariablemodels.ThesemethodsweresuccessfullydevelopedforHMMsbyHsuetal.(2012b),andsubsequentlygeneralizedandextendedforanumberofrelatedsequentialandtreeMarkovmodelsmodels(Siddiqietal.,2010;Bailly,2011;Bootsetal.,2010;Parikhetal.,2011;Roduetal.,2013;Balleetal.,2012;BalleandMohri,2012),aswellascertainclassesofparsetreemodels(Luqueetal.,2012;Cohenetal.,2012;Dhillonetal.,2012).Thesemethodsuselow-ordermomentstolearnan“operator”representationofthedistribution,whichcanbeusedfordensityestimationandbeliefstateupdates.Whilefinitesampleboundscanbegiventoestablishthelearnabilityofthesemodels(Hsuetal.,2012b),Anandkumar,Ge,Hsu,Kakade,andTelgarskyactuallygiveparameterestimates(e.g.,oftheemissionortransitionmatricesinthecaseofHMMs).1.3OrganizationTherestofthepaperisorganizedasfollows.Section2reviewssomebasicdefinitionsoftensors.Section3providesexamplesofanumberoflatentvariablemodelswhich,afterappropriatemanipulationsoftheirlowordermoments,shareacertainnaturaltensorstruc-ture.Section4reducestheproblemofparameterestimationtothatofextractingacertain(symmetricorthogonal)decompositionofatensor.WethenprovideadetailedanalysisofarobusttensorpowermethodandestablishananalogueofWedin’sperturbationtheoremforthesingularvectorsofmatrices.ThediscussioninSection6addressesanumberofpracticalconcernsthatarisewhendealingwithmomentmatricesTensorDecompositionsforLearningLatentVariableModelsTherankofap-thordertensorA∈NpRnisthesmallestnon-negativeintegerksuchthatA=Pkj=1u1,j⊗u2,j⊗···⊗up,jforsomeui,j∈Rn,i∈[p],j∈[k],andthesymmetricrankofasymmetricp-thordertensorAisthesmallestnon-negativeintegerksuchthatA=Pkj=1u⊗pjforsomeuj∈Rn,j∈[k].1Thenotionofrankreadilyreducestotheusualdefinitionofmatrixrankwhenp=2,asrevealedbythesingularvaluedecomposition.Similarly,forsymmetricmatrices,thesymmetricrankisequivalenttothematrixrankasgivenbythespectraltheorem.Adecompositionintosuchrank-onetermsisknownasacanonicalpolyadicdecomposition(Hitchcock,1927a,b).Thenotionoftensor(symmetric)rankisconsiderablymoredelicatethanmatrix(sym-metric)rank.Forinstance,itisnotclearapriorithatthesymmetricrankofatensorshouldevenbefinite(Comonetal.,2008).Inaddition,removalofthebestrank-1approx-imationofa(general)tensormayincreasethetensorrankoftheresidual(StegemanandComon,2010).Throughout,weusekvk=(Piv2i)1/2todenotetheEuclideannormofavectorv,andkMktodenotethespectral(operator)normofamatrix.WealsousekTktodenotetheoperatornormofatensor,whichwedefinelater.3.TensorStructureinLatentVariableModelsInthissection,wegiveseveralexamplesoflatentvariablemodelswhoselow-ordermomentscanbewrittenassymmetrictensorsoflowsymmetricrank;someoftheseexamplescanbededucedusingthetechniquesdevelopedinthetextbyMcCullagh(1987).ThebasicformisdemonstratedinTheorem3.1forthefirstexample,andthegeneralpatternwillemergefromsubsequentexamples.3.1ExchangeableSingleTopicModelsWefirstconsiderasimplebag-of-wordsmodelfordocumentsinwhichthewordsinthedocumentareassumedtobeexchangeable.Recallthatacollectionofrandomvariablesx1,x2,...,x`areexchangeableiftheirjointprobabilitydistributionisinvarianttopermu-tationoftheindices.Thewell-knownDeFinetti’stheorem(Austin,2008)impliesthatsuchexchangeablemodelscanbeviewedasmixturemodelsinwhichthereisalatentvariablehsuchthatx1,x2,...,x`areconditionallyi.i.d.givenh(seeFigure1(a)forthecorrespondinggraphicalmodel)andtheconditionaldistributionsareidenticalatallthenodes.Inoursimplifiedtopicmodelfordocuments,thelatentvariablehisinterpretedasthe(sole)topicofagivendocument,anditisassumedtotakeonlyafinitenumberofdistinctvalues.Letkbethenumberofdistincttopicsinthecorpus,dbethenumberofdistinctwordsinthevocabulary,and`≥3bethenumberofwordsineachdocument.Thegenerativeprocessforadocumentisasfollows:thedocument’stopicisdrawnaccordingtotheAnandkumar,Ge,Hsu,Kakade,andTelgarskyGiventhetopich,thedocument’s`wordsaredrawnindependentlyaccordingtothedis-cretedistributionspecifiedbytheprobabilityvectorµh∈∆d−1.Itwillbeconvenienttorepresentthe`wordsinthedocumentbyd-dimensionalrandomvectorsx1,x2,...,x`∈Rd.Specifically,wesetxt=eiifandonlyifthet-thwordinthedocumentisi,t∈[`],wheree1,e2,...edisthestandardcoordinatebasisforRd.Oneadvantageofthisencodingofwordsisthatthe(cross)momentsoftheserandomvectorscorrespondtojointprobabilitiesoverwords.Forinstance,observethatE[x1⊗x2]=X1≤i,j≤dPr[x1=ei,x2=ej]ei⊗ej=X1≤i,j≤dPr[1stword=i,2ndword=j]ei⊗ej,sothe(i,j)-theentryofthematrixE[x1⊗x2]isPr[1stword=i,2ndword=j].Moregenerally,the(i1,i2,...,i`)-thentryinthetensorE[x1TensorDecompositionsforLearningLatentVariableModelsAswewillseeinSection4.3,thestructureofM2andM3revealedinTheorem3.1impliesthatthetopicvectorsµ1,µ2,...Anandkumar,Ge,Hsu,Kakade,andTelgarsky3.2.2SphericalGaussianMixtures:DifferingCovariancesThegeneralcaseiswhereeachcomponentmayhaveadifferentsphericalcovariance.Anobservationinthismodelisagainx=µh+z,butnowz∈Rdisarandomvectorwhoseconditionaldistributiongivenh=i(forsomei∈[k])isamultivariateGaussianN(0,σ2iI)withzeromeanandsphericalcovarianceσ2iI.Theorem3.3(HsuandKakade,2013)Assumed≥k.Theaveragevarianceσ̄2:=Pki=1wiσ2iisthesmallesteigenvalueofthecovariancematrixE[x⊗x]−E[x]⊗E[x].Letvbeanyunitnormeigenvectorcorrespondingtotheeigenvalueσ̄2TensorDecompositionsforLearningLatentVariableModels(i.e.,Tisthefourthderivativetensorofthefunctionv7→8−1E[(v>x)2]2,soM4isthefourthcumulanttensor).LetκAnandkumar,Ge,Hsu,Kakade,andTelgarskyhx1x2···x`(a)Multi-viewmodelsh1h2···h`x1x2x`(b)HiddenMarkovmodelFigure1:Examplesoflatentvariablemodels.thecasewhereα0issmall(e.g.,aconstantindependentofk),whereuponhtypicallyhasonlyafewlargeentries.Thiscorrespondstothesettingwherethedocumentsaremainlycomprisedofjustafewtopics.Theorem3.5(Anandkumaretal.,2012a)DefineM1:=E[x1]M2:=E[x1⊗x2]−α0α0+1M1⊗M1M3:=E[x1⊗x2⊗x3]−α0α0+2E[x1⊗x2⊗M1]+E[x1⊗M1⊗x2]+E[M1⊗x1⊗x2]+2α20(α0+2)(α0+1)M1⊗M1⊗M1.ThenM2=kXi=1αi(α0+1)α0µi⊗µiM3=kXi=12αi(α0+2)(α0+1)α0µi⊗µi⊗µi.Notethatα0needstobeknowntoformM2andM3fromtherawmoments.This,however,isamuchweakerthanassumingthattheentiredistributionofhisknown(i.e.,knowledgeofthewholeparametervectorα).3.3Multi-ViewModelsMulti-viewmodels(alsosometimescallednaı̈veBayesmodels)areaspecialclassofBayesiannetworksinwhichobservedvariablesx1,x2,...,x`areconditionallyindependentgivenalatentvariableh.Thisissimilartotheexchangeablesingletopicmodel,butherewedonotrequiretheconditionaldistributionsofthext,t∈[`]tobeidentical.TechniquesdevelopedforthisclasscanbeusedtohandleanumberofwidelyusedmodelsincludingTensorDecompositionsforLearningLatentVariableModelsAsbefore,weleth∈[k]beadiscreterandomvariablewithPr[h=j]=wjforallj∈[k].Nowconsiderrandomvectorsx1∈RdAnandkumar,Ge,Hsu,Kakade,andTelgarsky3.3.1MixturesofAxis-AlignedGaussiansandOtherProductDistributionsThefirstexampleisamixtureofkproductdistributionsinRnunderamildincoherenceas-sumption(Anandkumaretal.,2012c).Here,wealloweachofthekcomponentdistributionstohaveadifferentproductdistribution(e.g.,Gaussiandistributionwithanaxis-alignedco-variancematrix),butrequirethematrixofcomponentmeansA:=[µ1|µ2|···|µk]∈Rn×ktosatisfyacertain(verymild)incoherencecondition.Theroleoftheincoherenceconditionisexplainedbelow.Foramixtureofproductdistributions,anypartitioningofthedimensions[n]intothreegroupscreatesthree(possiblyasymmetric)“views”whichareconditionallyindependentoncethemixturecomponentisselected.However,recallthatTheorem3.6requiresthatforeachview,thekconditionalmeansbelinearlyindependent.Ingeneral,thismaynotbeachievable;consider,forinstance,thecaseµi=eiforeachi∈[k].Suchcases,wherethecomponentmeansareveryalignedwiththecoordinatebasis,areprecludedbytheincoherencecondition.Definecoherence(A):=maxi∈[n]{e>iΠAei}tobethelargestdiagonalentryoftheorthog-onalprojectortotherangeofA,andassumeAhasrankk.Thecoherenceliesbetweenk/nand1;itislargestwhentherangeofAisspannedbythecoordinateaxes,anditisk/nwhentherangeisspannedbyasubsetoftheHadamardbasisofcardinalityk.Theincoherenceconditionrequires,forsomeε,δ∈(0,1),coherence(A)≤(ε2/6)/ln(3k/δ).Essentially,thisconditionensuresthatthenon-degeneracyofthecomponentmeansisnotisolatedinjustafewofthendimensions.Operationally,itimpliesthefollowing.Proposition3.2(Anandkumaretal.,2012c)AssumeAhasrankk,andcoherence(A)≤ε2/6ln(3k/δ)forsomeε,δ∈(0,1).Withprobabilityatleast1−δ,arandompartitioningofthedimensions[n]intothreegroups(foreachi∈[n],independentlypickt∈{1,2,3}uniformlyatrandomandputiingroupt)hasthefollowingproperty.Foreacht∈{1,2,3}andj∈[k],letµt,jbetheentriesofµjputintogroupt,andletAt:=[µt,1|µt,2|···|µt,k].Thenforeacht∈{1,2,3},Athasfullcolumnrank,andthek-thlargestsingularvalueofAtisatleastp(1−ε)/3timesthatofA.Therefore,threeasymmetricviewscanbecreatedbyrandomlypartitioningtheobservedrandomvectorxintox1,x2,andx3,suchthattheresultingcomponentmeansforeachviewsatisfytheconditionsofTheorem3.6.3.3.2SphericalGaussianMixtures,RevisitedConsideragainthecaseofsphericalGaussianmixtures(cf.Section3.2).AsweshallseeinSection4.3,theprevioustechniques(basedonTheorem3.2andTheorem3.3)leadtoestimationprocedureswhenthedimensionofxiskorgreater(andwhenthekcomponentmeansarelinearlyindependent).WenowTensorDecompositionsforLearningLatentVariableModelsWeagainusearandomizedreduction.Specifically,wecreatethreeviewsby(i)applyingarandomrotationtox,andthen(ii)partitioningx∈Rnintothreeviewsx̃1,Anandkumar,Ge,Hsu,Kakade,andTelgarskyProposition3.4(Anandkumaretal.,2012c)Defineh:=y2,wherey2isthesecondhiddenstateintheMarkovchain.Then•x1,x2,x3areconditionallyindependentgivenh;•thedistributionofhisgivenbythevectorw:=Tπ∈∆k−1;•forallj∈[k],E[x1|h=j]=Odiag(π)T>diag(w)−1ejE[x2|h=j]=OejE[x3|h=j]=OTej.Notethematrixofconditionalmeansofxthasfullcolumnrank,foreacht∈{1,2,3},providedthat:(i)Ohasfullcolumnrank,(ii)Tisinvertible,and(iii)πandTπhavepositiveentries.4.OrthogonalTensorDecompositionsWenowshowhowrecoveringtheµi’sinouraforementionedproblemsreducestotheprob-lemoffindingacertainorthogonaltensordecompositionofasymmetrictensor.Westartbyreviewingthespectraldecompositionofsymmetricmatrices,andthendiscussageneraliza-tiontothehigher-ordertensorcase.Finally,weshowhoworthogonaltensordecompositionscanbeusedforestimatingthelatentvariablemodelsfromtheprevioussection.4.1Review:TheMatrixCaseWefirstbuildintuitionbyreviewingthematrixsetting,wherethedesireddecomposi-tionistheeigendecompositionofasymmetricrank-kmatrixM=VΛV>,whereV=[v1|v2|···|vk]∈Rn×kisthematrixwithorthonormaleigenvectorsascolumns,andΛ=diag(λ1,λ2,...,λk)∈Rk×kisdiagonalmatrixofnon-zeroeigenvalues.Inotherwords,M=kXi=1λiviv>i=kXTensorDecompositionsforLearningLatentVariableModelsu1andu2spanningthesamesubspaceasv1andv2.Nevertheless,thedecompositionisuniquewhenλ1,λ2,...,λAnandkumar,Ge,Hsu,Kakade,andTelgarsky4.2.1Fixed-PointCharacterizationForatensorT,considerthevector-valuedmapu7→T(I,u,u)(5)whichisthethird-ordergeneralizationof(2).ThiscanbeexplicitlywrittenasTTensorDecompositionsforLearningLatentVariableModelsAswenowsee,theseadditionaleigenvectorscanbeviewedasspurious.WesayaunitvectoruisarobusteigenvectorofTifthereexistsan>0suchthatAnandkumar,Ge,Hsu,Kakade,andTelgarskyTheproofofTheorem4.2isgiveninAppendixA.2.ItissimilartolocaloptimalityanalysisforICAmethodsusingfourth-ordercumulants(e.g.,DelfosseandLoubaton,1995;Friezeetal.,1996).Again,weseesimilardistinctionstothematrixcase.Inthematrixcase,theonlylocalmaximizersoftheRayleighquotientaretheeigenvectorswiththelargesteigenvalue(andthesemaximizerstakeonthegloballyoptimalvalue).Forthecaseoforthogonaltensorforms,therobusteigenvectorsarepreciselytheisolatedlocalmaximizers.Animportantimplicationofthetwocharacterizationsisthat,fororthogonallydecom-posabletensorsT,(i)thelocalmaximizersoftheobjectivefunctionu7→T(u,u,u)/(u>u)3/2correspondpreciselytothevectorsviinthedecomposition,and(ii)theselocalmaximizerscanbereliablyidentifiedusingasimplefixed-pointiteration(i.e.,thetensoranalogueofthematrixpowermethod).Moreover,asecond-derivativetestbasedonT(I,I,u)canbeemployedtotestforlocaloptimalityandruleTensorDecompositionsforLearningLatentVariableModels4.3.1TheReductionFirst,letW∈Rd×kbealineartransformationsuchthatM2(W,W)=W>M2W=IwhereIisthekAnandkumar,Ge,Hsu,Kakade,andTelgarsky4.3.2LocalMaximizersof(CrossMoment)SkewnessThevariationalcharacterizationprovidesaninterestingperspectiveontherobusteigen-vectorsfortheselatentvariablemodels.Considertheexchangeablesingletopicmodels(Theorem3.1),andtheobjectivefunctionu7→E[(x>1u)(x>2u)(x>3u)]E[(x>1u)(x>2u)]3/2=M3(u,u,u)M2(u,u)3/2.Inthiscase,everylocalmaximizeru∗satisfiesM2(I,u∗)=√wiµiforsomei∈[k].Theobjectivefunctioncanbeinterpretedasthe(crossmoment)skewnessoftherandomvectorsx1,x2,x3alongdirectionu.5.TensorPowerMethodInthissection,weconsiderthetensorpowermethodofLathauweretal.(2000,Remark3)fororthogonaltensordecomposition.WefirststateasimpleconvergenceanalysisforanorthogonallydecomposabletensorT.WhenonlyanapproximationT̂toanorthogonallydecomposabletensorTisavailable(e.g.,whenempiricalmomentsareusedtoestimatepopulationmoments),anorthogonaldecompositionneednotexistforthisperturbedtensor(unlikeforthecaseofmatrices),andamorerobustapproachisrequiredtoextracttheapproximatedecomposition.Here,weproposesuchavariantinAlgorithm1andprovideadetailedperturbationanalysis.Wenotethatalternativeapproachessuchassimultaneousdiagonalizationcanalsobeemployed(seeAppendixD).5.1ConvergenceAnalysisforOrthogonallyDecomposableTensorsThefollowinglemmaestablishesthequadraticconvergenceofthetensorpowermethod—i.e.,repeatediterationof(6)—forextractingasinglecomponentoftheorthogonaldecom-position.Notethattheinitialvectorθ0determineswhichrobusteigenvectorwillbetheconvergentpoint.Computationofsubsequenteigenvectorscanbecomputedwithdeflation,i.e.,bysubtractingappropriatetermsfromT.Lemma5.1LetT∈N3Rnhaveanorthogonaldecompositionasgivenin(4).Foravectorθ0∈Rn,supposethatthesetofnumbers|λ1v>1θ0|,|λ2v>2θ0|,...,|λkv>kθ0|hasauniquelargestelement.Withoutlossofgenerality,say|λ1v>1θ0|isthislargestvalueand|λ2v>2θ0|isthesecondlargestvalue.Fort=1,2,...,letθt:=T(I,θt−1,θt−1)kT(I,θt−1,θt−1)k.Thenkv1−θtk2≤2λ21kXi=2λ−2i·λ2v>2θ0λ1v>1θ02t+1.Thatis,repeatedTensorDecompositionsforLearningLatentVariableModelsToobtainalleigenvectors,wemaysimplyproceediterativelyusingdeflation,executingthepowermethodonT−Pjλjv⊗3jafterhavingobtainedrobusteigenvector/eigenvaluepairsAnandkumar,Ge,Hsu,Kakade,andTelgarskyAssumethatthesymmetrictensorT∈Rk×k×kisorthogonallydecomposable,andthatT̂=T+E,wheretheperturbationE∈Rk×k×kisasymmetrictensorwithsmalloperatornorm:kEk:=supkθk=1|E(θ,θ,θ)|.Inourlatentvariablemodelapplications,T̂isthetensorformedbyusingempiricalmo-ments,whileTistheorthogonallydecomposabletensorderivedfromthepopulationmo-mentsforthegivenmodel.Inthecontextofparameterestimation(asinSection4.3),Emustaccountforanyerroramplificationthroughoutthereduction,suchasinthewhiteningstep(see,e.g.,HsuandKakade,2013,forsuchananalysis).ThefollowingtheoremissimilartoWedin’sperturbationtheoremforsingularvectorsofmatrices(Wedin,1972)inthatitboundstheerrorofthe(approximate)decompositionreturnedbyAlgorithm1oninputT̂intermsofthesizeoftheperturbation,providedthattheperturbationissmallenough.Theorem5.1LetT̂=T+E∈Rk×k×k,whereTTensorDecompositionsforLearningLatentVariableModelsorthogonaldecomposition).Furthermore,notethatAlgorithm1usesmultiplerestartstoensure(approximate)convergence—theintuitionisthatbyrestartingatmultiplepoints,weeventuallystartatapointinwhichtheinitialcontractionAnandkumar,Ge,Hsu,Kakade,andTelgarskyInpractice,oneshoulduseallofthewordsinadocumentforefficientestimationofthemoments.Onewaytodothisistoaverageoverall`3·3!orderedtriplesofwordsinadocumentoflength`.Atfirstblush,thisseemscomputationallyexpensive(when`islarge),butasitturnsout,theaveragingcanbedoneimplicitly,asshownbyZouetal.(2013).Letc∈RdbethewordTensorDecompositionsforLearningLatentVariableModelsisapproximatelytherangeofM2.Fromhere,anapproximateSVDofU>M2UisusedtocomputetheapproximatewhiteningmatrixW.NotethatbothmatrixAnandkumar,Ge,Hsu,Kakade,andTelgarskyalgorithmsduetoacertainamplificationoftheerror(apolynomialfactorofk,whichisobservedinpractice).Usingtheperturbationanalysisforthetensorpowermethod,improvedsamplecomplex-ityboundscanbeobtainedforalloftheexamplesdiscussedinSection3.Theunderlyinganalysisremainsthesameasinpreviousworks(e.g.,Anandkumaretal.,2012a;HsuandKakade,2013),themaindifferencebeingtheaccuracyoftheorthogonaltensordecompo-sitionobtainedviathetensorpowermethod.Relativetothepreviouslycitedworks,thesamplecomplexityboundwillbeconsiderablyimprovedinitsdependenceontherankpa-rameterk,asTheorem5.1impliesthatthetensorestimationerror(e.g.,errorinestimatingfM3fromSection4.3)isnotTensorDecompositionsforLearningLatentVariableModels1.Thesetofθ∈Rnwhichdonotconvergetosomeviunderrepeatediterationof(6)hasmeasurezero.2.ThesetofrobusteigenvectorsofTisAnandkumar,Ge,Hsu,Kakade,andTelgarskyMoreover,ifkuk<1andT(I,u,u)=λuforλ>0,thenu0=(1+δ)uforasmallenoughδ∈(0,1)satisfiesku0k≤1andT(u0,u0,u0)=(1+δ)3T(u,u,u)>T(u,u,u).ThereforealocalmaximizermusthaveT(I,u,u)=λuforsomeλ≥0,andkuk=1wheneverλ>0.Extend{v1,v2,...,vk}toanorthonormalbasis{v1,v2,...,vn}ofRn.NowpickanystationaryTensorDecompositionsforLearningLatentVariableModelsū:=u0+w,wehaveT(ũ,ũ,ũ)=T(u0,u0,u0)+∇uT(u,u,u)>(ũ−Anandkumar,Ge,Hsu,Kakade,andTelgarskyAppendixB.AnalysisofRobustPowerMethodInthissection,weproveTheorem5.1.Theproofisstructuredasfollows.InAppendixB.1,weshowthatwithhighprobability,atleastoneoutofLrandomvectorswillbeagoodinitializerforthetensorpoweriterations.Aninitializerisgoodifitsprojectionontoaneigenvectorisnoticeablylargerthanitsprojectionontoothereigenvectors.WethenanalyzeinAppendixB.2theconvergencebehaviorofthetensorpoweriterations.TensorDecompositionsforLearningLatentVariableModelsItsufficestoshowthatwithprobabilityatleast1/2,thereisacolumnj∗∈[L]suchthat|Z1,j∗|≥11−γmaxi∈[k]\{1}|Zi,jAnandkumar,Ge,Hsu,Kakade,andTelgarskyInthissubsection,weassumethatT̃hastheformT̃=kXi=1λ̃iv⊗3i+Ẽ(11)where{v1,v2,...,vk}isanorthonormalbasis,and,withoutlossofgenerality,λ̃1|θ1,t|=maxi∈[k]λ̃i|θi,t|>0.Also,defineλ̃min:=min{λ̃i:i∈[k],λ̃i>0},λ̃max:=max{λ̃i:i∈[k]}.WefurtherassumetheerrorẼisasymmetrictensorsuchthat,forsomeconstantp>1,kẼ(I,u,u)k≤˜,∀u∈Sk−1;(12)kẼ(I,u,u)k≤˜TensorDecompositionsforLearningLatentVariableModelsUsingthetriangleinequalityandthefactkE(vi,θt,θt)k≤˜,wehaveθ̌i,t+1≥λ̃iθ2i,t−˜≥|θi,t|·λ̃i|θi,t|−˜/|θi,t|(17)and|θ̌i,t+1|≤|λ̃iθ2i,t|+˜≤|θi,t|·λ̃i|θi,t|+˜/|θi,t|(18)foralli∈[k].Combining(17)and(18)givesri,t+1=λ̃1θ1,t+1λ̃i|θi,t+1|=λ̃1θ̌1,t+1λ̃i|θ̌i,t+1|≥r2i,t·1−δt1+˜λ̃iθ2i,t=r2i,t·1−δt1+(λ̃i/λ̃1)δtr2i,t≥r2i,t·1−δt1+κδtr2i,t.Moreover,bythetriangleinequalityandHölder’sinequality,nXi=2[θ̌i,t+1]21/2=nXi=2λ̃iθ2i,t+E(vi,θt,θt)21/2≤nXi=2λ̃2iθ4i,t1/2+nXi=2E(vi,θt,θt)21/2≤maxi6=1λ̃i|θi,t|nXi=2θ2i,t1/2+˜=(1−θ21,t)1/2·maxi6=1λ̃i|θi,t|+˜/(1−θ21,t)1/2.(19)Combining(17)and(19)gives|θ1,t+1|(1−θ21,t+1)1/2=|θ̌1,t+1|Pni=2[θ̌i,t+1]21/2≥|θ1,t|(1−θ21,t)1/2·λ̃1|θ1,t|−˜/|θ1,t|maxi6=1λ̃i|θi,t|+˜/(1−θ21,t)1/2.IntermsofRt+1,Rt,γt,andδt,thisreadsRt+1≥1−δt(1−γt)1−θ21,tθ21,t1/2+δt=Rt·1−δt1−γt+δtRt=1−δt1−γtRt+δt≥1−δtκR2t+δtwherethelastinequalityfollowsfromPropositionB.1.LemmaB.2Fixanyρ>1.Assume0≤δt<minn12(1+2κρ2),1−1/ρ1+κρoandγt>2(1+2κρ2)δt.1.IfAnandkumar,Ge,Hsu,Kakade,andTelgarsky2.Ifρ2<r2i,t,thenri,t+1≥min{r2i,t/ρ,1−δt−1/ρκδt}.3.γt+1≥min{γt,1−1/ρ}.4.Ifmini6=1r2i,t>(ρ(1−δt)−1)/(κδt),thenRt+1>1−δt−1/ρκδt·λ̃minλ̃1·1√k.5.IfRt≤1+2κρ2,thenRt+1≥Rt1+γt3,θ21,t+1≥θ21,t,andδt+1≤δt.ProofConsidertwo(overlapping)casesdependingonr2i,t.•Case1:r2i,tTensorDecompositionsforLearningLatentVariableModelsLemmaB.3Assume0≤δt<1/2andγt>0.Pickanyβ>α>0suchthatα(1+α)(1+α2)≥˜Anandkumar,Ge,Hsu,Kakade,andTelgarskyB.2.1ApproximateRecoveryofaSingleEigenvectorWenowstatethemainresultregardingtheapproximaterecoveryofasingleeigenvectorusingthetensorpowermethodonT̃.Here,weexploitthespecialpropertiesoftheerrorẼ—both(12)and(13).LemmaB.4ThereexistsauniversalconstantC>0suchthatthefollowingholds.Leti∗:=argmaxi∈[k]λ̃i|θi,0|.If˜<γ02(1+8κ)·λ̃min·θ2i∗,0andN≥C·log(kκ)γ0+loglogpλ̃i∗˜,thenaftert≥NiterationsofthetensorpowermethodontensorT̃asdefinedin(11)andsatisfying(12)and(13),thefinalvectorθtsatisfiesθi∗,t≥s1−3˜pλ̃i∗2,kθt−vi∗k≤4˜pλ̃i∗,|T̃(θt,θt,θt)−λ̃i∗|≤27κ˜pλi∗2+2˜p.ProofAssumewithoutlossofgeneralitythati∗=1.Weconsiderthreephases:(i)iterationsbeforethefirsttimetsuchthatRt>1+2κρ2=1+8κ(usingρ:=2),(ii)thesubsequentiterationsbeforethefirsttimetsuchthatRt≥1/α(whereαwillbedefinedbelow),andfinally(iii)theremainingiterations.Webeginbyanalyzingthefirstphase,i.e.,theiteratesinT1:={t≥0:Rt≤1+2κρ2=1+8κ}.Observethattheconditionon˜impliesδ0=˜λ̃1θ21,0<γ02(1+8κ)·λ̃minλ̃1≤minγ02(1+2κρ2),1−1/ρ2(1+2κρ2),andhencethepreconditionsonδtandγtofLemmaB.2holdfort=0.Forallt∈T1satisfyingthepreconditions,LemmaB.2impliesthatδt+1≤δtandγt+1≥min{γt,1−1/ρ},sothenextiterationalsosatisfiesthepreconditions.Hencebyinduction,thepreconditionsholdforalliterationsinT1.Moreover,foralli∈[k],wehave|ri,0|≥11−γ0;andwhilet∈T1:(i)|ri,t|increasesatalinearratewhiler2i,t≤2ρ2,and(ii)|ri,t|increasesataquadraticratewhileρ2≤r2i,t≤1−δt−1/ρκδt.(Thespecificratesaregiven,respectively,inLemmaB.2,claims1and2.)Since1−δt−1/ρκδt≤λ̃12κ˜,itfollowsthatmini6=1r2i,t≤1−δt−1/ρκδtforatmost2γ0lnp2ρ211−γ0+lnlnλ̃12κ˜ln√2=O1γ0+loglogλ̃1˜(22)iterationsinT1.Assoonasmini6=1r2i,t>1−δt−1/ρκδt,wehaveTensorDecompositionsforLearningLatentVariableModelsandallthewhileRtisgrowingatalinearrate(giveninLemmaB.2,claim5).Therefore,thereareatmostanadditional1+3γ0ln1+8κ7/√k=Olog(kκ)γ0(23)iterationsinT1overthatcountedin(22).Therefore,bycombiningthecountsin(22)and(23),wehavethatthenumberofiterationsinthefirstphasesatisfies|T1|=Ologlogλ̃1˜+log(kκ)γ0.Wenowanalyzethesecondphase,i.e.,theiteratesinT2:={t≥0:t/∈T1,Rt<1/α}.Defineα:=3˜λ̃1,β:=11+2κρ2=11+8κ.Notethatfortheinitialiterationt0:=minT2,wehavethatRt0≥1+2κρ2=1+8κAnandkumar,Ge,Hsu,Kakade,andTelgarskyItcanbecheckedthatδt00∈(0,1/2),γt00≥1−3˜κ/λ1>0,α(1+α)(1+α2)≥˜p(1−3˜κ/λ1)λ̃1≥˜pγt00λ̃1,α2(1+α)(1+β2)≥˜pλ̃1.Therefore,thepreconditionsofLemmaB.3aresatisfiedfortheinitialiterationt00inthisfinalphase,andbythesameargumentsasbefore,thepreconditionsholdforallsubsequentiterationst≥t00.Initially,wehaveRt00≥1/α≥1/β,andbyLemmaB.3,wehavethatRtincreasesataquadraticrateinthisfinalphaseuntilRt≥1/α.SothenumberofiterationsbeforeRt≥1/αcanbeboundedaslnln(1/α)ln((1/β)/(2κ))=lnlnpλ̃13˜lnλ13˜·12κ≤lnlnpλ̃13˜=Ologlogpλ̃1˜.OnceRt≥1/α,wehaveθ21,t≥1−3˜pλ̃12.Sincesign(θ1,t)=r1,t≥r21,t−1·(1−δt−1)/(1+κδt−1r21,t−1)=(1−δt−1)/(1+κδt−1)>0byPropositionB.2,wehaveθ1,t>0.Thereforewecanconcludethatkθt−v1k=q2(1−θ1,t)≤s21−q1−(3˜/(pλ̃1))2≤4˜/(pλ̃1).Finally,|T̃(θt,θt,θt)−λ̃1|=λ̃1(θ31,t−1)+kXi=2λ̃iθ3i,t+Ẽ(θt,θt,θt)≤λ̃1|θ31,t−1|+kXi=2λ̃i|θi,t|θ2i,t+kẼ(I,θt,θt)k≤λ̃11−θ1,t+|θ1,t(1−θ21,t)|+maxi6=1λ̃i|θi,t|kXi=2θ2i,t+kẼ(I,θt,θt)k≤λ̃11−θ1,t+|θ1,t(1−θ21,t)|+maxi6=1λ̃iq1−θ21,tkXi=2θ2i,t+kẼ(I,θt,θt)k=λ̃11−θ1,t+|θ1,t(1−θ21,t)|+maxi6=1λ̃i(1−θ21,t)3/2+kẼ(I,θt,θt)k≤λ̃1·33˜pλ̃12+κλ̃1·3˜pλ̃13+˜p≤(27κ·(˜/pλ̃TensorDecompositionsforLearningLatentVariableModelsB.3DeflationLemmaB.5Fixsome˜≥0.Let{v1,v2,...,vk}beanorthonormalbasisforRk,andAnandkumar,Ge,Hsu,Kakade,andTelgarskyWenowexpressEi(I,u,u)intermsofthecoordinatesystemdefinedbyviandv̂⊥i,depictedbelow.Defineai:=u>viandbi:=u>v̂⊥i/kv̂⊥ik.(Notethatthepartofulivinginspan{vi,v̂⊥i}⊥isirrelevantforanalyzingEi(I,u,u).)WehaveEi(I,u,u)TensorDecompositionsforLearningLatentVariableModelsTherefore,usingtheinequalityfrom(25)andagain(x+y)2≤2(x2+y2),tXi=1Ei(I,u,u)22≤2tXi=1A2i+2tXi=1|Bi|2≤4(5+11˜/λmin)2˜2tXi=1a2i+64(1+˜/λmin)2˜2tXi=1(˜/λi)2+28(1+˜/λmin)(˜2/λmin)tXi=1a2i+32(1+˜/λmin)˜tXi=1(˜/λi)32≤4(5+11˜/λmin)2˜2tXi=1a2i+64(1+˜/λmin)2˜2tXi=1(˜/λi)2+128(1+˜Anandkumar,Ge,Hsu,Kakade,andTelgarsky(NotethattheconditiononLholdswithL=poly(k)log(1/η).)SupposethatAlgorithm1isiterativelycalledktimes,wheretheinputtensorisT̂inthefirstcall,andineachsubsequentcall,theinputtensoristhedeflatedtensorreturnedbythepreviouscall.Let(v̂1,λ̂1),(v̂2,λ̂2),...,(v̂k,λ̂k)bethesequenceofestimatedeigenvector/eigenvaluepairsre-turnedinthesekcalls.Withprobabilityatleast1−η,thereexistsapermutationπon[k]suchthatkvπ(j)−v̂jk≤8/λπ(j),|λπ(j)−λ̂j|≤5,∀j∈[k],andT−kXj=1λ̂jv̂⊗3j≤55.ProofWeprovebyinductionthatforeachi∈[k](correspondingtothei-thcalltoAlgorithm1),withprobabilityatleast1−iη/k,thereexistsapermutationπon[k]suchthatthefollowingassertionshold.1.Forallj≤i,kvπ(j)−v̂jk≤8/λπ(j)and|λπ(j)−λ̂j|≤12.2.TheerrortensorẼi+1:=T̂−Xj≤iλ̂jv̂⊗3j−Xj≥i+1λπ(j)v⊗3π(j)=E+Xj≤iλπ(j)v⊗3π(j)−λ̂jv̂⊗3jsatisfieskẼi+1(I,u,u)k≤56,∀u∈Sk−1;(26)kẼi+1(I,u,u)k≤2,∀u∈Sk−1s.t.∃j≥i+1(u>vπ(j))2≥1−(168/λπ(j))2.(27)Weactuallytakei=0asthebasecase,sowecanignorethefirstassertion,andjustobservethatfori=0,Ẽ1=T̂−kXj=1λiv⊗3i=E.WehavekẼ1k=kEk=,andthereforethesecondassertionholds.Nowfixsomei∈[k],andassumeastheTensorDecompositionsforLearningLatentVariableModelsObservethatT̃i−Ti=Ẽi,whichsatisfiesthesecondassertionintheinductivehypothesis.WemaywriteTi=Pkl=1λ̃lv⊗3Anandkumar,Ge,Hsu,Kakade,andTelgarskywhichinturnimpliesλπ(j)|θπ(j),N|≤34λπ(j∗)|θπ(j∗),N|,j6=j∗.ThismeansthatθNis(1/4)-separatedrelativetoπ(j∗).Also,observethat|θπ(j∗),N|≥45·λπ(jmax)λπ(j∗)≥45,λπ(jmax)λπ(j∗)≤54.ThereforebyLemmaB.4(using˜/p:=2,γ:=1/4,andκ:=5/4),executinganotherNpoweriterationsstartingfromθNgivesavectorθ̂thatsatisfieskθ̂−vπ(j∗)k≤8λπ(j∗),|λ̂−λπ(j∗)|≤5.Sincev̂i=θ̂andλ̂i=λ̂,thefirstassertionoftheinductivehypothesisissatisfied,aswecanmodifythepermutationπbyswappingπ(i)andπ(j∗)withoutaffectingthevaluesof{π(j):TensorDecompositionsforLearningLatentVariableModelsthereexistsapermutationπsuchthattwoassertionsholdfori=k,withprobabilityatleast1−η.Fromthelastinductionstep(i=k),itisalsoclearAnandkumar,Ge,Hsu,Kakade,andTelgarskyWeassumeẼisasymmetrictensorsuchthat,forsomeconstantp>1,kẼ(I,u,u)k≤˜,∀u∈Sk−1;kẼ(I,u,u)k≤˜/p,∀u∈Sk−1s.t.(u>v1)2≥1−(3˜/λ̃1)2;kẼkF≤˜F.Assumethatnotallλ̃iarezero,anddefineλ̃min:=min{λ̃i:i∈[k],λ̃i>0},λ̃max:=max{λ̃i:i∈[k]},`:=|{i∈[k]:λ̃i>0}|,λ̃avg:=1`kXi=1λ̃2i1/2.WeTensorDecompositionsforLearningLatentVariableModelsMoreover,kT̃kF≥kXi=1λ̃iv⊗3iF−kẼkF=kXj=1kXi=1λ̃iviv>i(v>ivj)2F1/2−kẼkF=kXj=1λ̃jvjv>j2F1/2−kẼkF=kXj=1λ̃2j1/2−Anandkumar,Ge,Hsu,Kakade,andTelgarskyinequality,andthefactkAkF≤√kkAkforanymatrixA∈Rk×k,(1+α)|φ1|≥(1+α)θ>M̃θ≥kM̃kF(32)≥kXi=1λ̃iθiviv>iF−Ẽ(I,I,θ)F≥kXi=1λ̃2iθ2i1/2−√kkẼ(I,I,θ)k≥kXi=1λ̃2iθ2i1/2−√k˜.Combiningtheseboundson|φ1|givesλ̃1|θ1|+˜≥11+α"kXi=1λ̃2iθ2i1/2−√k˜#.(33)Theassumption˜≤αλ̃min/√kimpliesthat√k˜≤αλ̃min≤αkXi=1λ̃2iθ2i1/2.Moreover,sinceλ̃1|θTensorDecompositionsforLearningLatentVariableModelsMoreover,bythetriangleinequality,|θ>M̃θ|≤kXi=1|φi|(u>iθ)2≤|φ1|(u>1θ)2+maxi6=1Anandkumar,Ge,Hsu,Kakade,andTelgarskyforα∈(0,1/20).Moreover,byassumptionwehaveT̃(θ,θ,θ)≥0,andT̃(θ,θ,θ)=kXi=1λ̃iθ3i+Ẽ(θ,θ,θ)=λ̃1θ31+kXi=2λ̃iθ3i+Ẽ(θ,θ,θ)≤λ̃1θ31+maxi6=1λ̃i|θi|kXi=2θ2i+˜≤λ̃1θ31+√7αλ̃1|θ1|(1−θ21)+˜(bythesecondclaim)≤λ̃1|θ1|3sign(θ1)+√7α(1−2α)2−√7α+α(1−2α)3(since|θ1|≥1−2α)<λ̃1|θ1|3sign(θ1)+1sosign(θ1)>−1,meaningθ1>0.Thereforeθ1=|θ1|≥1−2α.Thisprovesthefinalclaim.LemmaC.2Fixα,β∈(0,1).Assumeλ̃i∗=maxi∈[k]λ̃iand˜≤minα5√k+7,1−β7·λ̃i∗,˜F≤√`·1−β2β·λ̃i∗.TotheconclusionofLemmaB.4,itcanbeaddedthatthestoppingcondition(31)issatisfiedbyθ=θt.ProofWithoutlossofgenerality,assumei∗=1.BythetriangleinequalityandCauchy-Schwarz,kT̃(I,I,θt)kF≤λ̃1|θ1,t|+Xi6=1λi|θi,t|+kẼ(I,I,θt)kF≤λ̃1|θ1,t|+λ̃1√kXi6=1θ2i,t1/2+√k˜≤λ̃1|θ1,t|+3√k˜p+√k˜.wherethelaststepusesthefactthatθ21,t≥1−(3˜/(pλ̃1))2.Moreover,T̃(θt,θt,θt)≥λ̃1−27˜pλ12+2˜TensorDecompositionsforLearningLatentVariableModelsUsingthedefinitionofthetensorFrobeniusnorm,wehave1√`kT̃kF≤1√`kXi=1λ̃iv⊗3iF+1√Anandkumar,Ge,Hsu,Kakade,andTelgarskyAppendixD.SimultaneousDiagonalizationforTensorDecompositionAsdiscussedintheintroduction,anotherstandardapproachtocertaintensordecompositionproblemsistosimultaneouslydiagonalizeacollectionofsimilarmatricesobtainedfromthegiventensor.Wenowexaminethisapproachinthecontextofourlatentvariablemodels,whereM2=kXi=1wiµi⊗µiM3=kXi=1wiµi⊗µi⊗µi.LetV:=[µ1|µ2|···|µk]andD(η):=diag(µ>1η,µ>2η,...,µ>kη),soM2=Vdiag(w1,w2,...wk)V>M3(I,I,η)=Vdiag(w1,w2,...wk)D(η)V>Thus,theproblemofdeterminingtheµicanbecastasasimultaneousdiagonalizationproblem:findamatrixXsuchthatXTensorDecompositionsforLearningLatentVariableModelscolumnsofµ>1η(1)µ>2η(1)···µ>kη(1)µ>1η(2)µ>2η(2)···µ>kη(2)............µ>1η(m)µ>2η(m)···µ>kη(m)aredistinct(i.e.,foreachpairofcolumnindicesi,j,thereexistsarowindexrsuchthatthe(r,i)-thand(r,j)-thentriesaredistinct).Thisisamuchweakerrequirementforuniqueness,andthereforemaytranslatetoanimprovedperturbationanalysis.Infact,usingthetechniquesdiscussedinSection4.3,wemayevenreducetheproblemtoanorthogonalsimultaneousdiagonalization,whichmaybeeasiertoobtain.Furthermore,anumberofrobustnumericalmethodsfor(approximately)simultaneouslydiagonalizingcollectionsofmatriceshavebeenproposedandusedsuccessfullyintheAnandkumar,Ge,Hsu,Kakade,andTelgarskyS.Arora,R.Ge,A.Moitra,andS.Sachdeva.ProvableICAwithunknownGaussiannoise,andimplicationsforGaussianmixturesandautoencoders.InAdvancesinNeuralInformationProcessingSystems25,2012b.T.Austin.Onexchangeablerandomvariablesandthestatisticsoflargegraphsandhyper-graphs.Probab.Survey,5:80–145,2008.R.Bailly.Quadraticweightedautomata:Spectralalgorithmandlikelihoodmaximization.JournalofMachineLearningResearch,2011.B.BalleandM.Mohri.Spectrallearningofgeneralweightedautomataviaconstrainedmatrixcompletion.InAdvancesinNeuralInformationProcessingSystems25,2012.B.Balle,A.Quattoni,andX.Carreras.Locallossoptimizationinoperatormodels:Anewinsightintospectrallearning.InTwenty-NinthInternationalConferenceonMachineLearning,2012.M.BelkinandK.Sinha.Polynomiallearningofdistributionfamilies.InFifty-FirstAnnualIEEESymposiumonFoundationsofComputerScience,pages103–112,2010.A.Bhaskara,M.Charikar,A.Moitra,andA.Vijayaraghavan.Smoothedanalysisoften-sordecompositions.InProceedingsofthe46thAnnualACMSymposiumonTheoryofComputing,2014.B.Boots,S.M.Siddiqi,andG.J.Gordon.Closingthelearning-planningloopwithpredic-tivestaterepresentations.InProceedingsoftheRoboticsScienceandSystemsConference,2010.S.C.BrubakerandS.Vempala.IsotropicPCAandaffine-invariantclustering.InForty-NinthAnnualIEEESymposiumonFoundationsofComputerScience,2008.A.Bunse-Gerstner,R.Byers,andV.Mehrmann.Numericalmethodsforsimultaneousdiagonalization.SIAMJournalonMatrixAnalysisandApplications,14(4):927–949,1993.J.-F.Cardoso.Super-symmetricdecompositionofthefourth-ordercumulanttensor.blindidentificationofmoresourcesthansensors.InAcoustics,Speech,andSignalProcessing,1991.ICASSP-91.,1991InternationalConferenceon,pages3109–3112.IEEE,1991.J.-F.Cardoso.Perturbationofjointdiagonalizers.TechnicalReport94D027,SignalDe-partment,TélécomParis,1994.J.-F.CardosoandP.Comon.Independentcomponentanalysis,asurveyofsomealgebraicmethods.InIEEEInternationalSymposiumonCircuitsandSystems,pagesTensorDecompositionsforLearningLatentVariableModelsR.B.Cattell.Parallelproportionalprofilesandotherprinciplesfordeterminingthechoiceoffactorsbyrotation.Psychometrika,9(4):267–283,1944.J.T.Chang.FullreconstructionofMarkovmodelsonevolutionarytrees:IdentifiabilityandAnandkumar,Ge,Hsu,Kakade,andTelgarskyA.T.Erdogan.OntheconvergenceofICAalgorithmswithsymmetricorthogonalization.IEEETransactionsonSignalProcessing,57:2209–2221,2009.A.M.Frieze,M.Jerrum,andR.Kannan.Learninglineartransformations.InThirty-SeventhAnnualTensorDecompositionsforLearningLatentVariableModelsE.KofidisandP.A.Regalia.Onthebestrank-1approximationofhigher-ordersuper-symmetrictensors.SIAMJournalonMatrixAnalysisandApplications,23(3):863–884,2002.T.G.KoldaandB.W.Bader.Tensordecompositionsandapplications.SIAMreview,51(3):455,2009.T.G.KoldaandJ.R.Mayo.Shiftedpowermethodforcomputingtensoreigenpairs.SIAMJournalonMatrixAnalysisandApplications,32(4):1095–1124,October2011.J.B.Kruskal.Three-wayarrays:rankanduniquenessoftrilineardecompositions,withapplicationtoarithmeticcomplexityandstatistics.LinearAlgebraandAppl.,18(2):95–138,1977.L.D.Lathauwer,B.D.Moor,andJ.Vandewalle.Onthebestrank-1andrank-(R1,R2,...,Rn)approximationandapplicationsofhigher-ordertensors.SIAMJ.MatrixAnal.Anandkumar,Ge,Hsu,Kakade,andTelgarskyL.PachterandB.Sturmfels.AlgebraicStatisticsforComputationalBiology,volume13.CambridgeUniversityPress,2005.A.Parikh,L.Song,andE.P.Xing.Aspectralalgorithmforlatenttreegraphicalmodels.InTwenty-EighthInternationalConferenceonMachineLearning,2011.K.Pearson.Contributionstothemathematicaltheoryofevolution.PhilosophicalTrans-actionsoftheRoyalSociety,London,A.,page71,1894.L.Qi.Eigenvaluesofarealsupersymmetrictensor.JournalofSymbolicComputation,40(6):1302–1324,2005.R.A.Rednerand
+arXiv:1306.3917v1
+[stat.ML]
+17
+Jun
+2013
+On Finding the Largest Mean Among Many
+Kevin Jamieson†
+, Matthew Malloy†∗
+, Robert Nowak†
+, and Sébastien Bubeck‡
+†
+Department of Electrical and Computer Engineering,
+University of Wisconsin-Madison
+‡
+Princeton University,
+Department of Operations Research and Financial Engineering
+Abstract
+Sampling from distributions to find the one with the largest mean arises in a broad range of applica-
+tions, and it can be mathematically modeled as a multi-armed bandit problem in which each distribution
+is associated with an arm. This paper studies the sample complexity of identifying the best arm (largest
+mean) in a multi-armed bandit problem. Motivated by large-scale applications, we are especially in-
+terested in identifying situations where the total number of samples that are necessary and sufficient to
+find the best arm scale linearly with the number of arms. We present a single-parameter multi-armed
+bandit model that spans the range from linear to superlinear sample complexity. We also give a new
+algorithm for best arm identification, called PRISM, with linear sample complexity for a wide range of
+mean distributions. The algorithm, like most exploration procedures for multi-armed bandits, is adaptive
+in the sense that the next arms to sample are selected based on previous samples. We compare the sam-
+ple complexity of adaptive procedures with simpler non-adaptive procedures using new lower bounds.
+For many problem instances, the increased sample complexity required by non-adaptive procedures is a
+polynomial factor of the number of arms.
+1 Introduction
+This paper studies the sample complexity of finding the best arm in a multi-armed bandit problem. Consider
+n + 1 arms with mean payoffs µ0 > µ1 > · · · > µn. The mean values and the ordering of the arms are
+unknown. The goal is to identify the arm with the largest mean (i.e., the “best arm”) by sampling the arms.
+A sample of arm i is an independent realization of a random variable Xi ∈ [0, 1] with mean µi ∈ [0, 1]
+(it is straightforward to extend all results presented in this paper to sub-Gaussian realizations with bounded
+means and variances).
+The main focus of this paper is identifying necessary and sufficient conditions under which the sample
+complexity (total number of samples) of finding the best arm grows linearly in the number of arms. This
+is motivated by applications involving very large numbers of arms, such as virus replication experiments
+testing thousands of cell strains [3], cognitive radio problems searching over hundreds of communication
+channels [1, 2], and network surveillance of large social networks. These applications are time-consuming
+and/or costly, so minimizing the number of samples required to find the most influential genes, best chan-
+nels, or malicious agents is crucial. This paper quantifies the minimum number of samples needed in such
+applications and gives a new algorithm called PRISM that succeeds using a total number of samples within
+a negligible factor of the minimum.
+∗
+The first two authors are listed in alphabetical order as both contributed equally.
+1
+Mannor and Tsitsiklis [4] showed that for any procedure that finds the best arm with probability at least
+1−δ requires on the order of H log(1/δ) samples, where H :=
+Pn
+i=1(µ0 −µi)−2. This lower bound shows
+that the sample complexity can be much greater than the number of arms. For example, if the gap between
+µ0 and µ1 is 1/n, then H, and the sample complexity, are at least O(n2). On the other hand, scenarios can
+arise in which H grows linearly with n. For instance, if µ0 − µi is greater than a positive constant for all i,
+then H = O(n). This case is “sparse” in the sense that µ0 is bounded away from all others, and recent work
+has shown that O(n) samples are sufficient in such cases [5].
+Most bandit exploration algorithms are sequential and adaptive in the sense that the selection of the arms
+to sample next is based on previous samples. This is necessary in order to achieve linear sample complexity
+in the sparse case mentioned above. Non-adaptive methods, in which every arm is sampled an equal number
+of times, require at least O(n log n)1 samples [6]. The factor of log n is significant if n is large, which is
+one motivation for adaptive strategies like the one used in [3]. Contrasting the differences between adaptive
+and non-adaptive sampling is a second focus of this paper.
+Of particular interest here is the scaling of the sample complexity as a function of the number of arms
+and the behavior of the gaps between their means. The sparse model discussed above is an enlightening
+idealization, but unlikely to arise in practice. A smoothly decaying distribution of means may be a more
+reasonable model for the biological and radio applications discussed above. Fig. 1 depicts the means in
+three different arm configurations. The left plot (a) represents a sparse model in which µ0 is bounded
+away from all others means by a fixed constant (all gaps greater than a fixed constant). In this case, the
+sample complexities of non-adaptive and adaptive strategies differs by a factor of log n. The other two plots
+represent cases in which the gaps between means are shrinking as n increases. In Figure 1(b) µ0 − µi =
+( i
+n ).49 and in (c) µ0 − µi = i
+n . The difference between the sample complexities is much more significant
+for these non-sparse cases. Also note that there are non-sparse cases in which adaptive strategies can find
+the best arm in O(n) samples like the one shown in Fig. 1(b).
+adaptive – O(n)
+non-adaptive – O(n logn)
+adaptive – O(n)
+non-adaptive – O(n1.98
+)
+adaptive – O(n2
+)
+non-adaptive – O(n3
+)
+(a) (b) (c)
+Figure 1: Three different configurations of means, each ordered µ0 > µ1 > · · · > µn. In (a) µ0 − µi ≥ 0.95, in (b)
+µ0 − µi = ( i
+n ).49
+, and in (c) µ0 − µi = i
+n , for i = 1, . . . , n. The necessary sample complexities (sufficient to within
+log log n factors) of non-adaptive and adaptive strategies are indicated in each case. Finding the best arm becomes
+increasingly difficult as the gaps between the means decrease, but in all cases adaptive strategies have significantly
+lower sample complexities.
+1
+In this paper our focus is on how the number of samples scales with n, not necessarily the probability of failure δ. For instance,
+if we were to say an algorithm requires just O(n) samples then it is understood that this many samples suffices to find the best arm
+with a fixed probability of error. However, in the theorem statements the dependence on δ is explicit.
+2
+1.1 Contributions and Organization
+The paper is organized as follows. In Sec. 2, we present a single-parameter model for the distribution of
+means that spans the range from linear to superlinear sample complexity. In Sec. 3 we present an algorithm
+for best arm identification with sample complexity O(H log(1/δ)) for a wide range of mean distributions.
+In particular, we show that the algorithm has linear sample complexity for all of the single-parameter dis-
+tributions satisfying H = O(n). Our bounds apply to the PAC (probably approximately correct) setting
+(generalizing the algorithm to the fixed budget case of [7, 8] is a challenging open problem). While com-
+pleting this paper2, we became aware of independent work on the best arm problem to appear at ICML 2013
+[9]. The algorithm and theoretical analysis in that paper are essentially the same as ours, but in fact the
+upper bound on sample complexity bound given in [9] is slightly tighter.
+Sec. 4 discusses the limitations of non-adaptive sampling strategies and shows that any non-adaptive
+sampling strategy may require drastically more samples than our adaptive algorithm. Using new lower
+bounds for non-adaptive sampling procedures, we show that there exist problems in which the difference
+between the sample complexities of non-adaptive and adaptive procedures grows polynomially with the
+number of arms. This is somewhat surprising, as the as the advantage of adaptivity in the sparse setting
+(where the gaps are bound by a fixed constant) is known to be a factor of log n at best. To be more concrete,
+consider the following. We demonstrate problem instances where adaptive procedures, for example, suc-
+ceed with just O(n) samples, but all non-adaptive procedures fail without at least O(n1.98) samples. This
+observation is crucial since it shows that adaptive designs can be vastly superior to simpler non-adaptive
+methods often used in practice (e.g., biological applications mentioned above). The take-away message is
+that the added implementational burden of adaptive sampling methods may be well worth the investment.
+Notation, in general, follows convention. Since the order and means are unknown, we denote the index
+of the best arm as i∗ throughout the paper. An estimate of the best arm is denoted as b
+i. Proofs of all
+Theorems are found in the Appendix.
+2 A Single-Parameter Family of Mean Distributions
+A lower bound on the sample complexity of finding the best arm follows in a straightforward way from [4,
+Theorem 5]; see Theorem 3 in Sec. 4 for the derivation. To find the best arm with probability at least 1 − δ
+requires at least
+c1H log(1/δ)
+samples, where c1 > 0 is a universal constant. The quantity H, refereed to as the hardness of the problem,
+is given by
+H =
+n
+X
+i=1
+∆−2
+i . (1)
+where
+∆i = µ0 − µi (2)
+is the gap between the best arm and the ith arm.
+2
+The main results of this paper were presented in a lecture (but not as a publication) at the Information Theory and Applications
+(ITA) Workshop in San Diego in February 2013.
+3
+In this paper we focus on a specific parametric family that spans the hardness of the best arm problem
+with a single parameter. Consider a model in which the means are given by
+µi = µ0 − (i/n)α
+(3)
+for i = 1, . . . , n and some α ≥ 0. We refer to this model as an α-parameterization. Under this model,
+∆i = (i/n)α. The α-parameterization spans the range from “hard” problems in which the gaps ∆i are
+shrinking quickly as n grows, to “easy” or sparse cases in which the gaps are greater than a constant (when
+α = 0). Theorem 3 in Sec. 4 yields the following lower bounds on the sample complexity of identifying the
+best arm (ignoring constant and log(1/δ) factors):
+sample complexity ≥
+
+
+
+
+
+
+
+
+
+n if α < 1/2
+n log n if α = 1/2
+n2α if α > 1/2.
+(4)
+The focus of this paper is on finding sufficient conditions under which the best arm can be found with
+O(n) samples. If the gaps follow the α-parameterization with α ≥ 1/2, (4) implies that the best arm cannot
+be found with O(n) samples. Conversely, if the gaps satisfy ∆i ≥ C( i
+n)α, for α < 1/2, the lower bound
+in (4) does not preclude the possibility that order n samples are sufficient to find the best arm. In the next
+section, we show that when α < 1/2, order n samples are indeed sufficient.
+3 PRISM Algorithm for Best Arm Identification
+To show that a linear number of pulls is sufficient for a number of problem instances, we propose and analyze
+the algorithm for best arm identification outlined in Fig. 2. The algorithm follow a multi-phase approach,
+with a specific allocation of confidence and sampling budgets across phases. The algorithm relies on the
+output of Median Elimination [10] to establish a threshold on each phase. We mention again independent
+work to appear at ICML 2013 [9], which proposes and analyzes essentially the same algorithm.
+Input δ. Let A1 = {0, 1, . . . , n}, nℓ = ℓ2ℓ, and εℓ =
+q
+log(1/δ)
+2ℓ .
+For each phase ℓ = 1, 2, . . . ,
+(1) Let iℓ be the output of Median Elimination [10] run on Aℓ with accuracy εℓ, δℓ
+
+.
+(2) For each arm i ∈ Aℓ, sample nℓ times arm i and let b
+µi(ℓ) be the corresponding average.
+(3) Let
+Aℓ+1 = {i ∈ Aℓ : b
+µi(ℓ) ≥ b
+µiℓ
+− 2εℓ} .
+Stop when Aℓ contains a unique elementb
+i and outputb
+i.
+Figure 2: PRISM algorithm for the best arm identification problem.
+The following theorem is our main result. The sample complexity of identifying the best arm with
+probability at least 1 − δ is bounded in terms of H and a novel measure of complexity denoted by G :=
+4
+Pn
+i=1 ∆−2
+i log2(∆−2
+i ). In general H ≤ G ≤ H log(H) but in many cases, G = H and the bound implies
+that the best arm can be found using O(H) samples with a fixed probability of error. This is the best known
+bound for the best arm problem. The proof is left to the appendix.
+Theorem 1. Let δ ∈ (0, 1). Let H =
+Pn
+i=1 ∆−2
+i where ∆1 is the minimum gap. Then with probability at
+least 1 − 3δ2
+1−δ2 − δ
+1−δ − 4δ2
+(1−δ2)2 , the PRISM algorithm of Fig. 2 stops after at most
+O log(1/δ)
+"
+H log(log(1/δ)) +
+n
+X
+i=1
+∆−2
+i log2(∆−2
+i )
+#!
+samples and outputs armb
+i = i∗.
+Corollary 1. Consider the problem instance µ0 = 1 and µi = 1 − (i/n)α, for i = 1, . . . , n and some
+0 < α. Then for a fixed probability error, using the PRISM algorithm of Fig. 2 we have that
+number of total samples =
+
+
+
+
+
+
+
+
+
+O(n) if α < 1/2
+O(n log2
+n) if α = 1/2
+O(n2α log(n)) if α > 1/2.
+(5)
+and the algorithm outputs armb
+i = i∗.
+Proof. For ∆i = i
+n
+α
+we have the relevant quantities given in the following table (ignoring lower order
+terms):
+H
+Pn
+i=1 ∆−2
+i log2(∆−2
+i )
+α > 1/2 2α
+2α−1 n2α (2α)2
+2α−1 n2α log(n)
+α = 1/2 n log(n) 2αn log2
+(n)
+α < 1/2 2α
+1−2α n 2α
+(1−2α)2 n
+The result follows from plugging the above quantities into Theorem 1.
+Conservative PRISM. Consider the algorithm of Fig. 2, but in the first line set nℓ = 2ℓ and εℓ =
+p
+log(ℓ2/δ)/2ℓ and for item (2), run Median Elimination with input (εℓ, δ/ℓ2).
+Theorem 2. Let δ ∈ (0, 0.6]. With probability at least 1 − 2δ − 6δ2 − 6δ4, Conservative PRISM stops after
+at most O
+
+H log
+
+log(H)
+δ
+
+pulls and outputsb
+i = i∗.
+Theorem 1 matches the lower bound when α < 1/2 and comes within a log(n) factor for α ≥ 1/2. On
+the other hand, Theorem 2 comes within a factor of log log n of the lower bound for all α > 0. We note that
+the upper bound of [9] also comes no closer than log log n of the lower bound for α ≥ 1/2.
+4 Lower Bounds on the Sample Complexity of Non-Adaptive Algorithms
+Here we examine the limitations of non-adaptive sampling strategies (which sample all arms an equal num-
+ber of times), since these simpler procedures are not uncommon in applications like the biological problems
+that partially motivate this paper. A non-adaptive procedure is any procedure that samples each arm m
+5
+times, where m is fixed a-priori, and outputs a single arm as an estimate of the best arm. We show that all
+non-adaptive methods may require drastically more samples than PRISM. The take-away message is that
+the small added difficulty (for the practitioner) in applying PRISM may be well worth the investment.
+We begin by formally stating the adaptive lower bound developed in [4].
+Theorem 3. Adaptive Lower Bound [4, Theorem 5]. For every set of means, {µi}n
+i=0, µi ∈ (3/8, 1/2],
+there exists a joint distribution on the arms such that the arms take mean values {µ0, . . . , µn}, each arm is
+sub-Gaussian, and any adaptive procedure with fewer than
+c1H log
+1
+8δ
+(6)
+samples in expectation has P(b
+i 6= i∗) ≥ δ for any δ ∈ (0, e−8/8) and some constant c1.
+Note that the restriction on the means to (3/8, 1/2] in Theorem 3 can be relaxed (see [4] for details). We
+proceed with the non-adaptive lower bounds which allow us to compare the best non-adaptive procedures
+against adaptive procedures.
+Theorem 4. Non-Adaptive Lower Bound. Consider any δ ∈ (0, e−3/24). For every set of means
+{µ1, . . . , µn}, there exists a joint distribution on the arms such that the arms take mean values {µ1, . . . , µn},
+each arm is sub-Guassian, and any non-adaptive procedure with fewer than
+H log
+ n
+25δ
+
+samples in expectation has P(b
+i 6= i∗) ≥ δ. Moreover, for any value of H there exists a joint sub-Gaussian
+distribution over arms with means {µ0, . . . , µn} satisfying
+Pn
+i=1(µ0 − µi)−2 = H, such that any non-
+adaptive procedure with fewer than
+Hn
+2
+log
+
+1
+24δ
+
+samples in expectation has P(î 6= i∗) ≥ δ.
+The lower bound of Theorem 4 consists of two statements, the first which implies that for any set
+of means, the sample complexity must be at least order H log n. The second statement, on the other hand,
+implies the existence of particular problem instances that are especially difficult for non-adaptive procedures,
+requiring order Hn samples. Inspecting the proofs of the two parts of Theorem 4 one sees that the minimum
+gap ∆1, not H, is governing the query complexity for non-adaptive procedures. Using this fact we have the
+following Theorem which is proved in the appendix.
+Theorem 5. Non-adaptive Lower Bound, α-parameterization. Consider arms with mean values accord-
+ing to the parameterization of (3) for some α ≥ 0. There exists a joint sub-Gaussian distribution on the
+arms such that any non-adaptive procedure with fewer than
+(
+n log n
+25δ
+
+if α = 0
+n2α+1 log 1
+24δ
+
+if α > 0
+samples to find the best arm with a fixed probability of failure.
+6
+To see that Theorem 5 is indeed tight, it is straightforward to show that the non-adaptive procedure
+which chooses the arm with the largest empirical mean after sampling each arm the same number of times
+does indeed meet the lower bound. Letting m be the number of times each arm is sampled. Then
+P
+
+b
+i 6= i∗
+
+≤
+X
+i6=i∗
+P (b
+µi∗ ≤ b
+µi) ≤
+X
+i6=i∗
+(P (b
+µi∗ ≤ µi∗ − ∆i/2) + P (b
+µi ≥ µi + ∆i/2))
+≤
+X
+i6=i∗
+2 exp(−m∆2
+i ) =
+X
+i6=i∗
+2 exp −m
+
+i
+n
+2α
+!
+which follow from a union bound and Hoeffding’s inequality. For α 6= 0, if m ≥ n2α (which implies the
+total number of samples is greater than n2α+1) the above sum is convergent, and the probability that the
+wrong arm is returned is controlled. The case where α = 0 is also controlled if m ≥ log n.
+We conclude that for α ∈ (0, 1/2), when compared to adaptive procedures that require just O(n) sam-
+ples, any non-adaptive procedure requires a factor of n2α more samples to identify the best arm. The
+implications of this observation can be somewhat surprising: for many problem instances, the improvement
+in the sample complexity resulting from adaptivity is polynomial in n, compared with the typical log(n)
+improvement observed for sparse problems (α = 0).
+References
+[1] Simon Haykin. Cognitive radio: brain-empowered wireless communications. Selected Areas in Com-
+munications, IEEE Journal on, 23(2):201–220, 2005.
+[2] David López-Pérez, Alvaro Valcarce, Guillaume De La Roche, and Jie Zhang. OFDMA femtocells: A
+roadmap on interference avoidance. Communications Magazine, IEEE, 47(9):41–48, 2009.
+[3] L. Hao, A. Sakurai, T. Watanabe, E. Sorensen, C. Nidom, M. Newton, P. Ahlquist, and Y. Kawaoka.
+Drosophila RNAi screen identifies host genes important for influenza virus replication. Nature, page
+8903, 2008.
+[4] Shie Mannor and John N Tsitsiklis. The sample complexity of exploration in the multi-armed bandit
+problem. The Journal of Machine Learning Research, 5:623–648, 2004.
+[5] Matthew L Malloy and Robert Nowak. Sequential testing for sparse recovery. arXiv preprint
+arXiv:1212.1801, 2012.
+[6] Matt Malloy and Robert Nowak. On the limits of sequential testing in high dimensions. In Signals,
+Systems and Computers (ASILOMAR), 2011 Conference Record of the Forty Fifth Asilomar Conference
+on, pages 1245–1249. IEEE, 2011.
+[7] J.-Y. Audibert, S. Bubeck, and R. Munos. Best arm identification in multi-armed bandits. In Proceed-
+ings of the 23rd Annual Conference on Learning Theory (COLT), 2010.
+[8] S. Bubeck, R. Munos, and G. Stoltz. Pure exploration in multi-armed bandits problems. In Proceedings
+of the 20th International Conference on Algorithmic Learning Theory (ALT), 2009.
+[9] Z. Karnin, T. Koren, and O. Somekh. Almost optimal exploration in multi-armed bandits. Proceedings
+of the 30th International Conference on Machine Learning, June 2013.
+7
+[10] Eyal Even-Dar, Shie Mannor, and Yishay Mansour. Action elimination and stopping conditions for the
+multi-armed bandit and reinforcement learning problems. The Journal of Machine Learning Research,
+7:1079–1105, 2006.
+[11] G. Abreu. Very simple tight bounds on the q-function. Communications, IEEE Transactions on,
+60(9):2415–2420, 2012.
+[12] Jorge Nocedal and Stephen J Wright. Numerical optimization. Springer Science and Business Media,
+2006.
+A Appendix
+A.1 Proof of Theorem 1
+Proof. It will be useful to consider the following ‘slicing’ of arms:
+Ωs = {i ∈ [n] : 5
+√
+2 εs+1 < ∆i ≤ 5
+√
+2 εs}, s ≥ 1.
+Note that
+25 log (1/δ)
+X
+i∈Ωs
+∆−2
+i ≤ 2s
+|Ωs| ≤ 50 log (1/δ)
+X
+i∈Ωs
+∆−2
+i . (7)
+Step 1: A good event. In this step we describe the event of probability 1 − δ on which we will prove the
+result. We want the following to hold:
+b
+µi∗ (ℓ) − µ∗
+≥ −εℓ , ∀ℓ ≥ 1 , (8)
+|b
+µiℓ
+(ℓ) − µiℓ
+| ≤ εℓ , ∀ℓ ≥ 1 , (9)
+max
+j∈Aℓ
+µj − µiℓ
+≤ εℓ , ∀ℓ ≥ 1 , (10)
+
+i ∈ Aℓ ∩ Ωs : b
+µi(ℓ) ≥ b
+µiℓ
+− 2εℓ ≤
+|Aℓ ∩ Ωs|
+4
+, ∀ℓ ≥ s ≥ 1. (11)
+We first bound the probability that the above events do not hold. By Hoeffding’s inequality we have
+P (µ̂i(ℓ) − µi ≥ εℓ) ≤ exp(−2nℓε2
+ℓ ) = δ2ℓ
+for any i and note that an analogous inequality holds for the deviation away from its mean in the other
+direction. Thus, applying Hoeffding’s and a union bound we have that the probability that 8) is not satisfied
+is less than δ2
+1−δ2 . The probability that (9) is not satisfied is bound in the exact same manner with an additional
+factor of two to satisfy both inequality directions. The only subtlety is that after the union bound one needs
+to condition on the value of iℓ before using Hoeffding’s inequality, and this is possible since the random
+variables obtain in Step (2) of the algorithm are independent of iℓ. By the properties of median elimination
+and a union bound we have that the probability that (10) is not satisfied is less than δ
+1−δ . Observe that by (8)
+and (9) one always has:
+b
+µi∗ (ℓ) ≥ µ∗
+− εℓ ≥ µiℓ
+− εℓ ≥ b
+µiℓ
+(ℓ) − 2εℓ.
+which implies that the best arm is never removed from the set.
+8
+It remains to bound the probability that (11) is not satisfied while (8), (9) and (10) are satisfied.
+P
+
+
+i ∈ Aℓ ∩ Ωs : b
+µi(ℓ) ≥ b
+µiℓ
+− 2εℓ >
+|Aℓ ∩ Ωs|
+4
+|(8), (9), (10), Aℓ, iℓ
+
+≤ P
+
+
+i ∈ Aℓ ∩ Ωs : b
+µi(ℓ) ≥ µ∗
+− 4εℓ >
+|Aℓ ∩ Ωs|
+4
+|Aℓ
+
+≤
+4
+|Aℓ ∩ Ωs|
+E
+
+
+i ∈ Aℓ ∩ Ωs : b
+µi(ℓ) ≥ µ∗
+− 4εℓ | Aℓ
+
+=
+4
+|Aℓ ∩ Ωs|
+X
+i∈Aℓ∩Ωs
+P (b
+µi(ℓ) ≥ µ∗
+− 4 εℓ | Aℓ)
+≤ 4 exp(−2nℓε2
+ℓ ) = 4δ2ℓ
+.
+where the last inequality follows since all elements of Ωs have gaps greater than 5
+√
+2εs+1 = 5εs. Summing
+over all s ≤ ℓ and then over ℓ ≥ 1 gives the probability that (11) is not satisfied:
+P∞
+ℓ=1
+P
+s≤ℓ 4δ2ℓ = 4δ2
+(1−δ2)2 .
+In the next steps we will assume that (8)-(9)-(10)-(11) are satisfied as they all hold with probability at least
+1 − 3δ2
+1−δ2 − δ
+1−δ − 4δ2
+(1−δ2)2 .
+Step 2: Bound on the total number of phases. It suffices to bound the number of phases given that (8), (9),
+(10) and (11) hold. Let L denote the first phase such that |Aℓ| = 1 (if there is no such phase then L = +∞).
+Observe that using (11) one can show by induction that
+|Aℓ| ≤ 1 +
+ℓ
+X
+s=1
+|Ωs|
+4ℓ−s
++
++∞
+X
+s=ℓ+1
+|Ωs|. (12)
+Define s∗ = log2(∆−2
+1 log(1/δ)) so that Ωs = ∅ for all s > s∗. By definition, when ℓ ≥ s∗ the third term in
+the equation immediately above is equal to zero so that
+|Aℓ| ≤ 1 + 2−ℓ
+s∗
+X
+s=1
+2s−s∗
+2s
+|Ωs| ∀ℓ ≥ s∗
+where we have
+s∗
+X
+s=1
+2s−s∗
+2s
+|Ωs| =
+∆2
+1
+log(1/δ)
+∞
+X
+s=1
+22s
+|Ωs|
+=
+∆2
+1
+log(1/δ)
+∞
+X
+s=1
+22s
+n
+X
+i=1
+1
+(
+5
+√
+2
+r
+log(1/δ)
+2s+1
+< ∆i ≤ 5
+√
+2
+r
+log(1/δ)
+2s
+)
+≤
+∆2
+1
+log(1/δ)
+n
+X
+i=1
+502 log(1/δ)2
+∆2
+i
+= 502
+log(1/δ)H∆2
+1.
+We conclude that for
+L := 1 + max
+
+s∗
+, log2(502
+log(1/δ)H∆2
+1) = log2(2 log(1/δ)) + max
+
+log2(∆−2
+1 ), log2(502
+H∆2
+1)
+we have that |Aℓ| < 2 whenever ℓ ≥ L. Hence, L is an upper bound on the stopping time.
+Step 3: Bound on the total number of pulls. Recall that Median Elimination applied to a set Aℓ with
+parameters εℓ, δℓ takes no more than cME
+ε2
+ℓ
+|Aℓ|ℓ log(1/δ) = cMEℓ2ℓ|Aℓ| pulls. Thus, the total number of pulls
+9
+on phase ℓ is bounded by cℓ2ℓ|Aℓ| pulls with c = cME + 1. Using the results from the previous step (in
+particular (12) and the stopping time L) one has that the total number of pulls is bounded from above by
+L
+X
+ℓ=1
+cℓ2ℓ
+|Aℓ| ≤
+L
+X
+ℓ=1
+cℓ2ℓ
+1 +
+ℓ
+X
+s=1
+|Ωs|
+4ℓ−s
++
+∞
+X
+s=ℓ+1
+|Ωs|
+!
+≤ cL2L+1
++ c
++∞
+X
+ℓ=1
+ℓ
++∞
+X
+s=1
+
+2s
+2ℓ
+1s≤ℓ +
+2ℓ
+2s
+1s>ℓ
+
+2s
+|Ωs|
+≤ cL2L+1
++ 3c
++∞
+X
+s=1
+s2s
+|Ωs| + 2c(n − 1)
+= cL2L+1
++ 150c log(1/δ) [log2(50 log(1/δ))H + G] + 2c(n − 1)
+where
+H ≤ G :=
+n
+X
+i=1
+∆−2
+i log2 ∆−2
+i
+
+≤ H log(H)
+which follows directly from
+∞
+X
+s=1
+s2s
+|Ωs| =
+∞
+X
+s=1
+s2s
+n
+X
+i=1
+1
+(
+5
+√
+2
+r
+log(1/δ)
+2s+1
+< ∆i ≤ 5
+√
+2
+r
+log(1/δ)
+s2s
+)
+≤ 50 log(1/δ)
+n
+X
+i=1
+1
+∆2
+i
+log2
+
+50 log(1/δ)
+∆2
+i
+
+.
+Evaluating L2L+1 and collecting terms obtains the result.
+A.2 Proof of Theorem 3
+Proof. Assume some procedure has P(b
+i 6= i∗) ≤ δ and requires fewer than c1H log 1
+8δ samples for some
+{µi}n
+i=0, µi ∈ (3/8, 1/2]. This procedure is by definition (ε, δ) PAC (probably approximately correct) for
+any ε ∈ (0, ∆1). [4, Theorem 5] implies any (ε, δ), procedure, ε ∈ (0, ∆1), requires more than
+c1
+X
+i∈N
+1
+µi∗ − µi
+log
+1
+8δ
+samples in expectation, where
+N =
+(
+i : µi ≤ µi∗ − ε, µi ≥
+ε + µi∗
+1 +
+p
+1/2
+)
+Since µi ∈ (3/8, 1/2], N := [n]. Any procedure requires more than
+ciH log
+1
+8δ
+samples in expectation. This negates the original assumption.
+10
+A.3 Proof of Theorem 4
+Proof. We restrict our attention to reward distributions of the form N(µi, 1). Assume that µi, i = 0, . . . , n,
+are know up to a permutation, and let each arm be assigned a mean uniformly at random. We first show
+that the test with minimum average probability of error simply picks the largest empirical mean among all
+arms, i.e., b
+i = arg maxi b
+µi, where b
+µi = 1/m
+Pm
+j=1 Xi,j, and Xi,j represents the reward of arm i on the
+jth play of that arm, and m is the total number of samples of each arm. This can be seen by considering
+the maximum a-posteriori (MAP) estimator of the best arm, which by definition has the smallest probably
+of error. Under the assumption that the arms are assigned means uniformly at random, the MAP estimator
+reduces to the maximum likelihood (ML) estimator:
+b
+iMAP = b
+iML = arg max
+i
+P(Xm
+0 , . . . , Xm
+n |Hi),
+where Xm
+i = Xi,1, . . . , Xi,m and Hi is event that arm i is the best arm. Consider comparing between events
+Hi and Hi′ , i 6= i′: the ML test is P(Xm
+0 , . . . , Xm
+n |Hi) ≶i′
+i P(Xm
+0 , . . . , Xm
+n |Hi′ ). By the independence
+across arms, it is straightforward to show this test reduces to:
+P(Xm
+i |Hi)P(Xm
+i′ |Hi) ≶i′
+i P(Xm
+i |Hi′ )P(Xm
+i′ |Hi′ ) (13)
+The distribution of Xm
+i , given Hi, is simply
+P(Xm
+i |Hi) =
+1
+√
+2π
+exp
+
+− ||Xm
+i − µi∗ 1||2
+/2
+
+(14)
+where Xm
+i = [Xi,1, . . . , Xi,m]T ∈ Rm. The marginal distribution on arm i′, given that arm i is the largest,
+follows a mixture distribution:
+P(Xm
+i′ |Hi) =
+1
+n
+√
+2π
+n
+X
+j=1
+exp
+
+− ||Xm
+i′ − µj1||2
+/2
+
+. (15)
+Combining (13), (14), and (15), after a number of straightforward manipulations, excluded for brevity, it can
+be shown that the ML estimate prefers arm i to i′ if and only if
+Pm
+ℓ=1 Xi,ℓ >
+Pm
+ℓ=1 Xi′,ℓ, or equivalently,
+b
+µi > b
+µi′ . The estimate with minimum probability of error is simplyb
+i = arg maxi b
+µi.
+We continue by bounding the probability of error of the maximum likelihood test. For any estimator,
+P(b
+i 6= i∗
+) ≥ P
+
+
+[
+i6=i∗
+b
+µi∗ − b
+µi ≤ 0
+
+
+= P(b
+µi∗ ≥ µi∗ ) P
+
+
+[
+i6=i∗
+b
+µi∗ − b
+µi ≤ 0 b
+µi∗ ≥ µi∗
+
+
++ P(b
+µi∗ < µi∗ ) P
+
+
+[
+i6=i∗
+b
+µi∗ − b
+µi ≤ 0 b
+µi∗ < µi∗
+
+
+≥
+1
+2
+P
+
+
+[
+i6=i∗
+b
+µi ≥ µi∗
+
+ =
+1
+2
+
+1 − P
+
+
+\
+i6=i∗
+b
+µi ≤ µi∗
+
+
+
+
+=
+1
+2
+
+1 −
+Y
+i6=i∗
+FN
+q
+m∆2
+i
+
+
+ ≥
+1
+2
+
+1 −
+Y
+i6=i∗
+
+1 −
+1
+12
+exp −m∆2
+i
+
+
+
+ (16)
+≥ min
+∆1,...,∆n:
+P
+i
+1
+∆2
+i
+=H
+1
+2
+
+1 −
+Y
+i6=i∗
+
+1 −
+1
+12
+exp −m∆2
+i
+
+
+
+ (17)
+11
+where FN (x) is the standard Gaussian CDF. The inequality in (16) follows since FN (x) ≤ 1−exp(−x2)/12
+for x ≥ 0 [11, Eqn. 13]. The next step in the proof will be showing that error probabilities smaller than a
+fixed constant, (17) is minimized when the gaps are equal, i.e., when ∆1 = ∆2 = ... =
+p
+n/H. First define
+z ∈ Rn
++ with elements zi := 1/(m∆2
+i ). We can recover the minimum of (17) by solving
+argmax
+z∈Rn
++:1T z=H/m
+n
+X
+i=1
+log
+
+1 −
+1
+12
+exp (−1/zi)
+
+. (18)
+Define the Lagrangian of (18) as
+L(z, λ) = −
+n
+X
+i=1
+log
+
+1 −
+1
+12
+exp z−1
+i
+
+
+− λ(1T
+z − H/m).
+From [12, p. 321], any z that maximizes (18) necessarily satisfies
+∂L
+∂zi
+=
+z−2
+i
+12 exp(z−1
+i ) − 1
+− λzi = 0 ∀ i (19)
+1T
+z = H.
+The above system of equations is satisfied by pairs (z, λ) that satisfy
+
+zi : λ =
+z−3
+i
+12 exp(z−1
+i ) − 1
+
+∀ i (20)
+and 1T z = H simultaneously. Differentiation of (20) shows the function λ(zi) is monotonically increasing
+in zi for zi ≤ 1/3. First, consider a solution to (19) which has one or more zi ≥ 1/3. This would imply
+m∆2
+i ≤ 3 for some i, and from (17), P(b
+i 6= i∗) ≥ 1
+24 exp(−3). For any λ, (20) is satisfied by at most
+one zi ∈ (0, 1/3] by the monotonicity of the function on this range; this implies implies either 1) the z that
+maximizes (18) has the form z1 = z2 = · · · = zn, or 2) P(b
+i 6= i∗) ≥ 1
+24 exp(−3). We focus our attention
+on the case when z1 = · · · = zn (and thus ∆1 = · · · = ∆n). Since
+P
+i 1/∆2
+i = H, ∆i =
+p
+n/H for all i.
+(17) gives
+P(b
+i 6= i∗
+) ≥
+1
+2
+
+1 −
+
+1 −
+1
+12
+exp
+
+−
+mn
+H
+n
+.
+Recall the total number of samples is given by nm. If mn ≤ H(log n + log (25δ)−1)
+
+, then for δ ∈
+(0, e−3/24)
+P(b
+i 6= i∗
+) ≥
+1
+2
+
+1 −
+
+1 −
+25δ
+12n
+n
+(21)
+≥
+1
+2
+
+1 − exp
+
+−
+25δ
+12
+
+for all n ≥ 1 (22)
+≥ δ (23)
+which completes the proof of the first statement of the theorem.
+To prove the second statement of the theorem, consider the following set of gaps –
+∆i =
+
+
+
+q
+2
+H i = 1
+q
+2(n−1)
+H i > 1.
+12
+Note that {∆1, ..., ∆n} satisfy
+Pn
+i=1 1/∆2
+i = H. From (16), and by considering only the arm with the
+smallest gap,
+P(b
+i 6= i) ≥
+1
+2
+
+1 −
+Y
+i6=i∗
+
+1 −
+1
+12
+exp −m∆2
+i
+
+
+
+ ≥
+1
+24
+exp
+
+−
+2m
+H
+
+. (24)
+If m ≤ H
+2 log 1
+24δ
+
+, we have P
+
+b
+i 6= i∗
+
+≥ δ. This implies that if the total number of measurements is less
+than Hn
+2 log 1
+24δ
+
+, then P(b
+i 6= i∗) ≥ δ, completing the proof of the second statement of Thm. 4.
+A.4 Proof of Corollary 2
+Proof. When α = 0, Theorem 4 implies the result. When α > 0, we can bound (16) by dropping all terms
+in the product except the term corresponding to the smallest gap. This gives
+P(b
+i 6= i) ≥
+1
+24
+exp −m∆2
+1
+
+=
+1
+24
+exp −mn−2α
+
+(25)
+Setting m ≤ n2α log 1
+24δ
+
+implies the result.
+13
+

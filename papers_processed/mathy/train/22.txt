@@ -1,1 +1,1614 @@
-OnProfit-MaximizingEnvy-freePricingVenkatesanGuruswami∗JasonD.Hartline†AnnaR.Karlin∗DavidKempe‡ClaireKenyon§FrankMcSherry†AbstractWestudytheproblemofpricingitemsforsaletoconsumerssoastomaximizetheseller’srevenue.Weassumethatforeachconsumer,weknowthemaximumamounthewouldbewillingtopayforeachbundleofitems,andwanttofindpricingsoftheitemswithcorrespondingallocationsthatmaximizesellerprofitandatthesametimeareenvy-free,whichisanaturalfairnesscriterionrequiringthatconsumersaremaximallyhappywiththeoutcometheyreceivegiventhepricing.Westudythisproblemfortwoimportantclassesofinputs:unitdemandconsumers,whowanttobuyatmostoneitemfromamongaselectionAninterestingspecialcaseofthesepricingproblemscanbeobtainedbyassumingthattheitemsareavailableinunlimitedsupply.Inthisspecialcase,thereisnolimitationonhowmanycopiesofeachitemaresold,andthusanypricingisenvy-freewhentheallocationistogiveeachconsumertheirmostpreferredbundle.Whenwewishtodistinguishtheunlimitedsupplycasefromthegeneralcasewewillrefertothegeneralcaseasthelimitedsupplycase.Aswewillshow,bothoftheseversionsarenotonlyNP-complete,butAPX-hard,evenunderstrongadditionalrestrictions.Wethereforefocusontwokindsofresults:(1)approximationalgorithmswithlogarithmicguaranteesinthegeneralcase,and(2)polynomialorpseudo-polynomialtimealgorithmsforinterestingspecialcases.WegiveanO(logn)approximationalgorithmforthelimitedsupplyunitdemandproblem,andanO(logn+logm)approximationfortheunlimitedsupplysingle-mindedbidderproblem.Furthermore,wedefineandgiveapolynomialtimealgorithmfortheunlimitedsupplypricingovertimevariantoftheunitdemandproblem.Thisproblemmodelsthecasewherethereisasingleitemforsaleatvariouspointsintimeandeachconsumerwantstoacquiretheitemwithinsometimeinterval(e.g.,forbandwidthorairlinetickets).Forthesingle-mindedcase,wedefineandinvestigate,inSection5.2,theTollboothproblemontrees,anditsspecialcase,theHighwayproblemonapath.Intheseproblems,consumersareinterestedinusingagivenpathinthetree(oronthepath),andthesellercanplacetollboothsontheedgesandchargepricesfortheirusage.Theadditionalcombinatorialstructureprovidedbythisrestrictionallowsustogivepolynomialtimealgorithmsforseveralcasesoftheseproblems.Theenvy-freepricingproblemalsohasaroleasalowerboundinthesettingofprofitmaximizingcombinatorialauc-tions.There,customers’valuationsareoftennotknown,andwhatismore,customerswillchoosetomisrepresenttheirvaluationsiftheyfeelthattheycangetabetterdeal.Mech-anismdesignstudiesthedesignoftruthful(orincentive-compatible)auctionswhichmakeitinthecustomers’bestinteresttodisclosetheirtruevaluations.Theperformanceofsuchauctionsisoftenmeasuredincomparisontotheprofitoftheselleroptimalenvy-freepricings[13,12],.InSection4,wewillinvestigatethisconnectionfurther,andpresentalogh-competitivetruthfullimited-supplyunit-demandcom-binatorialauctionforthecasewhereallconsumervaluationsareintherange[1,h].Wenotethatforanyunlimitedsupplycombinatorialpricingproblem(includingthesingle-mindedcase),alogh-competitivetruthfulmechanismistrivial.RelatedWork.Pricingisawell-studiedareaineconomics;however,computationalissuesarenotamajorfocus.Envy-freepricingispartofatrendtowardsunderstandingthealgorithmiccomplexityofcomputing“equilibria”:inanoptimalenvy-freepricing,thesellerdoesnothaveanyincentivetochangepricesandtheconsumersdonothaveanyincentivetodisputetheallocation.Examplesofother,somewhatdifferentworkinthiscategory,canbefoundin[9,10].Aspreviouslydiscussed,thisworkisrelatedtotruthfulauctiondesign,andespeciallythedesignoftruthfulauctionswithworst-caseperformanceguarantees,e.g.,[12,13,11,5,4,18].Ourinteresthereisinsellerprofitmaximization.An-othercommongoalforeconomicallymotivatedalgorithmsandmechanismsisthatofeconomicefficiency:obtaininganoutcomewhichmaximizesthesumoftheutilitiesofallpar-ticipants.Forthesingle-mindedbiddercase,whenthegoalisefficiency,boththepricingproblemandthemechanismdesignproblemhaveapproximatesolutions[19,3].Fortheunit-demandcase,theVickrey-Clarke-Groves(VCG)mech-anism[23,8,14]solvestheprobleminpolynomialtime(seedetailsinSection4),andisbothtruthfulandenvy-free.WenotethatcomputingtheVCGmechanismisNP-hardforgen-eralcombinatorialauctionproblemsincludingthespecialcaseofsingle-mindedbidders.Thegoalofeconomiceffi-ciencyisquitedifferentfrommaximizingthesellerprofit,andtherearesimpleexampleswheretheVCGmechanismisveryfarfrommaximizingthesellerprofit.Forexample,ifnotwoconsumerswantthesameitemthentheVCGmech-anismgivesallitemsawayforfree!Forunit-demandenvy-freepricing,afinal,somewhatinformalconnectionistothenotionofstablematchings.Byintroducingprices,weconstructmatchingsofconsumerstoitemswiththepropertythatnoconsumerpreferstheitemsomeoneelsegetstotheitemtheyget.2PreliminariesWeassumethattherearenconsumers,andasetJofmdistinctitems.Eachitemj∈Jexistsincjcopies(weexplicitlyallowcj=∞),andwedenotethesupplyvectorbyc=(c1,...,cm).Eachconsumerhasavaluationvi(S)foreachbundleS⊆Jofitems,whichmeasureshowmuchreceivingbundleSwouldbe“worth”toconsumeri;wedenotebyVthen×2Jmatrixofvaluations.Forconvenience,weassumethatvi(∅)=0forallconsumersi.Givenapricevectorp=(p1,...,pm),theutilitythatconsumeriderivesfrombundleSisUi(S)=vi(S)−pS,wherepS=Pj∈Spj;itmeasurestheconsumer’s“joy”athavingboughtthebundleSatthegivenprice.Ifconsumeri’sutilityforthebundleSisnon-negative,optionwithutilityUi(∅)=0,wehaveUi(S)≥0forallS∈Di.Usingthisterminology,wecannowdefineenvy-freepricingandallocations,thecentralnotionofthispaper.DEFINITION2.1.1.Anallocation(S1,...,Sn)ofbundlestoconsumersisfeasibleifeachitemjisinatmostcjsetsSi.Noticethatthismayleavesomeitemsunallocated.2.Givenapricingp=(p1,...,pm),anallocation(S1,...,Sn)isenvy-freeifSi∈Diforalli,i.e.,eachconsumerreceivesabundlefromhisdemandset.3.Apricingpisenvy-freeifitadmitsafeasible,envy-freeallocation.Noticethatifthesupplyisunlimitedforallitems,theneverypricevectorisenvy-free,aswecanselectanarbitrarybundleSifromeachdemandsetDi,andobtainafeasibleallocation.DEFINITION2.2.Theenvy-freepricingproblem:Giventheinput(n,m,V,c),computeanenvy-freepricingpandacorrespondingenvy-freeallocation(S1,...,Sn)maximizingthesellerprofitPipS3.2Alogarithmicapproximationalgorithm.Inourfur-therdiscussionoftheunitdemandcase,itwillbehelp-fultothinkofallocationsasmatchingsinbipartitegraphs.Specifically,givenapricevectorp,thedemandgraphisaOuralgorithmwillcomputeWalrasianEquilibriaforseveralappropriatelychosenreserveprices,andoutputtheoneyieldingmaximumrevenueamongthem.Theanalysiswillbebasedonthefollowinglemma.LEMMA3.1.Letπbeamaximumweightedmatchingti<t)whowouldbewillingtobuytheitematpriceqattimet0(i.e.,si≤t0≤tiandvi≥q),wecanexpressap(s,t)=maxq≥p,t0∈(s,t)(aq(s,t0)+aq(t0,t)+q·nt0,q).Anyparticularchoiceofqandt0correspondstosellingtheitematpriceqattimet0,toallconsumerswillingtobuyitthen.Toensureenvy-freeness,thisimposesaconstraintofpricingatleastatqduringthesub-intervalsthattheseconsumerswouldalsobewillingtobuyat.Theoptimalityofthedynamicprogramfollowssimplybylookingatthesellingtimesandpricesoftheoptimumsolutioninnon-decreasingorderofprice.Thecrucialobser-vationisthatweonlyneedtoconsiderapolynomialnum-berofpricesqandtimest0.Forthelatter,wenoticethatitemsonlyneedtobesoldattimessiorti,i.e.,endpointsofconsumers’intervals.Anyothersellingtimecanbeshiftedslightlytotheleftorrightwithoutalteringprofit.Similarly,allsellingpricesarevaluationsvi:iftheitemwereeversoldatapricepnotequaltoavaluation,thenallpricesofpcouldberaisedslightlywithoutlosingcustomersorcreatingenvy.Hence,thedynamicprogrammingtablecontainsonlyO(n3)entriesap(s,t),eachofwhichiscomputedintimeO(n2).Thiscompletestheproof.Wecanextendthisapproachtoapseudo-polynomialtimealgorithmforlimitedsupplyctattimet.Givensandt,letn+t0,qdenotethenumberofcustomerswithsi≤UnitDemandCombinatorialAuctionInput:ValuationmatrixV,where1≤vi(j)≤hforalli,j.1.Pickanintegerkuniformlyatrandomfrom{1,...,bloghc},andletrinanoptimalsolution,thepricesarepd=pdp=1,andpdn=0;theremainderoftheproofstaysunchanged.5.1ALogarithmicApproximationAlgorithmforItemsinUnlimitedSupply.TheprevioushardnessresultshowsthatweareunlikelytofindaPTASforthesingle-mindedbiddercase.However,itisfairlystraightforwardtogetalogarithmicapproximationforsingle-mindedbiddersinthecaseofunlimitedsupply.Ouralgorithmonlyconsiderspric-ingsinwhichallitemsarepricedthesame.Thecandidatepricesareqi=vi/|Si|,foreachcustomeri.Amongthepricingsassigningallitemspriceqi,ouralgorithmsimplyselectstheonegivinglargestprofitandoutputsit.THEOREM5.2.Thisalgorithmisalogn+logmapproxi-mationforenvy-freepricingwhenbiddersaresingle-mindedanditemsareavailableinunlimitedsupply.Proof.Weassumethattheconsumersareorderedsuchthatq1≥q2≥...≥qnPici≤c,of(b·c0+Xi≥1maxb0≥ba(wi,ci,b0)).Here,c0isthecapacityallottedtorequestsoriginatingwithw,and2.Thealgorithmmaintainsatableaj,γ1,...,γk,whereanentryisthemaximumamountofprofitthatcanbeobtainedfromrequestsendingatpositionjorbelow,giventhattheedgesj,j−1,...,j−k+1arepricedatγ1,...,γk,respectively.Tocalculateanentryaj+1,γ1,...,γk,considerallpossiblevaluesofγ0∈{0,...,B},andaddtoaj+1,γ2,...,γk,γ0themaximumprofitforallfeasiblerequestsendingexactlyatj+1withcostassignmentsγ2,...,γk,γ0toedgesj,j−1,
+JOURNAL OF THE
+AMERICAN MATHEMATICAL SOCIETY
+Volume 21, Number 1, January 2008, Pages 1–21
+S 0894-0347(07)00573-5
+Article electronically published on August 9, 2007
+EUCLIDEAN DISTORTION AND THE SPARSEST CUT
+SANJEEV ARORA, JAMES R. LEE, AND ASSAF NAOR
+1. Introduction
+Bi-Lipschitz embeddings of ﬁnite metric spaces, a topic originally studied in geo-
+metric analysis and Banach space theory, became an integral part of theoretical
+computer science following work of Linial, London, and Rabinovich [29]. They
+presented an algorithmic version of a result of Bourgain [8] which shows that ev-
+ery n-point metric space embeds into L2 with distortion O(log n). This geometric
+viewpoint oﬀers a way to understand the approximation ratios achieved by lin-
+ear programming (LP) and semideﬁnite programming (SDP) relaxations for cut
+problems [29, 6]. It soon became apparent that further progress in understand-
+ing SDP relaxations would involve improving Bourgain’s general bound of O(log n)
+for n-point metric spaces of negative type. For instance, the approximation ratio
+achieved by a well-known SDP relaxation for the general Sparsest Cut problem is
+known to coincide exactly with the best possible distortion bound achievable for
+the embedding of n-point metrics of negative type into L1—a striking connection
+between pure mathematics and algorithm design.
+Further progress on these problems required new insights into the structure of
+metric spaces of negative type and the design of more sophisticated and ﬂexible
+embedding methods for ﬁnite metrics. Coincidentally, signiﬁcant progress was
+made recently on both these fronts. Arora, Rao and Vazirani [5] proved a new
+structural theorem about metric spaces of negative type and used it to design an
+O(
+√
+log n)-approximation algorithm for the uniform case of the Sparsest Cut prob-
+lem. Krauthgamer, Lee, Mendel and Naor [22] introduced a new embedding method
+called measured descent which uniﬁed and strengthened many existing embedding
+techniques, and they used it to solve a number of open problems in the ﬁeld.
+These breakthroughs indeed resulted in improved embeddings for negative type
+metrics; Chawla, Gupta, and Räcke [11] used the structural theorem of [5] (specif-
+ically, its stronger form due to Lee [24]), in conjunction with measured descent
+to show that every n-point metric of negative type embeds into L2 with distor-
+tion O(log n)3/4
+. In the present work, we show how one can achieve distortion
+Received by the editors August 8, 2005.
+2000 Mathematics Subject Classiﬁcation. Primary 51F99, 46B07, 68W25.
+Key words and phrases. Bi-Lipschitz embeddings, metrics of negative type, approximation
+algorithms.
+The ﬁrst author was supported by a David and Lucile Packard Fellowship and NSF grant
+CCR-0205594.
+The second author was supported by NSF grant CCR-0121555 and an NSF Graduate Research
+Fellowship.
+The last author was supported by NSF grants CCF-0635078 and DMS-0528387.
+c
+2007 American Mathematical Society
+1
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+2 SANJEEV ARORA, JAMES R. LEE, AND ASSAF NAOR
+O(
+√
+log n · log log n). This almost matches the 35-year-old lower bound of
+√
+log n
+from Enﬂo [14]. Our methods use the results of [5, 24, 11] essentially as a “black
+box,” together with an enhancement of the measured descent technique.
+Recall that a metric space (X, d) is said to be of negative type if (X,
+√
+d) is
+isometric to a subset of Euclidean space. In particular, it is well known that L1
+is of negative type. (We also remind the reader that L2 is isometrically equivalent
+to a subset of L1.) The parameter c2(X), known as the Euclidean distortion of
+X, is the least distortion with which X embeds into Hilbert space, i.e. it is the
+minimum of distortion(f) = fLip · f−1
+Lip over all bijections f : X → L2.
+The mathematical investigation of the problem we study here goes back to the
+work of Enﬂo [14], who showed that the Euclidean distortion of the Hamming cube
+Ωd = {0, 1}d
+equals
+√
+d =
+
+log2 |Ωd|. The following natural question is folklore
+in geometric and functional analysis: “Is the discrete d-dimensional hypercube the
+most non-Euclidean 2d
+-point subset of L1?”
+A positive answer to this question would imply that any n-point subset of L1
+embeds in L2 with distortion O(
+√
+log n). In fact, motivated by F. John’s theo-
+rem in convex geometry (see [34]), Johnson and Lindenstrauss [20] asked in 1983
+whether every n-point metric space embeds into L2 with distortion O(
+√
+log n).
+Here, the analogy between ﬁnite dimensional normed spaces and ﬁnite metric spaces
+is not complete: Bourgain [8] has shown that for any n-point metric space X,
+c2(X) = O(log n), and this result is existentially optimal [29, 6]. By now we under-
+stand that ﬁnite metric spaces (namely expander graphs) can exhibit an isoperi-
+metric proﬁle which no Euclidean space can achieve, and this is the reason for the
+discrepancy with John’s theorem. However, it is known (see [22]) that several nat-
+ural restricted classes of metrics do adhere to the O(
+√
+log n) Euclidean distortion
+suggested by John’s theorem. Arguably, for applications in theoretical computer
+science, the most important restricted class of metrics are those of negative type;
+yet improvements over Bourgain’s theorem for such metrics have long resisted the
+attempts of mathematicians and computer scientists.
+The present paper is devoted to proving that up to iterated logarithmic factors,
+the answer to the above question is positive. This yields a general tool for the
+rounding of certain classes of semi-deﬁnite programs. As a result, we obtain the
+best known polynomial time algorithm for the approximation of the Sparsest Cut
+problem with general demands, improving over the previous bounds due to [11]
+and the preceding works [29] and [6] (which yield an O(log n) approximation).
+This problem is described in Section 1.1. We now state our main result. In the case
+of metrics of negative type (and not just L1 metrics), it answers positively (up to
+iterated logarithms) a well known conjecture in theoretical computer science and
+metric geometry (stated explicitly by Goemans in [17]).
+Theorem 1.1. Let (X, d) be an n-point metric space of negative type. Then
+c2(X) = O
+
+log n · log log n
+
+.
+Related work. Until recently, there was little solid evidence behind the conjecture
+that any n-point subset of L1 embeds in Hilbert space with distortion O(
+√
+log n).
+In the paper [25], Lee, Mendel and Naor show that any n-point subset of L1 em-
+beds into Hilbert space with average distortion O(
+√
+log n). Arora, Rao, and Vazi-
+rani [5] have shown that O(
+√
+log n) distortion is achievable using a diﬀerent no-
+tion of average distortion, which turns out to be more relevant for bounding the
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+EUCLIDEAN DISTORTION AND THE SPARSEST CUT 3
+actual distortion. As described above, combining their result with the measured
+descent technique of Krauthgamer, Lee, Mendel and Naor [22], Chawla, Gupta, and
+Räcke [11] have recently proved that for any n-point metric space X of negative
+type, c2(X) = O(log n)3/4
+. It was conjectured [31, pg. 379] that n-point metrics
+of negative type embed into L1 with distortion O(1). Recently, Khot and Vish-
+noi [21] have obtained a lower bound of Ω(log log n)δ
+, for some universal constant
+δ > 0. This lower bound has been improved by Krauthgamer and Rabani [23] to
+Ω(log log n).
+Our results also suggest that the dimension reduction lower bound of Brinkman
+and Charikar [9] (see also [26]) is tight for certain distortions. They show that
+embedding certain n-point subsets of L1 into d
+1 with distortion D requires that
+d ≥ nΩ(1/D2
+)
+. Theorem 1.1, together with theorems of Johnson and Lindenstrauss
+[20] and Figiel, Lindenstrauss, and Milman [16], yields an embedding of every n-
+point subset of L1 into 
+O(log n)
+1 with distortion O(
+√
+log n · log log n).
+1.1. Algorithmic application: The Sparsest Cut problem with general
+demands. In this section, we brieﬂy describe an application of Theorem 1.1 to
+the Sparsest Cut problem with general demands (and its relation to the multi-
+commodity ﬂow problem). This is a fundamental NP-hard combinatorial optimiza-
+tion problem—we refer the interested reader to the articles [28, 2, 29, 6], the sur-
+vey [39], and Chapter 21 of the book [40] for additional information on Sparsest
+Cut, and its applications to the design of approximation algorithms.
+Let G = (V, E) be a graph (network), with a capacity C(e) ≥ 0 associated to
+every edge e ∈ E. Assume that we are given k pairs of vertices (s1, t1), ..., (sk, tk) ∈
+V × V and D1, . . . , Dk ≥ 1. We think of the si as sources, the ti as targets, and
+the value Di as the demand of the terminal pair (si, ti) for some commodity κi.
+The problem is said to have uniform demands if every pair u, v ∈ V occurs as some
+(si, ti) pair with Di = 1.
+In the MaxFlow problem the objective is to maximize the fraction λ of the
+demand that can be shipped simultaneously for all the commodities, subject to the
+capacity constraints. Denote this maximum by λ∗
+. A trivial upper bound on λ∗
+is
+the cut ratio. Given any subset S ⊆ V , we write
+Φ(S) =
+
+uv∈E C(uv) · |1S(u) − 1S(v)|
+k
+i=1 Di · |1S(si) − 1S(ti)|
+,
+where 1S is the characteristic function of S. The value Φ∗
+= minS⊆V Φ(S) is
+the minimum over all cuts (partitions) of V , of the ratio between the total ca-
+pacity crossing the cut and the total demand crossing the cut. In the case of a
+single commodity (i.e. k = 1) the classical MaxFlow-MinCut theorem states that
+λ∗
+= Φ∗
+, but in general this is no longer the case. It is known [28, 29, 6] that
+Φ∗
+= O(log k)λ∗
+. This result is perhaps the ﬁrst striking application of metric em-
+beddings in combinatorial optimization (speciﬁcally, it uses Bourgain’s embedding
+theorem [8]).
+Computing Φ∗
+is NP-hard [32]. Moreover, ﬁnding a cut for which Φ∗
+is (approx-
+imately) attained is a basic step in approximation algorithms for several NP-hard
+problems [28, 2, 39]. The best known algorithm for computing Φ∗
+in the case of uni-
+form demands is due to [5], where an approximation ratio of O(
+√
+log n) is achieved.
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+4 SANJEEV ARORA, JAMES R. LEE, AND ASSAF NAOR
+In the case of non-uniform demands, an approximation ratio of O(log k)3/4
+is ob-
+tained in [11]. Here, as an application of Theorem 1.1, we prove the following
+theorem:
+Theorem 1.2. Using the above notation, there exists a polynomial-time algorithm
+which produces a subset S ⊆ V for which
+Φ(S) = O
+
+log k · log log k
+
+Φ∗
+.
+Structure of the paper. This paper is organized as follows. In Section 2 we
+present an informal overview of the ideas involved in the proof of Theorem 1.1.
+Section 3 is devoted to various preliminaries on the geometry of metrics of nega-
+tive type. Theorem 1.1 is proved in Section 4, and the algorithm of Theorem 1.2
+is described and analyzed in Section 5. We end with Section 6, which contains
+additional remarks and open problems.
+2. Overview of the proof of Theorem 1.1
+Remarks on notation. When we write E  F for two expressions E and F, we
+intend this to mean that there exists some  > 0 such that E ≥ F, where  is
+intended to be a universal constant, independent of the variables or parameters on
+which E and F depend.
+We will often work with Hilbert spaces of the following form: If H is a Hilbert
+space and (Ω, µ) is a probability space, we use L2(H, Ω, µ) to denote the Hilbert
+space of H-valued random variables Z with norm ||Z||L2(H,Ω,µ) =
+
+E ||Z||2
+H. When
+H, Ω are clear from the context, we simply write L2(µ) and denote || · ||H by || · ||2.
+Our proof of Theorem 1.1 has little to do with metrics of negative type; the
+connection to such spaces comes through the techniques of [5, 24, 11] and is laid
+out in Section 3. Instead, we present a general theorem about gluing together
+various maps from ﬁnite metric spaces into Hilbert spaces (and, more generally, Lp
+spaces for p ∈ [1, ∞)). Our starting point is the following type of ensemble.
+Let (X, d) be an n-point metric space. Suppose that for every τ ≥ 0 and every
+subset S ⊆ X there exists a 1-Lipschitz map ϕS,τ : X → L2 with
+(1) ||ϕS,τ (x) − ϕS,τ (y)||2 ≥
+τ
+
+log |S|
+whenever x, y ∈ S and d(x, y) ∈ [τ, 2τ]. In general,
+
+log |S| could be a diﬀerent
+function of |S|, but we restrict ourselves here for simplicity. Additionally, let us
+temporarily deﬁne ϕτ = ϕX,τ for every τ ≥ 0 so that for the maps {ϕτ }, condition
+(1) holds for all x, y ∈ X and |S| = n. The problem we are now confronted with
+is how to combine the ensemble of maps {ϕS,τ } together to obtain a genuinely
+bi-Lipschitz map.
+There is an obvious approach which comes to mind: Let R ⊆ Z be such that for
+all x, y ∈ X, there exists k ∈ R such that d(x, y) ∈ [2k
+, 2k+1
+]. Now deﬁne the map
+ϕ : X → L2 by ϕ =
+
+k∈R ϕ2k . Clearly we have both ||ϕ||Lip ≤
+√
+R and, for all
+x, y ∈ X,
+||ϕ(x) − ϕ(y)||2 ≥
+d(x, y)
+2
+√
+log n
+;
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+EUCLIDEAN DISTORTION AND THE SPARSEST CUT 5
+hence distortion(ϕ) = O(
+√
+R log n). Trivially, we can choose R so that |R| ≤ n2
+.
+A slightly more delicate argument yields such an R with |R| ≤ O(n). Unfortu-
+nately, we are searching for a bound of the form distortion(ϕ) ≈
+√
+log n, making
+this construction useless.
+Nevertheless, the key to a better gluing of the given ensemble does lie in the
+delicate interplay between the distributions of distances in X and the number of
+points in various regions of the space. The technique of measured descent from [22]
+relies essentially on two facts about ﬁnite metric spaces. First, the identity
+(2)
+
+k∈Z
+log
+|B(x, α · 2k
+)|
+|B(x, 2k)|
+= O(log n log α)
+for any number α ≥ 2. (In [22], a ﬁxed constant value of α was used, but for us the
+quantitative dependence is crucial, as we will have α depending on n.) This gives
+a simple bound on the rate that a ﬁnite metric space can expand over all its scales
+and is implicitly used in earlier works under the name of “region growing” [28, 15].
+For the purposes of this description, we will state the second fact less concretely.
+Basically, in certain settings, one can think of the ratio |B(x, ατ)|/|B(x, τ)| as the
+“local cardinality of the space” around x at scale τ. As an example, if X = Rd
+,
+B(x, ·) represents a Euclidean ball, and |·| is the Lebesgue measure, then this ratio
+approximates the number of τ-net points that can be packed inside a ball of radius
+ατ. Later, it will become necessary to randomly partition X into pieces of diameter
+at most 2τ while ensuring that pairs x, y ∈ X with d(x, y) τ are usually in the
+same component of the partition (see Section 3.1 on padded decomposability). It
+is known [10, 15] that the properties of such partitions near x depend on the local
+value log |B(x,2τ)|
+|B(x,τ)| .
+Following [22], this relationship is used in [24] to prove (roughly) that, given the
+maps {ϕτ }τ≥0 deﬁned above, there exists a map ϕ : X → L2 such that ||ϕ||Lip ≤
+O(
+√
+log n) and, for x, y ∈ X with d(x, y) ∈ [2k
+, 2k+1
+],
+(3) ||ϕ(x) − ϕ(y)||2 
+
+log
+|B(x, 2k+1)|
+|B(x, 2k)|
+
+||ϕ2k (x) − ϕ2k (y)||
+(I)
++
+d(x, y)
+log |B(x,2k+1)|
+|B(x,2k)|
+(II)
+.
+The contribution (II) comes from random partitioning and Rao’s technique [38]
+and is valid for any metric space X. Observing that (I)  d(x, y)/
+√
+log n and using
+AM-GM in (3), one arrives at the lower bound
+||ϕ(x) − ϕ(y)||2 
+d(x, y)
+(log n)
+1
+4
+;
+hence distortion(ϕ) ≤ O(log n)
+3
+4 . While not obvious at present, the identity (2) is
+what allows [24] to get the leading
+√
+· factor in (3) while keeping ||ϕ||Lip small (see
+Theorem 4.5).
+In order to get the distortion near O(
+√
+log n), we have to dispense with the
+contribution (II) which is not derived from the ensemble {ϕS,τ }. Instead, we would
+like to pass from the ensemble {ϕS,τ } to a family of maps {ϕ̃τ : X → L2} for which
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+6 SANJEEV ARORA, JAMES R. LEE, AND ASSAF NAOR
+the contribution of (I) in (3) is replaced by
+(4) ||ϕ̃2k (x) − ϕ̃2k (y)||2 
+d(x, y)
+
+log |B(x,2k+1)|
+|B(x,2k)|
+.
+Clearly this would ﬁnish the proof. Roughly, the construction of ϕ̃2k proceeds as
+follows. We ﬁrst randomly partition X into components of diameter about 2k
+α
+for some appropriately chosen α = α(n). Writing the random partition as X =
+C1∪C2∪· · ·∪Cm, we then derive subsets C̃i ⊆ Ci by randomly sampling points from
+each Ci. Then, we use an appropriately constructed (random) partition of unity
+to glue the collection of maps {ϕC̃i,2k }m
+i=1 together. To ensure that the resulting
+map still has ||ϕ̃2k ||Lip ≤ O(1), the partition of unity is constructed carefully using
+properties of the random partition (this bears some resemblance to the technique
+of [27] for extending Lipschitz functions).
+The key to the proof is the way in which the random samples C̃i are chosen. We
+have to maintain the property that C̃i is a “good representative” of Ci at scale 2k
+(i.e. we need that, on average, C̃i is 2k
+-dense in Ci). On the other hand, we need
+to maintain the invariant that if x ∈ Ci, then
+log |C̃i| ≈ log
+|B(x, α2k
+)|
+|B(x, 2k)|
+,
+so that we can achieve a bound similar to (4) (recall that the quality of the map
+ϕS,τ depends on |S| = |C̃i|). Unfortunately, this is impossible since for distinct
+x, x
+∈ Ci, the above ratios can be quite diﬀerent. Instead, we have a number of
+phases, one for each estimate of the possible ratio (see the proof of Theorem 1.1).
+For this to work, we have to give up on achieving (4) exactly, and instead we weave
+together the inter-scale (Lemma 4.4) gluing of (3) with the intra-scale (Theorem
+4.5) gluing of (4) to obtain a nearly tight bound of O(
+√
+log n · log log n).
+3. Single scale embeddings
+In this section we present Theorem 3.1 and derive from it Lemma 3.5, which
+is one of the main tools used in the proof of the Main Theorem (1.1). It is a
+concatenation of the result of Arora, Rao, and Vazirani [5], its strengthening by
+Lee [24], and the “reweighting” method of Chawla, Gupta, and Räcke [11], who
+use it in conjunction with [22] to achieve distortion O (log n)
+3
+4
+. For the sake of
+completeness, we present below a sketch of the proof of Theorem 3.1. Complete
+details can be found in the full version of [24], where a more general result is
+proved; the statement actually holds for metric spaces which are quasisymmetrically
+equivalent to subsets of Hilbert space and not only for those of negative type.
+(See [19] for the deﬁnition of quasisymmetry; the relevance of such maps to the
+techniques of [5] was ﬁrst pointed out in [36].)
+Theorem 3.1. There exist constants C ≥ 1 and 0 < p < 1
+2 such that for every
+n-point metric space (Y, d) of negative type and every ∆ > 0, the following holds.
+There exists a distribution µ over subsets U ⊆ Y such that for every x, y ∈ Y with
+d(x, y) ≥ ∆
+16 ,
+µ
+
+U : y ∈ U and d(x, U) ≥
+∆
+C
+√
+log n
+
+≥ p.
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+EUCLIDEAN DISTORTION AND THE SPARSEST CUT 7
+Proof (sketch). Let g : Y → 2 be such that
+d(x, y) = ||g(x) − g(y)||2
+2
+for all x, y ∈ Y . By [33], there exists a map T : 2 → 2 such that ||T(z)||2 ≤
+√
+∆
+for all z ∈ 2 and
+1
+2
+≤
+||T(z) − T(z
+)||2
+min{
+√
+∆, ||z − z||2}
+≤ 1
+for all z, z
+∈ 2. As in [24], we let f : Y → Rn ∼
+= span(f(Y )) be the map given
+by f = T ◦ g. Then f is a bi-Lipschitz embedding (with distortion 2) of the metric
+space (Y,
+
+min{∆, d}) into the Euclidean ball of radius ∆.
+Let 0 < σ < 1 be some constant. The basic idea is to choose a random u ∈ Sn−1
+and deﬁne
+Lu = {x ∈ Y : x, u ≤ −σ
+√
+∆
+√
+n
+},
+Ru = {x ∈ Y : x, u ≥ σ
+√
+∆
+√
+n
+}.
+One then prunes the sets by iteratively removing any pairs of nodes x ∈ Lu, y ∈ Ru
+with d(x, y) ≤ ∆/
+√
+log n. In the end, one is left with two sets L
+u, R
+u. The main
+result of [5, 24] is that with high probability (over the choice of u), the number of
+pairs pruned from Lu × Ru is not too large.
+Let S∆ = {(x, y) ∈ Y × Y : d(x, y) ≥ ∆
+16 }. The reweighting idea of [11] is to
+apply the above procedure to a weighted version of the point set as follows. Let
+w : Y × Y → Z+
+be an integer-valued weight function on pairs, with w(x, y) =
+w(y, x), w(x, x) = 0, and w(x, y) > 0 only if (x, y) ∈ S∆. This weight function
+can be viewed as yielding a new set of points where each point x is replaced by
+
+y∈Y w(x, y) copies, with w(x, y) of them corresponding to the pair (x, y). One
+could think of applying the above procedure on this new point set; note that the
+pruning procedure above may remove some or all copies of x. Then, as observed
+in [11], the theorems of [5, 24] imply that with high probability, after the pruning,
+we still have
+
+x∈L
+u,y∈R
+u
+w(x, y) 
+
+x,y
+w(x, y).
+The distribution µ mentioned in the statement of the theorem is deﬁned using
+a family of O(log n) weight functions described below. Sampling from µ consists of
+picking a weight function from this family and a random direction u ∈ Sn−1
+and
+then forming sets L
+u, R
+u as above using the weight function. Let us call these sets
+L
+u(w), R
+u(w). One then outputs the set U of all points x for which any “copy”
+falls into L
+u(w).
+Now we deﬁne the family of weight functions. The initial weight function has
+w0(x, y) = n4
+for all (x, y) ∈ S∆. Given wk, obtain wk+1 as follows. If
+µ
+
+u ∈ Sn−1
+: (x, y) ∈ L
+u(wk) × R
+u(wk)
+
+≥ 0.1,
+we set wk+1(x, y) = wk(x, y). Otherwise, we set wk+1(x, y) = 2·wk(x, y). A simple
+argument from [11] shows that by repeating this O(log n) times, we obtain O(log n)
+weight functions such that for every pair (x, y) ∈ S∆ the following is true: If one
+picks a random weight function w and a random direction u ∈ Sn−1
+, then with
+constant probability we have (x, y) ∈ L
+u(w) × R
+u(w). 
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+8 SANJEEV ARORA, JAMES R. LEE, AND ASSAF NAOR
+3.1. Padded decomposability and random zero sets. Theorem 3.1 is the only
+way the negative type property will be used in what follows. It is therefore helpful
+to introduce it as an abstract property of metric spaces. Let (X, d) be an n-point
+metric space.
+Deﬁnition 3.2 (Random zero-sets). Given ∆, ζ > 0, and p ∈ (0, 1), we say that
+X admits a random zero set at scale ∆ which is ζ-spreading with probability p if
+there is a distribution µ over subsets Z ⊆ X such that for every x, y ∈ X with
+d(x, y) ≥ ∆,
+µ
+
+Z ⊆ X : y ∈ Z and d(x, Z) ≥
+∆
+ζ
+
+≥ p.
+We denote by ζ(X; p) the least ζ > 0 such that for every ∆ > 0, X admits a random
+zero set at scale ∆ which is ζ-spreading with probability p. Finally, given k ≤ n,
+we deﬁne
+ζk(X; p) = max
+Y ⊆X
+|Y |≤k
+ζ(Y ; p).
+With this deﬁnition, Theorem 3.1 implies that there exists a universal constant
+p ∈ (0, 1) such that for every n-point metric space (X, d) of negative type, ζ(X; p) =
+O(
+√
+log n).
+We now recall the related notion of padded decomposability. Given a partition
+P of X and x ∈ X, we denote by P(x) ∈ P the unique element of P to which x
+belongs. In what follows we sometimes refer to P(x) as the cluster of x.
+Deﬁnition 3.3 (Decomposition bundle, modulus of padded decomposability). Fol-
+lowing [22], we say that {P∆}∆>0 is an α-padded decomposition bundle of a metric
+space X if for every ∆ > 0, P∆ is a random partition of X (whose distribution we
+denote by ν) with the following properties:
+(1) For all P ∈ supp(ν) and all C ∈ P we have that diam(C) < ∆.
+(2) For every x ∈ X we have that
+ν{P : B(x, ∆/α) ⊆ P(x)} ≥
+1
+2
+.
+The modulus of padded decomposability of X, denoted αX , is deﬁned as the largest
+constant α > 0 such that X admits an α-padded decomposition bundle.
+As observed in [22], the results of [30, 7] imply that αX = O(log |X|), and this
+will be used in the ensuing arguments. The following useful fact relates the notions
+of padded decomposability and random zero sets. Its proof is motivated by an
+argument of Rao [38].
+Fact 3.4. ζ(X; 1/8) ≤ αX.
+Proof. Fix ∆ > 0 and let P be a partition of X into subsets of diameter less than
+∆. Given x ∈ X, we denote by πP (x) the largest radius r for which B(x, r) ⊆ P(x).
+Let {εC}C∈P be i.i.d. symmetric {0, 1}-valued Bernoulli random variables. Let ZP
+be a random subset of X given by
+ZP =
+
+C∈P : εC =0
+C .
+If x, y ∈ X satisfy d(x, y) ≥ ∆, then P(x) = P(y). It follows that
+Pr[y ∈ ZP ∧ d(x, ZP ) ≥ πP (x)] ≥
+1
+4
+.
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+EUCLIDEAN DISTORTION AND THE SPARSEST CUT 9
+By the deﬁnition of αX , there exists a distribution over partitions P of X into
+subsets of diameter less than ∆ such that for every x ∈ X with probability at least
+1/2, πP (x) ≥ ∆/αX . The required result now follows by considering the random
+zero set ZP . 
+We end this section with the following simple lemma, which shows that the
+existence of random zero sets implies the existence of embeddings into L2 which
+are bi-Lipschitz on a ﬁxed distance scale.
+Lemma 3.5 (Random zero sets yield single scale embeddings). For every ﬁnite
+metric space X, every S ⊆ X, every p ∈ (0, 1), and every τ > 0, there exists a
+1-Lipschitz mapping ϕ : X → L2 such that for every x, y ∈ S with d(x, y) ≥ τ,
+ϕ(x) − ϕ(y)2 ≥
+τ
+√
+p
+ζ(S; p)
+.
+Proof. By the deﬁnition of ζ(S, p) there exists a distribution µ over subsets Z ⊆ S
+such that for every x, y ∈ S with d(x, y) ≥ τ,
+µ
+
+Z ⊆ S : y ∈ Z and d(x, Z) ≥
+τ
+ζ(S; p)
+
+≥ p.
+Deﬁne ϕ : X → L2(µ) by ϕ(x) = d(x, Z). Clearly ϕ is 1-Lipschitz. Moreover, for
+every x, y ∈ S with d(x, y) ≥ τ,
+ϕ(x) − ϕ(y)2
+L2(µ) = Eµ [d(x, Z) − d(y, Z)]
+2
+≥ p ·
+
+τ
+ζ(S; p)
+2
+.
+
+4. Proof of Theorem 1.1
+The primary result of this section is the following theorem.
+Theorem 4.1. Let (X, d) be an n-point metric space. Suppose there exist constants
+C > 0 and 1
+2 ≤ ε ≤ 1 such that for every τ ≥ 0 and every subset S ⊆ X there exists
+a 1-Lipschitz map ϕS,τ : X → L2 with
+||ϕS,τ (x) − ϕS,τ (y)||2 ≥
+τ
+C(log |S|)ε
+whenever x, y ∈ S and d(x, y) ∈ [τ, 6τ]. Then c2(X) ≤ O(1) · C(log n)ε
+log log n.
+Theorem 4.1 implies Theorem 1.1. Indeed, if X is an n-point metric space
+such that for some p ∈ (0, 1), ε ∈ [1/2, 1], and C > 0, we have for every k ≤ n,
+ζk(X; p) ≤ C(log k)ε
+, then Theorem 4.1 together with Lemma 3.5 implies that
+c2(X) = O
+
+C(log n)ε
+log log n
+√
+p
+
+.
+Theorem 1.1 follows since by Theorem 3.1 we know that for some universal constant
+p ∈ (0, 1), if X is a metric space of negative type, then for all k, ζk(X; p) =
+O
+√
+log n
+
+.
+The proof of Theorem 4.1 will be broken down into several steps. In what follows
+we ﬁx a ﬁnite metric space X.
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+10 SANJEEV ARORA, JAMES R. LEE, AND ASSAF NAOR
+Lemma 4.2 (Extending to neighborhoods). Let S ⊆ X, τ ≥ 0, and assume that
+there exists a 1-Lipschitz map ϕ : X → L2 satisfying
+||ϕ(x) − ϕ(y)||2 ≥
+τ
+L
+for x, y ∈ S, d(x, y) ∈ [τ/2, 3τ] and some L ≥ 2. Then there is a 1-Lipschitz map
+h : X → L2 with
+||h(x) − h(y)||2 ≥
+τ
+9L
+whenever d(x, S) ≤ τ
+6L , y ∈ X, and d(x, y) ∈ [τ, 2τ].
+Proof. Deﬁne g : X → R by g(x) = d(x, S), and set h = 1
+√
+2
+(ϕ⊕g). If d(y, S) > τ
+3L ,
+then
+||h(x) − h(y)||2 ≥
+1
+√
+2
+||g(x) − g(y)||2 ≥
+1
+√
+2
+(d(y, S) − d(x, S)) ≥
+1
+√
+2
+·
+τ
+6L
+.
+Otherwise, let x
+, y
+∈ S be such that d(x, x
+) ≤ τ
+6L , d(y, y
+) ≤ τ
+3L , and observe that
+d(x
+, y
+) ∈
+
+d(x, y) −
+τ
+6L
+−
+τ
+3L
+, d(x, y) +
+τ
+6L
++
+τ
+3L
+
+⊆
+τ
+2
+, 3τ
+
+.
+Using our assumptions on ϕ, we have
+||ϕ(x) − ϕ(y)||2 ≥ ||ϕ(x
+) − ϕ(y
+)||2 − ||ϕ||Lip
+ τ
+6L
++
+τ
+3L
+
+≥
+τ
+2L
+;
+hence ||h(x) − h(y)||2 ≥ 1
+√
+2
+· τ
+2L . 
+Lemma 4.3 (Random subsets). Assume that X satisﬁes the conditions of Theo-
+rem 4.1, and suppose that U ⊆ X and k ≥ 2. Deﬁne
+(5) Tτ (U; k) =
+
+x ∈ U : |U| ≤ k
+
+
+
+B
+
+x,
+τ
+12C(log k)ε
+
+
+
+
+
+.
+Then there exists a 1-Lipschitz map γU,k : X → L2 such that
+||γU,k(x) − γU,k(y)||2 ≥
+τ
+30C(log k)ε
+whenever x ∈ Tτ (U; k), y ∈ X and d(x, y) ∈ [τ, 2τ].
+Proof. Let S be a uniformly random subset S ⊆ U with |S| = min{|U|, k}. Let
+hS : X → L2 be the map deﬁned by hS = 1
+√
+2
+(ϕS,τ/2 ⊕ g) where g(x) = d(x, S).
+Deﬁne γU,k : X → L2(L2, µ), where µ is the distribution of the random subset S,
+by γU,k(x) = hS(x) (recall that hS(x) is a random element of L2). Note that γU,k
+is 1-Lipschitz because the same is true for each hS.
+Let L = 2C(log |S|)ε
+. Observe that, by the deﬁnition of Tτ (U; k), with proba-
+bility at least 1/e, we have
+S ∩ B
+
+x,
+τ
+6L
+
+= S ∩ B
+
+x,
+τ
+12C(log k)ε
+
+= ∅.
+Assuming this holds, we see that d(x, S) ≤ τ
+6L . Thus by Lemma 4.2,
+||hS(x) − hS(y)||2 ≥
+τ
+9L
+.
+It follows that
+||γU,k(x) − γU,k(y)||2 ≥
+1
+√
+e
+·
+τ
+9L
+≥
+τ
+30C(log k)ε
+.
+
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+EUCLIDEAN DISTORTION AND THE SPARSEST CUT 11
+In what follows we shall use the fact that for every τ > 0 there exists a mapping
+Gτ : L2 → L2 such that for every x, y ∈ L2,
+Gτ (x)2 = Gτ (y)2 = τ and
+1
+2 min{τ, x − y2} ≤ Gτ (x) − Gτ (y)2 ≤ min{τ, x − y2}.
+(6)
+The existence of Gτ is precisely Lemma 5.2 in [33]. As in [24], we will use the map
+Gτ to control the Lipschitz constant of various functions under partitions of unity.
+For K ≥ 1 and τ ≥ 0, deﬁne
+Sτ (K) =
+
+x ∈ X : |B (x, 8ταX)| ≤ K
+
+
+
+B
+
+x,
+τ
+12C(log K)ε
+
+
+
+
+
+.
+Thus Sτ (K) can be viewed as the set of points in X with controlled “volume growth”
+at scale ≈ τ. These sets will play a key role in the ensuing arguments.
+Lemma 4.4 (Localization). Assume that X satisﬁes the conditions of Theorem 4.1.
+Then for every τ ≥ 0, k ≥ 1, there exists a 1-Lipschitz map Λτ,k : X → L2 such
+that for every x ∈ Sτ (k), y ∈ X with d(x, y) ∈ [τ, 3τ],
+||Λτ,k(x) − Λτ,k(y)||2 ≥
+τ
+240C(log k)ε
+.
+Proof. Let D = 4ταX and take PD to be a random partition from the αX -padded
+bundle ensured by Deﬁnition 3.3. Deﬁne a random mapping ρ : X → R by
+ρ(z) = min
+
+1,
+d(z, X \ PD(z))
+τ
+
+.
+Clearly ρLip ≤ 1/τ. For each U ∈ PD, let γU,k be the corresponding map from
+Lemma 4.3. Finally, deﬁne a random map Λτ,k : X → L2 by
+Λτ,k(z) = 1
+2 ρ(z) · 
+γPD(z),k(z),
+where for f : X → L2 we write 
+f = Gτ ◦ f, where Gτ is as in (6).
+We claim that Λτ,kLip ≤ 1. Indeed, ﬁx u, v ∈ X. If PD(u) = PD(v) = U, then
+||Λτ,k(u) − Λτ,k(v)||2
+≤ 1
+2 |ρ(u) − ρ(v)| · ||
+γPD(u),k(u)||2 + 1
+2 ||
+γU,k(u) − 
+γU,k(v)||2 · |ρ(v)|
+≤ 1
+2 (τ||ρ||Lip + ||
+γU,k||Lip) d(u, v)
+≤ d(u, v).
+Otherwise, assume that PD(u) = PD(v). In particular,
+d(u, v) ≥ max{d(u, X \ PD(u)), d(v, X \ PD(v))}.
+It follows that
+||Λτ,k(u) − Λτ,k(v)||2 ≤ ||Λτ,k(u)||2 + ||Λτ,k(v)||2
+≤
+d(u, X \ PD(u))
+2τ
+· τ +
+d(v, X \ PD(v))
+2τ
+· τ
+≤ d(u, v).
+Now suppose that x ∈ Sτ (k), y ∈ X, and d(x, y) ∈ [τ, 3τ]. Observe that since
+diam(PD(x)) ≤ D, we have PD(x) ⊆ B(x, 2D). It follows that since x ∈ Sτ (k), we
+have x ∈ Tτ (PD(x); k) (recall equation (5)). Moreover, using the deﬁning property
+of the αX-padded bundle, with probability at least 1
+2 , we have d(x, X\PD(x)) ≥ 5τ.
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+12 SANJEEV ARORA, JAMES R. LEE, AND ASSAF NAOR
+Since we are assuming that d(x, y) ≤ 3τ, this implies that ρ(x) = ρ(y) = 1. It
+follows that
+E ||Λτ,k(x) − Λτ,k(y)||2 ≥ 1
+2 · 1
+2 E ||
+γPD(x),k(x) − 
+γPD(x),k(y)||2
+≥ 1
+8 E
+
+min
+
+||γPD(x),k(x) − γPD(x),k(y)||2, τ
+
+≥
+τ
+240C(log k)ε
+.
+Denoting by (Ω, µ) the probability space on which Λτ,k is deﬁned, we can think of
+Λτ,k as a mapping of X into the Hilbert space L2(L2, µ) which has the required
+properties. 
+The following theorem is a generalization of the Gluing Lemma in [24]. In
+particular, it is important for us that part (2) treat x and y symmetrically, unlike
+in [24].
+Theorem 4.5 (Inter-scale gluing). Given any n-point metric space (X, d) and
+constants A, B ≥ 1, and for every m ∈ Z, a 1-Lipschitz map φm : X → L2, there
+exists a map ϕ : X → L2 which satisﬁes the following.
+(1) ||ϕ||Lip ≤ O(
+
+log n log(AB)).
+(2) For every x, y ∈ X we have
+||ϕ(x)−ϕ(y)||2 ≥ max
+m∈Z
+
+log
+|B(x, 2m+1A)|
+|B(x, 2m/B)|
+
+· min
+
+2m
+B
+, ||φm(x) − φm(y)||2
+
+.
+Proof. Let ρ : X → R+ be any 2B-Lipschitz map with ρ ≡ 1 on [1/B, 2A] and
+ρ ≡ 0 outside [1/2B, 4A]. For x ∈ X and t ≥ 0, deﬁne
+R(x, t) = sup{R : |B(x, R)| ≤ 2t
+},
+and observe that R(·, t) is 1-Lipschitz for every value of t. Furthermore, for each
+m ∈ Z, deﬁne
+ρm,t(x) = ρ
+
+R(x, t)
+2m
+
+.
+Write 
+φm = G2m/B ◦ φm, where G2m/B is as in (6). Now, for each t ∈ {1, 2, . . . ,
+log2 n}, deﬁne ψt : X → 2(L2),
+ψt(x) =
+
+m∈Z
+ρm,t(x) · 
+φm(x).
+Finally, let ϕ = ψ1 ⊕ ψ2 ⊕ · · · ⊕ ψlog2 n .
+First, we bound ||ψt||Lip as follows.
+||ψt(x) − ψt(y)||2
+2 =
+
+m∈Z
+ρm,t(x)+ρm,t(y)>0
+||ρm,t(x)
+φm(x) − ρm,t(y)
+φm(y)||2
+2.
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+EUCLIDEAN DISTORTION AND THE SPARSEST CUT 13
+The number of non-zero summands above is at most O(log A+log B). Furthermore,
+each summand can be bounded as follows.
+||ρm,t(x)
+φm(x) − ρm,t(y)
+φm(y)||2
+≤ ||
+φm(x)||2|ρm,t(x) − ρm,t(y)| + ||
+φm(x) − 
+φm(y)||2|ρm,t(y)|
+≤
+
+||ρm,t||Lip ·
+2m
+B
++ ||φm||Lip
+
+d(x, y)
+≤ 4 d(x, y).
+Thus ||ψt||Lip ≤ O(
+
+log(AB)). It follows that ||ϕ||Lip ≤ O(
+
+log n log(AB)), as
+claimed.
+It remains to prove the lower bound. To this end, ﬁx m ∈ Z, x, y ∈ X and
+observe that if ρm,t(x) = 1, then
+||ψt(x) − ψt(y)||2 ≥ 
+φm(x) − 
+φm(y)||2 − (1 − ρm,t(y)) · 
+φm(y)2
+≥
+1
+2
+min
+
+2m
+B
+, ||φm(x) − φm(y)||2
+
+−
+2m
+B
+· (1 − ρm,t(y)).
+(7)
+On the other hand
+||ψt(x) − ψt(y)||2 ≥ 
+φm(x) − ρm,t(y)
+φm(y)2
+≥ 
+φm(x)2 − ρm,t(y)
+φm(y)2 =
+2m
+B
+· (1 − ρm,t(y)).
+(8)
+Averaging (7) and (8), we get that
+||ψt(x) − ψt(y)||2 ≥
+1
+4
+min
+
+2m
+B
+, ||φm(x) − φm(y)||2
+
+.
+(9)
+Hence it suﬃces to count the number of values of t for which ρm,t(x) = 1. By our
+deﬁnitions we have that
+ρm,t(x) = 1 ⇐⇒
+2m
+B
+≤ R(x, t) ≤ 2m+1
+A
+⇐⇒ t ∈ [log |B(x, 2m
+/B)|, log |B(x, 2m+1
+A)|].
+This completes the proof since the lower bound (9) holds for
+
+log |B(x,2m+1
+A)|
+|B(x,2m/B)|
+values of t. 
+We also present the following base case which is a variant of Bourgain’s argu-
+ment [8].
+Claim 4.6 (Small ratios). Let X be an n-point metric space, and let λ ≥ 1. Then
+there exists a map F : X → L2 with FLip = O(
+√
+log n) and such that the
+following holds. For each τ > 0, deﬁne the subset
+Jλ(τ) = {x ∈ X : |B(x, τ/2)| ≤ λ|B(x, τ/4)|} .
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+14 SANJEEV ARORA, JAMES R. LEE, AND ASSAF NAOR
+Then for every x, y ∈ X with x ∈ Jλ(τ) and d(x, y) ≥ τ, we have
+||F(x) − F(y)||2 ≥ (λ)τ,
+where (λ) > 0 is a constant depending only on λ.
+Proof. For each t ∈ {1, 2, . . . , log n}, let Wt ⊆ X be a random subset which
+contains each point of X independently with probability 2−t
+. Let gt(x) = d(x, Wt),
+and consider the random map f = g1 ⊕ · · · ⊕ glog n ∈ n
+2 . Finally, we deﬁne
+F : X → L2(n
+2 , µ) by F(x) = f(x), where µ is the distribution over which the
+random subsets {Wt} are deﬁned. Observe that FLip ≤ O
+√
+log n
+
+.
+Fix x, y ∈ X such that d(x, y) ≥ τ and x ∈ Jλ(τ). Let t ∈ N be such that
+2t
+≤ |B(x, τ/2)| ≤ 2t+1
+. Let Efar be the event {d(x, Wt) ≥ τ/2} and let Eclose
+be the event {d(x, Wt) ≤ τ/4}. Also, deﬁne the event Ey
+close = {d(y, Wt) < τ/2}.
+Observe that each of the events Eclose, Efar are independent of Ey
+close since the former
+events depend only on Wt ∩ B◦
+(x, τ/2), and the latter on Wt ∩ B◦
+(y, τ/2), where
+B◦
+(·, ·) denotes an open ball in X. It follows that
+F(x) − F(y)2
+L2(µ)
+= Eµ f(x) − f(y)
+2
+2
+≥ Eµ |gt(x) − gt(y)|
+2
+2
+≥ Pr(Ey
+close) · min
+
+Pr(Efar), Pr(Eclose)
+
+·
+
+1
+2
+·
+τ
+4
+2
++ Pr(¬Ey
+close) · Pr(Eclose) ·
+τ
+4
+2
+≥ (λ)τ2
+.
+The ﬁnal inequality holds true because x ∈ Jλ(τ) implies that each of Pr(Efar) and
+Pr(Eclose) can be bounded from below by some 
+(λ) > 0. 
+We are now in position to conclude the proof of Theorem 4.1
+Proof of Theorem 4.1. We claim that for every K ∈ [2, n] there exists a map fK :
+X → L2 which satisﬁes the following.
+(1) ||fK||Lip ≤ O(
+√
+log n · log log n).
+(2) For every m ∈ Z and x ∈ S2m (K), y ∈ X we have
+||fK(x) − fK(y)||2
+2 
+
+log
+|B(x, 2m+3
+αX)|
+|B(x, 2m/[12C(log K)ε])|
+
+·
+22m
+C2(log K)2ε
+.
+Indeed, fK is obtained from an application of Theorem 4.5 to the mappings
+{Λ2m,K}m∈Z from Lemma 4.4 with A = 4αX and B = 12C(log K)ε
+(and using
+the fact that αX = O(log n)).
+Observe that for every m ∈ Z, S2m (n) = X. Hence, deﬁning K0 = n and
+Kj+1 =
+
+Kj, as long as Kj ≥ 4, we obtain mappings f0, . . . , fj : X → L2
+satisfying the following.
+(1) fjLip ≤ O(
+√
+log n · log log n).
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+EUCLIDEAN DISTORTION AND THE SPARSEST CUT 15
+(2) For all x ∈ S2m (Kj) \ S2m (Kj+1) and y ∈ X such that d(x, y) ∈ [2m
+, 2m+1
+]
+we have
+||fj(x) − fj(y)||2
+2 
+
+log
+|B(x, 2m+3
+αX)|
+|B(x, 2m/[12C(log Kj)ε])|
+
+·
+22m
+C2(log Kj)2ε
+
+
+log
+|B(x, 2m+3
+αX)|
+|B(x, 2m/[12C(log Kj+1)ε])|
+
+·
+d(x, y)2
+C2(log Kj)2ε
+(10)
+ log Kj+1 ·
+d(x, y)2
+C2(log Kj)2ε
+(11)
+
+d(x, y)2
+C2(log Kj)2ε−1
+,
+(12)
+where in (10) we used the fact that Kj+1 ≤ Kj and d(x, y) ≤ 2m+1
+, in (11) we used
+the fact that x /
+∈ S2m (Kj+1), and in (12) we used the fact that Kj+1 =
+
+Kj ≥ 2.
+This procedure ends after N steps, where N ≤ O(log log n). Every x ∈ S2m (KN )
+satisﬁes
+|B(x, 2m+3
+αX)| ≤ 4|B(x, 2m
+/[12C])|.
+In particular, using the notation of Claim 4.6, x ∈ J4(2m
+). By Claim 4.6, there is a
+mapping fN+1 : X → L2 which is Lipschitz with constant O(
+√
+log n) and for every
+x, y ∈ S2m (KN ) ⊆ J4(2m
+), fN+1(x) − fN+1(y)2  d(x, y).
+Consider the map
+Φ =
+N+1
+
+j=0
+fj,
+which is Lipschitz with constant O
+√
+log n · log log n
+
+. For every x, y ∈ X choose
+m ∈ Z such that d(x, y) ∈ [2m
+, 2m+1
+]. If x, y ∈ S2m (KN ), then
+Φ(x) − Φ(y)2 ≥ fN+1(x) − fN+1(y)2  d(x, y).
+Otherwise, without loss of generality there is j ∈ {0, . . . , N − 1} such that x ∈
+S2m (Kj) \ S2m (Kj+1), in which case by (12)
+Φ(x) − Φ(y)2 ≥ fj+1(x) − fj+1(y)2 
+d(x, y)
+C(log Kj)ε− 1
+2
+≥
+d(x, y)
+C(log n)ε− 1
+2
+.
+
+5. The sparsest cut problem with general demands
+This section is devoted to the proof of Theorem 1.2. Our argument follows the
+well known approach for deducing the algorithmic Theorem 1.2 from the embedding
+result contained in Theorem 1.1 (see e.g. [29, 6, 17]).
+5.1. Computing the Euclidean distortion. In this section, we remark that
+the maps used to prove Theorem 1.1 have a certain “auto-extendability” property
+which will be used in the next section. We also recall that it is possible to ﬁnd
+near-optimal Euclidean embeddings using semi-deﬁnite programming [29].
+Corollary 5.1. Let (Y, d) be an arbitrary metric space, and ﬁx a k-point sub-
+set X ⊆ Y . If the space (X, d) is a metric of negative type, then there exists a
+1-Lipschitz map f : Y → L2 such that the map f|X : X → L2 has distortion
+O
+√
+log k · log log k
+
+.
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+16 SANJEEV ARORA, JAMES R. LEE, AND ASSAF NAOR
+Proof. We observe that the maps used to prove Theorem 1.1, i.e. those produced in
+Lemma 3.5 and Claim 4.6, are of Fréchet-type. In other words, there is a probability
+space (Ω, µ) over subsets Aω ⊆ X for ω ∈ Ω, and we obtain a maps ϕS,τ : X →
+L2(µ) given by ϕS,τ (x)(ω) = d(x, Aω). We can then deﬁne the extension ϕS,τ :
+Y → L2(µ) by
+ϕS,τ (y)(ω) = d(y, Aω).
+Thus by extending the ensemble of maps {ϕS,τ } to the larger space Y before the
+application of Theorem 4.1, we can ensure that the ﬁnal embedding is 1-Lipschitz
+on Y . 
+Now we suppose that (Y, d) is an n-point metric space and X ⊆ Y is a k-point
+subset.
+Claim 5.2. There exists a polynomial-time algorithm (in terms of n) which, given
+X and Y , computes a map f : Y → L2 such that f|X has minimal distortion among
+all 1-Lipschitz maps f.
+Proof. We give a semi-deﬁnite program computing the optimal f, which can be
+solved within an arbitrarily small error in polynomial time using the methods of [18].
+SDP (5.1)
+max ε
+s.t. xu ∈ Rn
+∀u ∈ Y,
+xu − xv2
+2 ≤ d(u, v)2
+∀u, v ∈ Y,
+xu − xv2
+2 ≥ ε d(u, v)2
+∀u, v ∈ X.
+
+5.2. The Sparsest Cut. Let V be an n-point set with two symmetric weights on
+pairs wN , wD : V × V → R+ (i.e. wN (x, y) = wN (y, x) and wD(x, y) = wD(y, x)).
+For a subset S ⊆ V , we deﬁne the sparsity of S by
+ΦwN ,wD
+(S) =
+
+u∈S,v∈V \S wN (u, v)
+
+u∈S,v∈V \S wD(u, v)
+,
+and we let Φ∗
+(V, wN , wD) = minS⊆V ΦwN ,wD
+(S). (The set V is usually thought of
+as the vertex set of a graph with wN (u, v) supported only on edges (u, v), but this
+is unnecessary since we allow arbitrary weight functions.)
+Computing the value of Φ∗
+(V, wN , wD) is NP-hard [32]. The following semi-
+deﬁnite program is well known to be a relaxation of Φ∗
+(V, wN , wD) (see e.g. [17]).
+SDP (5.2)
+min
+
+u,v∈V wN (u, v) xu − xv2
+2
+s.t. xu ∈ Rn
+∀u ∈ V
+
+u,v∈V wD(u, v) xu − xv2
+2 = 1,
+xu − xv2
+2 ≤ xu − xw2
+2 + xw − xv2
+2
+∀u, v, w ∈ V.
+Furthermore, an optimal solution to this SDP can be computed in polynomial
+time [18, 17].
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+EUCLIDEAN DISTORTION AND THE SPARSEST CUT 17
+The algorithm. We now give our algorithm for rounding SDP (5.2). Suppose
+that the weight function wD is supported only on pairs u, v for which u, v ∈ U ⊆ V ,
+and let k = |U|. Denote M = 20 log n.
+(1) Solve SDP (5.2), yielding a solution {xu}u∈V ⊆ Rn
+.
+(2) Consider the metric space (V, d) given by d(u, v) = xu − xv2
+2.
+(3) Applying SDP (5.1) to U and (V, d) (where Y = V and X = U), compute
+the optimal map f : V → Rn
+.
+(4) Choose β1, . . . , βM ∈ {−1, +1}n
+independently and uniformly at random.
+(5) For each 1 ≤ i ≤ M, arrange the points of V as vi
+1, . . . , vi
+n so that
+βi, f(vi
+j) ≤ βi, f(vi
+j+1) for each 1 ≤ j ≤ n − 1.
+(6) Output the sparsest of the Mn cuts
+({vi
+1, . . . , vi
+m}, {vi
+m+1, . . . , vi
+n}), 1 ≤ m ≤ n − 1, 1 ≤ i ≤ M.
+Claim 5.3. With constant probability over the choice of β1, . . . , βM , the cut (S,
+V \ S) returned by the algorithm has
+(13) ΦwN ,wD
+(S) ≤ O
+
+log k log log k
+
+Φ∗
+(V, wN , wD).
+Proof. Let S ⊆ Rn
+be the image of V under the map f. Consider the map g : S →
+M
+1 given by g(x) = (β1, x, . . . , βM , x). It is well known (see, e.g. [1, 34]) that,
+with constant probability over the choice of {βi}M
+i=1 ⊆ Sn−1
+, g has distortion O(1)
+(where S is equipped with the Euclidean metric). In this case, we claim that (13)
+holds.
+To see this, let S1, S2, . . . , SMn ⊆ V be the Mn cuts which are tested in line (6).
+It is a standard fact [29, 13] that there exist constants α1, α2, . . . , αMn ≥ 0 such
+that for every x, y ∈ V ,
+||g(f(x)) − g(f(y))||1 =
+Mn
+
+i=1
+αiρSi
+(x, y),
+where ρSi
+(x, y) = 1 if x and y are on opposite sides of the cut (Si, V \ Si) and
+ρSi
+(x, y) = 0 otherwise.
+Assume (by scaling) that g ◦ f : Y → M
+1 is 1-Lipschitz. Let Λ be the distortion
+of g ◦ f. By Corollary 5.1, Λ = O
+√
+log k log log k
+
+. Recalling that wD(u, v) > 0
+only when u, v ∈ U,
+Φ∗
+(V, wN , wD) ≥
+
+u,v∈V wN (u, v)xu − xv2
+2
+
+u,v∈U wD(u, v)xu − xv2
+2
+≥
+1
+Λ
+
+u,v∈V wN (u, v) ||g(f(u)) − g(f(v))||1
+
+u,v∈U wD(u, v) ||g(f(u)) − g(f(v))||1
+=
+1
+Λ
+Mn
+i=1 αi
+
+u,v∈V wN (u, v)ρSi
+(u, v)
+Mn
+i=1 αi
+
+u,v∈U wD(u, v)ρSi
+(u, v)
+≥
+1
+Λ
+min
+i
+
+u,v∈V wN (u, v)ρSi
+(u, v)
+
+u,v∈U wD(u, v)ρSi
+(u, v)
+=
+ΦwN ,wD
+(S)
+Λ
+.
+This completes the proof. 
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+18 SANJEEV ARORA, JAMES R. LEE, AND ASSAF NAOR
+6. Concluding remarks
+• There are two factors of O(
+√
+log log n) which keep our bound from being
+optimal up to a constant factor. One factor of
+√
+log log n arises because
+Theorem 4.5 is applied with A, B ∼ polylog(n). The need for such values
+arises out of a certain non-locality property which seems inherent to the
+method of proof in [5]. We remark that achieving A = O(1) is probably
+possible, and it seems that B is the diﬃcult factor.
+The other factor arises because, in proving Theorem 1.1, we invoke The-
+orem 4.5 for O(log log n) diﬀerent values of the parameter K. It is likely
+removable by a more technical induction, but we chose to present the sim-
+pler proof.
+• The embedding constructed here is not a Fréchet embedding, i.e. an em-
+bedding whose coordinates are multiples of distance functions from subsets
+of X. However, with more work it is possible to obtain Fréchet embeddings
+with the same distortion guarantee—this is achieved in [4].
+• It is an interesting open problem to understand the exact distortion required
+to embed n-point negative type metrics into L1. As mentioned, the best-
+known lowerbound is Ω(log log n) [21, 23]. We also note that assuming a
+strong form of the Unique Games Conjecture is true, the general Sparsest
+Cut problem is hard to approximate within a factor of Ω (log log n) [12, 21].
+• For the uniform case of Sparsest Cut, it is possible to achieve a O(
+√
+log n)
+approximation in quadratic time without solving an SDP [3]. Whether such
+an algorithm exists for the general case is an open problem.
+• There is no asymptotic advantage in embedding n-point negative type met-
+rics into Lp for some p ∈ (1, ∞), p = 2 (observe that since L2 is isometric
+to a subset of Lp for all p ≥ 1, our embedding into Hilbert space is auto-
+matically also an embedding into Lp). Indeed, for 1 < p < 2 it is shown
+in [26] that there are arbitrarily large n-point subsets of L1 that require
+distortion Ω(
+
+(p − 1) log n) in any embedding into Lp. For 2 < p < ∞
+it follows from [37, 35] that there are arbitrarily large n-point subsets of
+L1 whose minimal distortion into Lp is 1 + Θ
+
+log n
+p
+
+(the dependence
+on n follows from [37], and the optimal dependence on p follows from the
+results of [35]). Thus, up to multiplicative constants depending on p (and
+the double logarithmic factor in Theorem 1.1), our result is optimal for all
+p ∈ (1, ∞).
+• Let (X, dX), (Y, dY ) be metric spaces and η : [0, ∞) → [0, ∞) a strictly
+increasing function. A one-to-one mapping f : X → Y is called a qua-
+sisymmetric embedding with modulus η if for every x, a, b ∈ X such that
+x = b,
+dY (f(x), f(a))
+dY (f(x), f(b))
+≤ η
+
+dX (x, a)
+dX (x, b)
+
+.
+We refer to [19] for an account of the theory of quasisymmetric embed-
+dings. Observe that metrics of negative type embed quasisymmetrically
+into Hilbert space. It turns out that our embedding result generalizes to
+any n-point metric space which embeds quasisymmetrically into Hilbert
+space. Indeed, if (X, d) embeds quasisymmetrically into L2 with modulus
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+EUCLIDEAN DISTORTION AND THE SPARSEST CUT 19
+η, then, as shown in the full version of [24], there exists constants p = p(η)
+and C = C(η), depending only on η, such that ζ(X; p) ≤ C
+√
+log n.
+Acknowledgements
+We thank Satish Rao for useful discussions.
+References
+[1] D. Achlioptas. Database-friendly random projections: Johnson-Lindenstrauss with binary
+coins. J. Comput. System Sci., 66(4):671–687, 2003. Special issue on PODS 2001 (Santa
+Barbara, CA). MR2005771 (2004h:68027)
+[2] A. Agrawal, P. Klein, R. Ravi, and S. Rao. Approximation through multicommodity ﬂow. In
+31st Annual Symposium on Foundations of Computer Science, pages 726–737. IEEE Com-
+puter Soc., Los Alamitos, CA, 1990. MR1150728 (92j:90031)
+[3] S. Arora, E. Hazan, and S. Kale. O(
+√
+log n) approximation to SPARSEST CUT in Õ(n2)
+time. In 45th Annual Syposium on Foundations of Computer Science, pages 238–247. IEEE
+Computer Society, 2004.
+[4] S. Arora, J. R. Lee, and A. Naor. Fréchet embeddings of negative type metrics. Preprint,
+2005.
+[5] S. Arora, S. Rao, and U. Vazirani. Expander ﬂows, geometric embeddings, and graph par-
+titionings. In 36th Annual Symposium on the Theory of Computing, pages 222–231, 2004.
+MR2121604 (2005j:68081)
+[6] Y. Aumann and Y. Rabani. An O(log k) approximate min-cut max-ﬂow theorem and ap-
+proximation algorithm. SIAM J. Comput., 27(1):291–301 (electronic), 1998. MR1614825
+(99d:05078)
+[7] Y. Bartal. Probabilistic approximations of metric space and its algorithmic application. In
+37th Annual Symposium on Foundations of Computer Science, pages 183–193, Oct. 1996.
+MR1450616
+[8] J. Bourgain. On Lipschitz embedding of ﬁnite metric spaces in Hilbert space. Israel J. Math.,
+52(1-2):46–52, 1985. MR815600 (87b:46017)
+[9] B. Brinkman and M. Charikar. On the impossibility of dimension reduction in 1. In Pro-
+ceedings of the 44th Annual IEEE Conference on Foundations of Computer Science, pages
+514–523, 2003.
+[10] G. Calinescu, H. Karloﬀ, and Y. Rabani. Approximation algorithms for the 0-extension prob-
+lem. In Proceedings of the 12th Annual ACM-SIAM Symposium on Discrete Algorithms,
+pages 8–16, Philadelphia, PA, 2001. MR1958386
+[11] S. Chawla, A. Gupta, and H. Räcke. Embeddings of negative-type metrics and an improved
+approximation to generalized sparsest cut. In Proceedings of the 16th Annual ACM-SIAM
+Symposium on Discrete Algorithms, pages 102–111, Vancouver, 2005.
+[12] S. Chawla, R. Krauthgamer, R. Kumar, Y. Rabani, and D. Sivakumar. On embeddability
+of negative type metrics into 1. In Proceedings of the 20th Annual IEEE Conference on
+Computational Complexity, pages 144–153, 2005.
+[13] M. M. Deza and M. Laurent. Geometry of cuts and metrics, volume 15 of Algorithms and
+Combinatorics. Springer-Verlag, Berlin, 1997. MR1460488 (98g:52001)
+[14] P. Enﬂo. On the nonexistence of uniform homeomorphisms between Lp-spaces. Ark. Mat.,
+8:103–105, 1969. MR0271719 (42:6600)
+[15] J. Fakcharoenphol, S. Rao, and K. Talwar. A tight bound on approximating arbitrary metrics
+by tree metrics. In Proceedings of the 35th Annual ACM Symposium on Theory of Computing,
+pages 448–455, 2003. MR2120458 (2005j:68142)
+[16] T. Figiel, J. Lindenstrauss, and V. D. Milman. The dimension of almost spherical sections of
+convex bodies. Acta Math., 139(1-2):53–94, 1977. MR0445274 (56:3618)
+[17] M. X. Goemans. Semideﬁnite programming and combinatorial optimization. Mathematical
+Programming, 49:143–161, 1997. MR1464765 (98g:90028)
+[18] M. Grötschel, L. L. Lovász, and A. Schrijver. The ellipsoid method and its consequences in
+combinatorial optimization. Combinatorica, 1:169–197, 1981. MR625550 (84a:90044)
+[19] J. Heinonen. Lectures on analysis on metric spaces. Universitext. Springer-Verlag, New York,
+2001. MR1800917 (2002c:30028)
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+20 SANJEEV ARORA, JAMES R. LEE, AND ASSAF NAOR
+[20] W. B. Johnson and J. Lindenstrauss. Extensions of Lipschitz mappings into a Hilbert space.
+In Conference in modern analysis and probability (New Haven, Conn., 1982), pages 189–206.
+Amer. Math. Soc., Providence, RI, 1984. MR737400 (86a:46018)
+[21] S. Khot and N. Vishnoi. The unique games conjecture, integrality gap for cut problems and
+embeddability of negative type metrics into 1. In Proceedings of the 46th Annual IEEE
+Conference on Foundations of Computer Science, pages 53–62, 2005.
+[22] R. Krauthgamer, J. R. Lee, M. Mendel, and A. Naor. Measured descent: a new embed-
+ding method for ﬁnite metrics. Geom. Funct. Anal., 15(4):839–858, 2005. MR2221152
+(2007f:68249)
+[23] R. Krauthgamer and Y. Rabani. Improved lower bounds for embeddings into l1. In Proceed-
+ings of the 17th annual ACM-SIAM symposium on Discrete algorithm, pages 1010–1017.
+ACM Press, 2006.
+[24] J. R. Lee. On distance scales, embeddings, and eﬃcient relaxations of the cut cone. In Proceed-
+ings of the 16th Annual ACM-SIAM Symposium on Discrete Algorithms, pages 92–101, Van-
+couver, 2005. Available at http://www.cs.washington.edu/homes/jrl/papers/soda05-full.pdf.
+[25] J. R. Lee, M. Mendel, and A. Naor. Metric structures in L1: dimension, snowﬂakes, and
+average distortion. European J. Combin., 26(8):1180–1190, 2005. MR2163751 (2006g:46012)
+[26] J. R. Lee and A. Naor. Embedding the diamond graph in Lp and dimension reduction in L1.
+Geom. Funct. Anal., 14(4):745–747, 2004. MR2084978 (2005g:46035)
+[27] J. R. Lee and A. Naor. Extending Lipschitz functions via random metric partitions. Invent.
+Math., 160(1):59–95, 2005. MR2129708 (2006c:54013)
+[28] T. Leighton and S. Rao. Multicommodity max-ﬂow min-cut theorems and their use in de-
+signing approximation algorithms. J. ACM, 46(6):787–832, 1999. MR1753034 (2001e:05125)
+[29] N. Linial, E. London, and Y. Rabinovich. The geometry of graphs and some of its algorithmic
+applications. Combinatorica, 15(2):215–245, 1995. MR1337355 (96e:05158)
+[30] N. Linial and M. Saks. Low diameter graph decompositions. Combinatorica, 13(4):441–454,
+1993. MR1262920 (95d:05123)
+[31] J. Matoušek. Lectures on discrete geometry, volume 212 of Graduate Texts in Mathematics.
+Springer-Verlag, New York, 2002. MR1899299 (2003f:52011)
+[32] D. W. Matula and F. Shahrokhi. The maximum concurrent ﬂow problem. J. ACM, 37(2):318–
+334, 1990. MR1072261 (91j:90029)
+[33] M. Mendel and A. Naor. Euclidean quotients of ﬁnite metric spaces. Adv. Math., 189(2):451–
+494, 2004. MR2101227 (2005h:54031)
+[34] V. D. Milman and G. Schechtman. Asymptotic theory of ﬁnite-dimensional normed spaces,
+volume 1200 of Lecture Notes in Mathematics. Springer-Verlag, Berlin, 1986. With an ap-
+pendix by M. Gromov. MR856576 (87m:46038)
+[35] A. Naor, Y. Peres, O. Schramm, and S. Sheﬃeld. Markov chains in smooth Banach spaces
+and Gromov-hyperbolic metric spaces. Duke Math. J., 134(1):165–197, 2006. MR2239346
+[36] A. Naor, Y. Rabani, and A. Sinclair. Quasisymmetric embeddings, the observable diameter,
+and expansion properties of graphs. J. Funct. Anal., 227(2):273–303, 2005. MR2168076
+(2006j:68092)
+[37] A. Naor and G. Schechtman. Remarks on non linear type and Pisier’s inequality. J. Reine
+Angew. Math., 552:213–236, 2002. MR1940437 (2003j:46010)
+[38] S. Rao. Small distortion and volume preserving embeddings for planar and Euclidean metrics.
+In Proceedings of the 15th Annual Symposium on Computational Geometry, pages 300–306,
+New York, 1999. MR1802217
+[39] D. B. Shmoys. Cut problems and their application to divide-and-conquer. In Approximation
+Algorithms for NP-hard Problems (D.S. Hochbaum, ed.), pages 192–235. PWS, 1997.
+[40] V. V. Vazirani. Approximation algorithms. Springer-Verlag, Berlin, 2001. MR1851303
+(2002h:68001)
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+EUCLIDEAN DISTORTION AND THE SPARSEST CUT 21
+Department of Computer Science, Princeton University, 356 Olden Street, Prince-
+ton, New Jersey 08544-2087
+E-mail address: arora@cs.princeton.edu
+Department of Mathematics, University of Washington, Seattle, Washington 98195
+E-mail address: jrl@cs.washington.edu
+Courant Institute of Mathematical Sciences, New York University, Warren Weaver
+Hall 1305, 251 Mercer Street, New York, New York 10012
+E-mail address: naor@cims.nyu.edu
+License or copyright restrictions may apply to redistribution; see https://www.ams.org/journal-terms-of-use
+

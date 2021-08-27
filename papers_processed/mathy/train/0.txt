@@ -1,1 +1,1988 @@
-Boundedgeometries,fractals,andlow-distortionembeddingsAnupamGupta∗RobertKrauthgamer†JamesR.Lee‡AbstractThedoublingconstantofametricspace(X,d)isthesmallestvalueλsuchthateveryballinXcanbecoveredbyλballsofhalftheradius.ThedoublingdimensionofXisthendefinedasdim(X)=log2λ.Ametric(orsequenceofmetrics)iscalleddoublingpreciselywhenitsdoublingdi-mensionisbounded.ThisisarobustclassofmetricspacesthisnotionmorethoroughlyinSection1.3.Notonlyaredoublingmetricsinterestingobjectsintheirownright,buttheyarealsoofpracticalconcern.Growthrestrictionsareverynaturalandarethoughttooccurinreal-worldphenomenasuchaspeer-to-peernetworks(seee.g.[30])anddataanalysis(e.g.,whentheinputdatare-sidesonalow-dimensionalmanifold,cf.[34]).Infact,variousalgorithmscanbetailoredtorunefficientlyoncer-tainclassesofgrowth-restrictedmetrics,asdemonstratedin[8,31,16,17].Themetricsconsideredthereareeitherequivalenttoorasubclassofthosemetricswhicharedou-bling;seeSection1.3.1.1ResultsandtechniquesWeareconcernedwiththebroadrolesof“volume”and“structure”indeterminingtheembeddabilityofamet-ric.Forinstance,inSection2,weshowthateverydou-blingtreemetricadmitsaconstantdistortionembeddinginto`O(1)p(i.e.,constantdimensional`pspace)foranyp∈[1,∞].Thisexhibitsaverynaturalclassofmet-ricspaceswhichembedinto`2withO(1)distortion,butnotisometrically.Asdiscussedbefore,sometreemet-ricsrequireΩ(√loglogn)distortiontoembedinto`2[5],whileweprovethatsomedoublingmetricsrequiredistor-tionΩ(√logn)(seeSection5).Thusitispreciselythesynthesisofthesetwopropertiesthatyieldsanenormousimprovementinembeddability.ThatthesemetricscanbeembeddedusingonlyO(1)dimensionsisperhapsevenmoresurprising(seethedis-cussioninSection2),andaswewillsoonsee,provesaspecialcaseofaconjectureofAssouad.Ourembeddingmakesuseofanovelpartitioningalgorithmfordoublingtrees.Thepartitionisdescribedconvenientlybyacoloringoftheedges.Ouralgorithmeitherfindsagoodcoloringorasubmetricwhichisacounterexampletothedoublingas-sumption.ToachieveanembeddingintoO(1)dimensions,wemustreusecolors.Wedothisbydefininganotionofad-jacencybetweenpaths,andarguingthattheresultinggraph(whoseverticesarepaths)hasboundedchromaticnumber.InSection3,weconstructlow-diameterdecompositionsforgeneralmetricswhoseparametersdependsmoothlyonthedoublingdimension.Suchdecompositionsarethemaintoolinmanyembeddingresults,aswellasanumberofotherapplications.Toconstructthesedecompositions,weadaptaprobabilistictechniqueof[7].Forapplicationsofthedecompositionlaterinthepaper,itisimportantthattheprobabilityspacethatwesamplefrombeverycompactlydefined(e.g.,ofsizeO(1)forthecaseofdoublingmetrics).Forthispurpose,weusesomeideasfrom[18],inconjunc-tionwithLovászLocalLemma,inordertoexploitcertainlocalitypropertiesofourdecomposition.Ouruseofthelo-callemmahere,andelsewhereinthepaper,canbemadealgorithmicusingstandardtechniques.InSection4,wedeviseanumberofembeddings,somewhichrelyheavilyontheclusteringofSection3.First,wegiveaBourgain-styleembeddingwhichshowsthatev-erygeneraldoublingmetric(X,d)embedsinto`pwithdis-tortionO((logn)min(12,1p))foranyp∈[1,∞).Insteadofformingcoordinatesbytakingthedistancetoarbitrarysub-setsofX,weinsteaduseonlysubsetsofappropriatelysizednetsinX(seeSection1.2forthedefinitionofanet).Usingthisembedding,alongwithanotherapplicationofthelocallemma,weshowthateverydoublingmetriccanbeembed-dedwith1+distortioninto`O(logn)∞.SeeSection6foranapplicationtodistancelabelingschemes.Unfortunately,althoughfairlysimple,thedistortionofthisBourgain-styleembeddingdegradesbadly(exponen-tially)withdim(X).BasedontheclusteringofSection3,andanembeddingtechniqueofRao[32],weshowthateveryn-pointmetric(X,d)embedsinto`pwithdistortionatmostOdim(X)·(logn)min(12,1p).Thisprovidesasmoothupperboundonthedistortionofgeneralmetricsintermsoftheirdimension.InthecaseofEuclideanembeddings,forinstance,itbeatsBourgain’sgeneralupperboundaslongasdim(X)=o(√logn).In[2],itisprovedthatif(X,d)isadoublingmetric,thenforany0<α<1,(X,dα)embedsinto`k2withdistortionD,wherekandDdependonlyonthedoublingdimensionofX.Here,(X,dα)isthemetricwithalldistancesraisedtothepowerα(thisiscalledasnowflakedversionofX).Unfortunately,thedependenceofkandDondim(X)isexponential.InSection4,usingaslighttwistontheaboveembeddingtechnique,wegiveanalgorithmicversionofAssouad’sproof,anddrasticallyimprovethedependenceofkandDtonear-linearAssouadalsoconjecturedthattheaboveresultholdsevenwhenα=1.AlthoughSemmes[33]disprovedthisconjecture,wehaveshownthatitholdswhenever(X,d)isadoublingtreemetric.InSection5,weexhibitafamilyofseries-paralleldou-blingmetricswhichrequiresΩ(√logn)distortiontoem-bedinto`2,whichshowsthattheupperboundofSection4istight.Thisfamilyisbasedontheconstructionofafrac-talduetoLaakso[20].(Itwasbroughttoourattentionthatasimilaranalysiswasobtainedindependentlyin[21],butwithoutanexplicitdependenceonn.Inaddition,theprooftechniquesaresubtlydifferent.)Finally,inSection6,wementionsomealgorithmicap-plicationsofourresults,andpointoutaveryintriguingopenquestionregardingtherolesofvolumeandstructureindi-mensionalityreductioninEuclideanspaces.1.2PreliminariesHeretailsonmetricspaces.Let(X,dX)and(Y,dY)betwomet-ricspaces,1andconsideraninjectivemapf:X→Y.Wedefinecontraction(f)=supa,b∈XdX(a,b)dY(f(a),f(b)),expansion(f)=supa,b∈XdY(f(a),f(b))dX(a,b).Thedistortionoffisdefinedbydist(f)=expansion(f)·contraction(f)=||f||Lip·||f−1||Lip.ThedistortionwithwhichXembedsintoYistheinfimumofdist(f)overallinjectivemapsf:X→Y.Asusual,wedefinecp(X)astheleastdistortionwithwhichXembedsintosome`pspace.LetG=(V,E)beasimpleundirectedgraphwithnon-negativeedgelengths.TheedgelengthsonGinduceanaturalmetricdG(u,v)givenbythelengthofashortestpathbetweenuandvinG.Ifwehavetwomapsf1:X→Y1andf2:X→Y2,wedefinetheirdirectisthesmallestvalueβsuchthat|B(v,r)|≤βrforallv∈V,r>0.ItiseasytoseethatsinceGisunweightedandconnected,|B(v,r)|≥r,hence|B(v,2r)|≤2βr≤2β|B(v,r)|,whichimpliesthatdim(G)≤4dimKR(G)≤4(logβ(G)+1).2TreesInthissectionweproveAssouad’sconjecturefortrees,showingthateverydoublingtreecanbeembeddedwithconstantdistortionintoconstantdimensional`pspaceforeveryp∈[1,∞],wherebothconstantsdependonlyonthedoublingconstantofthetree.Notmanyfamiliesofmetricsareknowntohavesuchpowerfulembeddings,anditmaybesurprisingthattwoseeminglyorthogonalconstraintsareneededforsucharesult.However,asmentionedinthein-troduction,aconstantdistortionEuclideanembeddingcan-notbeachievedifeitheroftheconstraintsisdropped.Fur-thermore,thetreerequirementcannotberelaxedeithertopologically(i.e.,tographsexcludingafixedminor)orgraph-theoretically(i.e.,toboundedtreewidthgraphs),asevenseries-parallelgraphsmightrequireΩ(√logn)distor-tioninanyEuclideanembedding(seeSection5).Thefactthattheseresultscanbeextendedtoconstantdimensionisevenmoresurprising,especiallysincerecentresultsofBrinkmanandCharikar[6](seealsoclaimχisproper.Indeed,thealgorithmmaintainsthein-variantthatthecolorededgesformaconnectedsubtreeofTcontainingtheroot.Itfollowsthattheedgescoloredinanysingleexecutionofstep4formamonotonepath.Sinceweuseanewcoloreachtimearound,theclaimfollows.Nowassumethatχisnotα-good.Thenthereexistver-ticesu,vwithuanancestorofvandD=d(u,v)=|Puv|withthefollowingproperty:ifu=w0,w1,...,w`=varethecolor-transitionverticesonPuv,i.e.,thesubpathPwjwj+1isamaximalmonochromaticsegmentforeachj,thend(wbelowshowsthatthealgorithmcanbeimplementedwiththesefewcolors,andLemma2.8provesthatthecoloringthealgorithmproducesisα/4-reasonable.Wewillmakeuseofthefollowingproposition.Proposition2.6.Alonganyroot-leafpath,theedgesthatarecolorediniterationihavetotallengthatmost2ri.Inparticular,`(p)≤2riforeverypathp∈Pi.ProofofProposition2.6.Wecanassumei>1;theclaimistrivialfori=1since2r1>diam(T).Foraleafv,letSi,vbethesubsetofedgesalongPvthatareactuallycolorediniterationi.Considertheedge(x,y)ofSi,vfarthestfromtheroot,withy∈Yi\Yi−1.Sincey6∈Yi−1,thereexistsy0∈Yi−1withd(y,y0)≤ri−1=2ri,andfurthermore,Si,v⊆Py\Py0.ItfollowsthatSi,viscontainedinthepathbetweenyandlca(y,y0),andthusitslengthisatmostd(y,lca(y,y0))≤d(y,y0)≤2ri.Lemma2.7.Step9ofalgorithmBounded-D&Dcanbedonegreedilywith|C|=λ3log(68/α).ProofofLemma2.7.Theproofideaisverysimple:Foreachpathp∈Pi,itsufficestoshowthatthenumberofpathsthatareadjacenttopandwerepermanentlycoloredbeforepislessthan|C|−1,andhencewecancolorpgreed-ily.Wewill,infact,showsomethingslightlystronger:Weshowthatthenumberofpathsp0∈P∗iwithp↔p0isatmost|C|−1.Letz∈pbeAlgorithmBOUNDED-D&D:(Initiallyalltheedgesareuncolored.)1.setk=dlog2diam(T)eandY0=∅.2.fori=1,...,kdo3.setri=2k−iandletYi⊇Yi−1beri-netofT.4.foreverypointy∈Yi\Yi−1(inanarbitraryorder)do5.temporarilycoloralltheuncolorededgesinPywithasinglenewcolor.6.letPibethesetoftemporarilycoloredpaths.7.letP∗i=Pi∪{allpathscoloredwithacolorfromC}.8.remarkpathsp1,p2∈P∗iareadjacent,writtenp1↔p2,ifd(p1,p2)≤16αri.9.recolorthe(temporarilycolored)pathsinPiwithcolorsfromCsuchthatχ(p1)6=χ(p2)forallp1,p2∈P∗iwithp1↔p2.Figure2.3.Frugaledge-coloringofthetreeT2.Padding:Prµ[πP(x)≥εr]≥12forallx∈X.Suchdecompositionshavebeengivenearlierforgeneralmetrics,where1/ε=O(log|X|).Weshowthatsuchde-compositionsexistwhereεdependsonlyonthedoublingdimensionofX.Theprobabilistictechniqueweuseisin-spiredbytheanalysisof[7].Theorem3.2.Let(X,d)beafinitemetricspace.Thenforeveryr>0thereexistsan(r,ε)-paddedprobabilisticdecompositionofXwith1/ε≤64dim(X).Proof.Foreaseofnotation,weconstructa(4r,ε)-paddeddecomposition.LetNbeanr-netofX.Letσbearan-dompermutationonN,andchoosearadiusRuniformlyatrandomfrom(r,2r].Foreachy∈N,defineaclusterCy=x∈X:x∈B(y,R)andσ(y)<σ(z)forallz∈Nwithx∈B(z,R).Clearly,diam(Cy)≤4r.Finally,letP={Cy}y∈NandnoteitisapartitionofXbecauseNisanr-netandR≥r.Nowfixapointx∈Xandsomet∈[0,r].LetW=B(x,2r+t)∩N,andnotethatm=|W|≤8dim(T)byProposition1.1.Arrangethepointsw1,...,wm∈Winorderofincreasingdistancefromx,andletIkbetheinter-val[d(x,wk)−t,d(x,wk)+t].LetussaythatB(x,t)iscutbyaclusterCwkifCwk∩B(x,t)6=∅butB(x,t)*Cwk.Finally,writeEkfortheeventthatwkistheminimalele-mentinW(accordingtoσ)forwhichCwk∩B(x,t)6=∅andCwkcutsB(x,t).Then,Pr[B(x,t)iscut]≤mXk=1Pr[Ek]=mXk=1Pr[R∈Ik]·Pr[Ek|R∈Ik]≤mXk=12tr·1k≤2tr(1+lnm),andthelatterquantityisatmost8trdim(X).Finally,notethatwhenB(x,t)isnotcut,wehaveπP(x)≥t.Settingt=4r64dimC(X),weseethatPr[πP(x)≥t]≥12asdesired.3.2LocalityanddimensionDecompositionslikethatgivenbyTheorem3.2haveseennumerousapplicationsinrecentyears.Often,onewantsasmalldistribution,i.e.amulti-setofmpartitionsD=[P1,...,Pm]suchthattheuniformdistributiononDsatis-fiescondition(2)ofDefinition3.1.Usually,thisisaccomplishedbychoosingm=Θ(logn)independentpartitionsaccordingtoµ;aChernoffboundthenyieldsthedesiredresult.Here,weshowthatm=O(dim(X)logdim(X))partitionssuffice.TheideaistousetheLovászLocalLemmaalongwithsomeideasbor-rowedfrom[18]toexploitthelocalityofthepaddedde-composition.Theorem3.3.Forametricspace(X,d),let1/ε=512dim(X).Thenforanyr≥0,thereexistsamulti-setD=[P1,...,Pm]ofm=O(dim(X)logdim(X))parti-tionssuchthat1.ForeveryC∈Smi=1Pi,diam(C)≤r.2.IfµistheuniformdistributiononDthenforallx∈X,Prµ[πP(x)≥εr]≥12.ProofofTheorem3.3.Letr>0befixedandletµbeasinTheorem3.2(notethatµdependsonr).LetP1,...,PmbepartitionsofXchosenaccordingtoµ(forsomemtobechosenlater).Forx∈X,letYxbethenumberofPiforwhichπPi(x)≤2εr.Theprobabilityofthelattereventisatmost18accordingClaim3.4.IfNisanεr-netinXthenPrhVy∈NEmyi>0.NoticethattheaboveclaimsufficestoprovetheTheo-rem.Indeed,ifπP(y)≥2εrforeveryy∈N,thenbythetriangleinequality,πP(x)≥εrforeveryx∈X.Inprovingtheclaim,wewillrequirethefollowingsym-metricformoftheLovászLocalLemma(see,e.g.,[1]).Lemma3.5(LovászLocalLemma).LetA1,...,Anbeeventsinanarbitraryprobabilityspace.SupposethateachAiismutuallyindependentofallbutatmostdothereventsAj,andsupposethatPr[Ai]≤pforall1≤i≤n.Ifep(d+1)≤1thenPr[∧ni=1Ai]>0.WenowclaimthatEmyismutuallyindependentofalleventsEmy0forwhichd(y,y0)>4r.Toseethis,notethateveryclusterformedunderµ(accordingtoTheorem3.2)hasdiameteratmostr,thusnosuchclustercansimultane-ouslycutB(y,r)andB(y0,r);theclaimedindependencefollows.Itfollowsthatwecanupperboundthenumberofeventsthatarenon-mutuallyindependentofEmybyd=|B(y,4r)∩N|≤dim(X)O(dim(X))(byProposition1.1).NowifPr[Emy]≤1e(d+1),thenthelocallemmaimpliesClaim3.4.Butthisiseasilyaccomplishedbychoosingsomem=O(dim(X)logdim(X)).4Upperboundsfordoublingmetrics4.1Bourgain-styleembeddingsvianetsHere,wegiveasimpleproofthatdoublingmetricsem-bedintoEuclideanspacewithO(√logn)distortion.ThisisbasedonBourgain’sproofforgeneralmetrics,withtheaddedtwistthatwetakedistancesfromsubsetsofnets,ratherthansubsetsoftheentiremetric.Afullproofisde-ferredtothefullversion.Theorem4.1.Foranyn-pointdoublingmetric(X,d),thedistortionrequiredtoembedXinto`2isc2(X)=O(√logn).Proof(sketch).Theideaoftheembeddingisasfollows.Foreveryscale2k,k∈Z,weconstructamapϕk:X→`2givenbyϕk(x)=p1/2|Yk|(d(x,A))A∈Yk,whereYkisthesetofallsubsetsofsome2k-netinX.Thefinalmapisbasicallythenormalizeddirectsumofallsuchmaps,i.e.⊕k2−12|Yk|ϕk,thoughstandardconsiderationsmustbemadetoachieveadistortionwhichdependsonlyonnandnottheaspectratioofX.Itturnsoutthatthedependenceofthedistortionondim(X)intheabovetheoremisexponential,anditsworst-caseperformanceismuchworsethanBourgain’sO(logn)bound.Wewillremedythisinthenextsection,usingthedecompositiontheoremsofSection3.Byadaptingtheanalysisoftheaboveproofwecanprovethefollowingtheorem.InordertoreducethedimensiontoO(logn),weboundthedistortionamongpointsincertainnetsusingtheLovászLocalLemma,anddeducefromthataboundonthedistortionamongallpoints.The1+dis-tortionisachievedbysuitablymodifyingvariousconstantsintheproof.Theorem4.2.Foranyfixed>0,everydoublingmetric(1+)-embedsinto`O(logn)∞.4.2EmbeddingsviaclusteringInthissection,weobtainembeddingsthatdegradegrace-fullywiththedoublingdimension;thesearebasedonthedecompositiontheoremsofSection3.ThenexttheoremusesanembeddingtechniqueduetoRao[32].Ouranalysisrequiresconsiderablymoreeffortsincewemustkeeptightcontrolonthedimensionofourembedding(thisimprovesthedimensionofthehostspacebyafactorofΩ(logn),say,fordoublingmetrics,andisessentialforSection4.2.1).Theorem4.3.Foranymetric(X,d)andanyp∈[1,∞),cp(X)=Odim(X)·(logn)min(12,1p).Proof(outline).Let(X,d)beanarbitrarymetricandfixavaluer≥0.Wediscussthecasep=2;theproofforothervaluesofpissimilar.WeproduceamapΦr:X→Rkwithk=O(dim(X)logdim(X))asfollows.LetP1,...,Pmbethemulti-setofdecompositionsguaranteedbyTheorem3.3.Fixsomei∈{1,...,m},andforeveryclusterC∈Pi,chooseavaluesgn(C)∈{−1,+1}uniformlyatrandom.FollowingRao[32](seealso[28,Ch.15]),definethemapϕi:X→Rbyϕi(x)=XC∈Pisgn(C)·d(x,X\C).Finally,setΦr=1√mϕ1⊕···⊕ϕm.LetεbeasinTheorem3.3,letNrbeanεr64-net,andsetSr={{x,y}∈N2r:d(x,y)>r}.For{x,y}∈Sr,letEx,ybetheeventthat||Φr(x)−Φr(y)||<18εr.Thefollowinglemmaisdeferredtothefullversion.Lemma4.4.PrhV{x,y}∈SrEx,yi>0.Inotherwords,thereexistsamapΦrsuchthatforall{x,y}∈Sr,||Φr(x)−Φr(y)||≥184.2.1Assouad’sTheoremRecallthatfor0<α≤1,(X,dα)isthemetricthatarisesfromametric(X,d)byraisingalldistancestothepowerα.Inhisseminalpaper[2],Assouadprovedthefollowing(per-hapssurprising)result:Foranydoublingmetric,andeveryfixed0<α<1,thereexistconstantskandD(depend-ingonlyonthedoublingconstantofX)suchthat(X,dα)embedsinto`k2withdistortionatmostD.AlthoughAssouad’sproofiseasilyconvertedtoanal-gorithm,theparameterskandDgrowexponentiallywithdim(X).WepresentanalgorithmicversionbasedontheformationofcoordinatesinSection4.2andatrickofAs-souad[2]toavoidinteractionbetweenscales.ThevalueskandDthatweachievearebothnearlylinearindim(X).Theorem4.5.Let(X,d)beanarbitrarymetric,andfixavalue0<α<1.Thenthereexistvaluesk=O(dim(X)logdim(X))andD=anO(dim(T))-approximationforthe0-extensionproblemwhere(T,d)isthemetriconterminals.Dimensionalityreduction.Inprevioussections,westud-iedthedistortionofgeneralmetricsintermsoftheirdou-blingdimension.Here,letusconsiderann-pointsetX⊆`n2withdim(X)=O(1).TheJohnson-Lindenstraussflat-teninglemma[15]tellsusthatthereisa1+embeddingofXinto`O(−2logn2).Weposethefollowingintriguingquestionwhichwasaskedindependentlyin[21].Question1.Caneverydoublingsubmetricof`2beO(1)-embeddedinto`O(1)2?Itcanbeshownthatnolinearprojectioncanachievesucharesult(asin[15]),butthereareanumberreasonstobelievethatitsresolutionmightbepositive;thesearedis-cussedinthefullversion.Acknowledgments.WethankYairBartal,ManorMendel,AssafNaor,andOdedSchrammforsomeenlighteningdiscussions,andStephenSemmesforusefulpointerstotheliterature.References[1]N.AlonandJ.H.Spencer.Theprobabilisticmethod.Wiley-Interscience,NewYork,secondedition,2000.[2]P.Assouad.PlongementslipschitziensdansRn.Bull.Soc.Math.France,111(4):429–448,1983.[3]Y.AumannandY.Rabani.AnO(logk)approximatemin-cutmax-flowtheoremandapproximationalgorithm.SIAMJ.Comput.,27(1):291–301,1998.[4]J.Bourgain.OnLipschitzembeddingoffinitemetricspacesinHilbertspace.IsraelJ.Math.,52(1-2):46–52,1985.[5]J.Bourgain.ThemetricalinterpretationofsuperreflexivityinBanachspaces.IsraelJ.Math.,56(2):222–230,1986.[6]B.BrinkmanandM.Charikar.Ontheimpossibilityofdimensionre-duction
+Fair Algorithms for Infinite and Contextual Bandits
+Matthew Joseph ∗1
+Michael Kearns †1
+Jamie Morgenstern ‡1
+Seth Neel § 2
+Aaron Roth ¶ 1
+1
+Computer and Information Science, University of Pennsylvania
+2
+Statistics Department, The Wharton School, University of Pennsylvania
+Abstract
+We study fairness in linear bandit problems. Starting from the notion of meritocratic fairness introduced
+in Joseph et al. [2016], we carry out a more refined analysis of a more general problem, achieving better
+performance guarantees with fewer modelling assumptions on the number and structure of available
+choices as well as the number selected. We also analyze the previously-unstudied question of fairness in
+infinite linear bandit problems, obtaining instance-dependent regret upper bounds as well as lower bounds
+demonstrating that this instance-dependence is necessary. The result is a framework for meritocratic
+fairness in an online linear setting that is substantially more powerful, general, and realistic than the
+current state of the art.
+1 Introduction
+The problem of repeatedly making choices and learning from choice feedback arises in a variety of settings,
+including granting loans, serving ads, and hiring. Encoding these problems in a bandit setting enables one
+to take advantage of a rich body of existing bandit algorithms. UCB-style algorithms, for example, are
+guaranteed to yield no-regret policies for these problems.
+Joseph et al. [2016], however, raises the concern that these no-regret policies may be unfair: in some
+rounds, they will choose options with lower expected rewards over options with higher expected rewards,
+for example choosing less qualified job applicants over more qualified ones. Consider a UCB-like algorithm
+aiming to hire all qualified applicants in every round. As time goes on, any no-regret algorithm must behave
+unfairly for a vanishing fraction of rounds, but the total number of mistreated people – in hiring, people who
+saw a less qualified job applicant hired in a round in which they themselves were not hired – can be large
+(see Figure 1).
+Figure 1: Cumulative mistreatments for
+UCB. See Section 7.7 in supplement for
+details and additional experimental evalu-
+ation of the structure of mistreatment.
+Joseph et al. [2016] then design no-regret algorithms which
+minimize mistreatment and are fair in the following sense: their
+algorithms (with high probability) never at any round place higher
+selection probability on a less qualified applicant than on a more
+qualified applicant. However, their analysis assumes that there are
+k well-defined groups, each with its own mapping from features
+to expected rewards; at each round exactly one individual from
+each group arrives; and exactly one individual is chosen in each
+round. In the hiring setting, this equates to assuming that a
+company receives one job applicant from each group and must
+∗majos@cis.upenn.edu
+†mkearns@cis.upenn.edu
+‡jamiemor@cis.upenn.edu
+§sethneel@wharton.upenn.edu
+¶aaroth@cis.upenn.edu
+1
+arXiv:1610.09559v4
+[cs.LG]
+29
+Jun
+2017
+hire exactly one (rather than m or all qualified applicants) introducing an unrealistic element of competition
+and unfairness both between applicants and between groups.
+The aforementioned assumptions are unrealistic in many practical settings; our work shows they are
+also unnecessary. Meritocratic fairness can be defined without reference to groups, and algorithms can
+satisfy the strictest form of meritocratic fairness without any knowledge of group membership. Even without
+this knowledge, we design algorithms which will be fair with respect to any possible group structure over
+individuals. In Section 2, we present this general definition of fairness. The definition further allows for the
+number of individuals arriving in any round to vary, and is sufficiently flexible to apply to settings where
+algorithms can select m ∈ [k] individuals in each round. By virtue of the definition making no reference to
+groups, the model makes no assumptions about how many individuals arriving at time t belong to any group.
+A company can then consider a large pool of applicants, not necessarily stratified by race or gender, with an
+arbitrary number of candidates from any one of these populations, and hire one or m or even every qualified
+applicant.
+We then present a framework for designing meritocratically fair online linear contextual bandit algorithms.
+In Section 3, we show how to design fair algorithms when at most some finite number k of individuals
+arrives in any round (the linear contextual bandits problem [Abe et al., 2003, Auer, 2002]), as well as when
+m individuals may be chosen in each round (the “multiple play" introduced and studied absent fairness
+in Anantharam et al. [1987]). We therefore study a much more general model than [Joseph et al., 2016] and,
+in Section 3, substantially improve upon their black-box regret guarantees for linear bandit problems using a
+technical analysis specific to the linear setting.
+However, these regret bounds still scale (polynomially) with k, the maximum number of individuals seen
+in any given round. This may be undesirable for large k, thus motivating the investigation of fair algorithms
+for the infinite bandit setting (the online linear optimization with bandit feedback problem Flaxman et al.
+[2005]).1
+In Section 4 we provide such an algorithm via an adaptation of our general confidence interval-based
+framework that takes advantage of the fact that optimal solutions to linear programs must be extreme points
+of the feasible region. We then prove, subject to certain assumptions, a regret upper bound that depends on
+∆gap, an instance-dependent parameter based on the distance between the best and second-best extreme
+points in a given choice set.
+In Section 5 we show that this instance dependence is almost tight by exhibiting an infinite choice set
+satisfying our assumptions for which any fair algorithm must incur regret dependent polynomially on ∆gap,
+separating this setting from the online linear optimization setting absent a fairness constraint. Finally, we
+justify our assumptions on the choice set by in Section 6 exhibiting a choice set that both violates our
+assumptions and admits no fair algorithm with nontrivial regret guarantees. A condensed presentation of our
+methods and results appears in Figure 2.
+Finally, we note that our algorithms share an overarching logic for reasoning about fairness. These
+algorithms all satisfy fairness by certifying optimality, never giving preferential treatment to x over y unless
+the algorithm is certain that x has higher reward than y. The algorithms accomplish this by computing
+confidence intervals around the estimated rewards for individuals. If two individuals have overlapping
+confidence intervals, we say they are linked; if x can be reached from y using a sequence of linked individuals,
+we say they are chained.
+1.1 Related Work and Discussion of Our Fairness Definition
+Fairness in machine learning has seen substantial recent growth as a subject of study, and many different
+definitions of fairness exist. We provide a brief overview here; see e.g. Berk et al. [2017] and Corbett-Davies
+et al. [2017] for detailed descriptions and comparisons of these definitions.
+Many extant fairness notions are predicated on the existence of groups, and aim to guarantee that certain
+groups are not unequally favored or mistreated. In this vein, Hardt et al. [2016] introduced the notion
+of equality of opportunity, which requires that a classifier’s predicted outcome should be independent of a
+1We note that both the finite and infinite settings have infinite numbers of potential candidates: the difference arises in how
+many choices an algorithm has in a given round.
+2
+# selected
+each round
+# options
+each round
+Technique Notes Regret
+Exactly
+j ≤ k
+≤ k
+Play all of chains in
+descending order,
+randomizing over
+last chain as necessary
+to pick exactly j
+Requires
+randomness
+Õ
+
+dkj
+√
+T
+
+Unconstrained ≤ k Select all in every
+chain with highest
+UCB > 0
+Deterministic Õ
+
+dk2
+√
+T
+
+Exactly 1
+∞
+bounded
+convex set
+∆gap > 0
+Play uniquely best point
+or UAR from entire set
+Requires
+randomness
+Õ c · log(T)/∆2
+gap
+
+Ω̃(1/∆gap)
+Ω(T) for ∆gap = 0
+Figure 2: A description of various settings in which our framework provides fair algorithms. In all cases,
+fairness can be imposed only across pairs for any partitioning of the input space; the bounds here assume they
+bind across all pairs, and are therefore worst-case upper bounds. See Section 4 for a complete explanation of
+the distribution-dependent constant c in the regret bound for the infinite case.
+protected attribute (such as race) conditioned on the true outcome, and they and Woodworth et al. [2017]
+have studied the feasibility and possible relaxations thereof. Similarly, Zafar et al. [2017] analyzed an
+equivalent concurrent notion of (un)fairness they call disparate mistreatment. Separately, Kleinberg et al.
+[2017] and Chouldechova [2017] showed that different notions of group fairness may (and sometimes must)
+conflict with one another.
+This paper, like Joseph et al. [2016], departs from the work above in a number of ways. We attempt to
+capture a particular notion of individual and weakly meritocratic fairness that holds throughout the learning
+process. This was inspired by Dwork et al. [2012], who suggest fair treatment equates to treating “similar”
+people similarly, where similarity is defined with respect to an assumed pre-specified task-specific metric.
+Taking the fairness formulation of Joseph et al. [2016] as our starting point, our definition of fairness does not
+promise to correct for past inequities or inaccurate or biased data. Instead, it assumes the existence of an
+accurate mapping from features to true quality for the task at hand2
+and promises fairness while learning
+and using this mapping in the following sense: any individual who is currently more qualified (for a job, loan,
+or college acceptance) than another individual will always have at least as good a chance of selection as the
+less qualified individual.
+The one-sided nature of this guarantee, as well as its formulation in terms of quality, leads to the name
+weakly meritocratic fairness. Weakly meritocratic fairness may then be interpreted as a minimal guarantee of
+fairness: an algorithm satisfying our fairness definition cannot favor a worse option but is not required to
+favor a better option. In this sense our fairness requirement encodes a necessary variant of fairness rather
+than a completely sufficient one. This makes our upper bounds (Sections 3 and 4) relatively weaker and our
+lower bounds (Sections 5 and 6) relatively stronger.
+We additionally note that our fairness guarantees require fairness at every step of the learning process.
+We view this as an important point, especially for algorithms whose learning processes may be long (or even
+continuous). Furthermore, while it may seem reasonable to relax this requirement to allow a small fraction
+of unfair steps, it is unclear how to do so without enabling discrimination against a correspondingly small
+population.
+Finally, while our fairness definition draws from Joseph et al. [2016], we work in what we believe to be a
+2 Friedler et al. [2016] provide evidence that providing fairness from bias-corrupted data is quite difficult.
+3
+significantly more general and realistic setting. In the finite case we allow for a variable number of individuals
+in each round from a variable number of groups and also allow selection of a variable number of individuals
+in each round, thus dropping several assumptions from Joseph et al. [2016]. We also analyze the previously
+unstudied topic of fairness with infinitely many choices.
+2 Model
+Fix some β ∈ [−1, 1]d
+, the underlying linear coefficients of our learning problem, and T the number of rounds.
+For each t ∈ [T], let Ct ⊆ D = [−1, 1]d
+denote the set of available choices in round t. We will consider both
+the “finite” action case, where |Ct| ≤ k, and the infinite action case. An algorithm A, facing choices Ct, picks
+a subset Pt ⊆ Ct, and for each xt ∈ Pt, A observes reward yt ∈ [−1, 1] such that E [yt] = hβ, xti, and the
+distribution of the noise ηt = yt − hβ, xti is sub-Gaussian (see Section 7.1 for a definition of sub-Gaussian).
+Refer to all observations in round t as Yt ∈ [−1, 1]|Pt|
+where Yt,i = yt,i for each xt,i ∈ Pt. Finally, let
+Xt = [X1; . . . ; Xt], Yt = [Y1; . . . ; Yt] refer to the design and observation matrices at round t.
+We are interested in settings where an algorithm may face size constraints on Pt. We consider three cases:
+the standard linear bandits problem (|Pt| = 1), the multiple choice linear bandits problem (|Pt| = m), and
+the heretofore unstudied (to the best of the authors’ knowledge) case in which the size of Pt is unconstrained.
+For short, we refer to these as 1-bandit, m-bandit, and k-bandit.
+Regret The notion of regret we will consider is that of pseudo-regret. Facing a sequence of choice sets
+C1, . . . , CT , suppose A chooses sets P1, . . . , PT .3
+Then, the expected reward of A on this sequence is
+Rew(A) = E
+hP
+t∈[T ]
+P
+xt∈Pt
+yt
+i
+.
+Refer to the sequence of feasible choices4
+which maximizes expected reward as P∗,1 ⊆ C1, . . . , P∗,T ⊆ CT ,
+defined with full knowledge of β.
+Then, the pseudo-regret of A on any sequence is defined as
+Rew(P∗,1, . . . , P∗,T ) − Rew(A) = R(T).
+The pseudo-regret of A refers to the maximum pseudo-regret A incurs on any sequence of choice sets
+and any β ∈ [−1, 1]d
+. If R(T) = o(T), then A is said to be no-regret. If, for any input parameter δ > 0,
+R(T) upper-bounds the expectation of the rewards of the sequence chosen by A with probability 1 − δ, then
+we call this a high-probability regret bound for A.
+Fairness Consider an algorithm A, which chooses a sequence of probability distributions π1, π2, . . . , πT over
+feasible sets to pick, πt ∈ ∆(2Ct
+). Note that distribution πt depends upon C1, . . . , Ct, the choices P1, . . . , Pt−1,
+and Y1, . . . , Yt−1.
+We now give a formal definition of fairness of an algorithm for the 1-bandit, m-bandit, and k-bandit
+problems. We adapt our fairness definition from Joseph et al. [2016], generalizing from discrete distributions
+over finite action sets to mixture distributions over possibly infinite action sets. We slightly abuse notation
+and refer to the probability density and mass functions of an element x ∈ Ct: this refers to the marginal
+distribution of x being chosen (namely, the probability that x belongs to the set picked according to the
+distribution πt).
+Definition 1 (Weakly Meritocratic Fairness). We say that an algorithm A is weakly meritocratic if, for any
+input δ ∈ (0, 1] and any β, with probability at least 1 − δ, at every round t, for every x, x0
+∈ Ct such that
+hβ, xi ≥ hβ, x0
+i:
+3If these are randomized choices, the randomness of A is incorporated into the expected value calculations.
+4We assume these have the appropriate size for each problem we consider: singletons in the 1-bandit problem, size at most m
+in the m-bandit problem, and arbitrarily large in the k-bandit problem.
+4
+• If πt is a discrete distribution: For gt(x) = πt(x) (the probability mass function)
+gt(x) ≥ gt(x0
+).
+• If πt is a continuous distribution: For gt(x) = ft(x) (the probability density function)
+gt(x) ≥ gt(x0
+).
+• If πt can be written as a mixture distribution:
+P
+i αiπti,
+P
+i αi = 1, such that each constituent
+distribution πti ∈ ∆(2Ct
+) is either discrete or continuous and satisfies one of the above two conditions.
+For brevity, as consider only this fairness notion in this paper, we will refer to weakly meritocratic fairness as
+“fairness”. We say A is round-fair at time t if πt satisfies the above conditions.
+This definition can be easily generalized over any partition G of D, by requiring this weak monotonicity
+hold only for pairs x, x0
+belonging to different elements of the partition G, G0
+. The special case above of the
+singleton partition is the most stringent choice of partition. We focus our analysis on the singleton partition
+as a minimal worst-case framework, but this model easily relaxes to apply only across groups, as well as
+to only requiring “one-sided” monotonicity, where monotonicity is required only for pairs where the more
+qualified member belongs to group G rather than G0
+.
+Remark 1. In the k-bandit setting, Definition 1 can be simplified to require, with probability 1 − δ over its
+observations, an algorithm never select a less-qualified individual over more-qualified one in any round, and
+can be satisfied by deterministic algorithms.
+3 Finite Action Spaces: Fair Ridge Regression
+In this section, we introduce a family of fair algorithms for linear 1-bandit, m-bandit, and the (unconstrained)
+k-bandit problems. Here, an algorithm sees a slate of at most k distinct individuals each round and selects
+some subset of them for reward and observation. This allows us to encode settings where an algorithm
+repeatedly observes a new pool of k individuals, each represented by a vector of d features, then decides
+to give some of those individuals loans based upon those vectors, observes the quality of the individuals to
+whom they gave loans, and updates the selection rule for loan allocation. The regret of these algorithms will
+scale polynomially in k and d as the algorithm gets tighter estimates of β.
+All of the algorithms are based upon the following template. They maintain an estimate β̂t of β from
+observations, along with confidence intervals around the estimate. They use β̂t to estimate the rewards for the
+individuals on day t and the confidence interval around β̂t to create a confidence interval around each of these
+estimated rewards. Any two individuals whose intervals overlap on day t will picked with the same probability
+by the algorithm. Call any two individuals whose intervals overlap on day t linked, and any two individuals
+belonging to the transitive closure of the linked relation chained. Since any two linked individuals will chosen
+with the same probability, any two chained individuals will also be chosen with the same probability.
+An algorithm constrained to pick exactly m ∈ [k] individuals each round will pick them in the following
+way. Order the chains by their highest upper confidence bound. In that order, select all individuals from
+each chain (with probability 1 while that results in taking fewer than m individuals. When the algorithm
+arrives at the first chain for which it does not have capacity to accept every individual in the chain, it selects
+to fill its capacity uniformly at random from that chain’s individuals. If the algorithm can pick any number
+of individuals, it will pick all individuals chained to any individual with positive upper confidence bound.
+We now present the regret guarantees for fair 1-bandit, m-bandit, and k-bandit using this framework.
+Theorem 1. Suppose, for all t, ηt is 1-sub-Gaussian, Ct ⊆ [−1, 1]d
+, and ||xt||2 ≤ 1 for all xt ∈ Ct, and
+||β|| ≤ 1. Then, RidgeFair1, RidgeFairm, and RidgeFair≤k are fair algorithms for the 1-bandit, m-bandit,
+and k-bandit problems, respectively. With probability 1 − δ, for j ∈ {1, m, k}, the regret of RidgeFairj is
+R(T) = O
+
+dkj
+√
+T log
+
+T
+δ
+
+= Õ(dkj
+√
+T).
+5
+We pause to compare our bound for 1-bandit to that found in Joseph et al. [2016]. Their work supposes
+that each of k groups has an independent d-dimensional linear function governing its reward and provides a
+fair algorithm regret upper bound of Õ
+
+T
+4
+5 k
+6
+5 d
+3
+5 , k3
+
+. To directly encode this setting in ours, one would
+need to use a single dk-dimensional linear function, yielding a regret bound of Õ
+
+dk2
+√
+T
+
+. This is an
+improvement on their upper bound for all values of T for which the bounds are non-trivial (recalling that the
+bound from Joseph et al. [2016] becomes nontrivial for T > d3
+k6
+, while the bound here becomes nontrivial
+for T > d2
+k4
+). We also briefly observe that RidgeFair≤k satisfies an additional “fairness” property: with
+high probability, it always selects every available individual with positive expected reward.
+Each of these algorithms will use `2-regularized least-squares regressor to estimate β. Given a design matrix
+X, response vector Y, and regularization parameter γ ≥ 1 this is of the form β̂ = (XT
+X + γI)−1
+XT
+Y. Valid
+confidence intervals (that contain β with high probability) are nontrivial to derive for this estimator (which
+might be biased); to construct them, we rely on martingale matrix concentration results [Abbasi-Yadkori
+et al., 2011].
+We now sketch how the proof of Theorem 1 proceeds, deferring a full proof (of this and all other results
+in this paper) and pseudocode to the supplementary materials. We first establish that, with probability
+1 − δ, for all rounds t, for all xt,i ∈ Ct, that yt,i ∈ [`t,i, ut,i] (i.e. that the confidence intervals being used are
+valid). Using this fact, we establish that the algorithm is fair. The algorithm plays any two actions which are
+linked with equal probability in each round, and any action with a confidence interval above another action’s
+confidence interval with weakly higher probability. Thus, if the payoffs for the actions lie anywhere within
+their confidence intervals, RidgeFair is fair, which holds as the confidence intervals are valid.
+Proving a bound on the regret of RidgeFair requires some non-standard analysis, primarily because the
+widths of the confidence intervals used by the algorithm do not shrink uniformly. The sum of the widths of
+the intervals of our selected (and therefore observed) actions grows sublinearly in t. UCB variants, by virtue
+of playing an action a with highest upper confidence bound, have regret in round t bounded by a’s confidence
+interval width. RidgeFair, conversely, suffers regret equal to the sum of the confidence widths of the chained
+set, while only receiving feedback for the action it actually takes. We overcome this obstacle by relating the
+sum of the confidence interval widths of the linked set to the sum of the widths of the selected actions.
+4 Fair algorithms for convex action sets
+In this section we analyze linear bandits with infinite choice sets in the familiar 1-bandit setting.5
+We provide
+a fair algorithm with an instance-dependent sublinear regret bound for infinite choice sets – specifically
+convex bodies – below. In Section 5 we match this with lower bounds showing that instance dependence is an
+unavoidable cost for fair algorithms in an infinite setting.
+A naive adaptation of RidgeFair to an infinite setting requires maintenance of infinitely many confidence
+intervals and is therefore impractical. We instead assume that our choice sets are convex bodies and exploit
+the resulting geometry: since our underlying function is linear, it is maximized at an extremal point. This
+simplifies the problem, since we need only reason about the relative quality of extremal points. The relevant
+quantity is ∆gap, a notion adapted from Dani et al. [2008] that denotes the difference in reward between the
+best and second-best extremal points in the choice set. When ∆gap is large it is easier to confidently identify
+the optimal choice and select it deterministically without violating fairness. When ∆gap is small, it is more
+difficult to determine which of the top two points is best – and since deterministically selecting the wrong
+one violates fairness for any points infinitesimally close to the true best point, we are forced to play randomly
+from the entire choice set.
+Our resulting fair algorithm, FairGap, proceeds as follows: in each round it uses its current estimate of
+β to construct confidence intervals around the two choices with highest estimated reward and selects the
+higher one if these intervals do not overlap; otherwise, it selects uniformly at random from the entire convex
+5Note that no-regret guarantees are in general impossible for infinite choice sets in m-bandit and k-bandit settings, since the
+continuity of the infinite choice sets we consider makes selecting multiple choices while satisfying fairness impossible without
+choosing uniformly at random from the entire set.
+6
+body. We prove fairness and bound regret by analyzing the rate at which random exploration shrinks our
+confidence intervals and relating it to the frequency of exploitation, a function of ∆gap. We begin by formally
+defining ∆gap below.
+Definition 2 (Gap, adapted from Dani et al. [2008]). Given sequence of action sets C = (C1, . . . , CT ), define
+Ωt to be the set of extremal points of Ct, i.e. the points in Ct that cannot be expressed as a proper convex
+combination of other points in Ct, and let x∗
+t = maxx∈Ct hβ, xi. The gap of Ct is
+∆gap = min
+1≤t≤T
+
+inf
+xt∈Ωt,xt6=x∗
+t
+hβ, x∗
+t − xti
+
+.
+∆gap is a lower bound on difference in payoff between the optimal action and any other extremal action
+in any Ct. When ∆gap > 0, this implies the existence of a unique optimal action in each Ct. Our algorithm
+(implicitly) and our analysis (explicitly) exploits this quantity: a larger gap enables us to confidently identify
+the optimal action more quickly.
+We now present the regret and fairness guarantees for FairGap.
+Theorem 2. Given sequence of action sets C = (C1, . . . , CT ) where each Ct has nonzero Lebesgue measure
+and is contained in a ball of radius r and feedback with R-sub-Gaussian noise, FairGap is fair and achieves
+Regret (T) = O
+
+r6
+R2
+ln(2T/δ)
+κ2λ2∆2
+gap
+
+where κ = 1 − r
+q
+2 ln(2dT
+δ )
+T λ and λ = min1≤t≤T
+
+λmin(Ext∼UARCt [xt
+T
+xt])
+
+A full proof of FairGap’s fairness and regret bound, as well as pseudocode, appears in the supplement.
+We sketch the proof here: our proof of fairness proceeds by bounding the influence of noise on the confidence
+intervals we construct (via matrix Chernoff bounds) and proving that, with high probability, FairGap
+constructs correct confidence intervals. This requires reasoning about the spectrum of the covariance matrix
+of each choice set, which is governed by λ, a quantity which, informally, measures how quickly we learn from
+uniformly random actions. 6
+. With correct confidence intervals in hand, fairness follows almost immediately,
+and to bound regret we analyze the rate at which these confidence intervals shrink.
+The analysis above implies identical regret and fairness guarantees when each Ct is finite. For comparison,
+the results of Section 3 guarantee Regret (T) = O(dk
+√
+T). This result, in comparison, enjoys a regret
+independent of k which may prove especially useful for cases involving large k.
+Finally, our analysis so far has elided any computational efficiency issues arising from sampling randomly
+from C. We note that it is possible to circumvent this issue by relaxing our definition of fairness to approximate
+fairness and obtain similar regret bounds for an efficient implementation. We achieve this using results from
+the broad literature on sampling and estimating volume in convex bodies, as well as recent work on finding
+“2nd best” extremal solutions to linear programs. Full details appear in Section 7.4 of the Supplement.
+5 Instance-dependent Lower Bound for Fair Algorithms
+We now present a lower bound instance for which any fair algorithm must suffer gap-dependent regret. More
+formally, we show that when each choice set is a square, i.e. Ct = [0, 1]2
+for all t, for any fair algorithm
+Regret (T) = Ω̃(1/∆gap) with probability at least 1 − δ. This also implies the weaker result that no fair
+algorithm enjoys an instance-independent sub-linear regret bound o(T) holding uniformly over all β. We
+therefore obtain a clear separation between fair learning and the unconstrained case Dani et al. [2008], and
+show that an instance-dependent upper bound like the one in Section 4 is unavoidable. Our arguments
+establish fundamental constraints on fair learning with large choice sets and quantify through the ∆gap
+6λ can be computed directly for finite Ct or approximated by any positive lower bound for infinite Ct and substituted directly
+into our results.
+7
+parameter how choice set geometry can affect the performance of fair algorithms. The lower bound employs a
+Bayesian argument resembling that in Joseph et al. [2016] but with a novel “chaining” argument suited to
+infinite action sets. We present the result for d = 2 for simplicity; the proof technique holds in any dimension
+d ≥ 2.
+Theorem 3. For all t let Ct = [−1, 1]d
+, β ∈ [−1, 1]d
+, and yt = hxt, βi + ηt, where ηt ∼ U[−1, 1]. Let A be
+any fair algorithm. Then for every gap ∆gap, there is a distribution over instances with gap Ω(∆gap) such
+that any fair algorithm has regret Regret (T) = Ω̃(1/∆gap) with probability 1 − δ.
+We a sketch of the central ideas in the proof, relegating a full proof to the Supplement. We start with the
+fact that any fair algorithm A is required to be fair for any value β of the linear parameter. Thus if we draw
+β ∼ τ, A must be round-fair for all t ≥ 1 with probability at least 1 − δ, where now the probability includes
+the random draw β ∼ τ. Then Bayes’ rule implies that the procedure that draws β ∼ τ and then plays
+according to A is identical to the procedure which at each step t re-draws β from its posterior distribution
+given the past τ|ht
+.
+Next, given the prior τ, A’s round fairness at step t requires that (with high probability) if A plays action
+x with higher probability than action y, we must have
+Pβ∼τ|ht
+[hβ, xi > hβ, yi] >
+3
+4
+. (1)
+This enables us to reason about the fairness and regret of the algorithm via a specific analysis of the
+posterior distribution τ|ht
+. We formalize this argument in Lemmas 7 and 8. This Bayesian trick, first applied
+in Joseph et al. [2016], is a general technique useful for proving fairness lower bounds.
+We then show that for a choice of prior specific to our choice set C, that two things hold: (i) whenever
+τ|ht = τ, Equation 1 forces A to play uniformly from C, and (ii) with high probability τ = τ|ht until t > Ω̃(1/),
+where  is a parameter of the prior that acts as a proxy for ∆gap. Playing an action uniformly from C incurs
+Ω(1) regret per round, so these two facts combine to show that with high probability Regret (T) = Ω̃(1/).
+Finally we consider Regret (T) conditional on the event that ∆gap(β) > δ · , which by our construction
+of τ happens with probability 1 − δ. Let τgap be the conditional distribution of β given that ∆gap(β) > δ · .
+Then
+Pβ∼τ
+
+Regret (T) ≥ Ω
+
+1
+
+
+≤ Pβ∼τgap
+
+Regret (T) ≥ Ω
+
+1
+
+
+(1 − δ) + δ
+which implies
+Pβ∼τgap
+
+Regret (T) ≥ Ω
+
+1
+
+
+≥
+1 − 2δ
+1 − δ
+.
+Note that 1−2δ
+1−δ → 1 as δ → 0, and so this is a high-probability bound. Since for every β in the support of
+τgap, we have that ∆gap(β) ≥ δ · , we’ve exhibited a distribution τgap such that when β ∼ τgap, with high
+probability, Regret (T) = Ω̃(1/) = Ω̃(1/∆gap), as desired.
+The proof uses the fact that when τ = τ|ht
+, Equation 1 forces A to play uniformly at random. This
+happens by transitivity: if Equation 1 forces A to play x equiprobably with y and y equiprobably with z,
+then x must be played equiprobably with z. The fact that any two actions in C can be connected via such a
+(finite) transitive chain is illustrated in Figure 7.5 and formalized in Lemma 10.
+Remark 2. We note that this impossibility result only holds for d ≥ 2. When d = 1, the choice set reduces
+to [−1, 1], and similarly β ∈ [−1, 1]. Thus, the optimal action is sign(β)). It takes O(1/β2
+) observations to
+determine the sign of β, so a simple fair algorithm may play randomly from [−1, 1] until it has determined
+sign(β), and then play sign(β) for every following round. Because the maximum per-round regret of any action
+is O(β), and because the maximum cumulative regret obtained by the algorithm is with high probability
+O(β · 1/β2
+) = O(1/β), the regret of this simple algorithm over T rounds is O(min(β · T, 1/β2
+)). Taking
+the worst case over β, we see that this quantity is bounded uniformly by O(
+√
+T), a sublinear parameter
+independent regret bound.
+8
+6 Zero Gap: Impossibility Result
+Section 4 presents an algorithm for which the sublinear regret bound has dependence 1/∆2
+gap on the instance
+gap. Section 5 exhibits an choice set C with a Ω̃(1/∆gap) dependence on the gap parameter. We now exhibit
+a choice set C for which ∆gap = 0 for every β, and for which no fair algorithm can obtain non-trivial regret
+for any value of β. This precludes even instance-dependent fair regret bounds on this action space, in sharp
+contrast with the unconstrained bandit setting.
+Theorem 4. For all t let Ct = S1
+, the unit circle, and ηt ∼ Unif(−1, 1). Then for any fair algorithm
+A, ∀β ∈ S1
+, ∀T ≥ 1, we have
+Eβ[Regret (T)] = Ω(T).
+S1
+makes fair learning difficult for the following reasons: since S1
+has no extremal points, there is no
+finite set of points which for any β contains the uniquely optimal action, and for any point in S1
+, and any
+finite set of observations, there is another point in S1
+for which the algorithm cannot confidently determine
+relative reward. Since this property holds for every point, the fairness constraint transitively requires that
+the algorithm play every point uniformly at random, at every round.
+9
+References
+Yasin Abbasi-Yadkori, Dávid Pál, and Csaba Szepesvári. Improved algorithms for linear stochastic bandits. In Advances in
+Neural Information Processing Systems, pages 2312–2320, 2011.
+Naoki Abe, Alan W Biermann, and Philip M Long. Reinforcement learning with immediate rewards and linear hypotheses.
+Algorithmica, 37(4):263–293, 2003.
+Venkatachalam Anantharam, Pravin Varaiya, and Jean Walrand. Asymptotically efficient allocation rules for the multiarmed
+bandit problem with multiple plays – part i: I.i.d. rewards. IEEE Transactions on Automatic Control, AC-32(Nov):968–976,
+1987.
+Peter Auer. Using confidence bounds for exploitation-exploration trade-offs. Journal of Machine Learning Research, 3(Nov):
+397–422, 2002.
+Richard Berk, Hoda Heidari, Shahin Jabbari, Michael Kearns, and Aaron Roth. Fairness in criminal justice risk assessments:
+The state of the art. arXiv preprint arXiv:1703.09207, 2017.
+Alexandra Chouldechova. Fair prediction with disparate impact: A study of bias in recidivism prediction instruments. arXiv
+preprint arXiv:1703.00056, 2017.
+Sam Corbett-Davies, Emma Pierson, Avi Feller, Sharad Goel, and Aziz Huq. Algorithmic decision making and the cost of
+fairness. arXiv preprint arXiv:1701.08230, 2017.
+Varsha Dani, Thomas P Hayes, and Sham M Kakade. Stochastic linear optimization under bandit feedback. In COLT, pages
+355–366, 2008.
+Cynthia Dwork, Moritz Hardt, Toniann Pitassi, Omer Reingold, and Richard Zemel. Fairness through awareness. In Proceedings
+of ITCS 2012, pages 214–226. ACM, 2012.
+Abraham D Flaxman, Adam Tauman Kalai, and H Brendan McMahan. Online convex optimization in the bandit setting:
+gradient descent without a gradient. In Proceedings of the sixteenth annual ACM-SIAM symposium on Discrete algorithms,
+pages 385–394. Society for Industrial and Applied Mathematics, 2005.
+Sorelle A. Friedler, Carlos Scheidegger, and Suresh Venkatasubramanian. On the (im)possibility of fairness. In arXiv, volume
+abs/1609.07236, 2016. URL http://arxiv.org/abs/1609.07236.
+Moritz Hardt, Eric Price, and Nathan Srebro. Equality of opportunity in supervised learning. In Advances in Neural Information
+Processing Systems 29: Annual Conference on Neural Information Processing Systems 2016, December 5-10, 2016, Barcelona,
+Spain, volume abs/1610.02413, 2016. URL http://arxiv.org/abs/1610.02413.
+Matthew Joseph, Michael Kearns, Jamie H Morgenstern, and Aaron Roth. Fairness in learning: Classic and contextual bandits.
+In Advances in Neural Information Processing Systems, pages 325–333, 2016.
+J. Kleinberg, S. Mullainathan, and M. Raghavan. Inherent trade-offs in the fair determination of risk scores. In ITCS, Jan 2017.
+Erik M Lindgren, Alexandros G Dimakis, and Adam Klivans. Facet guessing for finding the m-best integral solutions of a linear
+program. In NIPS Workshop on Optimization for Machine Learning, 2016.
+László Lovász and Santosh Vempala. Hit-and-run from a corner. SIAM Journal on Computing, 35(4):985–1005, 2006.
+Joel A Tropp et al. An introduction to matrix concentration inequalities. Foundations and Trends R in Machine Learning, 8
+(1-2):1–230, 2015.
+Santosh Vempala. Geometric random walks: a survey. Combinatorial and computational geometry, 52(573-612):2, 2005.
+Blake Woodworth, Suriya Gunasekar, Mesrob I Ohannessian, and Nathan Srebro. Learning non-discriminatory predictors. arXiv
+preprint arXiv:1702.06081, 2017.
+Muhammad Bilal Zafar, Isabel Valera, Manuel Gomez Rodriguez, and Krishna P. Gummadi. Fairness beyond disparate treatment
+and disparate impact: Learning classification without disparate mistreatment. In Proceedings of World Wide Web Conference,
+2017.
+10
+7 Appendix
+7.1 Sub-Gaussian Definition
+Sub-Gaussian random variables have moment generating functions bounded by the Gaussian moment
+generating function, and hence can be controlled via Chernoff bounds.
+Definition 3. A random variable X with µ = E [X] is R > 0 sub-Gaussian if, for all t ∈ R, E
+
+et(X−µ)
+
+≤
+eRt2
+/2
+.
+7.2 Proofs from Section 3
+We start with full pseudocode for RidgeFairm.
+Proof of Theorem 1. We first claim that confidence intervals are valid: that with probability 1 − δ, for all
+t ∈ [T] and all xt,i ∈ Ct, yt,i ∈ [`t,i, ut,i]. Assuming this claim, we prove that RidgeFairm is fair. With
+probability 1 − δ, for all rounds t and all individuals xt,i, yt,i ∈ [ŷt,i − wt,i, ŷt,i + wt,i]. So, for any pair of
+individuals xt,i, xt,j ∈ Ct, if yt,i > yt,j, then ŷt,i + wt,i ≥ ŷt,j − wt,j. So, if j belongs to some chain from
+which arms are selected, either i belongs to a higher chain or the same chain as j. Every individual belonging
+to a higher chain is played with weakly higher probability to any individual belonging to a lower chain, and
+every two individuals belonging to the same chain are played with equal probability, so i is played with
+weakly higher probability than j. Thus, at all rounds and for all pairs of individuals, the fairness constraint
+is satisfied by this distribution over Pt, and so RidgeFairm is fair.
+We now prove the confidence intervals are valid: that with probability 1−δ, for all t ∈ [T] and all xt,i ∈ Ct,
+yt,i ∈ [`t,i, ut,i]. We adopt the notation in Abbasi-Yadkori et al. [2011]: let V̄t = Xt
+T
+Xt + γI, where Xt is
+the design matrix at time t. Let β̂t = (V̄t)−1
+Xt
+T
+Yt be the regularized least squares estimator at time t.
+Consider a feature vector xt,i at time t. For a d-dimensional vector z and a d × d positive definite
+matrix A, let hz1, z2iA denote zt
+1Az2. Let ηt be the noise sequence prior to round t. Then, we have
+β̂t = (V̄t)−1
+Xt
+T
+(Xtβ + ηt). Then some matrix algebra in the proof of Theorem 2 of Abbasi-Yadkori et al.
+[2011] shows
+xt,i · (β̂t − β) = xt,i
+T
+(V̄t)−1
+Xt
+T
+ηt − γxt,i
+T
+(V̄t)−1
+β,
+which using the above notation gives
+xt,i · (β̂t − β) = hxt,i, Xt
+T
+ηti(V̄t)−1 − γhxt,i, βi(V̄t)−1
+Applying Cauchy-Schwarz,
+|xt,i ·
+
+β̂t − β
+
+| ≤ ||xt,i||(V̄t)−1 (||Xt
+T
+ηt||(V̄t)−1 +
+√
+γ)
+which follows from the fact that ||β||(V̄t)−1 ≤ 1
+√
+γ (a basic corollary of the Rayleigh quotient, and the fact
+that by assumption ||β|| ≤ 1.
+We now present a result derived from [Abbasi-Yadkori et al., 2011] that will help us upper bound this
+quantity. The upper bound on ||XT
+η|| at the bottom of page 13 of Abbasi-Yadkori et al. [2011] and the upper
+bound on log(det(V̄t)) at the top of page 15, combined with our assumption that our noise is 1-sub-Gaussian,
+implies that
+11
+||Xt
+T
+ηt||(V̄t)−1 ≤
+p
+d log (1 + t/dγ) − 2 log δ
+=
+r
+d log (1 + t/γ) + 2 log
+1
+δ
+≤
+r
+2d log (1 + t/γ) + 2d log
+1
+δ
+=
+s
+2d log
+
+1
+δ
+(1 + t/dγ)
+
+≤
+s
+2d log
+
+1
+δ
+(1 + t/γ)
+
+=
+s
+2d log
+
+1 + t/γ
+δ
+
+.
+Using this result and combining the inequalities we get that over all rounds t ≥ 0 with probability 1 − δ
+|xt,i ·
+
+β̂t − β
+
+| ≤ ||xt,i||(V̄t)−1
+s
+2d log
+
+1 + t/γ
+δ
+
++
+√
+γ
+!
+(2)
+and therefore the claim that the confidence intervals are valid holds.
+Regret bound for RidgeFair1 We now proceed with upper-bounding the regret of RidgeFair1. With
+probability 1 − δ, the confidence intervals are valid. We will condition on that event for the analysis of the
+regret of the algorithm, since this regret bound will hold with high probability (namely, with probability
+1 − δ).
+We start with a bound that will be useful for analyzing the width of our confidence intervals. The top of
+page 15 of of [Abbasi-Yadkori et al., 2011] notes that log det(V̄t) ≤ d log(γ + t/d), and we combine this with
+the fact that
+PT
+t=1 ||xt,i||2
+V̄t
+≤ 2 log det(V̄ T
+) − 2 log det(V ) (proven as part of Lemma 11 in [Abbasi-Yadkori
+et al., 2011]) to get that
+T
+X
+t=1
+||xt,i||2
+(V̄t)−1 ≤ 2d log
+
+1 +
+T
+dγ
+
+. (3)
+We now have all the tools needed to analyze the algorithm’s regret. First note that the choice of the
+algorithm is a singleton, i.e. that Pt = {ît}, for some ît ∈ St, the active chained set. Further, since the
+confidence intervals are valid, i∗,t ∈ St for the best action i∗,t ∈ Ct. By the definition of St, the instantaneous
+regret rt,i for any i ∈ St is at most rt,i ≤
+P
+j∈St
+wt,j (as any i ∈ St is chained to some other arm in St). So,
+we have that
+12
+R(T) ≤
+X
+t
+rt,ît
+≤
+X
+t
+X
+j∈St
+2wt,j Conditioning on w.p. 1 − δ valid confidence intervals
+= 2
+X
+t
+|St| · E
+h
+wt,ît
+i
+When uniformly selecting ît ∈ St; note this holds w.p. 1 conditioned on valid CI
+≤ 2k ·
+X
+t
+E
+h
+wt,ît
+i
+= 2k · E
+"
+X
+t
+wt,ît
+#
+By linearity of expectation
+= 2k · E
+"
+X
+t
+||xt,ît
+||(V̄t)−1
+s
+2d log
+
+1 + t/γ
+δ
+
++
+√
+γ
+!#
+By definition of wt,i
+= 2k · E
+"
+X
+t
+||xt,ît
+||(V̄t)−1
+s
+2d log
+
+1 + t/γ
+δ
+!
++
+X
+t
+||xt,ît
+||(V̄t)−1 (
+√
+γ)
+#
+≤ 2kE
+
+
+s
+X
+t
+||xt,ît
+||2
+(V̄t)−1 ·
+
+
+s
+X
+t
+2d log
+
+1 + t/γ
+δ
+
++
+s
+X
+t
+γ
+
+
+
+ By Cauchy-Schwartz
+≤ 2k
+s
+2d log
+
+1 +
+T
+dγ
+
+·
+
+
+s
+X
+t
+2d log
+
+1 + t/γ
+δ
+
++
+s
+X
+t
+γ
+
+ By Equation 3
+≤ 2k
+s
+2d log
+
+1 +
+T
+dγ
+
+·
+s
+2dT log
+
+1 + T/γ
+δ
+
++
+p
+Tγ
+!
+or R(T) = O
+
+dk
+√
+T log T
+δ
+
+= Õ(dk
+√
+T) for γ = 1, as desired.
+Regret bound for RidgeFairm This regret bound relies on a similar analysis to RidgeFair1, with the
+following changes. The algorithm now selects m individuals, not all from the top chain, but instead from
+several chains. For each of the top m choices x ∈ P∗,t, we relate reward of that choice to the reward of one of
+our choices in the following way. For each d, consider the dth top chain. We claim that if the dth top chain
+contains nd of the top m choices, our algorithm selects nd individuals from the dth top chain. We prove this
+claim by induction. First, however, we notice that every individual in the dth top chain has strictly higher
+reward than every individual in any lower chain. For the first top chain, Pt contains either the entire chain
+or m from the top chain. As every individuals in the top chain has strictly higher reward than any other
+individuals, in the former case, every individual in the first top chain belongs to P∗,t ; in the latter case, P∗,t
+is entirely contained in the top chain. Thus, Pt and P∗,t contain either all individuals in the top chain or
+exactly m of them. Then, assuming the claim for the first d − 1 top chains, both Pt and P∗,t have the same
+“capacity” for individuals in the dth top chain (and therefore either take all of the dth top chain or fewer but
+the same number from it). This proves the claim.
+Then, we relate the reward of an i ∈ Pt with some action in P∗,t belonging to same chain. Following the
+previous claim, we can form a matching between P∗,t and Pt for which all matches belong to the same chains.
+Then, the analysis of RidgeFair1 bounds the difference between the reward of any individual in the dth top
+chain to any other individual in the dth top chain. Summing up over all m choices, the total regret for all of
+Pt is at most m times the loss suffered in 1-bandit.
+13
+Regret bound for RidgeFair≤k The regret bound for this case reduces to lower-bounding the amount
+of reward incurred by playing arms with negative reward. Any individual selected by RidgeFair≤k is within
+the sum of the widths of the confidence intervals in its chain, one of which has UCB which is positive. So,
+the reward of any action chosen is at least −
+P
+i∈Sd
+t
+wt,ti for Sd
+t the dth top chain, or at most the sum of all
+k interval widths. Thus, summing up over all individuals selected, one gets regret which is at most k times
+worse than that for RidgeFair1.
+7.3 Proofs from Section 4
+We begin with the full pseudocode for FairGap.
+We start our proof of Theorem 4 with a lemma bounding the contribution of noise to our confidence
+intervals.
+Lemma 1. Let η1, . . . , ηT be T i.i.d draws of R-sub-Gaussian noise. Then
+P
+" T
+X
+i=1
+ηi ≥ R
+p
+2T ln(2T/δ)
+#
+≤ δ/2T.
+Proof of Lemma 1. A Hoeffding bound, in the general case for unbounded variables, implies that
+P
+" T
+X
+i=1
+ηi ≥ c
+#
+≤ 2 exp(−c2
+/2R2
+)
+so taking c = R
+p
+2T ln (2T/δ) yields the desired result.
+Next, since the regret bound we will prove depends on λ = min1≤t≤T
+
+λmin(Ext∼UARCt [xt
+T
+xt])
+
+, the
+minimum smallest eigenvalue of the expected outer product of a vector xt drawn uniformly at random from
+each Ct we will need λ > 0 in order for this bound to make sense. We prove this in another lemma.
+Lemma 2. Given sequence of action sets C = (C1, . . . , CT ) where each Ct has nonzero Lebesgue measure
+and is contained in a ball of radius r, λ = min1≤t≤T
+
+λmin(Ext∼UARCt [xt
+T
+xt])
+
+> 0.
+Proof of Lemma 2. It suffices to prove that λmin(Ext∼UARCt[xT
+t xt]) > 0 for each 1 ≤ t ≤ T. xT
+x is positive
+semidefinite, so it is immediate that λ ≥ 0. Assume λ = 0. Then there exists nonzero z ∈ Rd
+such that
+zEx∼UARC[xT
+x]zT
+= 0, so by linearity of expectation
+Ex∼UARC[||xzT
+||2
+] = 0.
+However, ||xzT
+||2
+is a non-negative random-variable with expectation 0 and must therefore be 0 with
+probability 1. It follows that x ∈ z⊥
+, so
+Px∼UARC
+
+x ∈ z⊥
+
+= 1,
+z⊥
+is a d−1 dimensional subspace of Rd
+, and thus has measure 0. We can decompose C = (C∩z⊥
+)
+S
+(C∩ z⊥
+c
+),
+and since Px∼UARC
+
+x ∈ z⊥
+
+= 1, this forces Px∼UARC
+
+x ∈ (C ∩ z⊥c
+)
+
+= 0. By definition of the uniform
+distribution
+Px∼UARC
+h
+x ∈ (C ∩ z⊥c
+)
+i
+=
+µ(C ∩ z⊥c
+)
+µ(D)
+=⇒ µ(C ∩ z⊥c
+) = 0.
+But µ(D) = µ(C ∩ z⊥
+) + µ(C ∩ z⊥c
+) = µ(C ∩ z⊥
+) + 0 ≤ µ(z⊥
+) = 0, where the second to last line follows
+since C ∩ z⊥
+⊂ z⊥
+. This contradicts our assumption that µ(C) > 0, so λ > 0.
+14
+Finally, since FairGap relies on constructed confidence intervals to guide its choice of actions, its
+correctness (both in terms of its regret guarantee and its fairness) relies on the correctness of those confidence
+intervals, stated in the following lemma. Its proof relies on a natural argument using matrix Chernoff bounds
+to bound the contribution of noise to FairGap’s estimation of β̂t and, consequently, the accuracy of its
+confidence intervals.
+Lemma 3. Given sequence of action sets C=(C1, . . . , CT ) where each Ct has nonzero Lebesgue measure and
+is contained in a ball of radius r, with probability at least 1 − δ, in every round t every confidence interval
+[hβ̂t, xi − wt, hβ̂t, xi + wt] constructed by FairGap contains its true mean hβ, xi.
+Proof of Lemma 3. Note first that FairGap has two kinds of rounds: in round t, it either plays uniformly at
+random from
+Ct or deterministically plays ˆ
+xt
+∗
+, its estimate of the optimal extremal point in
+Ct. In any round t with uniform random play FairGap immediately cannot violate fairness, as πt(x) = 1/µ(
+Ct) for all x ∈ Ct. As a result, to prove fairness it suffices to show that for any t-step execution of FairGap,
+PC1,...,Ct [deterministically play x̂∗
+i 6= x∗
+i in any round i] ≤ δ
+x∗
+i is the true optimal point in Ci, and t > 4dr4
+/δλ2
+(since for smaller i FairGap just plays uniformly at
+random).
+In round t + 1 after observing x1 ∼UAR C1, . . . , xt ∼UAR
+Ct, for every x ∈ Ω we have
+|hx, β̂ − βi| = |hx, (XT
+X)−1
+XT
+(Xβ + η) − βi|
+= |xT
+β + xT
+(XT
+X)−1
+XT
+η − xT
+β|
+= |xT
+(XT
+X)−1
+XT
+η|
+where X ∈ Rt×d
+is the design matrix of x1, . . . , xi and η ∈ Rt
+is its noise vector. We can then decompose
+XT
+η by round as
+|xT
+(XT
+X)−1
+XT
+η| = xT
+(XT
+X)−1
+t
+X
+i=1
+xiηi
+=
+t
+X
+i=1
+xT
+(XT
+X)−1
+xiηi
+≤
+t
+X
+i=1
+
+||xT
+(XT
+X)−1
+xi|| · |ηi|
+
+≤
+t
+X
+i=1
+q
+xxT · xixT
+i · λmax((XT
+X)−1
+) · |ηi|
+≤ r2
+· λmax((XT
+X)−1
+) ·
+t
+X
+i=1
+ηi
+=
+r2
+λmin(XT X)
+·
+t
+X
+i=1
+ηi
+where the second inequality follows from the fact that
+||(XT
+X)−1
+|| =
+q
+λmax([XT X]−1[(XT X)−1]T ) =
+q
+λmax([(XT X)−1]2) = λmax((XT
+X)−1
+),
+the third inequality follows from the assumed bound on each Ci, and the final equality follows from
+λmax(A−1
+) = 1
+λmin(A) . To upper bound this quantity, we now lower bound λmin(XT
+X).
+15
+To do so, we first note that for any 1 ≤ i ≤ t and any x ∈ Ci we have λmax(xT
+x) ≤ r2
+by the Gershgorin
+circle theorem, which states that a square matrix has maximum eigenvalue bounded by its largest absolute
+row or column sum. Next, by linearity of expectation
+λmin(Ex1∼UARC1,...,xt∼UARCt[XT
+X]) = λmin
+t
+X
+i=1
+Exi∼UARCi [xT
+i xi]
+!
+≥ tλ
+for λ = min1≤i≤t
+
+λmin(Exi∼UARCi [xT
+i xi])
+
+.Taking this together with a matrix Chernoff bound (see e.g. Tropp
+et al. [2015]) yields
+P
+
+λmin(XT
+X) ≤ κtλ
+
+≤ de(−(1−κ)2
+tλ/2r2
+)
+for any κ ∈ [0, 1). Setting
+κ = 1 −
+s
+2r2 ln 2dt
+δ
+
+tλ
+this implies
+P
+
+λmin(XT
+X) ≤ κtλ
+
+<
+δ
+2t
+where κ ∈ [0, 1) since t > 2r2
+ln(2dt/δ)/λ. Combining this with Lemma 1 and a union bound, we get that
+with probability ≥ 1 − δ/t
+r2
+λmin(XT X)
+·
+t
+X
+i=1
+ηi ≤
+r2
+κtλ
+· R
+p
+2t ln(2t/δ)
+=
+r2
+R
+p
+2 ln(2t/δ)
+κλ
+√
+t
+.
+Taking a union bound over t rounds, it follows that with probability at least 1 − δ through t rounds every
+constructed confidence interval around hβ̂, xi contains hβ, xi. Since FairGap only plays x̂∗
+deterministically
+when the confidence intervals around x̂∗
+and other extremal points do not overlap, this means that with
+probability at least 1 − δ FairGap correctly identifies x∗
+. FairGap is therefore fair.
+Taken together, these lemmas let us prove Theorem 4.
+Proof. Proof of Theorem 4 We begin by proving fairness. By Lemma 3, with probability at least 1 − δ every
+confidence interval constructed by FairGap contains its true mean. Conditioning on this correctness of
+confidence intervals, since FairGap only chooses an action x1 non-uniformly when U1 ∩U2 = ∅, it follows that
+any action chosen non-uniformly by FairGap is optimal. Thus, with probability at least 1−δ FairGap never
+chooses a suboptimal action x with higher mixture density πt(x) than a superior action x0
+, and FairGap is
+fair.
+While FairGap plays at random from C (for some number of rounds at least 4dr4
+/δλ2
+), it incurs at most
+2r regret per round. The algorithm incurs 0 regret once the confidence intervals around the top two extremal
+points no longer intersect. A sufficient condition is therefore
+r2
+· R ·
+p
+2 ln(2T/δ)
+κλ
+√
+T
+<
+∆gap
+2
+which we rearrange into
+8r4
+R2
+ln(2T/δ)
+κ2λ2∆2
+gap
+< T.
+After this many rounds, with probability ≥ 1 − δ, FairGap identifies the optimal arm in every Ct and incurs
+no further regret.
+16
+Thus, the regret in total is at most
+L
+X
+t=1
+2r2
++ δT ≤
+16r6
+R2
+ln(2T/δ)
+κ2λ2∆2
+gap
++ δT
+where L = 8r4
+R2
+ln(2t/δ)
+κ2λ2∆2
+gap
+and δ ≤ 1/(T1+c
+) then implies the claim.
+7.4 Efficient Approximate Version of Section 4
+In this section we describe an efficient implementation of FairGap using approximate fairness.
+Recall that FairGap requires some method of sampling uniformly at random from a given convex body
+Ct, a problem that has attracted extensive attention over the past few decades (see Vempala [2005] for a
+survey of results). For our purposes, the primary contribution of this literature is that one cannot do better
+than approximately uniform random sampling from a convex set Ct under polynomial time constraints.
+Since our current definition of fairness fails without a perfectly uniform distribution over actions, efficiency
+necessitates a relaxation of our definition to approximate fairness for infinite action spaces. Intuitively,
+approximate fairness will require that an algorithm (with high probability) always uses a distribution that is
+at least “almost" fair.
+Definition 4 (-Approximate Fairness). Given sequence of action sets C = (C1, . . . , CT ), we say that
+algorithm A is -approximately fair if, for any inputs δ ∈ (0, 1],  > 0 and for all β, with probability at least
+1 − δ at every round t there exists a fair distribution πt
+f
+such that
+||πt − πt
+f
+|| < 
+where πt is A’s choice distribution over Ct in round t and k · k denotes total variation distance.
+We call this -approximate fairness to highlight that a single  is input to the algorithm A in question,
+but will often shorthand this as approximate fairness.
+Below we provide an approximately fair algorithm that, subject to additional assumptions on choice set
+structure, obtains similar regret guarantees as FairGap efficiently. We modify FairGap as follows: first, we
+replace each call to a random sample with a hit-and-run random walk scheme Lovász and Vempala [2006] to
+efficiently sample approximately uniformly at random.
+We use the following lemma from Lovász and Vempala [2006] to upper-bound the mixing time hit-and-run
+requires to approach a near-uniform distribution in its walk over Ct.
+Lemma 4. [Corollary 1.2 in Lovász and Vempala [2006]] Let S be a convex set that contains a ball of radius
+r0
+and is contained in a ball of radius r. Then, starting from a point x ∈ S at a distance α from the boundary,
+after
+c > 1011
+d3
+ r
+r0
+2
+ln
+ r
+α
+
+steps of a hit-and-run random walk the random walk induces a probability distribution P over points in S
+such that P is -close to uniform in total variation distance.
+Next, we show that, with an additional assumption on the structure of Ct, FairGap’s subroutine TopTwo
+can be implemented efficiently via the following known result [Lindgren et al., 2016].
+Lemma 5 ( Lindgren et al. [2016]). Let Ct be defined by m intersecting half-planes. Then there exists an
+algorithm running in time polynomial in m and d which computes the two vertices which maximize β̂t over Ct.
+This algorithm enables us to compute TopTwo(Ct, β̂t) efficiently.
+The following lemma guarantees that the distributions over histories generated by FairGap and Approx-
+FairGap are “close" during exploration.
+17
+Lemma 6. Let C = (C1, . . . , CT ) be a sequence of action sets where each action set, in addition to satisfying
+the assumptions of Theorem 4, is an intersection of polynomially many halfspaces and contains a ball of
+radius r0
+. Then through t rounds of exploration
+||Pπ1,...,πt∼FairGap − Pπ1,...,πt∼ApproxFairGap(/t)||T V < 
+where each P represents distributions over possible exploration histories generated by FairGap and
+ApproxFairGap(/t) respectively.
+Proof of Lemma 6. By construction, during exploration each πi output by ApproxFairGap() has a distri-
+bution within /t of a uniform distribution in total variation distance. Since these samples are independent,
+each distribution over π1, . . . , πt forms a product distribution, and the additivity of total variation distance
+over product distributions implies the claim.
+Combining the results above lets us prove that ApproxFairGap is fair, efficient, and obtains a similar
+regret bound as FairGap.
+Theorem 5. Consider an action set C that, in addition to satisfying the assumptions of Theorem 4, is
+an intersection of polynomially many halfspaces and contains a ball of radius r0
+. Then through T steps
+given inputs δ0
+= δ/2 and 0
+= min(/T, δ/2T2
+), ApproxFairGap(0
+) is efficient, -approximately fair, and
+achieves regret
+Regret (T) = O
+
+r6
+R2
+ln(4T/δ)
+κ2λ2∆2
+gap
+
+where κ = 1 − r
+q
+2 ln(2dT
+δ )
+T λ .
+Proof. Proof of Theorem 5 In each round t, FairGap performs (at most) three computation-intensive
+operations. First, it computes a least squares estimator β̂t, which may be maintained online and updated in
+poly(d) time. Next, it calls subroutine TopTwo (Ct, β̂t) to compute (x1, x2) in poly(d, m) time via Lemma 5.
+Finally, it may choose an action (approximately) uniformly at random from Ct, which also takes polynomial
+time via Lemma 4. It follows that each round t of FairGap takes polynomial time, so FairGap is efficient.
+To prove that ApproxFairGap is approximately fair, as in the exact case we analyze ApproxFairGap’s
+split between exploration and exploitation. In exploration rounds, by Lemma 4 we know that each random
+sample is /T-close to a true uniform distribution and therefore satisfies -approximate fairness immediately.
+We now bound the probability of violating fairness during exploitation. This can only happen if in some
+round t ApproxFairGap misidentifies the optimal extremal point x∗
+t to exploit and instead deterministically
+plays x̂∗
+t 6= x∗
+t . Since ApproxFairGap only uses exploration rounds to construct its design matrix, the
+identified x̂∗
+t is a deterministic function of the k ≤ t − 1 exploration rounds h1, . . . , hk seen before round
+t. Lemma 6 implies that FairGap and ApproxFairGap have distributions over h1, . . . , ht within  of
+each other. We then combine two facts. First, here FairGap has at most δ/2 probability of constructing
+incorrect confidence intervals assuming perfect uniform random sampling. Second, ApproxFairGap has
+probability at most  ≤ δ/2T2
+of identifying a x̂∗
+t different from that of FairGap by the above argument. A
+union bound then implies that ApproxFairGap has probability at most δ/2 of identifying a different x̂∗
+t
+than FairGap. Combining the probability of FairGap failing and ApproxFairGap failing to approximate
+FairGap, we get that ApproxFairGap has probability at most δ/2 + δ/2 = δ of misidentifying x∗
+. Thus
+ApproxFairGap is -approximately fair.
+To analyze ApproxFairGap’s regret, note that in the case where ApproxFairGap correctly identifies x∗
+t ,
+ApproxFairGap’s use of δ/2 rather than δ adds a factor of 2 inside the log in the original regret statement
+of FairGap. Next, ApproxFairGap incorrectly identifies x∗
+t with probability at most δ by the logic above,
+so taking δ ≤ 1/T1+c
+as in the proof of Theorem 4 implies the claim.
+18
+7.5 Proofs from Section 5
+Proof of Theorem 3. Let A be a fair algorithm. For any input δ, A is round-fair for all t ≥ 1 with probability
+1 − δ. Since this holds for any β with probability at least 1 − δ, then it necessarily holds with probability
+at least 1 − δ over any prior τ on β with support contained in the unit rectangle. Our first lemma gives an
+alternative way to view the framework which draws β ∼ τ and then plays according to A.
+Let xt denote the action chosen by A at time step t, and let yt denote the observed reward. Let the
+joint distribution of ((x1, y1), . . . (xt, yt), β) be denoted by Wt. Lemma 7 is similar in content to Lemma 4 in
+Joseph et al. [2016]; its proof follows from Bayes’ Rule.
+Lemma 7. Let β0
+at time t be drawn from τ|ht, its posterior distribution given the observed sequence of
+choices and rewards ht = ((x1, y1), . . . (xt−1, yt−1)) ∈ (C × R)t−1
+. Then let W0
+t be the joint distribution of
+(ht, (xt, yt), β0
+). Wt and W0
+t are identical distributions.
+Lemma 7 states that whether the instance draws β ∼ τ once and then plays according to A, or re-draws
+β from its posterior at each time-step, the joint distribution on instances and observations is unchanged at
+each step. We can thus assume without loss of generality that, given a prior τ, at each time step t we redraw
+β ∼ τ|ht . Taking this posterior viewpoint, we have the following lemma.
+Lemma 8. Given a fixed prior τ, let A be fair and let β ∼ τ. Let πt be the distribution on actions of A at time
+t, and let ft be the pdf of πt. Then with probability at least 1 − 4δ, at each time t, if Pτ|ht
+[hβ, yi > hβ, xi] > 1
+4 ,
+then ft(y) ≥ ft(x).
+This means that with probability at least 1 − 4δ, whenever the posterior distribution at time t tells us
+that point y has a higher reward than point x with probability at least 1
+4 over the posterior distribution of β,
+we must play y with at least the same probability as x.
+We will use this lemma, in combination with results about a specific posterior, to constrain the possible
+actions any fair algorithm can take.
+We now introduce the specific prior τ. Let β have prior distribution τ ∼ {1} × U[−, −]. We first
+analyze the posterior distribution of β. We then show that with probability at least 1 − 4δ, until the posterior
+distribution differs from the prior, Lemma 8 forces A to play uniformly from Ct.
+Suppose that we have observed (x1, y1) . . . (xt−1, yt−1). Since the prior in the second coordinate is U[−, ],
+and the noise ηi is also uniform, the posterior in the second coordinate is uniform over all β2 consistent with
+the observed data in the following sense: since the noise ηt0 is bounded, each pair (xt0 , yt0 ) gives a bound on
+β2. Combining yt0 = xt0,1 + β2xt0,2 + ηt0 and ηt0 ∈ [−1, 1] we get
+β2 ∈ [lt0 , ut0 ] =
+
+min
+
+yt0 − xt0,1 − 1
+xt0,2
+,
+yt0 − xt0,1 + 1
+xt0,2
+
+, max
+
+yt0 − xt0,1 − 1
+xt0,2
+,
+yt0 − xt0,1 + 1
+xt0,2
+
+. (4)
+Since by the prior we know β2 ∈ [−, ], we say that β2 is consistent with ht if β2 ∈ [−, ] and
+β2 ∈ [supt0 lt0 , inft0 ut0 ]. This is the content of the following lemma.
+Lemma 9. Let yt0 = hβ, xt0,i + ηt0 , ηt0 ∼ U[−1, 1], and β ∼ {1} × U[−, ]. Then τ(β2|ht) is uniform on the
+set of β2 consistent with ht.
+We now define and analyze S, the number of rounds required before the posterior distribution of β2
+becomes non-uniform. Each (xt0 , yt0 ) gives the constraint on β given in Equation 4. This only changes the
+posterior from the prior if lt0 > − or ut0 < . Assume first that xt0,2 > 0 (by symmetry, a similar argument
+holds for xt0,2 < 0). Then ut0 =
+yt0 − xt0,1 + 1
+xt0,2
+and we can calculate
+P
+
+yt0 + 1 − xt0,1
+xt0,2
+< 
+
+= P
+
+ηt0 + xt0,2β2 + 1
+xt0,2
+< 
+
+= P [ηt0 + 1 < xt0,2( − β2)]
+≤ P [ηt0 + 1 < 2] = 
+19
+where the last equality follows from the fact that ηt + 1 ∼ U[0, 2]. The probability that the lower bound is
+greater than − is similarly
+P
+
+yt0 − 1 − xt0,1
+xt0,2
+> −
+
+= P [ηt0 > 1 + xt0,2(− − β2)] ≤ .
+Thus the probability that any pair (xt0 , yt0 ) alters the posterior distribution of β2 from U[−, ] is at most
+2. 7
+It follows that P(S ≥ t0
+) ≥ (1 − 2)t0
+, and that the posterior coincides with the prior τ for Ω(1/) steps
+in expectation.
+Now assume that after t − 1 steps the posterior distribution is equal to τ: we will argue that any
+non-uniform distribution violates round fairness in round t with probability at least 3
+4 . Call two points
+a, b ∈ Ct = [−1, 1]2
+vertically equivalent if a1 = b1, i.e. they agree in their first coordinate. Consider some
+pair of points a = (x1, x2), b = (x1, x3) ∈ Ct which are vertically equivalent with x2 > x3. Suppose A
+plays a with higher probability than b. If β2 < 0, then hβ, ai < hβ, bi, and P [β2 < 0] = 1/2 > 1
+4 . Thus A
+violates round-fairness in round t with probability more than 1
+4 . Similarly, if β2 > 0, then hβ, ai > hβ, bi, and
+P [β2 > 0] = 1/2 > 1
+4 , so if A plays b with higher probability than a then A again violates round-fairness in
+round t with probability strictly larger than 1
+4 . Thus, any two vertically equivalent points must be played
+with equal probability.
+Next, consider any point b ∈ Ct of the form x1 − α, x2 + 2α
+
+
+for some α ∈ R. Call any two points
+of this form, for fixed (x1, x2) and variable α ∈ R, diagonally equivalent. Let a = (x1, x2). If β2 > /2,
+then hβ, bi ≥ x1 − α + x2β2 + α = x1 + x2β2 = hβ, ai. Since β2 > /2 with probability 1
+4 , point b must be
+played with probability at least that of a to satisfy round-fairness in round t with probability greater than 3
+4 .
+Symmetrically, when β2 < −
+2 , which happens with probability 1
+4 , a must have at least as much probability of
+being played as b. Thus, any two diagonally equivalent points must also be played with equal probability.
+Given a point x ∈ Ct, let Hx denote the transitive closure under vertical and diagonal equivalence of the
+point x. Since points that are equivalent must be played with equal probability, by the transitive property
+all points in Hx must be played with equal probability by A. We now show that when x is a corner of Ct,
+Hx = Ct.
+Lemma 10. Let x = (1, −1). Then Hx = Ct.
+Lemma 10 shows that if A is fair at a given round t with probability at least 3
+4 over the posterior, and
+the posterior is τ, then A must play uniformly at random from Ct.
+Thus, we have shown for any fair A:
+1. With probability at least 1 − 4δ, A must be fair with probability at least 3
+4 at all t ≥ 1 (Lemma 8)
+2. If S is the number of rounds until τ 6= τ|ht
+, P(S ≥ t) ≥ (1 − 2)t
+3. When τ = τ|ht
+(i.e. S ≥ t), and A is fair with probability > 3
+4 over τ|ht
+, then A must play uniformly
+at random from Ct
+Let  < min(1/2, 1/ log(2/δ)) and let the event that A is fair with probability at least 3
+4 over the posterior
+at all t ≥ 1 be denoted by F. Recalling that S denotes the number of rounds required before the posterior
+distribution of β2 becomes non-uniform, let the event that S ≥ log(1−δ)
+log(1−2) be denoted by E. Then
+P [E] ≥ (1 − 2)
+log(1−δ)
+log(1−2) = 1 − δ,
+so
+P [E ∩ F] ≥ P [E] + P [F] − 1 ≥ 1 − 5δ.
+7Note that this bound holds regardless of the particular choice of xt0 , which is why the probabilities above are over the draw
+of the rewards yt0 , conditional on the chosen xt0 .
+20
+We now condition on F ∩ E to show that with high probability Regret (T) = Ω̃(1
+ ):
+P
+
+Regret (T) ≥ Ω̃
+
+1
+
+
+≥ P
+
+Regret (T) ≥ Ω̃
+
+1
+
+
+| E ∩ F
+
+P [E ∩ F]
+≥ P
+
+Regret (T) ≥ Ω̃
+
+1
+
+
+| E ∩ F
+
+(1 − 5δ)
+(5)
+where the first inequality follows from Bayes’ rule. However, we’ve shown that whenever E ∩ F occurs,
+for at least log(1−δ)
+log(1−2) ≥ log(1/[1−δ])
+2 (via log(x) ≤ x − 1 for x > 0) rounds A plays uniformly at random from
+Ct. Let rA(t) be the regret accrued at round t by uniformly at random play, E[rA(t)] = ||β||1 = Ω(1) = c.
+Then 0 ≤ rA(t) ≤ 2(1 + ), and the rA(t) are independent since A is playing uniformly at random at each t.
+By Hoeffding’s inequality for bounded random variables,
+P
+" T
+X
+t=1
+rA(t) ≤ T · c −
+p
+2T log(2/δ)(1 + )
+#
+≤ δ
+which means
+P
+" T
+X
+t=1
+rA(t) ≥ T · c −
+p
+2T log(2/δ)(1 + )
+#
+≥ 1 − δ (6)
+and when taking T = 1
+ we get
+P
+" T
+X
+t=1
+rA(t) ≥
+1
+
+· c −
+r
+2
+
+log(2/δ)(1 + )
+#
+≥ 1 − δ
+or suppressing constants and lower order terms and using the fact that  < 1/ log(2/δ), P
+hPT
+t=1 rA(t) ≥ Ω̃(1
+ )
+i
+≥
+1−δ. This gives us that P
+h
+Regret (T) ≥ Ω̃(1
+ ) | E ∩ F
+i
+≥ 1−δ
+1−5δ . Hence by Equation 5, P
+h
+Regret (T) ≥ Ω̃(1/)
+i
+≥
+1 − δ, as desired.
+We now provide the proofs of the lemmas used above.
+Proof of Lemma 8. By the definition of fairness, and Lemma 7, we have that
+Pβt∼τ|ht ,ht∼A [∃t0
+≥ 1: A is round-unfair at time t0
+] ≤ δ.
+Denote this probability by X. By the above E[X] ≤ δ, and hence by Markov’s inequality, P
+
+X ≥ 1
+4
+
+≤ 4δ.
+But then we’ve shown that, with probability at least 1 − 4δ, for all t ≥ 1 A is fair with probability at least 3
+4
+over β ∼ τ|ht. Now if ∃x, y such that Pτ|ht
+(hy0
+, βi > hx0
+, βi) > 1
+4 but ft(x) > ft(y), then the probability that
+A is unfair at time t is at least Pτ|ht
+(hy0
+, βi > hx0
+, βi) > 1
+4 . This proves the claim.
+Proof of Lemma 9. The fact that the posterior distribution of β2 is uniform on the set of consistent β2 is
+immediate via Bayes rule: τ(β2|ht) = p(ht|β2)τ(β2), where p(ht|β2)τ(β2) ∝ 1 if β2 is consistent with ht, and
+is 0 otherwise.
+Proof of Lemma 10. Choose an arbitrary point y ∈ Ct with coordinates (z1, z2). We want to show y ∈ Hx.
+Since any two points in Ct with the same x coordinate are vertically equivalent, it suffices to show that there
+is a point with x-coordinate z1 ∈ Hx.
+Fix 0 < α ≤ min(1, 2) and suppose 1−z1 = k ·α, where k ∈ N. Note we can guarantee k ∈ N by choosing
+an appropriate α. We now proceed by induction on k.
+21
+If k = 1, then by diagonal equivalence x is equivalent to x0
+= (1 − α, −1 + 2α/) = (z1, 1 + 2α/).
+But by vertical equivalence, y ∈ Hx0 , and so y ∈ Hx, by transitivity. For the inductive step, construct
+x0
+= (z1 + α, z2 − 2α/). Then 1 − x0
+1 = 1 − z1 − α = (k − 1)α. Hence by induction x0
+∈ Hx. But since x0
+is
+diagonally equivalent to y = (z1, z2), then y ∈ Hx as desired. Since y was arbitrarily chosen, Hx = Ct. See
+Figure 5 for a visualization of these equivalences.
+7.6 Proofs from Section 6
+Proof of Theorem 4. Let Eβ be the event that given a fixed value of β, A plays uniformly at random from
+Ct for all t ≥ 1. If we can show that for any A and all β, it is the case that P(Eβ) = Ω(1), this implies the
+claim, since for any β, T
+E [Regret (T)] ≥ E [Regret (T) | Eβ] P [Eβ] = Ω(T) · Ω(1) = Ω(T),
+as desired.
+By symmetry of S1
+, P [Eβ] = P [Eβ0 ] for all β, β0
+∈ S1
+. So henceforth we can drop the subscript β, and
+use E to represent the event that A plays uniformly at random for all t ≥ 1. We now exhibit a prior τ such
+that for any A, P [E] = Ω(1).
+Lemmas 7 and 8 both apply; thus, we let β ∼ τ, where τ is the uniform distribution on S1
+, U(S1
+), and
+we assume that at each time t, β is re-drawn from its posterior distribution τ|ht , as before. Let F again
+be the event that A is round-fair with probability at least 3
+4 at each round t, with respect to the posterior
+distribution τ|ht. We again analyze the posterior distribution τ|ht
+, showing that for any history ht, τ|ht
+forces
+A to play uniformly at random at t, conditioned on F.
+As in Section 5 the posterior distribution of β|ht is uniform on the set of β ∈ S1
+that are consistent with
+the observed data. By consistent we again mean in the sense of Lemma 9; the proof is nearly identical and
+relies on boundedness of the noise ηt, so we do not repeat it here. Denote by Gt ⊂ S1
+the set of consistent β at
+time t. We will use Lemma 11 to reason about the topology of Gt. We use the relative topology throughout.
+Lemma 11. For any t ≥ 1 and any history ht, Gt is a nonempty connected open subset of S1
+.
+Gt is an open, non-empty, connected subset of S1
+; since we’re working in the relative topology, it must
+be exactly an open interval along the boundary of S1
+, as illustrated in Figure 6. Let Gt have length , and
+correspondingly τ|ht = U(Gt).
+Condition on the occurrence of F: that A must be fair in round t with probability at least 3
+4 , with respect
+to τ|ht
+. We claim that this in fact forces A to play uniformly from S1
+at all time steps t, in an argument
+similar to Lemma 10.
+We say that two points x, y ∈ S1
+are equivalent at time t if Pβ∼τ|ht
+[hβ, xi > hβ, yi] ∈ [1
+4 , 3
+4 ]. Let Sx,t be
+the transitive closure of the set of y ∈ S1
+that are equivalent to x at time t.
+Lemma 12. Let τ|ht
+∼ U(Gt). Then there exists x ∈ S1
+such that Sx,t = S1
+.
+Proof of Lemma 12. By definition, if Pτ|ht
+[hβ, xi < hβ, yi] ∈ [1
+4 , 3
+4 ], then y ∈ Sx,t. Every point on S1
+can be
+represented as (cos θ, sin θ), so let θx denote the angle corresponding to x, and let x be the point in Gt such
+that Pτ|ht
+[β < θx] = 1
+4 .
+Now let St,− = {z ∈ Gt : θz ≥ θx} and let St,+ = {z ∈ Gt : θz ≤ θx}. If β ∈ St,+, then for all
+z ∈ St,−, β · z ≤ β · x. By construction, Pτ|ht
+[β ∈ St,+] = 1
+4 , and hence St,− ⊂ Gx,t. But defining x1 as
+Pτ|ht
+[β > θx1
+] = 1
+4 , S0
+t,+ as the set {z ∈ Gt : θz > θx1
+}, and S0
+t,− as {z ∈ Gt : θz < θx1
+}, the same reasoning
+shows that S0
+t,− ⊂ Sx1,t. Since St,− ∪ S0
+t,− = Gt, this forces Gt ⊂ Sx1,t = Sx,t.
+We now show Sx,t contains the rest of the boundary of S1
+, not just Gt. Let G1
++ denote the arc of length
+1
+4  adjoining S0
+t,+ as in Figure 6, and define G1
+− accordingly. Now note that we must have G1
++ ∈ Gx,t, since
+if β > θx1 then for all z ∈ G1
++, β · z > β · x, and Pτ|ht
+[β > θx1 ] = 1
+4 . Similarly, G1
+− has to be added to
+Sx1,t = Sx,t as well. But then letting the segment G1
+− ∪ G1
++ ∪ Gt be denoted by G0
+t, we can repeat the
+argument: we set x0
+, x0
+1 to be their initial locations x1, x translated 1
+4  to the right and left respectively, and
+define G2
++, G2
+− analogously, as in the Figure 6.
+22
+Now we have that G2
++ ∈ Sx0,t, since if β ∈ S0
+t,+ then for all z ∈ G2
++, β ·z > β ·x0
+, and hence z ∈ Sx0,t = Sx,t.
+The same logic shows that G2
++ ⊂ Sx0
+1,t = Sx,t.
+Since we can keep recursively chaining segments of fixed length 
+4 to Sx,t, and S1
+is of fixed length, a
+simple induction argument forces Sx,t = S1
+, as desired.
+So Lemma 8 in combination with the above lemma forces the following: when A is constrained to be fair
+with probability at least 3
+4 with respect to the posterior distribution of β, for all times t ≥ 1 and all histories
+ht, A must play uniformly at random from S1
+. But then P(E) ≥ P(E|F)P(F) = P(F) ≥ 1 − 4δ = Ω(1), by
+Lemma 8.
+Proof of Lemma 11. Ct 6= ∅ is immediate since, for the true value β, β ∈ Ct for all t. For β ∈ S1
+to be
+consistent with the data, i.e. in Ct, means that max1≤i≤t |yi − hβ, xii| < 1 and β ∈ S1
+.
+We can rephrase this as follows: if fi(β) = |y − hβ, xii|, and Ri = {β ∈ f−1
+i (−∞, 1)}, then if we let
+C0
+t =
+Tt
+i=1 Ri, Ct = C0
+t ∩ S1
+. Now we remark that each Ri is the intersection of the two open half spaces
+{β : hβ, xii < 1 + yi} and {β : hβ, xii > yi − 1}. Thus C0
+t is the intersection of finitely many open half spaces,
+and is thus an open, connected set (in fact, it is a convex polytope). Since Ct = S1
+∩ C0
+t, by definition Ct is
+open and connected in the relative topology on S1
+.
+7.7 Experiments
+Figure 7.7 depicts experiments conducted in the k-bandit setting. We employ a simple variant of UCB that
+maintains generic normal confidence intervals around its ongoing estimate of β and uses these to construct
+confidence intervals for the estimated rewards of the contexts is uses; it then selects all choices with a positive
+upper confidence bound. We plot cumulative mistreatments through T = 10, 000 rounds, which tracks the
+cumulative number of individuals who have seen an individual with lower expected quality chosen in a round
+during which they were not chosen. The plot therefore shows that through 10,000 rounds our version of UCB
+creates nearly 400 such mistreated people.
+Our experiments use d = 2 and β ∼ U[−1, 1]2
+for each iteration. In each round we generate k = 10
+contexts xi, also from U[−1, 1]2
+, and generate noisy rewards β · xi + ηt,i where ηt,i ∼ N(0, 1) is standard
+normal noise. The results presented are averaged over 100 iterations. For completeness, we present Figure 7.7,
+which plots cumulative mistreatments for both UCB and FairUCB and empirically validates our theoretical
+fairness guarantee.
+Our second experiment investigates the structure of mistreatment in UCB. We use d = 2, β = [1, 0], k = 10
+for each iteration. At each round t with probability p ∈ [.8, .95] we draw a context (x, x), where x ∼ U[−1, 1]
+and with probability 1 − p draw a context from U[−1, 1]2
+. These two types of contexts naturally encode
+two populations: in population 1, the two features are perfectly correlated and in population 2 they are
+independent. However, β = [1, 0] crucially means that the second feature does not affect reward. Our
+experiments aim to study how this correlation affects mistreatment rates in the different populations.
+For each population we plot the fraction of mistreatment individuals from each population for T = 1, . . . 25,
+averaging over 1000 iterations. Figure 7.7 shows that for p ∈ [.8, .95] unfairness accrues at substantially
+different rates to the two populations. Somewhat counter-intuitively, members of the majority group are
+significantly more likely to be mistreated than members of the minority group, a natural consequence of
+UCB-style algorithms favoring minority contexts whose confidence intervals have more uncertainty. While
+mistreating a majority population may be less obviously unfair than mistreating a minority population, it
+is still undesirable. In particular, there may be natural practical settings where the group that has faced
+historical discrimination is the majority population in sample (e.g. criminal sentencing) and so discriminating
+against the majority is more obviously unfair.
+23
+1: procedure RidgeFairm(δ, T, k, γ ≥ 1, ExactBool)
+2: for t ≥ 1, 1 ≤ i ≤ k do
+3: Let Xt, Yt = design matrix, observed payoffs before round t
+4: Let Ct be the choice set in round t
+5: Let V̄t = Xt
+T
+Xt + γI
+6: Let β̂t = (V̄t)−1
+Xt
+T
+Yt . regularized least squares estimator
+7: Let ŷt,i = hβ̂t, xt,ii for each xt,i ∈ Ct
+8: Let wt,i = ||xt,i||(V̄t)−1 (
+q
+2d log(1+t/γ
+δ ) +
+√
+γ)
+9: Let [`t,i, ut,i] = [ŷt,i − wt,i, ŷt,i + wt,i] . Conf. int. for ŷt,i
+10: if ExactBool then
+11: Pick (m, {(xt,i, [`t,i, ut,i])})
+12: else pick≤ (m, {(xt,i, [`t,i, ut,i])})
+13: Update design matrices Xt+1 = Xt :: Xt, Yt+1 = Yt :: Yt.
+14: procedure Pick(m, (xt,1, [`t,1, ut,1]), . . . , (xt,k, [`t,k, ut,k]))
+15: Let M = Ct
+16: Let Pt = ∅
+17: while |Pt| < m do
+18: Let xt,î = argmaxxt,i∈M ut,i . Highest UCB not yet selected
+19: Let St be the set of actions in Ct chained to xt,î . Highest chain not yet selected
+20: if |St| ≤ m − |Pt| then
+21: Pt = Pt ∪ St . Take the chain with probability 1
+22: M = M \ St
+23: else
+24: Let Qt be m − |Pt| actions chosen UAR from St
+25: Let Pt = Pt ∪ Qt . fill remaining capacity UAR from the chain
+26: Play Pt
+27: procedure pick≤(m, (xt,1, [`t,1, ut,1]), . . . , (xt,k, [`t,k, ut,k]))
+28: Let Pt = {all actions chained to any xt,i ∈ Ct with ut,i > 0 }
+29: Let M = Ct
+30: Let Pt = ∅
+31: while |Pt| < m and ut,xt,î
+> 0 for xt,î = argmaxxt,i∈M ut,i do
+32: Let St be the set of actions in Ct chained to xt,î . Highest chain not yet selected
+33: if |St| ≤ m − |Pt| then
+34: Pt = Pt ∪ St . Take the chain with probability 1
+35: M = M \ St
+36: else
+37: Let Qt be m − |Pt| actions chosen UAR from St
+38: Let Pt = Pt ∪ Qt . fill remaining capacity UAR from the chain
+39: Play Pt
+Figure 3: RidgeFairm, a fair no-regret algorithm for picking ≤ m actions whose payoffs are linear.
+24
+1: procedure FairGap(δ, C,λ)
+2: for t ≥ 1 do
+3: if 2r ln(2dt/δ)/λ ≥ t then
+4: Play x̂t ∼UAR Ct
+5: Update design matrices Xt+1, Yt+1
+6: else
+7: Let δ = min(δ, 1/t1+c
+)
+8: Let β̂t = (Xt
+T
+Xt)−1
+Xt
+T
+Yt . Least squares estimator
+9: Let κ = 1 − r
+p
+2 ln(2dt/δ)/tλ
+10: Let wt =
+r2
+·R·2
+√
+ln(2tδ)
+kλ
+√
+t
+. Confidence interval width
+11: Let (x1, x2) = TopTwo(Ct, β̂t) . Find two ext. pts. maximizing hx, β̂ti
+12: Let U1 = [hβ̂t, x1i − wt, hβ̂t, x1i + wt]
+13: Let U2 = [hβ̂t, x2i − wt, hβ̂t, x2i + wt]
+14: if U1 ∩ U2 = ∅ then
+15: Let FoundMax = {x}
+16: Play x̂t = x . Play x̂t once confidence intervals separate
+17: else
+18: Play x̂t ∼UAR Ct
+19: Update design matrices Xt+1, Yt+1
+Figure 4: FairGap, a fair no-regret algorithm for infinite, changing action sets.
+x
+y
+(1 − α, −1 + 2α
+
+)
+(1, −1)
+(z1, z2)
+k · α
+Figure 5: A path connecting (1, −1) to an arbitrary point (z1, z2): red segments are vertically equivalent,
+blue segments are diagonally equivalent.
+25
+Figure 6: A must play UAR from D = S1
+. |Gt| = ; |S0
+t,−| = |St,−| = 3
+4 ; |S0
+t,+| = |St,+| = |G1,+| = |G1,−| =
+|G2,+| = |G2,−| = 
+26
+Figure 7: Cumulative mistreatments for UCB and FairUCB.
+Figure 8: Probability of mistreatment for subpopulations under UCB.
+27
+

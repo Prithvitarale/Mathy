@@ -1,1081 +1,1161 @@
-arXiv:2106.11036v1
-[cs.CY]
-31
-May
-2021
-Know Your Model (KYM): Increasing Trust in AI and Machine
-Learning
-Mary Roszel
-University of Luxembourg
-Luxembourg
-mary.roszel@uni.lu
-Robert Norvill
-University of Luxembourg
-Luxembourg
-robert.norvill@uni.lu
-Jean Hilger
-Banque et Caisse d’Epargne de l’Etat
-Luxembourg
-jean.hilger@ext.uni.lu
-Radu State
-University of Luxembourg
-Luxembourg
-radu.state@uni.lu
-ABSTRACT
-The widespread utilization of AI systems has drawn attention to
-the potential impacts of such systems on society. Of particular con-
-cern are the consequences that prediction errors may have on real-
-world scenarios, and the trust humanity places in AI systems. It is
-necessary to understand how we can evaluate trustworthiness in
-AI and how individuals and entities alike can develop trustworthy
-AI systems. In this paper, we analyze each element of trustworthi-
-ness and provide a set of 20 guidelines that can be leveraged to en-
-sure optimal AI functionality while taking into account the greater
-ethical, technical, and practical impacts to humanity. Moreover, the
-guidelines help ensure that trustworthiness is provable and can be
-demonstrated, they are implementation agnostic, and they can be
-applied to any AI system in any sector.
-1 INTRODUCTION
-Artiﬁcial intelligence (AI) systems are being utilized in nearly ev-
-ery sector, with notable applications in autonomous systems, bank-
-ing, education, medical, manufacturing, and robotics. In recent years,
-advancements in the ﬁeld of AI have drawn attention to concerns
-of the large-scale impacts of such AI systems [2], urging aware-
-ness of the potential harm that these systems may cause. With the
-increasing utilization of AI systems, particularly in high-stakes ar-
-eas such as autonomous vehicles, health-care services, and surveil-
-lance, it is vital that we consider their trustworthiness.
-Consider, for example, the use of AI in medical diagnoses and
-decisions where an AI assists medical personnel in making deci-
-sions based on diagnostic scans. In theory, these systems would be
-of great use by allowing for faster and more accurate diagnoses,
-allowing hospitals to treat additional patients, and reduce human
-error. However, while these systems perform well in controlled en-
-vironments, in real-world applications they often perform poorly
-and increase the time required to make the diagnosis [5]. In this ex-
-ample, the issue of trust in such a system comes into consideration
-on multiple levels: the system must have the trust of the medical
-personnel utilizing it, the patient, and its greater community. How
-do we trust that the decisions these systems make are accurate,
-and who takes the blame if a patient is misdiagnosed, or if time is
-wasted on attempting to use a faulty system?
-Trustworthiness of an AI system implies that the development
-of such a system considers the greater ethical, technical, and practi-
-cal impacts to humanity. Our paper frames trustworthy AI around
-eight key principles as discussed in Fjeld et al. [14]: accountabil-
-ity, fairness and non-discrimination, human control of technology,
-privacy, professional responsibility, promotion of human values,
-safety and security, and transparency and explainability. To en-
-courage large-scale AI adoption and increase trust, the burden is
-on the creators should address these principles in their deployed
-systems. However, developing a completely trustworthy AI system
-is a diﬃcult task. Currently, there is no formal method for tracking
-and reporting how developers address issues of trust. Without such
-a method, the wide-scale development of trustworthy AI systems
-is greatly hindered.
-Further, the development of such systems may lead to prob-
-lems including scalability and compliance; with the development
-of complex models, how do companies and individuals ensure their
-systems are trustworthy, and at what cost? For example, in the ﬁ-
-nancial sector, Know Your Customer (KYC) refers to the legal re-
-quirements institutions have to ensure they know the true identity
-of their clients. State-of-the-art technologies have been success-
-fully leveraged to ease the burden of compliance [36]. We envis-
-age a similar regulatory landscape for the use of AI tools whereby
-institutions utilizing AI must be able to prove their tools can be
-trusted. Moreover, ensuring compliance with current and future
-legislation will enable the data economy to operate, ensuring AI is
-put to the best possible use.
-Toward developing trust in AI (and easing regulatory burden),
-we propose the concept of Know Your Model (KYM), the idea that
-all models have a unique identity and that model characteristics
-can be leveraged to know and trust models. The concept of KYM
-is inﬂuenced by the idea that all models have a unique identity and
-that model characteristics can be leveraged to know and trust mod-
-els. To "know" a model implies collecting, recording, and storing
-detailed records of the processes undergone during the develop-
-ment of a model, subsequently establishing model identity.
-To know a model, we propose 20 key guidelines that creators
-should address to establish a model’s identity, particularly in re-
-spect 4 core concepts: eﬃcacy, reliability, safety, and responsi-
-bility. These guidelines provide a general framework that is appli-
-cable to any and all AI implementations, rather than prescribing
-a particular implementation. The proposed guidelines are concise
-suggestions of important aspects that creators should be able to
-address about their AI systems in regards to processes, methodol-
-ogy, and trust. These guidelines can be leveraged by creators to in-
-crease transparency and trustworthiness in their AI development
-processes.
-Our aim is not to provide a deﬁnitive solution for developing
-trust in AI, rather to suggest key areas for increased attention in
-development, considering technical, ethical, and legal aspects in
-addition to trust. Therefore, the primary aim of this paper is to out-
-line a method to establish model identity with a general framework
-that all creators can apply to AI system development. The informa-
-tion required to fulﬁll the guidelines will vary by the complexity
-of each system, with more complex systems requiring greater at-
-tention to nuances in their use of data and modeling processes.
-This attention to detail will beneﬁt creators by ensuring that the
-appropriate information is collected during each stage of AI devel-
-opment and easing the burden of proof for the eﬀectiveness and
-trustworthiness of their systems.
-The rest of this paper is structured as follows. Section 2 dis-
-cusses the current ﬁeld of trustworthy AI and eight principles fre-
-quently observed in trustworthy AI research. Section 3 presents
-related work in tracking the development of AI systems. Section 4
-provides an overview of KYM, emphasizing the need for eﬃcacy,
-reliability, safety, and responsibility. This section describes in de-
-tail the 4 core concepts of KYM. Section 5 lists the guidelines KYM
-and how developers can leverage them. Finally, Section 6 summa-
-rizes the contributions in this paper and discusses the challenges
-and future work needed to establish KYM and increase trust in AI.
-2 TRUSTWORTHY AI
-The domain of trustworthy AI has gained traction in recent years
-with an increase in concern about the impact of AI deployment on
-society. When developing AI systems we often consider its accu-
-racy in decision making, but accuracy alone is not enough in high-
-stake scenarios (such as judicial decisions, and fraud detection)
-where an incorrect decision may have undesirable consequences.
-The large-scale adoption of AI systems greatly depends on devel-
-oping trust in not only their performance but also their greater pur-
-pose and transparency. Developing trust in AI is a dynamic process,
-it is crucial to continuously develop and maintain trust throughout
-all stages of development and deployment [41].
-While no consensus has been found on the formal deﬁnition
-of trustworthy AI, focus has been placed on eight key principles
-frequently observed in the domain: accountability, fairness and
-non-discrimination, human control of technology, privacy, profes-
-sional responsibility, promotion of human values, safety and se-
-curity, and transparency and explainability [14]. Increasing trust
-in AI requires that companies and developers closely analyze how
-they address these key principles during the development of their
-systems. In this section, we outline these key areas and the chal-
-lenges they pose in the development of trustworthy AI systems.
-2.1 Accountability
-With AI becoming increasingly prevalent in society, there is in-
-creasing concern about who will be accountable for the decisions
-and impact of AI technologies. The principle of accountability calls
-for the veriﬁability and replicability of AI systems, as well as call-
-ing attention to the need for auditing, regulatory, and legal require-
-ments and responsibility [14].
-In particular, the veriﬁability and replicability of AI systems are
-paramount for building trust. Developers should ensure that all
-experiments and results are replicable (reproducible), and provide
-enough information to be able to be validated. Without this infor-
-mation, users may ﬁnd the systems, and organizations who made
-them, untrustworthy.
-Further, the principle of accountability is particularly important
-when considering regulatory conditions. For regulatory bodies stan-
-dards for accountability in AI remain an open question as they seek
-a balance between creator responsibility and taking full advantage
-of the capabilities of AI [13].
-2.2 Fairness & Non-Discrimination
-The fairness and non-discrimination principle calls for the consid-
-eration, detection, and prevention of discrimination and bias in the
-development of AI systems. As these systems are often used in
-sensitive or high-stakes areas, it is vital that decisions are made
-without discriminatory or biased inﬂuence toward particular de-
-mographic groups or populations. Biased and discriminatory prac-
-tices in AI have been identiﬁed in nearly every type of system, in-
-cluding, advertisement, chatbots, employment decisions, legal de-
-cisions, facial and voice recognition, and search engines [32]. Cre-
-ators need to consider how their systems make decisions and po-
-tential harmful eﬀects they may cause.
-Research in this area provides many solutions for auditing, and
-improving bias and fairness in AI systems. Typically, bias is un-
-intentionally introduced with biased training data and can be ad-
-dressed with statistical methods applied to data or models [6]. For a
-complete survey of such methods, we suggest the article by Mehrabi
-et al. [32].
-2.3 Human Control of Technology
-With the increasing amount of AI systems making sensitive and
-high-stakes decisions, it is vital to consider where we shift con-
-trol of decision-making from humans to AI. Consider the case of
-autonomous vehicles: self-driving vehicles are able to make deci-
-sions and operate without human control, but there are continual
-ethical concerns about the decisions made in accident-scenarios
-[37].
-Research in this area calls for the ability for humans to review
-the decisions made by AI, or for AI to be built with the ability for
-humans to intervene, especially in the case of dangerous or costly
-decisions [24]. In particular, the ﬁeld of human-computer interac-
-tion includes a great body of work on human control in AI but has
-found it diﬃcult to establish guidelines for the design of AI systems
-with adequate human control [48].
-2.4 Privacy
-Privacy is a signiﬁcant concern in all systems where the use of
-personal data has signiﬁcant social and economic impact [29]. Con-
-cerns over privacy in AI systems are particularly prevalent, with
-the high volume of data used for sensitive decisions, such as adver-
-tisement, surveillance, health-care decisions, and money lending
-2
-[14]. In the European Union, the General Data Protection Regula-
-tion (GDPR) highly regulates the use of personal and private data
-in AI, with large ﬁnancial penalties levied on businesses who do
-not comply [47]. In particular, the clause that provides users with
-the "right to be forgotten", where users have the right to request
-that their personal data be deleted, is particularly important in AI
-privacy. Researchers have called attention to the issues with ap-
-plying this clause to AI, pointing out that the complete deletion of
-private data in AI may be impossible as AI systems do not "forget"
-data in the same way as humans [46].
-2.5 Professional Responsibility
-Professional Responsibility targets the individuals and entities in-
-volved in AI system design, development, and deployment [14]. As
-these individuals have a direct eﬀect on the behavior and impacts
-of AI systems, it is vital for us to consider the intentions, abilities,
-integrity, and trustworthiness of such individuals. Research in this
-ﬁeld focuses on developer responsibility (ethical, legal, and scien-
-tiﬁc) for the design and impact of their systems [10].
-2.6 Promotion of Human Values
-The promotion of human values (often also called the beneﬁcence
-principle [15]) is of particular importance when considering the
-ethical implications of AI systems. This principle implies that AI
-should be designed and strongly inﬂuenced by human values, in-
-cluding moral, ethical, and societal norms [11]. This principle also
-includes ensuring that AI are leveraged to beneﬁt society, aim to-
-ward positive change, and consider sustainability and environmen-
-tal impact [20]. This principle is very broadand lacks a concrete
-deﬁnition within the ﬁeld, making technical implementations chal-
-lenging [18]. There are no known tools that deal directly with pro-
-viding technical applications for human values-alignment during
-AI development [34].
-2.7 Safety & Security
-Safety and security are both vital to consider when developing
-trustworthy AI. In recent years, damages caused by autonomous
-vehicles, manipulation of public-facing AI systems, and software
-problems have harmed public perceptions of the safety and secu-
-rity of AI systems in society [2]. This principle covers AI safety,
-assessing the safety of AI systems, and security, assessing how se-
-cure an AI system is, and ensuring the robustness of an AI system
-from adversarial attacks.
-AI safety is both a technical and ethical concern, where poten-
-tially negative impacts on society could occur due to unintended
-accidents or failures [45]. Security ﬂaws can contribute to these
-failures, where attacks bymalicious actors can misclassify inputs
-to worsen or manipulate performance or gain information about
-the model and data it was trained on [26]. Often, the principles of
-privacy and safety and security are interconnected, where issues
-in one domain are likely to have an impact on the other. For ex-
-ample, [31] found that information leakage in the privacy domain
-aﬀects model robustness and adversarial security.
-Several solutions have been proposed to improve the safety and
-security of AI systems. To achieve safety, one may consider the four
-principles of safety: Inherently safe design, Safety reserves, Safe
-fail and Procedural safeguards [33]. In regards to security, while
-no solution is complete, systems can be developed to detect and
-address adversarial issues and attacks [35].
-2.8 Transparency & Explainability
-Transparency and explainability refer to the principle that the op-
-erations and outcomes of an AI model should be understandable
-to a human. This area of research is quite active, with many advo-
-cating for explainable decisions and transparency in sharing data
-and model information. These concepts are particularly vital to in-
-creasing trust in AI [30].
-Research into explainability and transparency aims toward in-
-terpretablity, developing AI in which a person can understand a
-model and its decisions, which in turn increases trust in the sys-
-tem [12]. At the base level, users should understand how a model
-is developed, its function, and how it reached its outcomes. This
-requires transparency. Ideally, developers should be transparent
-about an AI system’s quality, intent, performance, and reasoning
-[28].
-However, as modeling becomes more complex, understanding
-becomes more diﬃcult and opaque. Providing an interpretation for
-how an AI model works becomes a signiﬁcant issue, as does provid-
-ing a metric for measuring a model’s explainability. In addition, the
-type of explanation needed depends on the user, and therefore so
-does the metric needed to measure explainability, further compli-
-cating the issue [22]. The ﬁeld of explainability and transparency
-is interdisciplinary and additional research is needed to formalize
-model interpretability, its evaluation, and how transparent creators
-should be about their models [1]. The ﬁeld is very active, with so-
-lutions including utilizing transparent algorithms and models and
-providing post-hoc explanations about decisions. For a complete
-analysis of this ﬁeld, we suggest the article by Arrieta et al. [4].
-3 RELATED WORK
-In recent years, there has been an increase in attempts to improve
-the transparency of the creation and deployment of AI. This in-
-cludes transparency in model and data sharing, data lineage, and
-tracking the entire machine learning lifecycle. This section describes
-related work in tracking the development of AI systems, including
-a summary of the current state-of-the-art in AI provenance and
-transparency trends, data lineage, and machine learning lifecycle
-tracking.
-3.1 Current Trends Toward AI Transparency
-Transparency in AI development and deployment requires clear
-communication of a variety of factors, such as the attainment and
-use of data, model development, deployment, and updating, and
-the functional details and purpose of systems. In particular, in re-
-cent years, importance has been placed on machine learning and
-data provenance. Provenance in AI includes the collection and pro-
-cessing of information about the end-to-end development process
-of an AI system or use of data, aiming to improve replication, trac-
-ing, quality, and trust [19].
-3
-3.1.1 Data Transparency. As the outcomes of AI systems depend
-directly on training data use (and misuse), data transparency, in-
-cluding transparency in data collection, utilization, and storage, is
-an area of signiﬁcant concern in trustworthy AI.
-Data provenance (or data lineage) methods aim to improve repli-
-cation, tracing, quality assessment in data use and data transforma-
-tion processes [19]. Several researchers have proposed data prove-
-nance and lineage solutions for the tracking of data and data trans-
-formations during the machine learning lifecycle [43, 44, 51]. Fur-
-ther, Bertino et al. [8] proposes the use of blockchain technology to
-encourage data transparency and ensure that data collection and
-utilization coincide with ethical principles.
-While these solutions assist with internal data provenance, sev-
-eral researchers have also advocated for private, secure, and stan-
-dardized methods for data sharing. Gebru et al. [16] proposeddatasheets
-for datasets, a standardization method for the documentation of
-datasets. These datasheets include information on "operating char-
-acteristics, test results, recommended uses, ... motivation, compo-
-sition, collection process, [and] recommended uses", providing de-
-tailed questions for dataset creators to provide. Similarly, Bender
-and Friedman [7] propose data statements for dataset characteriza-
-tion in natural language processing, considering also the general-
-ization of experiments and composition of datasets in respect to
-bias. Further, Holland et al. [23] propose a standardized diagnostic
-method for an overview of the core components of a dataset with
-the dataset nutrition label.
-Considering legality and regulations, Yanisky-Ravid and Hal-
-lisey [49] propose the AI Data Transparency Model, encouraging
-data audits by both stakeholders and third-parties to assess data
-use (and misuse) and storage, to encourage replicability and com-
-pliance.
-3.1.2 Model Transparency. Due to the rising complexity in mod-
-eling, model transparency and provenance methods have quickly
-gained traction. Research has focused both on end-to-end tracking
-of provenance information in the machine learning lifecycle, and
-in evaluation of models for performance and trust.
-Several modeling provenance solutions have been proposed.Schel-
-ter et al. [40] propose a system for the extraction and storage of
-meta-data and provenance information commonly observed in the
-machine learning lifecycle. Hummer et al. [25] propose ModelOps,
-a cloud-based framework for end-to-end AI pipeline management,
-including support for addressing several trustworthy principles,
-such as reliability, traceability, quality control, and reproducibility.
-Further, several tools for complete asset tracking of AI pipelines
-have also been developed, focusing on tracking modeling inputs,
-results, and production processes [17, 27, 50].
-In regards to AI documentation, a recent trend is the use of Fact-
-Sheets. Arnold et al. [3] proposes FactSheets to communicate "pur-
-pose, performance, safety, security, and provenance information"
-from the creator to the user of an AI service. Sokol and Flach [42]
-extended this with a taxonomy for characterizing and assessing
-explainability in AI with Explainability FactSheets. However, Hind
-et al. [21] found that developers found these FactSheets challeng-
-ing and time-consuming to complete, noting issues with developer
-recall about modeling details, data transformation documentation,
-privacy and ownership concerns, and lack of clarity.
-3.2 Summary
-It is clear that academics and industry alike have established prac-
-tices to encourage transparency and increase trust in AI develop-
-ment and deployment. The current focus is placed on data and
-model provenance, aiming to improve replicability, tracing, qual-
-ity assessment, and trustworthiness in the AI lifecycle.
-While research has focused on tracking information about AI
-development, there are no concrete solutions for integrating trans-
-parent solutions with trustworthy principles. Current solutions fo-
-cus primarily on one stage of the AI lifecycle, or only a handful
-of trustworthy principles, neglecting to give proper attention to
-the "whole picture" required in developing a trustworthy system.
-To increase trust in AI, we propose a framework that creators can
-leverage to increase the transparency and trustworthiness of their
-AI development processes.
-4 KNOW YOUR MODEL (KYM)
-In this section, we provide an overview of ourproposedKYM frame-
-work. We propose 20 guidelines that provide clarity on the eﬃ-
-cacy, reliability, safety, and responsibility of a given AI sys-
-tem’s purpose, data treatment, modeling processes, and trustwor-
-thiness. These guidelines provide a framework for creators to lever-
-age in their AI development processes to increase transparency
-and trustworthiness. This framework aims toward increasing user
-trust in AI systems and outcomes and easing the burden on cre-
-ators by providing a clear set of guidelines that considers prove-
-nance, trust, and technical, ethical, and legal responsibility.
-The concept of KYM is inﬂuenced by the idea that all models
-have a unique identity and that model characteristics can be lever-
-aged to know and trust models. To "know" a model implies col-
-lecting, recording, and storing detailed records of the processes
-undergone during the development of a model, subsequently es-
-tablishing model identity. A developer should record enough infor-
-mation about a model to clearly establish its identity. In this case,
-model identity refers to the minimum information to distinguish
-one model from another, or establish a model’s uniqueness. KYM
-strives for all models to have a unique model identity, allowing
-model characteristics to be leveraged to know and trust models.
-To encourage large-scale AI adoption, we must increase the trust
-that users have in models and modeling processes. The user may
-be a customer, employee, or the developer of the system, trust from
-each is equally important. While a solution to create a perfect trust-
-worthy AI system is not currently available, by increasing trans-
-parency in how developers record how they address each principle,
-we believe that users will have the information needed to assess a
-model’s trustworthiness.
-This need for transparency highlights the necessity of the KYM
-framework. KYM provides a framework for developers to address
-key areas about their AI systems, focusing on eﬃcacy, reliability,
-safety, and responsibility. These four key concepts cover all eight
-principles of trustworthy AI to ensure complete coverage in KYM.
-Further, KYM includes guidelines for the utilization and prepara-
-tion of data, modeling processes (model type, hyperparameter tun-
-ing, feature extraction, etc.), and methods for addressing aspects
-of trustworthiness in model development.
+A Systematic Review of Mobile Apps for Child Sexual Abuse Education:
+Limitations and Design Guidelines
+Sadia Tasnuva Prithaa
+, Rahnuma Tasnima
+, Muhammad Ashad Kabirb,∗
+, Sumaiya Aminc
+, Anik Dasc
+aDepartment of Computer Science and Engineering, Chittagong University of Engineering and Technology, Chattogram, 4349, Bangladesh
+bSchool of Computing and Mathematics, Charles Sturt University, Panorama Ave, Bathurst, 2795, NSW, Australia
+cDepartment of Computer Science, St. Francis Xavier University, Antigonish, B2G 2W5, NS, Canada
+Abstract
+With the availability of many child sexual abuse (CSA) education apps in different app stores, the demand for
+an evaluation system has become necessary as little information regarding their evidence-based quality is available.
+The objectives of this study are understanding the requirements of a CSA education app, identifying the limitations
+of existing apps, and providing a guideline for better app design. An electronic search across three major app stores
+(Google Play, Apple, and Microsoft) is conducted and the selected apps are rated by three independent raters. Total
+191 apps are found and finally, 14 apps are selected for review based on defined inclusion and exclusion criteria. An
+app rating scale for CSA education apps is devised by modifying existing scales and used to evaluate the selected 14
+apps. Our rating scale evaluates essential features, criteria, and software quality characteristics that are necessary for
+CSA education apps, and determined their effectiveness for potential use as CSA education programs for children. The
+internal consistency of the rating scale and the inter and intra-rater reliability among the raters are also calculated. User
+comments from the app stores are collected and analyzed to understand their expectations and views. After analyzing
+the feasibility of reviewed apps, CSA app design considerations are proposed that highlight game-based teaching
+approaches. Evaluation results showed that most of the reviewed apps are not suitable for being used as CSA education
+programs. While a few may be able to teach children and parents individually, only the apps “Child Abuse Prevention”
+(rate 3.89 out of 5) and “Orbit Rescue” (rate 3.92 out of 5) could be deemed suitable for a school-based CSA education
+program. However, all those apps need to be improved both their software qualities and CSA-specific features for
+being considered as potential CSA education programs. This study provides the necessary knowledge to developers
+and individuals regarding essential features and software quality characteristics for designing and developing CSA
+education apps.
+Keywords: Mobile app, child sexual abuse, education, design considerations, app rating scale, apps review
+∗Corresponding author
+Email addresses: u1604122@student.cuet.ac.bd (Sadia Tasnuva Pritha), u1604103@student.cuet.ac.bd (Rahnuma Tasnim),
+akabir@csu.edu.au (Muhammad Ashad Kabir), x2020gae@stfx.ca (Sumaiya Amin), x2021gmg@stfx.ca (Anik Das)
+Preprint submitted to arXiv July 6, 2021
+arXiv:2107.01596v1
+[cs.SE]
 4
-While the framework of KYM addresses all principles, it is the
-developers’ responsibility to decide which guidelines are most im-
-portant to address for their system. We advocate for transparency
-in the use of data, development of models, and how issues of AI
-trustworthiness are addressed, while recognizing that this trans-
-parency is diﬀerent among the various types of AI systems. As
-deﬁnitively proving that a model is trustworthy is quite diﬃcult,
-we suggest that developers maintain thorough records on meth-
-ods taken to address trust concerns. Developers should record tech-
-niques and tools they used to address issues in each area, and jus-
-tiﬁcations for why a check was not completed or required. Due
-to the rapidly evolving nature of AI development and AI research,
-KYM suggests that developers remain vigilant in addressing issues
-of trust with regular checks and updates, particularly in respect to
-fairness, privacy, security, safety, user understanding, and reliabil-
-ity.
-The rest of this section outlines the four principles of KYM. In
-the following section, the guidelines for KYM are proposed.
-4.1 Eﬃcacy
-Eﬃcacy in KYM ensures that models produce the desired result.
-With the increase in the use of AI in everyday settings, it is vital
-to ensure that the outcomes of models are appropriate for their
-intended purpose, that the model performs well, and that outcomes
-are fair and beneﬁcial to society. As systems can have unintended
-outcomes, it should be veriﬁed that models perform in the way that
-the developer intended.
-The concept of Eﬃcacy addresses the trustworthy AI principles
-of Transparency & Explainability and Fairness & Non-Discrimination.
-In KYM, the principle of eﬃcacy calls for:
-• Transparency in the purpose, intentions, and outcomes of
-models, including intended purpose, use, target groups, and
-expected outputs.
-• Eﬀortstoward improving human understanding of processes,
-operations, and outcomes of the AI pipeline.
-• Careful attention to fairness and non-discrimination in data
-and modeling to reduce bias and discrimination in outcomes.
-4.2 Reliability
-Reliability in KYM ensures that models are reliable in their outputs
-and developmental processes. The concept of reliability in KYM
-primarily addresses the trustworthy AI principle of Accountability.
-Here, it is important to consider the processes that are used in de-
-velopment: Is the process appropriate for the intended purpose?
-Are the outcomes and processes veriﬁable, reproducible, and reli-
-able? Would another method produce more reliable results? Are
-the appropriate regulatory and legal processes followed?
-Of critical importance in this concept is replicability: developers
-should be able to reproduce the outcomes of their models and trace
-the model back to its origin. This includes ensuring proper prove-
-nance with records of data used, data transformations undergone,
-modeling processes (development environment, model type, hy-
-perparameter tuning, etc.), and inference veriﬁcation. Users should
-be able to verify the developmental products of models. KYM ad-
-vocates that developers keep clear records of their model develop-
-ment so that a clear auditing process can be completed.
-Additionally, attention should be given to data and modeling
-quality. The collection, preparation, and treatment of data are vital
-to consider when considering model identity. Data has a profound
-impact on the modeling process. The type and quality of data used
-for the development of an AI system have direct consequences on
-the quality of the models and inferences. For instance, data of poor
-quality or poorly leveraged data can lead to unreliable and incor-
-rect models [38]. Therefore, careful attention to data processes is
-required. KYM requires reliability in the data use and data trans-
-formation in modeling systems.
-The principle of reliability calls for:
-• Transparency in developmental processes, including the use
-and transformation processes of data, and feature extrac-
-tion, training and testing, and prediction outcomes.
-• Reliability in outcomes and developmental processes, includ-
-ing the appropriate use of methods, availability, and consis-
-tency.
-• Replicability or veriﬁability of outcomes and processes.
-• Attention to data quality to avoid bad, inadequate or inap-
-propriate data collection, utilization, or transformation pro-
-cesses.
-• Data and model provenance.
-• Attention to ethical, legal, and regulatory environments and
-requirements.
-This concept is particularly important in regulatory environ-
-ments, where developers may be required to verify the exact pro-
-cesses undergone during model development and reproduce rele-
-vant results.
-4.3 Safety
-The large-scale adoption of AI requires that users are conﬁdent
-that AI systems are safe to use and do not pose undue harm to
-the user or society as a whole. The need for safety is considered
-with great importance in KYM. The concept of Safety in KYM ad-
-dresses the trustworthy AI principles of Safety & Security and Pri-
-vacy. Here, the concept of safety includes assessing the safety, secu-
-rity, and privacy of AI systems from unintended accidents, breaches,
-and threats to user privacy.
-This principle calls for:
-• Building AI systems with careful attention to safety, includ-
-ing safe design, contingencies in case of error or failure, and
-audits or standards to assess initial and continuous system
-safety.
-• System and model stability, including attention to failures
-and their causes, maintenance to address and ﬁx failures
-upon occurrence, and reducing failure rates [39].
-• Robustness to threats to security, including robustness to
-attacks from adversaries or malicious actors and continual
-attention to state-of-the-art security techniques.
-• Careful attention to user privacy, including (personal) data
-collection, utilization, and storage. This also includes any
-legal or regulatory requirements for securing user informa-
-tion.
+Jul
+2021
+1. Introduction
+Child sexual abuse (CSA) is a dire public health issue that has adverse effects not only on the victims but also on
+families, and society [1]. CSA as defined by the World Health Organization (WHO), is the engagement of a child in
+sexual activity that he or she can not completely understand, is incompetent to provide informed approval to, or for
+which the child is not developmentally fit and cannot give consent, or that breaks the laws or taboos of society [2].
+CSA includes engaging in sexual activities with a child (whether by demanding or compelling), indecent exposure,
+child grooming, and also using a child to produce child pornography. This heinous crime is one of the most hidden
+and unreported forms of violence that affect children’s lives worldwide [3].
+CSA has become extremely prevalent everywhere that it can not be ignored anymore. In recent years, the fre-
+quency of sexual abuse targeting children has been growing unwaveringly [4]. Worldwide, one in every ten children
+is sexually exploited before their 18th birthday [5]. That means about one in seven girls and one in twenty-five boys
+will face sexual abuse before they turn eighteen. However, barely one-third of CSA occurrences are identified and
+even less are reported [1]. People who experience sexual abuse in childhood suffer throughout their entire life [6].
+They face the risk of serious mental disorders, suicide, drug misuse, eating disorders, health problems, and displaying
+violent behavior. Therefore, teaching both children and adults CSA education has become indispensable. When adults
+are properly educated regarding the horrors of CSA, they will be more inclined to teach their children the prevention
+rules. There is no substitute for developing effective CSA educational programs that can teach children both in school
+settings and via mobile application.
+To combat the sexual exploitation of children, various prevention programs have been adopted universally. Despite
+having these CSA education programs and laws for protecting children, the horrors of CSA keep on growing [7].
+Every day around the world thousands of children are added to this list of being traumatized forever or losing their
+lives [8]. It is evident from the statistics that the laws alone can not keep children out of the perpetrator’s grasp [9].
+Most of the prevention programs require children to have regular face-to-face contact with the teachers. The sexual
+abuse prevention programs that are available now show variable efficacies due to inconsistencies in the teachings and
+duration of the programs [10]. Also, they are out of reach for most children who are on the lower end of the economic
+scale [11]. Even though Parents and caregivers play a huge role in protecting children, school-based programs hardly
+ever include parents [12]. Therefore, the obligation exists to design programs that efficiently teach both children and
+adults about CSA and its prevention.
+Recently, several apps (e.g., “Orbit Rescue”, “Elements of Child Sexual Abuse”, “Game on POSCO”, “Stop the
+Groomer”, and “Helpio”) have been developed for making CSA education available to all children. Reporting sexual
+abuse, providing medical information, legal help, and teaching children the rules of safety are the common features
+of CSA education apps. Some of these apps (e.g., “iSafe English’, “Game on POSCO”, “Orbit Rescue”) use game-
+based learning, serious games, and others (e.g., “KidzLive”, “Stop the Groomer”, “The Ceceyara App”) use standard
+informational learning. Good thing is, few of them solely focus on teaching parents and caregivers (e.g, [13]). CSA
+2
+education apps also provide professional training for social workers and child care professionals [14]. However, it
+is disputable if these apps are trustworthy as sexual abuse prevention education method [10]. Even though there is
+a large number of apps claiming to teach prevention, they should be rigorously evaluated before labeling them as
+reliable. To the best of our knowledge, no studies have reviewed or evaluated the currently available apps regarding
+CSA to determine their effectiveness in educating children about sexual abuse prevention.
+For an app to be competent in teaching children it needs to have some key features such as appropriate content
+for the target age group, including adults, focusing on developing a wholesome self-concept of players, making the
+learning environment appealing and relatable for all players, and evaluating children’s knowledge [15]. Furthermore,
+the apps need to have basic software quality characteristics for them to be user-friendly and helpful [16]. So, it remains
+a question whether they are actually useful in educating children and parents about CSA.
+In this paper, a systematic analysis of the CSA education-related apps has been carried out. A keyword-based
+search of over 3.5 million apps from three major app stores (e.g., Google Play Store, Apple App Store, and Microsoft
+Store) was conducted to find the apps that relate to CSA education. 191 apps were found from the electronic search
+and 14 apps that matched our study criteria were selected for review. Then existing app rating scales were modified
+to devise one that will be suitable for qualitative and quantitative analysis of our finally selected apps. The internal
+consistency of the modified rating system shows that this rating scale has high internal consistency. And the score of
+the inter-rater & intra-rater reliability among the raters justified the reliability of the study. This study was motivated
+by the accelerated increase of such CSA education apps in the app stores, along with growing interest among parents
+about their efficacy. In particular, this research has made the following four major contributions:
+• We have performed a systematic review of the existing CSA education apps available in the three major mobile
+app stores (i.e., Google Play Store, Apple App Store, and Microsoft Store).
+• We have adopted and extended the existing mobile app rating scales for devising an app rating scale specifically
+suited for evaluating CSA education apps.
+• We have evaluated the selected apps using our CSA education app rating scale and highlighted their design
+limitations.
+• Our study also provides design guidelines for developers regarding the aspects which they need to consider
+while creating an effective CSA education app. Moreover, individuals can also gain valuable information re-
+garding the important features a CSA education app must-have.
+The rest of this paper is organized as follows. The app search & selection process and the proposed CSA app
+rating scale are described in Section 2. In Section 3, the results found by analyzing the apps, the inter-rater & intra-
+rater consistency, and the internal reliability of our rating scale are presented. Design limitations of existing apps and
+future design considerations for developers and individuals are discussed in Section 4. Finally, Section 5 concludes
+the paper.
+3
+2. Methodology
+In this section, the overall methodology for reviewing the CSA-related apps has been discussed. The search
+and selection process of the CSA-related apps has been explained along with the modifications that were done for
+developing the scale that was used for rating CSA education apps. Also, different sub-scales of the modified rating
+scale have been discussed in detail.
+2.1. App Search Procedure
+This research includes the apps found in the three mobile app stores: Apple App Store, Google Play Store, and
+Microsoft Store, which are the most popular mobile application stores presently. The search was conducted between
+August 2020 and September 2020. A keyword-based search process was employed in Apple App Store, Google
+Play Store, and Microsoft Store following similar approaches used in previous studies [17]. The Preferred Reporting
+Items for Systematic reviews and Meta-Analysis or PRISMA guidelines were also followed [18]. Following PRISMA
+guidelines ensure transparency and clarity of reporting and permits other researchers to replicate the search process.
+Examining these three stores guaranteed that both Android and iOS apps would be included in the study. The keywords
+were chosen carefully by analyzing the names of some popular CSA related apps , so that if the same set of keywords
+are used at the same given time point and from the same location, the search will produce the same result [19]. The
+keywords that were used are: “child sexual abuse”, “sexual abuse prevention”, “sexual abuse”, “sexual offence”,
+“abuse prevention”, “child abuse”.
+The investigators performed the searching, screening, and final inclusion process collaboratively. For minimizing
+differences and ensuring consistency, all three app stores were searched using the same enlisted keywords. Three
+investigators independently performed the exact search applying the same keywords several times and assembled
+the final inclusion list of CSA education apps. Each investigator maintained a separate list of apps for every app
+store they searched. They used the inclusion and exclusion criteria (discussed in section 2.3) for screening the apps.
+Every investigator used their smartphone for conducting this search and selection process. The separate lists kept by
+the investigators were merged for producing the final app list to be reviewed and analyzed for this study. Conflicts
+between the lists were mutually resolved through discussion among all investigators.
+2.2. Raters
+The three raters chosen for the analysis of the CSA-related apps include two final-year Bachelor of Computer
+Science students with two years’ mobile app development experience, a final-year Bachelor student with extensive
+user interface design experience. Also, two computer science graduates with two years of experience in HCI and
+mobile application development research rated one app (Orbit Rescue) for calculating internal consistency.
+The raters separately rated all the apps from the final app list produced by the investigators. Their responses were
+recorded in a response form (Google Forms) and respective rater response data was extracted from the spreadsheet
+attached to the form.
+4
+2.3. App selection process
+The complete process of app searching, screening, and selection is depicted in the PRISMA diagram in Figure 1.
+Apps identified through Apple
+App Store (n=65)
+Apps identified through Google
+Play Store (n=111)
+Apps identified through
+Microsoft Store (n=15)
+Total identified apps from three app stores (n=191)
+Screened by app title and
+description (n=180)
+Apps included and reviewed
+(n=14)
+Apps downloaded and screened
+(n=20)
+Duplicate apps excluded (n=11)
+Apps excluded based on exclusion criteria
+(n=160)
+• Not in English and Bangla language (n=28)
+• Parental control apps (n=2)
+• Sexual abuse of adults (n=9)
+• Other prevention education for children (n=2)
+• Not relevant to child sexual abuse (n=117)
+• Ebook (n=2)
+Identification
+Apps excluded (n=6)
+• Faulty App (n=2)
+• Not relevant (n=4)
+o Teen dating violence & consent (n=2)
+o Abuse experience sharing (n=1)
+o For adult male survivors of CSA (n=1)
+Screening
+Eligibility
+Included
+Figure 1: PRISMA diagram of the method
+The keyword-based search strategy employed on three different app stores during the search process attained
+191 apps. After this, the apps were selected based on their app store description. This step served as a primary
+screening stage. For example, if the app description suggested that it includes CSA-related information we included it
+in the study. For further curation, the following inclusion criteria have considered: (1) Apps that teach children CSA
+prevention, (2) Apps that teach parents about CSA, (3) Apps that provide professional training for adults on how to
+prevent CSA, and (4) Apps that provide legal and medical help to CSA victims. These inclusion standards had been
+determined for the selection of apps so that the included apps would satisfy our study criteria.
+In this phase, 11 apps were excluded because they had identical apps from the same developer or publisher in
+multiple app stores (a duplicated app), and therefore were excluded from one platform. Before exclusion, these apps
+were examined on respective platforms (Android, iOS, and Windows) to check whether they have identical features.
+The remaining 180 apps were screened by app title and description. From the primarily screened apps, 160 were
+excluded for one or several of the following reasons: (1) apps whose language was not English or Bangla as these
+are the languages authors are accustomed to, (2) apps designed for sexual abuse prevention of adults, (3) parental
+control apps for tracking children’s online activity, (4) apps that teach children other safety practices (e.g., fire safety,
 5
-4.4 Responsibility
-Responsibility in KYM bridges the gap between technical imple-
-mentation and legal and ethical implications, addressing the trust-
-worthy AI principles of Professional Responsibility, Human Control
-of Technology, and Promotion of Human Values. In addition to tech-
-nical information about AI systems, creators must pay close atten-
-tion to societal, social, and developer roles in the overarching im-
-pact of their systems.
-The principle of responsibility in KYM is perhaps the most ab-
-stract. With the large variation in the applications of AI systems,
-responsibility will have a diﬀerent meaning to each creator. Rather
-than providing concrete guidelines in this area, KYM encourages
-creators to be transparent about the impacts and purposes of their
-systems, who was involved in their creation, and the level at which
-human control is required and provided.
-The principle of responsibility calls for:
-• Transparency about developer or creator identity, includ-
-ing transparency about stakeholders and entities involved
-in the design and deployment of AI systems.
-• Careful attention to the level at which human control is re-
-quired and provided, including clarity on the implementa-
-tion of human control in a system, opportunities for human
-intervention and review, and safeguards in the absence of
-human control.
-• Consideration of the societal impact, purpose, and value of
-AI systems, and methods to maximize their beneﬁt to soci-
-ety.
-5 KEY GUIDELINES OF KYM
-In this section, we deﬁne the key guidelines of KYM. These guide-
-lines summarize the information developers are encouraged to record
-to establish model identity. The key words "MUST", "MUST NOT",
-"REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
-"RECOMMENDED", "MAY", and "OPTIONAL" in this document
-are to be interpreted as described in RFC 2119 [9].
-Example applications of each of these guidelines are provided
-in Tables 1 and 2 .
-5.1 Eﬃcacy
-5.1.1 E1: Creators SHOULD describe the intended purpose, use, tar-
-get user, and outputs of the system. Creators SHOULD record infor-
-mation on the intentions of their AI systems. This may include
-brief descriptions of the intended purpose or goals of the system,
-expected use, sample use-cases, target user of the system and its
-outcomes, release dates, and time-frame-of-validity of the system.
-In cases where intentions and outcomes are misaligned, the ex-
-tent of the misalignment and any positive and negative impacts
-SHOULD be known and recorded. Further, Creators SHOULD (brieﬂy)
-be transparent about the expected outputs of the system, as the ex-
-pected and observed outputs may diﬀer.
-5.1.2 E2: Creators MUST record (statistical) metrics about training
-and test datasets. To ensure that the training and test dataset dis-
-tributions match, metrics about the datasets MUST be recorded. If
-applicable, this SHOULD include metrics on demographic informa-
-tion.
-5.1.3 E3: Creators SHOULD describe the expected performance on
-unseen data. Once deployed, AI systems may experience data that
-is vastly diﬀerent than the data used to train/test the system. Cre-
-ators SHOULD describe the expected performance on unseen data,
-such as data from diﬀerent distributions.
-5.1.4 E4: Creators SHOULD record methods taken to reduce bias,
-discrimination, and fairness issues in data and modeling outcomes,
-and SHOULD record specific metrics on bias, discrimination, and
-fairness.. Creators SHOULD record any methods taken to address
-bias, discrimination, and fairness issues in data or modeling out-
-comes. This may include data treatment techniques and remedia-
-tion, model checks and remediation, and outcome veriﬁcation.
-Even in cases where careful attention is paid to reduce bias in
-input data, algorithms may still exhibit biased behaviors. Develop-
-ers are encouraged to pursue methods to measure fairness in their
-outcomes, using state-of-the-art methods and tools.
-5.1.5 E5: Creators SHOULD aim for increased understandability.
-Developers SHOULD attempt to increase understanding of all stages
-of AI development to diﬀerent users and groups. Detail eﬀorts taken
-to improve explainability, transparency, human-AI interactions (re-
-view, validation, etc.) of the developmental processes and outcomes
-of AI systems. This may include providing explanations on model
-decisions, clarity in model processes and techniques utilized, and
-interpreting model development and functionality in language ap-
-propriate to the target user.
-5.2 Reliability
-5.2.1 RL1: Creators MUST record the processes followed in the de-
-velopment of the AI system. Document and justify the implemented
-algorithms and techniques, collection, utilization, and storage of
-data, veriﬁcation and testing methods, and output generation of
-the system. Documentation MUST be thorough and include all in-
-formation needed to identify and justify utilized methods, iden-
-tify storage locations, and replicate outcomes. The extent of the
-required information will vary greatly depending on system type.
-5.2.2 RL2: Creators MUST ensure adequate provenance for data.
-Creators MUST maintain clear records of data collection, utiliza-
-tion, and transformation processes. Records MUST be adequate,
-clear, and complete enough to determine the origin of the data,
-assess data quality, and understand any transformations that oc-
-curred. Records may include, but are not limited to, data collection
-process and techniques, the identity of data owner or licensing en-
-tity, dataset creation time, type and amount of data utilized, dataset
-utilization in development, and data updating practices.
-5.2.3 RL3: Creators MUST ensure adequate provenance for end-to-
-end model development. Developers MUST maintain clear records
-of developmental processes undergone in AI design, development,
-and deployment. These records MUST be complete enough to be
-able to replicate model results and outcomes. Records may include
-data (and/or meta-data) on feature extraction, training and testing,
-and prediction outcomes, date and time of modeling stages, devel-
-opment environment (development language, packages used, etc.),
-model version, time of the last update, changes in performance
+road-crossing safety, etc.) rather sexual abuse and were selected because of misleading descriptions, and (5) Apps
+that were categorized as “e-books”.
+For secondary screening, the remaining 20 apps were downloaded on the rater’s smartphone device. And fully
+assessed by three raters individually. The apps that didn’t satisfy the predefined inclusion/exclusion criteria, were
+excluded at this stage. At this stage, six apps were excluded because either they were faulty or had content that is
+not the focus of this study (e.g., experience sharing, adult male survivors of CSA, etc.). Finally, the 14 apps selected
+in this study are evaluated. The details of the 14 apps (name, developer, country of origin and language, intended
+platforms) are presented in Table 1. All 14 apps were from the Google Play Store and Apple App Store. There is
+no CSA-related app reviewed from Microsoft Store. The majority of the apps are from the United States and India.
+From 14 apps only one app (“Shishuk jouno hoirani theke bachate koronio”) is from Bangladesh and in the Bangla
+language. The “Child Abuse Prevention” app was available in two languages: English and Vietnamese.
+Table 1: List of CSA education mobile apps included in quantitative and qualitative analysis
+App Name Country of Origin Language Platform
+Orbit Rescue Australia English Android & iOS
+Elements of Child Sexual Abuse United States English Android
+Bal Suraksha India English Android
+Shishuk jouno hoirani theke bachate
+koronio
+Bangladesh Bangla Android
+Stewards of Children scalekit United States English Android & iOS
+Game on POCSO India English Android
+Stop the Groomer United States English Android & iOS
+ChildAbuseInfo United States English Android & iOS
+iSafe English India English Android & iOS
+Feel Safe Australia English Android & iOS
+Helpio Nigeria English Android & iOS
+Child Abuse Prevention Vietnam English & Vietnamise iOS
+KidzLive Singapore English iOS
+The Ceceyara App Nigeria English iOS
+2.4. CSA apps rating scale
+We hypothesized that for properly evaluating an app’s efficiency in teaching CSA and spreading awareness among
+the users, the app should include specific features and fulfill certain criteria. As there are many apps regarding CSA on
+the app stores, a standardized rating scale would help evaluate the viability of these apps. To learn significant criteria
 6
-Table 1: The Know Your Model (KYM) Guidelines for Eﬃcacy (E#) and Reliability (RL#). An example application of each guide-
-line is provided. These examples are simpliﬁed. Real-world applications may require longer and more technical justiﬁcations.
-Know Your Model Guidelines Example Application of Guideline
-E1 Creators SHOULD describe the intended
-purpose, use, target user, and output of
-the system.
-[Navigation] "The system is a navigation system that users can use to map the most
-eﬃcient path from one location to another. The system outputs the shortest path as
-deﬁned by the estimated travel time from one input to another, utilizing available
-geographical information at the time of request."
-E2 Creators MUST record (statistical) met-
-rics about training and test datasets.
-[Logistics AI] "The system was trained on a combination of our weekly, quarterly,
-and annual volume information. This data shows an average purchase of 10,000
-units.(sd = 1,000), with higher throughput events with an average of 15,000 units
-(sd=2,500) occurring around holidays. It was conﬁrmed that the training and test
-datasets exhibit identical distributions."
-E3 Creators SHOULD describe the expected
-performance on unseen data
-[Medical AI] "Data from low-quality or outdated equipment will result in poor
-performance. Shadowing or blurring in images may negatively aﬀect model per-
-formance."
-E4 Creators SHOULD record methods taken
-to reduce bias, discrimination, and fair-
-ness issues in data and modeling out-
-comes, and SHOULD record speciﬁc met-
-rics on bias, discrimination, and fair-
-ness.
-[Criminal Sentencing AI] "In order to ensure racial fairness in sentences, all poten-
-tially identifying racial information has been removed from the dataset. Addition-
-ally, the system was evaluated by experts in racial justice and equality in order to
-mitigate potential problems with bias. Bias remediation was performedusing [state-
-of-the-art tool]. A bias was identiﬁed and mitigated with a re-weighing method."
-E5 Creators SHOULD aim for increased un-
-derstandability.
-[Medical AI] "This model is designed to be used by trained doctors. The system
-provides diagnostic information and justiﬁcations that explain the qualities used
-for each decision. Furthermore, the system provides documentation to provide ad-
-ditional information."
-RL1 Creators MUST record the processes fol-
-lowed in the development of the AI sys-
-tem.
-[E-Commerce AI] "This model leverages neural network technology, building on re-
-search previously published in the domain. Model training and testing were tracked
-locally and will be stored for three years following the end-of-life of the product.
-Data is collected and stored in accordance with international regulation."
-RL2 Creators MUST ensure adequate prove-
-nance for data.
-[Social Media AI] "Textual data was parsed from three social media websites be-
-tween the dates of January and May 2020, and stored on a private server. Data were
-not checked for quality. Datasets are documented internally. The system maintains
-an index of all data as well as a log of all changes to the data set. Unigram transfor-
-mation and punctuation removal were utilized."
-RL3 Creators MUST ensure adequate prove-
-nance for end-to-end model develop-
-ment.
-[Advertising AI] "Complete records of metadata from model training, testing, and
-prediction were taken utilizing an end-to-end asset tracking tool."
-RL4 Creators MUST record evaluation and
-performance metrics.
-[Classiﬁcation AI] "Models were trained using a 70/30 test/train split, 10-fold cross-
-validation, and evaluated using prediction accuracy and AUC. The chosen model
-has an 80.2% accuracy rate, with a sensitivity/speciﬁcity rate of 74.5%/61.8% respec-
-tively."
-RL5 Creators SHOULD track model update
-performance and information inges-
-tion.
-[Social Media AI] "We capture user data upon each deployment and retrain the
-model with the captured data. Model performance is analyzed with each update
-and must remain within ±15%."
-RL6 Creators SHOULDrecord metrics on out-
-come replicability.
-[Robotics AI] "In order to reproduce the system results, a docker ﬁle has been pro-
-vided. By leveraging this dataset and docker ﬁle, the system will produce the same
-results. This docker ﬁle was created using the following dataset and model settings."
-between updates, algorithms and techniques used, training condi-
-tions (i.e. hyperparameters), use of the dataset in each stage, testing
-performance & results, etc.
-5.2.4 RL4: Creators MUST record evaluation and performance met-
-rics. Developers MUST record detailed records of the evaluation
-and performance processes used. Creators MUST maintain a record
-of the metrics and techniques that were used to measure the per-
-formance of their systems, such as accuracy, precision/recall, error
-rates, F-1 scores, AUC, etc. It is suggested that signiﬁcant techni-
-cal data is recorded. Metrics for both intermediary and ﬁnal models
-are encouraged.
+and standards for evaluating the usefulness of mobile apps, an extensive review of existing mobile app rating scales
+was conducted. After analyzing the existing app rating scales [20, 21, 22, 23, 24], we concluded that each of them is
+suited for distinct categories of apps. We focused on essential software quality attributes such as usability, reliability,
+functionality, and performance & efficiency after analyzing existing researches on software quality evaluation.
+Guidelines for assessing the usability of CSA education apps have not been set by any previous research. As this is
+a very sensitive and extremely important issue, we wanted to make sure that the app rating scale we develop is suitable
+for assessing this category of apps. For this, we took insight from the existing rating scales such as the mobile app
+rating scale (MARS) [25], end-user version of the MARS (uMARS) [26], and app rating scale for foot measurement
+apps (FootMARS) [24], and modified these for suiting the required evaluation of CSA education apps. We especially
+adopted distinctive categorical regions from the FootMARS rating scale [24] and introduced an extended variant of the
+mobile app rating scale for rating CSA education apps. This rating scale includes modifications that we hypothesized
+to be more important for a CSA education app. It considers specific items that were discovered during the analysis of
+the selected CSA education apps and previous research on the effectiveness of CSA education programs.
+The fundamental domains that are crucial for the assessment of CSA education apps can be summarized as app
+classification, aesthetics, general features, performance and efficiency, usability, CSA education-specific functionality,
+transparency, subjective quality, and the app’s perceived impacts on the user.
+The app metadata and app classification category collects descriptive information about the app. These sub-scale
+items were omitted from quantitative measurement. The app quality assessment is centered around the domains
+aesthetics, general features, performance and efficiency, usability, application-specific functionality, transparency,
+subjective quality, and the app’s perceived impacts.
+We have prepared a questionnaire containing a total of seventy-one questions for the app quality assessment based
+on all app quality domains. Fifty-one of these questions are based on the Likert scale. The questions that used the
+Likert scale to obtain the user’s level of agreement or disagreement were all positively scored. The most agreement
+means score five and the most disagreement score is one. There are some binary scale questions. However, these
+questions are later converted into a Likert scale for efficient calculation. In situations where a question may not be
+suitable for all apps, the option “Not Applicable” was included. Also, in some cases all the information could not be
+accessed regarding an app. The option “Not Accessible” was provided for such cases. The options “Not Applicable”
+and “Not Accessible” were disregarded during the final calculation for app evaluation. The overall score of this rating
+scale is achieved by adding the mean of individual app quality domains.
+2.5. App metadata
+Generic information about the apps is extracted from respective app stores under the app metadata category.
+App metadata incorporates information such as app name, developer information, store URL, platform, number of
+downloads, star rating, and country of origin. As this information is excluded from the evaluation, it does not have
+an impact on the rating scale. Three investigators collected the app metadata from each app store via filling a Google
 7
-Table 2: The Know Your Model (KYM) Guidelines for Safety (S#) and Responsibility (RS#). An example application of each
-guideline is provided. These examples are simpliﬁed. Real-world applications may require longer and more technical justiﬁ-
-cations.
-Know Your Model Guidelines Example Application of Guideline
-S1 Creators MUST assess safety to users
-and society.
-[Robotics AI] "In the event of detected compromise, the system can be placed into
-a fail-safe state by the activation of a hardware cutoﬀ or a software shutdown. In
-order to comply with safety standards, this system has several human-tracking
-safety features that override the AI in situations where humans can potentially be
-harmed."
-S2 Creators MUST assess potential security,
-safety, and privacy failure points.
-[Finance AI] "The system was designed with the following threat model in mind.
-The system is an online banking platform with the potential for both denial-of-
-service, and database attacks. Additionally, the model is trained on user-data which
-has been anonymized, however, attacks do exist that could de-anonymize users.
-Finally, the model itself is vulnerable to data poisoning or similar attacks. "
-S3 Creators SHOULD record metrics for se-
-curity robustness.
-[E-Commerce AI] "Our system is regularly tested to comply with PCI DSS stan-
-dards. We have also received ISO/IEC 27001:2013 certiﬁcation for our handling of
-critical data."
-S4 Creators MUST ensure user privacy, and
-appropriate treatment and use of pri-
-vate data.
-[E-Commerce AI] "Only data that is relevant to the product is collected, with con-
-sent of the individual. Private data is stored on an encrypted server."
-S5 Creators SHOULD ensure secure data
-utilization and storage.
-[Personal Services AI] "Data is stored on an encrypted disk, where access is granted
-by keys. All data changes are signed by key, for easy traceability."
-RP1 Creators SHOULD disclose or record
-all entities involved in system develop-
-ment.
-[Human Resource AI] "Our team is composed of machine learning engineers, statis-
-ticians, and social scientists, all graduates of accredited universities. We consulted
-with an AI domain expert during development."
-RP2 Creators SHOULD detail the implemen-
-tation of human-AI interactions.
-[Medical AI] "The system uses patient characteristics and health information to for-
-mulate diagnoses. The decisions must be conﬁrmed by a human before a diagnosis
-can be made."
-RP3 Creators SHOULD describe the impact,
-value, and beneﬁt of the system.
-[Chatbot] "The system allows for rapid interactions with customers. This increases
-availability, provides immediate assistance to customers, and reduces the need for
-customer service staﬀ. The system is only used for our business and does not have
-any larger foreseen societal impacts."
-RP4 Creators MUST comply with legal and
-regulatory requirements.
-[Finance AI] "Our system complies with GDPR regulations on the use of private
-data, and internal regulations on the use of private data and clarity in decisions."
-5.2.5 RL5: Creators SHOULD track model update performance and
-information ingestion. Developers SHOULD clearly track model up-
-dates and how new data is used and aﬀects performance. If new
-data is ingested after deployment, developers SHOULD record the
-origin of the new data, how it is integrated into the system, and if
-there are any bounds for performance changes.
-5.2.6 RL6: Creators SHOULD record metrics on outcome replicabil-
-ity. Developers SHOULD measure the replicability of outcomes of
-their AI systems, utilizing state-of-the-art metrics.
-5.3 Safety
-5.3.1 S1: Creators MUST assess safety to users and society. The de-
-velopment of systems MUST consider safety at the forefront. De-
-velopers MUST pay careful attention to safe design, failure con-
-tingencies, and safety standards. Consideration MUST be given to
-how the AI system impacts its surroundings, individuals, and soci-
-ety as a whole, and whether its use or deployment poses any safety
-risks. In the case that there are safety concerns, creators MUST be
-transparent in any safety concerns or issues the AI system may
-have.
-5.3.2 S2: Creators MUST assess potential security, safety, and pri-
-vacy failure points. Assessments of potential security, safety, and
-privacy failure points present in models (and solutions if available)
-MUST be undertaken.
-5.3.3 S3: Creators SHOULD record metrics for security robustness.
-Creators SHOULD record metrics taken for improving the robust-
-ness of their systems from adversarial attacks and malicious actors
-(i.e. checks undergone for adversarial concerns). Due to the rapidly
-evolving nature of AI security, developers SHOULD continuously
-engage in improving security robustness utilizing state-of-the-art
-techniques.
-5.3.4 S4: Creators MUST ensure user privacy, and appropriate treat-
-ment and use of private data. Developers MUST be acutely aware of
-the treatment of user data and the role of user data in their systems
-development and outcomes. For private data, creators SHOULD
+Form and the data were automatically stored on a Google Sheet. Also, these data were cross-checked after the
+extraction by all the investigators.
+2.6. App classification
+After analyzing the apps, we have categorized them into the following subcategories (see Table 2): (1) CSA
+education using games, (2) Information guide for children, (3) Professional training for CSA for child care officials,
+(4) Information guide for parents, teachers, and caregivers.
+CSA education through games apps has incorporated either game-based learning or gamification to engage chil-
+dren and make them aware of the risks. Some apps also teach prevention rules via serious games. Prior research
+shows that the most effective way of teaching children is via game or game-based environments [15, 27]. The second
+category apps provide a CSA prevention information guide using information portrayed in charts or tables or para-
+graphs. The apps in the third category are targeted towards adults and provide online professional training for child
+care officials. Category four includes the apps that guide parents, teachers, and caregivers as to how they will protect
+their children and handle difficult situations. CSA education apps must provide suitable content for the target age
+groups (e.g., adolescents, young, and adults). The target age group for each of the apps has been listed in Table 2.
+Table 2: Category-wise app name and target age group
+Category App Name Target age group
+CSA education using games
+Orbit Rescue Children under age 12
+Game on POCSO English Version Online General
+Stop the Groomer Children (under 12) & Adolescents (13-17)
+iSafe English Children (under 12)
+Feel Safe Adolescents (13-17)
+Child Abuse Prevention Children (under 12)
+Information guide for children
+Helpio General, Above age 12
+The Ceceyara App General
+Professional training for CSA
+prevention for child care officials
+Elements of CSA Adults (Child care professionals)
+ChildAbuseInfo (Child care professionals)
+Information guide for parents,
+teachers, and caregivers
+Bal Suraksha Adults (Parents & caregivers)
+Shishuk jouno hoirani theke bachate koronio Adults (Parents & caregivers)
+Stewards of Children scalekit Adults (Parents & caregivers)
+Helpio General (Parents & caregivers)
+KidzLive Adults (Parents & caregivers)
+The Ceceyara App General (Parents & caregivers)
 8
-consider regulatory requirements for storage, deletion, and use of
-data, including requirements for consent.
-5.3.5 S5: Creators SHOULD ensure secure data utilization and stor-
-age. Creators SHOULD ensure that all data is used and stored se-
-curely.
-5.4 Responsibility
-5.4.1 RP1: Creators SHOULD disclose or record all entities involved
-in system development. Record the identities (or aﬃliations), qual-
-iﬁcations, and diversity of all entities involved (including stake-
-holders, businesses, domain experts, individuals, teams, etc.) in the
-design, development, and deployment of the AI system. This may
-include the experience and credentials of developers, team diver-
-sity, and the investments and interests of developers (and other
-stakeholders) in model development.
-5.4.2 RP2: Creators SHOULD detail the implementation of human-
-AI interactions. Creators SHOULD understand the implementation
-of human-AI interactions in the system. This may include areas
-where human review is allowed and/or required, opportunities for
-human intervention, and human role in AI decisions.
-5.4.3 RP3: Creators SHOULD describe the impact, value, and bene-
-fit of the system. Creators SHOULD justify the impacts, values, and
-beneﬁts that the AI system has to society. This may also include
-any potential detriments to society (and justiﬁcations for why the
-AI system maintains value).
-5.4.4 RP4: Creators MUST comply with legal and regulatory re-
-quirements. With the rising legal and regulatory requirements for
-AI development, careful attention MUST be given to national, inter-
-national, and vocational requirements for AI design, development,
-and deployment.
-6 DISCUSSION AND FUTURE WORK
-With the proliferation of AI into greater society, members of academia
-and industry alike should strive for the development of robust,
-trustworthy systems. The complexity and wide array of applica-
-tions in AI systems complicate the process of creating trust, placing
-the burden on each creator to establish a method for building and
-maintaining trust. Toward developing trust in AI, we propose the
-Know Your Model (KYM) framework, a set of guidelines that can
-be leveraged to establish model identity and increase transparency
-and trust in their AI development processes.
-The KYM guidelines aim to provide a comprehensive frame-
-work for creators to leverage to address both provenance and prin-
-ciples of trust in the design, development, and deployment of their
-AI systems. Although previous eﬀorts have been made to increase
-transparency and trust in AI, the focus has been placed primarily
-on provenance rather than trust. In those methods that do address
-trust, attention is only given to one or two principles, neglecting
-the importance of others. Our framework aims to merge prove-
-nance methods with a focus on trust, providing a complete frame-
-work for creators to assess their current and future AI processes.
-Further, our framework considers the importance of technical, eth-
-ical, and legal responsibility, providing guidelines that bridge the
-gap between research and industry.
-As deﬁnitively proving that a system or model is trustworthy
-is quite diﬃcult, we suggest that developers maintain thorough
-records on methods taken to address trust concerns. By increas-
-ing transparency, developers ensure clarity on how key issues are
-addressed, and users have the information needed to assess trust
-where necessary. Areas of trust to address include the eight princi-
-ples of trustworthy AI: accountability, fairness and non-discrimination,
-human control, privacy, professional responsibility, promotion of
-human values, safety and security, and transparency and explain-
-ability. Developers should record techniques and tools they used to
-address issues in each area, and justiﬁcations for why a check was
-not completed or required. These should be frequently checked
-and updated for every new model or model update. Given the cur-
-rent state of trust in AI, we believe that increasing transparency in
-this way is the next step in increasing overall trust.
-It should be noted that while KYM provides a set of guidelines
-for creators to leverage, it does not provide a method for shar-
-ing this information among users, or outside of an organization.
-This distinction should be made by the creator depending on the
-unique factors of their systems. In general, we advocate for thor-
-ough records and complete transparency within the development
-team and internal users (where applicable), but understand that in-
-formation sharing and transparency will be considerably diﬀerent
-with external users, such as customers and the general public.
-We believe that further attention is warranted on developing a
-formalized system for KYM. As the state of AI research is rapidly
-evolving, we do not suggest speciﬁc methodologies to address the
-KYM guidelines technically (such as speciﬁc tools or software to
-analyze fairness or bias). It would be of beneﬁt to develop a for-
-malized system which includes up-to-date methods to analyze the
-guidelines technically. Further, it would be of extreme value if the
-guidelines of KYM could be streamlined into an automated system
-for record-keeping for creators to leverage. Future work in this
-area is needed. This may include clear avenues for the sharing of
-information with external users, such as customers or the general
-public.
-It is our hope that KYM, model identity, and transparency in AI
-become more prevalent over time. With KYM, we strive to provide
-a framework to guide creators in increasing transparency and trust
-in AI. With these guidelines, we hope to encourage a new era of
-transparency and trust in AI.
-REFERENCES
-[1] Amina Adadi and Mohammed Berrada. 2018. Peeking inside the black-box: a
-survey on explainable artiﬁcial intelligence (XAI). IEEE access 6 (2018), 52138–
-52160.
-[2] Dario Amodei, Chris Olah, Jacob Steinhardt, Paul Christiano, John Schul-
-man, and Dan Mané. 2016. Concrete problems in AI safety. arXiv preprint
-arXiv:1606.06565 (2016).
-[3] Matthew Arnold, Rachel KE Bellamy, Michael Hind, Stephanie Houde, Sameep
-Mehta, Aleksandra Mojsilović, Ravi Nair, K Natesan Ramamurthy, Alexandra
-Olteanu, David Piorkowski, et al. [n.d.]. FactSheets: Increasing trust in AI ser-
-vices through supplier’s declarations of conformity. IBM Journal of Research and
-Development ([n. d.]).
-[4] Alejandro Barredo Arrieta, Natalia Díaz-Rodríguez, Javier Del Ser, Adrien Ben-
-netot, Siham Tabik, Alberto Barbado, Salvador García, Sergio Gil-López, Daniel
-Molina, Richard Benjamins, et al. 2020. Explainable Artiﬁcial Intelligence (XAI):
-Concepts, taxonomies, opportunities and challenges toward responsible AI. In-
-formation Fusion 58 (2020), 82–115.
-[5] Emma Beede, Elizabeth Baylor, Fred Hersch, Anna Iurchenko, Lauren Wilcox,
-Paisan Ruamviboonsuk, and Laura M Vardoulakis. 2020. A human-centered
-evaluation of a deep learning system deployed in clinics for the detection of
+2.7. Aesthetics
+The mobile application market is extensive at present. The internet is overrun with thousands of similar categories
+of apps with comparable purposes and outcomes. But the question is what makes an app better than others. A
+blend of innovative ideas, compact engineering, and intelligent design is the answer [28]. But there’s something
+else that plays an indispensable role in ascertaining an app’s success, which is the visual appeal of the app. Precise
+layout and organized user interface elements in an app can draw the line between an app’s success and downfall in
+today’s competitive world. This quality is especially important in CSA education apps. One of the main aspects of
+determining the aesthetics quality of an application is that it is visually appealing to the users. As the main target users
+of the CSA education apps would be children, the apps need to be intriguing to the children. Furthermore, the layout
+and organization of the user interface have to be clean, precise, and child-friendly. If any of these characteristics is
+missing, then the apps would not be able to reach their perceived goal. To measure the aesthetic quality of an app, the
+raters considered three factors: (1) the layout consistency and readability of the apps, (2) Content resolution, and (3)
+the visual appeal of the app.
+2.8. General features
+For educating children about CSA efficiently, the apps must contain some specific features such as addressing
+grooming, having age and gender-specific knowledge, having information for parents, etc. Apart from these apps
+must have some other general features such as social sharing and data exporting features. These features enable the
+users to store what they have learned for future reference and share the knowledge with others. The authentication
+feature removes the user’s dependencies on a particular mobile device for using the app. This feature is enabled
+by storing data with individual user’s credentials on the cloud with additional security features. A study found that
+content customization options and the presence of more visual information in apps improve its user value [15]. The
+on-board tutorial helps to use the app properly which is an important feature, especially for apps that are developed
+for children. Regular notification from a learning app may increase the usage frequency of that app resulting in
+better learning outcomes [29]. Some apps provide premium subscription packages which may provide a better user
+experience, so, this feature was also included in the rating scale. The absence of these qualities was counted as low
+points while rating the apps.
+2.9. Performance and efficiency
+One of the factors that contribute most to the functionality of an app is its performance rate and how efficiently
+it can run on the user’s device. However, the features evaluated for determining performance scores may vary on
+different devices. The same app may perform differently across different mobile devices as a subject to CPU perfor-
+mance, total memory usage, total battery life impact, the level of device heating, etc. The raters used the data found
+from App settings (Android) or auxiliary software (iOS) at 15-minute intervals for tracking the battery usage of the
+apps. An ideal app must have the ability to work efficiently on all of the devices. The apps should be lightweight
 9
-diabetic retinopathy. In Proceedings of the 2020 CHI conference on human factors
-in computing systems. 1–12.
-[6] Rachel KE Bellamy, Kuntal Dey, Michael Hind, Samuel C Hoﬀman, Stephanie
-Houde, Kalapriya Kannan, Pranay Lohia, Jacquelyn Martino, Sameep Mehta,
-Aleksandra Mojsilovic, et al. 2018. AI Fairness 360: An extensible toolkit for
-detecting, understanding, and mitigating unwanted algorithmic bias. arXiv
-preprint arXiv:1810.01943 (2018).
-[7] Emily M Bender and Batya Friedman. 2018. Data statements for natural lan-
-guage processing: Toward mitigating system bias and enabling better science.
-Transactions of the Association for Computational Linguistics 6 (2018), 587–604.
-[8] Elisa Bertino, Ahish Kundu, and Zehra Sura. 2019. Data transparency with
-blockchain and AI ethics. Journal of Data and Information Quality (JDIQ) 11,
-4 (2019), 1–8.
-[9] Scott Bradner. 1997. RFC2119: Key words for use in RFCs to Indicate Require-
-ment Levels.
-[10] Mark Coeckelbergh. 2020. Artiﬁcial intelligence, responsibility attribution, and
-a relational justiﬁcation of explainability. Science and engineering ethics 26, 4
-(2020), 2051–2068.
-[11] Virginia Dignum. 2017. Responsible artiﬁcial intelligence: designing AI for hu-
-man values. (2017).
-[12] Finale Doshi-Velez and Been Kim. 2017. Towards a rigorous science of inter-
-pretable machine learning. arXiv preprint arXiv:1702.08608 (2017).
-[13] Finale Doshi-Velez, Mason Kortz, Ryan Budish, Chris Bavitz, Sam Gershman,
-David O’Brien, Kate Scott, Stuart Schieber, James Waldo, DavidWeinberger, et al.
-2017. Accountability of AI under the law: The role of explanation. arXiv preprint
-arXiv:1711.01134 (2017).
-[14] Jessica Fjeld, Nele Achten, Hannah Hilligoss, Adam Nagy, and Madhulika Sriku-
-mar. 2020. Principled artiﬁcial intelligence: Mapping consensus in ethical and
-rights-based approaches to principles for AI. Berkman Klein Center Research
-Publication 2020-1 (2020).
-[15] Luciano Floridi and Josh Cowls. 2019. A uniﬁed framework of ﬁve principles for
-AI in society. Issue 1.1, Summer 2019 1, 1 (2019).
-[16] Timnit Gebru, Jamie Morgenstern, Briana Vecchione, Jennifer Wortman
-Vaughan, Hanna Wallach, Hal Daumé III, and Kate Crawford. 2018. Datasheets
-for datasets. arXiv preprint arXiv:1803.09010 (2018).
-[17] Gharib Gharibi, Vijay Walunj, Raju Nekadi, Raj Marri, and Yugyung Lee. 2021.
-Automated end-to-end management of the modeling lifecycle in deep learning.
-Empirical Software Engineering 26, 2 (2021), 1–33.
-[18] Thilo Hagendorﬀ. 2020. The ethics of AI ethics: An evaluation of guidelines.
-Minds and Machines 30, 1 (2020), 99–120.
-[19] Melanie Herschel, Ralf Diestelkämper, and Houssem Ben Lahmar.2017. A survey
-on provenance: What for? What form? What from? The VLDB Journal 26, 6
-(2017), 881–906.
-[20] High-Level Expert Group on AI. 2019. Ethics guidelines
-for trustworthy AI. Report. European Commission, Brussels.
-https://ec.europa.eu/digital-single-market/en/news/ethics-guidelines-trustworthy-ai
-[21] Michael Hind, Stephanie Houde, Jacquelyn Martino, Aleksandra Mojsilovic,
-David Piorkowski, John Richards, and Kush R Varshney. 2020. Experiences with
-improving the transparency of ai models and services. In Extended Abstracts of
-the 2020 CHI Conference on Human Factors in Computing Systems. 1–8.
-[22] Robert R Hoﬀman, Shane T Mueller, Gary Klein, and Jordan Litman. 2018. Met-
-rics for explainable AI: Challenges and prospects. arXiv preprint arXiv:1812.04608
-(2018).
-[23] Sarah Holland, Ahmed Hosny, Sarah Newman, Joshua Joseph, and Kasia
-Chmielinski. 2018. The dataset nutrition label: A framework to drive higher
-data quality standards. arXiv preprint arXiv:1805.03677 (2018).
-[24] Kristina Höök. 2000. Steps to take before intelligent user interfaces become real.
-Interacting with computers 12, 4 (2000), 409–426.
-[25] Waldemar Hummer, Vinod Muthusamy, Thomas Rausch, Parijat Dube, Kaoutar
-El Maghraoui, Anupama Murthi, and Punleuk Oum. 2019. Modelops: Cloud-
-based lifecycle management for reliable and trusted ai. In 2019 IEEE International
-Conference on Cloud Engineering (IC2E). IEEE, 113–120.
-[26] Olakunle Ibitoye, Rana Abou-Khamis, Ashraf Matrawy, and M Omair Shaﬁq.
-2019. The Threat of Adversarial Attacks on Machine Learning in Network
-Security–A Survey. arXiv preprint arXiv:1911.02621 (2019).
-[27] Samuel Idowu, Daniel Strüber, and Thorsten Berger. 2021. Asset Management
-in Machine Learning: A Survey. arXiv preprint arXiv:2102.06919 (2021).
-[28] Rahul Iyer, Yuezhang Li, Huao Li, Michael Lewis, Ramitha Sundar, and Katia
-Sycara. 2018. Transparency and explanation in deep reinforcement learning
-neural networks. In Proceedings of the 2018 AAAI/ACM Conference on AI, Ethics,
-and Society. 144–150.
-[29] Zhanglong Ji, Zachary C Lipton, and Charles Elkan. 2014. Diﬀerential privacy
-and machine learning: a survey and review. arXiv preprint arXiv:1412.7584
-(2014).
-[30] Zachary C Lipton. 2018. The Mythos of Model Interpretability: In machine learn-
-ing, the concept of interpretability is both important and slippery. Queue 16, 3
-(2018), 31–57.
-[31] Qiang Liu, Pan Li, Wentao Zhao, Wei Cai, Shui Yu, and Victor CM Leung. 2018.
-A survey on security threats and defensive techniques of machine learning: A
-data driven view. IEEE access 6 (2018), 12103–12117.
-[32] Ninareh Mehrabi, Fred Morstatter, Nripsuta Saxena, Kristina Lerman, and Aram
-Galstyan. 2019. A surveyon bias and fairness in machine learning. arXiv preprint
-arXiv:1908.09635 (2019).
-[33] Niklas Möller and Sven Ove Hansson. 2008. Principles of engineering safety:
-Risk and uncertainty reduction. Reliability Engineering & System Safety 93, 6
-(2008), 798–805.
-[34] Jessica Morley, Luciano Floridi, Libby Kinsey, and Anat Elhalal. 2019. From what
-to how. An overview of AI ethics tools, methods and research to translate prin-
-ciples into practices. arXiv preprint arXiv:1905.06876 (2019).
-[35] Maria-Irina Nicolae, Mathieu Sinn, Minh Ngoc Tran, Beat Buesser, Ambrish
-Rawat, Martin Wistuba, Valentina Zantedeschi, Nathalie Baracaldo, Bryant
-Chen, Heiko Ludwig, et al. 2018. Adversarial Robustness Toolbox v1. 0.0. arXiv
-preprint arXiv:1807.01069 (2018).
-[36] Robert Norvill, Cyril Cassanges, Wazen Shbair, Jean Hilger, Andrea Cullen, and
-Radu State. 2020. A security and privacy focused kyc data sharing platform. In
-Proceedings of the 2nd ACM International Symposium on Blockchain and Secure
-Critical Infrastructure. 151–160.
-[37] Sven Nyholm and Jilles Smids. 2016. The ethics of accident-algorithms for self-
-driving cars: An applied trolley problem? Ethical theory and moral practice 19, 5
-(2016), 1275–1289.
-[38] Hillary Sanders and Joshua Saxe. 2017. Garbage in, garbage out: How purport-
-edly great ML models can be screwed up by bad data. Proceedings of Blackhat
-2017 (2017).
-[39] Suchi Saria and Adarsh Subbaswamy. 2019. Tutorial: safe and reliable machine
-learning. arXiv preprint arXiv:1904.07204 (2019).
-[40] Sebastian Schelter, Joos-Hendrik Boese, Johannes Kirschnick, Thoralf Klein, and
-Stephan Seufert. 2017. Automatically tracking metadata and provenance of ma-
-chine learning experiments. In Machine Learning Systems Workshop at NIPS. 27–
-29.
-[41] Keng Siau and Weiyu Wang. 2018. Building trust in artiﬁcial intelligence, ma-
-chine learning, and robotics. Cutter Business Technology Journal 31, 2 (2018),
-47–53.
-[42] Kacper Sokol and Peter Flach. 2020. Explainability fact sheets: a framework
-for systematic assessment of explainable approaches. In Proceedings of the 2020
-Conference on Fairness, Accountability, and Transparency. 56–67.
-[43] Renan Souza, Leonardo Azevedo, Vítor Lourenço, Elton Soares, Raphael Thiago,
-Rafael Brandão, Daniel Civitarese, Emilio Brazil, Marcio Moreno, Patrick Val-
-duriez, et al. 2019. Provenance data in the machine learning lifecycle in com-
-putational science and engineering. In 2019 IEEE/ACM Workﬂows in Support of
-Large-Scale Science (WORKS). IEEE, 1–10.
-[44] Renan Souza, Leonardo Azevedo, Raphael Thiago, Elton Soares, Marcelo Nery,
-Marco AS Netto, Emilio Vital, Renato Cerqueira, Patrick Valduriez, and Marta
-Mattoso. 2019. Eﬃcient runtime capture of multiworkﬂow data using prove-
-nance. In 2019 15th International Conference on eScience (eScience). IEEE, 359–
-368.
-[45] Kush R Varshney and Homa Alemzadeh. 2017. On the safety of machine learn-
-ing: Cyber-physical systems, decision sciences, and data products. Big data 5, 3
-(2017), 246–255.
-[46] Eduard Fosch Villaronga, Peter Kieseberg, and Tiﬀany Li. 2018. Humans forget,
-machines remember: Artiﬁcial intelligence and the right to be forgotten. Com-
-puter Law & Security Review 34, 2 (2018), 304–313.
-[47] Paul Voigt and Axel von dem Bussche. 2017. The EU General Data Protection
-Regulation (GDPR): A Practical Guide (1st ed.). Springer Publishing Company,
-Incorporated.
-[48] Qian Yang, Aaron Steinfeld, Carolyn Rosé, and John Zimmerman. 2020. Re-
-examining whether, why, and how human-ai interaction is uniquely diﬃcult to
-design. In Proceedings of the 2020 chi conference on human factors in computing
-systems. 1–13.
-[49] Shlomit Yanisky-Ravid and Sean K Hallisey. 2019. Equality and Privacy by De-
-sign: A New Model of Artiﬁcial Intelligence Data Transparency Via Auditing,
-Certiﬁcation, and Safe Harbor Regimes. Fordham Urb. LJ 46 (2019), 428.
-[50] Matei Zaharia,Andrew Chen, Aaron Davidson, Ali Ghodsi, Sue Ann Hong, Andy
-Konwinski, Siddharth Murching, Tomas Nykodym, Paul Ogilvie, Mani Parkhe,
-et al. 2018. Accelerating the Machine Learning Lifecycle with MLﬂow. IEEE Data
-Eng. Bull. 41, 4 (2018), 39–45.
-[51] Zhao Zhang, Evan R Sparks, and Michael J Franklin. 2017. Diagnosing machine
-learning pipelines with ﬁne-grained lineage. In Proceedings of the 26th Interna-
-tional Symposium on High-Performance Parallel and Distributed Computing. 143–
-153.
+and work considerably faster since children have minimal patience comparing to adults. Also, the apps that provide
+online courses and reporting require increased processing power than others. Raters thus tracked the following points
+for evaluating the performance efficiency of the apps: (1) how much time the app takes for responding, (2) whether
+the features and components work accurately, (3) whether the app crashes frequently, (4) how much memory storage
+the app takes, and (5) whether there were any noticeable changes in device temperature during usage.
+2.10. Usability
+One of the most vital steps of app development is usability. It performs an important role in shaping users’ valuable
+experiences. This can be defined as the property that evaluates how easily a system interface can be used. Previous
+works involving the human-computer interaction (HCI) and user-centered design showed that non-intuitive gestures
+and poor organization of app elements are the usability defects that drive users to abandon some mobile apps and
+search for better alternatives [30]. Usability testing of an app is crucial in deciding whether the app has an adequate
+quality to draw the attention of its target user groups. For an app to be successful, it must be intuitive, and the user
+should be able to gain some level of familiarity with the interface in a very short time. Navigation and ease-of-use
+features come into play to ensure this. Higher ease of use increases the probability of an app remains installed on the
+user’s phone. The usability of an app in real life fluctuates considerably compared to that in laboratory settings due to
+the diversity of user behavior and the user experience [31]. This implies that the usability testing of an app is a very
+crucial part of app development. By analyzing previous app rating systems [25, 26], we evaluate an app’s usability
+as “good” if it provides the following qualities: (1) the app can be operated with ease, (2) the app can be navigated
+without any interruption, (3) the gestural designs and screen links (e.g., buttons, arrows, navigation panels, etc.) work
+uniformly across the whole app, (4) the app presents an interactive experience. These requirements were examined
+by the raters when rating the usability criteria of an app.
+2.11. App specific functionality
+The availability of certain features is one of the fundamentals for the apps that are created for expanding awareness
+and prevention education about CSA. However, having more properties does not imply that the app will be capable of
+achieving its target goal. CSA is a terrible and extremely sensitive issue, hence any application concerning this issue
+will only be beneficial when it will be able to engage the children’s interest and efficiently train them in the safety
+rules. Also, the app must be able to spread knowledge and awareness among parents and caregivers on how to protect
+their children [32].
+Apps regarding CSA can be divided firstly into two categories: the first category includes the apps that target
+children’s education and the second type of apps are for parents and caregivers. Apps created for children also vary in
+factors regarding the approach followed for teaching children. Some apps utilize game environments or components as
+a method of education. Other apps use information and quizzes for teaching prevention rules. Several CSA education
+apps provide professional training for social workers and child care professionals. There are also apps for spreading
 10
-This figure "toronto.png" is available in "png" format from:
-http://arxiv.org/ps/2106.11036v1
+awareness among parents about the dangers of CSA. Few apps have provided education for both adults and children.
+The common features of CSA education apps were identified by reviewing the existing apps.
+Therefore, after taking into account the important guidelines for CSA education apps, we constituted the app-
+specific functionality rating for CSA education apps. A major part of CSA education is teaching children the preven-
+tion rules that will help them stay safe from abuse [33]. It is also important to educate parents and children regarding
+the risk of grooming techniques used by perpetrators to abuse children [34]. Previous research regarding the efficacy
+of CSA education points to the fact that teaching methods such as game-based learning, gamification or serious games
+work better in teaching children prevention education [15]. And evaluating children’s knowledge after the lessons is
+necessary to identify the effectiveness of such apps. Research also shows the importance of providing age and gender-
+specific CSA education to children [10, 35]. Parents play a crucial role in protecting children from abuse. Hence,
+their involvement in the teaching process is also necessary [32]. It is also important for apps to provide information
+regarding help centers for medical and legal aid to sexually abused children. Hence, we included these two points in
+our CSA education-specific sub-scale.
+To be considered useful in preventing CSA, an app must include these subsequent features: (1) prevention edu-
+cation for children, (2) addresses the risk of grooming, (3) uses game-based learning/ serious games/ gamification,
+(4) evaluates children’s knowledge, (5) provides age-specific education, (6) provides gender-specific education, (7)
+facilitates parent involvement, (8) provides guidance to seek legal help, (9) provides medical/counseling help, (10)
+applicable for physically/mentally challenged children, (11) provides abuse reporting facility.
+2.12. Transparency
+Privacy is an increasing concern in the digitally connected world. Mobile apps require user’s social and personal
+information for proper functioning. However, the ability of consumers to make informed choices regarding their
+privacy is difficult at present in the mobile application marketplace. Businesses that capitalize on these personalized
+services make this choice even harder. Often, apps trade user’s private data without awareness of the individual [36].
+App users fall into these traps due to insufficient knowledge regarding mobile application privacy policy. Users must
+be conscious while consenting to their private data being accessed by the apps. They should make a habit of properly
+reading the privacy guidelines before clicking the ‘Accept’ button in any circumstance.
+Data protection and regulation rules must be followed strictly by the apps. Furthermore, they should explicitly
+explain how and why they are collecting users’ data. In the case of CSA education apps, the privacy guidelines should
+be followed strictly. Evaluation of transparency is a significant part of the app rating. With the proper and clear
+information, a user can make an informed decision before downloading the app by ascertaining the authenticity of
+the app. To assess the transparency criteria of the selected apps, the following points were considered: (1) whether
+a common alert is provided to take users consent before obtaining their personal information, location information,
+and/or private data, (2) evaluating the accuracy of the information given on the app store description, (3) determining
+the authenticity of the publisher or developer and the app source, (4) whether the app is feasible to achieve desired
+11
+goals as claimed by the developer.
+2.13. Subjective quality
+The subjective quality of an app is the perspective of a user of the app. This quality can be measured by the user’s
+app ratings and comments about the app. A lot of information regarding the performance of an app can be found from
+the reviews in the app store as the users these days often comment about their user experience in detail. Both the
+flaws and the unique features of an app can be discovered from user reviews. These comments are somewhat helpful
+during the app review phase. So subjective quality analysis can be a useful criterion for app evaluation considering
+its benefits. In this study, a similar approach was used for the subjective quality section. The app raters evaluated
+subjective quality by answering questions about the degree of satisfaction of use, potential frequency of use in the
+future, overall app rating, and how likely they were to pay for the apps.
+2.14. Perceived impact of app on users
+The success of an app can be determined by the impact it has on its users. Continuous discoveries in the branches
+of computer science and mobile apps have assisted thousands of users in finding useful and sometimes life-saving
+information, including a large number of apps that are designed to provide different prevention education (e.g., sexual
+abuse prevention, drug abuse prevention) to users [37, 38]. In apps regarding prevention education, the main goal
+is to increase awareness about crime or addiction and provide necessary information about the prevention of this
+problem. Additionally, such apps may also provide intervention methods and guidance helpful in decreasing the user’s
+negligence towards the specific problem and increasing help-seeking behaviors targeting solutions to the problems.
+However, according to the study by [39], most health-oriented and prevention education apps yield little to no evidence
+of effectiveness in cases of user outcomes and behavioral changes.
+For determining the usefulness of the CSA education apps, these apps must be evaluated by their effectiveness
+regarding changing the attitude of the users towards CSA education and spreading awareness about CSA [39]. App
+store comments and ratings can be used for evaluating the perceived impact an app has on its users. From the user
+reviews, we can get an idea about what kind of effect the app has had on its users. The actual impact of an app on its
+users is can not be directly quantified. Therefore, the apps were rated on the following aspects to assess how much
+an app was able to make an impact on its users: (1) whether the app contained information for raising awareness
+regarding CSA, (2) how informative the app is considering CSA education and dangers of CSA, (3) whether the
+information or learnings of the app will improve users attitude about CSA education’s necessity, (4) whether the app
+will induce further help-seeking behavior among users.
+3. Results
+In this section, an overall assessment of the reviewed 14 apps has been presented. Also, a comparison between the
+app store rating and our rating is given. The app-specific criteria have been discussed in detail. Lastly, we analyzed
+12
+the app store user comments of the apps for understanding the good and bad factors of existing CSA-related apps.
+3.1. Internal consistency of modified rating scale
+Cronbach’s alpha is the most popular means of calculating internal consistency. It denotes how well a test mea-
+sures, and how consistent the items of a scale are [40]. This method has been used for calculating the internal
+consistencies of the sub-scales of our modified rating scale: aesthetics, performance and efficiency, usability, trans-
+parency, subjective quality, and perceived impacts on users (see Table 3). For determining internal consistency, one
+of the CSA education apps “Orbit Rescue” was selected. Additionally, the internal consistency of the entire modified
+rating scale was estimated. Cronbach’s alpha reliability coefficient usually ranges between 0 and 1. The closer Cron-
+bach’s alpha coefficient is to 1.0 the higher the internal consistency of the scale [40]. Generally, a coefficient value
+greater than 0.75 is considered acceptable. However, a coefficient value greater than 0.5 is also accepted if the internal
+consistency is calculated for limited items. For five independent raters, the internal consistency of all sub-scale items
+was moderate to high. The overall internal consistency of the modified rating scale was high at alpha = .93 which is
+considered excellent according to prior studies [41]. The sub-scale alphas were also in the range of good-excellent
+as can be seen in Table 3. The alpha values indicate that all the items in our modified rating scale had a high level
+of internal consistency. For getting positive values of Cronbach’s alpha, we made sure that all questions of the scale
+were coded in the same way. No positively and negatively worded questions were mixed. Reverse coding was done
+for the negatively worded questions.
+Table 3: Internal consistency of the sub-scales
+CSA App Rating Scale Internal Consistency
+Aesthetics 0.92 (95% CI 0.66-0.99)
+Performance and efficiency 0.94 (95% CI 0.80-0.99)
+Usability 0.81 (95% CI 0.22-0.97)
+Transparency 0.84 (95% CI 0.33-0.98)
+Subjective quality 0.70 (95% CI 0.52-0.97)
+Perceived impact of app on users 0.93 (95% CI 0.77-0.99)
+3.2. Inter-rater and intra-rater reliability of the modified rating scale
+The evaluation of inter-rater reliability provides a way of quantifying the level of agreement between two or
+more raters who make independent ratings about the features of a set of subjects [42]. The significance of inter-
+rater reliability depicts that the degree to which the data collected in the study consists of correct descriptions of the
+variables measured. When a scale is judged by several raters, inter-rater reliability is significant to evaluate if their
+13
+rating is correlated. To find out the appropriate method for calculating inter-rater reliability two things should be
+considered. Firstly, it is required to know if all items included in a study have been rated by several raters, or if only
+a single subset is rated by multiple raters. Secondly, it must be determined if the same set of raters will rate the items
+or whether separate items are rated by separate subsets of raters. In our study, all apps were rated by the same three
+raters. We used the intra-class correlations (ICC) method to assess inter-rater reliability. The Intra-class Correlation
+(ICC) is one of the most popularly used statistics for evaluating inter-rater reliability if a study includes two or more
+raters [43]. We have used the ICC two-way mixed model since the use of this model is preferred when each app
+is assessed by each rater, and the raters are fixed but not randomly chosen [44]. Depending on the 95% confidence
+interim of the ICC estimation, values smaller than 0.5, within 0.5 and 0.75, within 0.75 and 0.9, and higher than
+0.90 are suggestive of poor, moderate, good, and excellent reliability, sequentially [44]. Independent ratings on the
+overall scale for our final fourteen CSA education apps exhibited a high level of inter-rater reliability. Our calculated
+inter-rater agreement is 2-way mixed ICC = 0.97, 95% CI 0.97-0.98, which can be considered as a great level of rater
+reliability or agreement [43].
+Intra-rater reliability is estimated to measure the validity of a test. This is a kind of reliability estimation in which
+the same evaluation is performed by the same rater on more than one occasion. These different ratings are then
+compared, generally using correlation. Again, we have used the ICC method for analyzing the intra-rater reliability
+of our three raters. Three raters rated the final fourteen apps twice in the interval of four weeks. After completion of
+both ratings, consistency between two ratings of the same rater was calculated to see if their rating is reliable. This
+was done for all three raters – rater one showed high reliability between her two ratings (2-way mixed ICC = .97, 95%
+CI 0.97-0.98), rater two and three also presented excellent intra-rater reliability of (2-way mixed ICC = 0.96, 95% CI
+0.96-0.97) and (2-way mixed ICC = 0.98, 95% CI 0.98-0.99).
+3.3. Categorical distribution of CSA education apps
+The categorical distribution of all reviewed apps is shown in Figure 2. It shows that both the “CSA prevention
+education using games” and “Information guide for parents, teachers, and caregivers” categories hold 37.5% of the
+total 14 apps. Also, 12.5% apps are placed in both the “Information guide for children” and “Professional training for
+CSA prevention for child care professionals” categories. Among the 14 apps, two apps are fall in both the “Information
+guide for children” and “Information guides for parents, teachers, and caregivers” category (“Helpio”, “The Cece Yara
+App” ).
+It is evident from Figure 2 and Table 2 that most of our final fourteen apps belong to “CSA prevention education
+using games” and “Information guide for parents, teachers, and caregivers” category. Research shows that game-based
+learning or learning via serious games or using gamification components in teaching prevention programs are more
+efficient than traditional rote learning [15]. Games help in keeping children engaged and make the learning process
+enjoyable [45]. CSA education using games can help children to learn the safety rules more profoundly [38]. Children
+can learn about the dangers of CSA while playing the game and also get to know how to prevent CSA effectively.
+14
+37.5%
+37.5%
+12.5%
+12.5%
+CSA prevention education using games
+Information guide for parents teachers and caregivers
+Information guide for children
+Professional training for CSA prevention for child care officials
+Figure 2: Categorical distribution of apps
+Apps in this category use different methods for engaging children such as animated videos where cartoon characters
+explain the safety rules, mini-games that teach how to overcome difficult situations or interactive evaluation of the
+knowledge gained from a lesson.
+The other category that has the most apps is the “Information guides for parents, teachers, and caregivers”. These
+apps spread awareness about CSA and educate parents on how they can protect their children. Parents play a very
+important role in protecting children from abuse. Hence, apps in this category are extremely significant. Moreover,
+parents can also learn how to handle disclosure to abuse and how to treat abusers.
+3.4. Evaluation scores
+We calculated the mean and standard deviation of the sub-scale ratings for each app in Table 4. The scores an app
+received in different sub-scales were used to calculate the overall mean and standard deviation for that app. From the
+table, we can see that app that scored the lowest score is named “Shishu k jouno hoyrani theke bachate koronio”. The
+overall mean score for this app is 2.29 which shows that it is not of great quality and is not effective for spreading
+prevention information. The reason behind this low score is also visible on the table. This app scored low in all the
+rating sub-scales and as a result, had an overall low score. It belongs to the category “Information guide for parents,
+teachers, and caregivers”. On the other hand, the highest mean score is 3.92. The app “Orbit Rescue” received this
+score. This app scored more than average in all the rating sub-scales.
+The results in the table show that the domains aesthetics, performance & efficiency, and usability have higher
+scores in contrast to other domains of the apps. The general range of aesthetics, performance & efficiency, and
+usability stands between 2.50 to 4.50, 3.86 to 4.57, and 2.75 to 4.75 respectively. Among the above-mentioned
+domains, general app features and application-specific functionality domains received the lowest mean rating (1.82
+and 2.92 respectively out of 5). In contrast, the most highly rated domains were app performance & efficiency and
+perceived impact of apps on users which received scores of 4.18 and 4.05 out of 5. Other domains that scored
+more than 3 out of 5 are aesthetics (3.36/5), usability (3.43/5), transparency (3.29/5), and subjective quality (3.02/5).
+Domain-specific rating scores and the overall app rating are calculated from the data in Table 4 and have been depicted
+15
+Table 4: Evaluation scores for CSA education apps
+App Name Aesth-
+etics
+Gener-
+al
+Perfo-
+rmance
+Usabi-
+lity
+Appli-
+cation
+Trans-
+parency
+Subje-
+ctive
+Impact Mean (St.dev)
+Orbit Rescue 4.25 3.00 4.00 3.75 3.57 4.25 3.67 4.83 3.92 (0.55)
+Elements of Child Sexual
+Abuse
+3.50 1.50 4.57 3.75 1.29 3.25 2.67 3.50 3.00 (1.13)
+Bal Suraksha 3.25 1.50 4.43 3.25 2.71 3.25 3.00 4.17 3.20 (0.90)
+Shishuk jouno hoirani theke
+bachate koronio
+2.75 1.00 4.57 3.50 1.86 1.50 1.33 1.83 2.29 (1.22)
+Stewards of Children scalekit 2.50 2.00 4.29 2.75 3.29 4.50 4.00 4.67 3.50 (1.01)
+Game on POCSO English
+Version Online
+4.00 1.50 4.14 3.50 2.71 3.50 3.33 4.33 3.38 (0.92)
+Stop the Groomer 4.25 1.50 4.29 4.75 3.29 3.50 3.67 5.00 3.78 (1.10)
+ChildAbuseInfo 3.00 1.50 4.00 2.75 3.29 3.50 2.33 4.83 3.15 (1.02)
+iSafe English 2.75 2.50 3.86 2.75 3.29 3.00 2.00 3.33 2.94 (0.57)
+Feel Safe 2.75 2.00 4.00 3.00 3.00 2.75 3.67 4.17 3.17 (0.73)
+Helpio 3.00 2.50 4.43 3.25 3.00 2.75 2.33 3.67 3.12 (0.68)
+Child Abuse Prevention 4.50 3.00 4.14 4.25 3.00 3.25 4.33 4.67 3.89 (0.69)
+KidzLive 3.25 1.00 4.00 3.00 2.43 3.75 3.00 3.67 3.01 (0.96)
+The Ceceyara App 3.25 1.00 3.86 3.75 4.14 3.25 3.00 4.00 3.28 (1.01)
+in Figure 3. We computed the overall app rating (mean score) from the individual mean scores of each app. The overall
+app rating is 3.26 out of 5.
+3.5. Comparison of store rating and rating scale measured ratings
+A comparison between the 14 selected app’s app store ratings and the score received from our rating scale has been
+shown in Figure 4. Seven among 14 apps had no rating in the app stores (i.e., “Shishuk jouno hoirani theke bachate
+koronio”, “Game on POCSO English Version Online”, “ChildAbuseInfo”, “iSafe English”, “Feel Safe”, “Helpio”,
+“KidzLive”). Therefore, we excluded them from this comparison. We calculated the standard deviation of the total
+app store ratings and our rating scale score. The difference between the two standard deviation scores for reviewed
+apps was 0.08. This deviation is good considering that the score in our rating scale is an aggregated mean of various
+domains that are necessary for specifying the quality and criteria of CSA education apps. Two of the 14 apps (e.g.,
+“Stop the Groomer” and “The Ceceyara App”) which had a five-star rating in the app store, didn’t get the full score
+on our modified rating scale and received 3.78 and 3.28 respectively out of 5. The app that scored the highest rating
+on our scale is called “Orbit Rescue”. This app received 3.92 on our rating scale and 4.40 in the app store. The app
+16
+A
+e
+s
+t
+h
+e
+t
+i
+c
+s
+G
+e
+n
+e
+r
+a
+l
+P
+e
+r
+f
+o
+r
+m
+a
+n
+c
+e
+U
+s
+a
+b
+i
+l
+i
+t
+y
+A
+p
+p
+l
+i
+c
+a
+t
+i
+o
+n
+T
+r
+a
+n
+s
+p
+a
+r
+e
+n
+c
+y
+S
+u
+b
+j
+e
+c
+t
+i
+v
+e
+I
+m
+p
+a
+c
+t
+O
+v
+e
+r
+a
+l
+l
+1
+1.5
+2
+2.5
+3
+3.5
+4
+4.5
+5
+Sub-scales
+Rating
+Figure 3: Sub-scale specific ratings and overall rating
+that had the second-highest rating according to our scale is “Child Abuse Prevention”. This app had a 4.2 rating in
+the app store and 3.89 on our rating scale. Overall, the measured rating scores for each app are less than the app store
+rating value. A possible reason for this difference is that we have determined rating scores by calculating the mean of
+all sub-scale values.
+1 1.5 2 2.5 3 3.5 4 4.5 5
+Orbit Rescue
+Elements of Child Sexual Abuse
+Bal Suraksha
+Stewards of Children scalekit
+Stop the Groomer
+Child Abuse Prevention
+The Ceceyara App
+Rating
+App
+Name
+Store rating Measured rating
+Figure 4: Comparison between app store rating and measured rating
+17
+3.6. Assessment of measurement criteria in apps
+For evaluating CSA education apps, some specific measurement criteria were defined. The use of game-based
+components, including information about grooming, gender, and age-specific prevention techniques, providing knowl-
+edge for adults, presenting legal & medical help are some of the key points for measuring the effectiveness of a CSA
+education app. Our rating scale evaluated the apps based on 11 measurement criteria. These CSA education-specific
+functionalities and the percentage of apps that have these features are shown in Table 5.
+Table 5: Assessment of Measurement Criteria in Apps
+Criteria
+Google play
+store (n=8)
+n (%)
+Apple store
+(n=6)
+n (%)
+Total apps
+(N=14)
+N (%)
+Use game/game based components/gamification 3 (37.5) 4 (66.67) 7 (50)
+Teach about grooming 2 (25) 3 (50) 5 (35.71)
+Teach children using information 1 (12.5) 1 (16.67) 2 (14.29)
+Gender specific teaching 1 (12.5) 2 (33.33) 3 (21.43)
+Age specific teaching 2 (25) 0 (0) 2 (14.29)
+Evaluate children’s knowledge 3 (37.5) 4 (66.67) 7 (50)
+Parents involvement 6 (75) 5 (83.33) 11 (78.57)
+Provide medical aid 3 (37.5) 2 (33.33) 5 (35.71)
+Provide legal info 4 (50) 5 (83.33) 9 (64.29)
+Provide reporting system 2 (25) 4 (66.67) 6 (42.86)
+Applicable for physically/mentally challenged children 1 (12.5) 1 (16.67) 2 (14.29)
+Table 5 shows that the ‘parents involvement’ feature is found in 78.57% (11 out of 14) of apps. The next feature
+that most apps have is legal information for users. About 64.29% (9 out of 14) of apps include this feature. To assess
+the effectiveness of a prevention program, it is important to evaluate how well children have received the teaching.
+50% of the apps (7 out of 14) evaluate children’s knowledge regarding CSA and CSA prevention immediately after a
+lesson. Serious games or gamification were used as a teaching method by 50% of the apps. Having a reporting system
+that the users can utilize to report abuse and providing medical aid in case of abuse are also significant criteria that
+CSA education apps must include. Among the 14 apps, about 42.86% (6 out of 14) apps had a reporting system, and
+35.71% (5 out of 14) of apps provide medical aid-related information.
+Five apps (14.29%) used information such as charts, graphs, tables for providing prevention information. Only
+4 of 14 apps provide knowledge about grooming techniques which is notably an essential aspect of CSA education
+(Orbit, Stop the groomer, iSafe English, Helpio). Other criteria where the reviewed apps lacked are providing age and
+gender-specific knowledge and special education for disabled children. Only 2 apps (14.29%) mention that they can
+18
+help physically or mentally challenged children in their store description. Also, 3 (21.43%) apps had gender-specific
+information and 2 (14.29%) had age-specific information for children. It is evident from these statistics that gender-
+specific and age-specific teaching are very rare in reviewed apps. Six of the apps targeted a general age group with no
+age requirements (42.86%). These apps were for use of parents, caregivers, and child care professionals. Among all
+the apps 4 (28.57%) are targeted for children under age 12. Two (14.29%) apps have dealt with adolescent users (aged
+between 13 to 17), which are “Stop the Groomer” and “Feel Safe.” The app named “Stop the Groomer” targeted both
+children and adolescents.
+Overall, Among 14 apps, one app (“The Cece Yara App”) had seven features from eleven features. Three apps
+( “Stop the Groomer”, “iSafe”, “Helpio” ) included six features. 57.14% (9 out of 14) of apps have less than half
+features. Elements of Child Sexual Abuse app had no features and “Shishu k jouno hoirani theke bachate koranio”
+app had only one feature.
+Most of our reviewed apps are missing several criteria. Most of these apps do not provide CSA lessons in a
+systematic way which is required for learning efficiently. Children’s knowledge regarding prevention should be tested
+multiple times during the duration of learning [15]. Also, any app for CSA and its prevention needs to have trusted
+adult involvement. Moreover, it must include all of the required measurement features for being effective in rendering
+prevention education against CSA. In our study, apps that targeted parents and caregivers provide a small amount of
+information regarding how they can protect their children from abuse, how to deal in case of abuse, where to seek
+medical or counseling help, etc. Finally, no such app was found during app testing that has focused specifically on
+children with disabilities.
+3.7. Analysis of user reviews from app store
+The most common way to know whether an app provides all the claimed features is to scrutinize the app store
+comments left by the users of the apps [46]. Nowadays, all major app stores allow users to critique their hosted apps.
+These user comments often provide detailed information about the features of the apps, which gives a clear insight
+to the general users about the apps’ performance. These comments point out the shortcomings of these apps as well.
+Many users rely on the users’ reviews before downloading any app. As a consequence, developers and publishers aim
+to receive good and positive reviews since these reviews act as quality indicators of apps [47].
+Considering the importance of user comment analysis, we collected the users’ feedback for the apps from respec-
+tive app stores while collecting metadata. We divided the user comments into two categories based on the users’ rating
+for the apps: if the rating is 4 stars or more the comment is considered as “good”, otherwise the comment is consid-
+ered as “bad”. We discovered that most of the apps do not have a sufficient number of feedback from users because
+the number of downloads for the respective apps was generally low. Two (14.29%) apps were downloaded only 10+
+times. and two (14.29%) apps were downloaded 100+ times. 3 out of 14 (21.4%) of apps have been downloaded
+1000+ times. And only one app (Elements of child sexual abuse) has been downloaded more than 5000 times. The
+Apple Store doesn’t provide access to the number of downloads for iOS apps (6 out of 14). Moreover, the number of
+19
+informative reviews was very low as users rarely write informative reasons behind their rating, sometimes they write
+irrelevant comments [47]. In our study, we discovered that about 35.7% (5 out of 14) of the apps have no comments
+and 21.4% (3 out of 14) have extremely short comments to support the ratings.
+To gain better insight from the users’ comments, we have used word-cloud for visualizing users’ comments. In
+Figure 5 the positive and negative comments are portrayed. Figure 5a illustrates the words derived from positive
+comments of the users. The most used words are ‘app’, ‘love’, ‘kids’, ‘great’, ‘game’. From these words, we can say
+that users preferred the apps that use a game for teaching children about prevention education. Figure 5b represents
+the word cloud for negative comments of the user. The most visible words in this word-cloud are ‘private’, ‘picture’,
+‘parts’, ‘image’. The number of negative comments was low. Therefore, getting an insight from the word cloud is
+hard. However, the most common words indicate one app that has some technical difficulties in a lesson where the
+game freezes when selects the private parts. Some apps had received specific complaints in their negative comments
+for their performance issues such as “features not working properly”, “app freezing continuously”, “all lessons not
+being available in the free version”. It was perceived from the negative comments that the structural flow of technical
+aspects was confusing and difficult in some apps which made it difficult for the user to follow.
+(a) Positive comments (b) Negative comments
+Figure 5: Word cloud of good and bad comments
+Only one of the reviewed apps named “Stop The Groomer” has detailed informative reviews from users. Users
+referred to this app as both engaging and informative for children. This app focuses on teaching children about the
+grooming techniques that perpetrators use for abusing them. It includes game-based components where children learn
+how to stay safe by playing simple games and can implement their knowledge in real-life scenarios. This app has a
+five-star rating based on the reviews of several users. Good feedback with no negative comments was found in the app
+titled “Bal Suraksha” which also obtained good reviews and scored high ratings in the app store. This app belongs to
+the category of information guide for parents, teachers, and caregivers. Targeted users for this app are parents and it
+provides information about teaching children safety rules, answering children’s questions about sexual abuse, dealing
+with disclosure of abuse, etc. According to users this app helps spread awareness among adults about CSA education.
+20
+Another app where user comments were positive and consistent with app store ratings is “Stewards of Children”.
+This app is targeted towards the adults in a child’s life. It provides training regarding CSA to parents and caregivers.
+Parents can also evaluate their knowledge using this app. Even though this app mostly has good reviews, the rating of
+this app was low according to our app rating scale.
+The app that has the maximum number of positive reviews is “Orbit Rescue”. But the comments are not quite
+informative in this case. This app uses a serious game for educating children about CSA prevention and it is targeted
+at children between the age of 8 to 10 years. Users suggested this app as it is an excellent app for teaching safety
+rules to children. However, it also contains a few negative comments that imply this app might have some technical
+difficulty. Ratings of our modified scale were consistent with user review and app store rating here. Our rating was
+also consistent with user reviews in the app called “Child Abuse Prevention”. This app uses a serious game approach
+and has quite a few reviews in the app store which contains both positive and negative comments. It includes 26
+stories that teach children aged between 3 to 10 years about prevention rules so that they can stay safe from abuse.
+One of the negative aspects that is prevalent in the comments is that this app should be made completely free for wider
+accessibility.
+We have found an interesting observation between the app store rating and user comments. For starters, “The
+Cece Yara App” has a five-star rating in the respective app store. However, it doesn’t have any user comments. The
+comment size was low for “Elements of Child Sexual Abuse” and mostly irrelevant, but the app store rating was high.
+Also, the apps called “Helpio”, “Feel Safe”, “Game on POCSO English Version Online” have user reviews, but no
+star rating in the store. The apps “Kidzlive”, “iSafe”, “ChildAbuseInfo”, “Shishu ke jouno hoyrani theke bachate
+koroniyo” had no user comments.
+From the analysis of the CSA education apps’ user reviews, it can be argued that user comments do not always
+represent the actual status of the apps. Also, we can resolve that there is a difference between the user comments
+found in the app store for an app with the rating of our modified scale. One of the reasons for this can be the
+variation of apps’ performance and functionality characteristics observed in different devices as most of the apps we
+have reviewed performed differently on different devices. This implies that the bulk of the apps currently available in
+app stores have built-in and device-to-device functioning issues. Hence, they require proper optimization on various
+devices. Another potential reason for the variance between rating and user review is that general users hardly focus
+on areas like perceived impacts, transparency, and technical functionality of the apps. Therefore, the user comments
+on the app store are not reliable in the case of determining the overall software quality characteristics of the apps.
+21
+4. Findings and discussion
+4.1. Limitations of reviewed apps
+4.1.1. Feasibility of reviewed apps as CSA prevention programs
+Although there are plenty of apps that claim to provide CSA prevention information, most of the apps lack in
+fulfilling the key features (such as using game-based learning or serious games to teach children, involve parents in
+the education process, providing age and gender-specific education, etc.) that were deemed necessary by our study.
+Furthermore, delivering appropriate content to the target age group, creating content that will interest and encourage
+children and caregivers to learn, and evaluating the children’s learning rate are some of the characteristics that are
+indispensable for an app to work effectively as a CSA prevention program [48]. While apps may be targeted at
+different users, such as younger children, adolescents, or adults, their main goal is spreading awareness against the
+horrors of CSA. For an app to achieve the goal of being successful as a CSA prevention program, it must have both the
+software quality characteristics and the specific features required for spreading knowledge about CSA. Therefore, apps
+that cannot fulfill the measurement criteria determined by this study for rendering proper and precise CSA education
+are deemed unsuitable for being used as CSA prevention programs.
+By analyzing the existing literature [38, 27, 49], the CSA education-specific functionality sub-scale was devised
+that inquires about the most important features of a CSA education app such as parents involvement in education, using
+scenarios that children can relate to, including education about grooming, etc. Studies show that parent’s involvement
+in the CSA education programs is crucial [12]. Also, parents themselves need to know all the crucial information
+about CSA and its prevention methods. Without the proper knowledge, they won’t be able to protect their children
+or deal with post-abuse situations. Moreover, young children require parent’s help to better understand what they are
+learning. Among the apps we have reviewed, only one app (“The Cece Yara App”) had a maximum of 7 out of 11
+features. Six apps had 5 and more features and seven apps had less than 5 features. Among them, one app has fulfilled
+only one feature. Also, there was an app that did not satisfy any CSA education-specific features that were required.
+The app that has the maximum number of features, did not score very well in our overall rating. The reason for this
+inconsistency is that it has received a low score in other sub-scales of the rating scale like aesthetics, general app
+features, transparency, and subjective quality. A similar variance between software quality characteristics and CSA
+education-specific features was seen among the apps named “Stop the Groomer”, “Helpio” and “isafe”. They also
+had more than average features but failed to meet the quality standard and thus, scored low in overall ratings. Another
+reason for this is the lack of more features and the features available being poorly optimized. On the flip side, the app
+“Orbit Rescue” scored the highest rating in our modified rating scale. The reason for this is that this app provides all
+the necessary CSA education features along with required software quality characteristics. Another app “Child Abuse
+Prevention” scored second-highest because it also possesses both the software qualities and the necessary features.
+From the apps we reviewed, none fulfilled all of the crucial points necessary for rendering effective CSA education.
+For example, children with either physical or mental disabilities are more dependent on adults for their care. Hence,
+22
+they stand a higher risk of being abused [7], but only two (“The Cece Yara App” and “Orbit Rescue”) of the fourteen
+apps have mentioned disabled children. Even these two provided no information as to how disabled children can
+protect themselves or how their caregivers can keep them out of harm’s way. One app included a character with a
+wheelchair as the main player (“Orbit Rescue”). And the other app (“The Cece Yara App” ) only informed adults
+about the increased risk of abuse for disabled children, but no information as to how they can be protected. CSA
+education apps must be equally appealing and relatable to all of the target audience including children of all gender
+identities [35]. However, the existing apps mainly focus on scenarios where female children are abused. In our study,
+we found that only three apps (“iSafe”, “Child Abuse Prevention” and “Feel Safe”) feature gender-specific abuse
+scenarios. This absence of knowledge regarding the situations where male children face the risk of abuse leaves them
+confused about which situations are dangerous for them and how to overcome those situations.
+Another important feature that the present apps fail to provide is proper age-specific CSA education. Small
+children have less attention span than older children. Also, younger children need special care and often require
+parental supervision for understanding what they are learning [10]. Therefore, apps targeted towards them need to
+have easily understandable content and a simple user interface. However, the simplistic content in the apps which are
+created for younger children won’t be able to engage older children. Hence, the inclusion of age-specific content is
+indispensable. Only the app “Feel Safe” provided age-specific scenarios of CSA and taught children how to prevent
+or deal with those situations. To protect themselves children need to recognize the various tactics that abusers apply
+to manipulate and exploit children [35, 50, 51]. Unfortunately, only five of the fourteen apps discussed how to be
+safe from grooming tactics which are crucial for a child’s safety. And only two of them, “Stop the groomer” and
+“Orbit Rescue” include proper preventative knowledge for children. Also, the app “Child Abuse Info” provides such
+information for child care professionals.
+Transparency is an extremely important part of any mobile app. Without proper credibility, no app can be con-
+sidered trustworthy [52]. The questions we inquired about in our transparency sub-scale included user consent, the
+accuracy of store description, the legitimacy of the source, and the feasibility of achieving stated goals. Three out of
+14 apps scored 3.5 and above out of 5 in the transparency sub-scale. These apps tried to fulfill the goals that they
+promised in their app store description. But only one app named “Orbit Rescue” had published literature to support
+the fulfillment of their goal which is to assess the effectiveness of a game-based approach to teach CSA education to
+children aged 8–10 years [53]. About 10 of 14 apps had related websites that provided more information about them
+and provided some credibility to them. Three apps (e.g., “Bal Suraksha”, “Child Abuse Info”, “Game on POSCO”)
+were part of government projects and thus had high legitimacy. Some apps were not explicit about the consent taken
+from the user. Moreover, some apps did not even have information about their privacy policy regarding user’s per-
+sonal information on their support websites or inside the app privacy policy page which raises a question about the
+authenticity of their intention of keeping user data private.
+The most amazing part of having apps that teach about CSA is that children can learn by themselves from any
+location. However, for individual use of these apps as CSA prevention programs, they need to have all the necessary
+23
+features and information. When child abuse prevention programs are integrated into school systems, their efficiency
+increases [54]. In a school, setting children are taught about CSA using small lessons across an extended period.
+These smaller lessons repeated for a longer period of time help children learn better. When children will get to
+revise what they learned at school using the apps at home, their understanding of the discussed matters will improve.
+Therefore, CSA education apps should be designed in a way that the apps can be used both at home and in a classroom
+setting. These apps should provide information about CSA and its prevention in an organized way that can be learned
+at home and also at school. Apps should also arrange their lectures in small lessons as children can develop key
+learnings progressively if lessons are provided in small portions and for a continued time period [15]. Only two apps
+we reviewed presented CSA education in a lesson-wise manner that can be used for both home and school-based
+education. This app is called “Orbit Rescue”. It was tested as part of the school curriculum in classroom settings
+and it evaluated the improvement of children’s knowledge regarding CSA after using their app [38]. Other apps that
+had prevention education divided into lessons were “Child Abuse Prevention”, “Stop the Groomer” and “Stewards of
+Children”. The last one “Stewards of Children” is intended for parents or caregivers. Among these three apps, the two
+apps “Child Abuse Prevention” has detailed lesson-wise content that can be implemented in school. But, we found no
+evidence of these apps being tested at school.
+Overall, it is clear that most of the apps present in app stores are not suitable for being used as CSA education
+programs. While a few may be able to teach children and parents individually, only one app could be deemed suitable
+for a school-based education program. These apps need to be improved both on their software qualities and CSA-
+specific features for being considered as potential CSA education programs.
+4.1.2. Potentiality of reviewed apps for inducing behavior changes about CSA education
+Without evaluating the impact of the apps on the target audience in real-life settings, it can not be determined
+whether these apps will induce behavior change among the users. After analyzing the apps we found that only one
+app has information regarding the impact of the app on children after using it. However, from our ratings acquired from
+the perceived impact sub-scale, it can be assumed that a few apps have the potential for bringing behavioral changes
+regarding the importance of prevention education for fighting CSA. Our modified rating scale has measured several
+factors for analyzing the feasibility of these apps in achieving the perceived impact we wanted. Behavior change
+towards CSA requires increasing awareness among users about the depth of the problem and spreading accurate
+knowledge concerning prevention [55]. These apps ideally should help to change both the attitude and intention of a
+user regarding CSA education. Furthermore, by using the apps users should be encouraged to seek help in cases of
+CSA. The apps (5/14) that did not meet these measurement criteria were deemed unsuitable for inducing awareness
+and help-seeking behavior regarding CSA education. However, our study showed that 8 out of 14 apps scored more
+than 4 in perceived impact on users sub-scale implying that these apps have the potential for inducing behavior changes
+of the users. Five of these apps are intended for children’s use. Among these only one app (“Orbit Rescue”) evaluated
+the impact of their app on children [38]. The researchers behind this app conducted a randomized control trial in
+24
+school settings and evaluated children’s knowledge before and after using the application. They found that children
+who completed the serious game for CSA education had increased knowledge and the serious game approach is
+effective for rendering CSA education. However, they did not analyze behavior change among the students. Hence,
+the actual behavior change impact cannot be determined. Such statistics suggest that while the commercial market
+has grown with an increasing number of CSA-related apps, ensuring their potentiality regarding inducing behavior
+change of the users requires properly administered study including children and adults.
+4.2. CSA app design considerations
+4.2.1. Game-based approaches
+After analyzing 14 apps on CSA education, all of our ratings pointed to one conclusion: the most effective ap-
+proach for teaching children sexual abuse prevention are game-based approaches such as gamification, game-based
+learning, and serious games. Gamification is an unconventional umbrella term that is used to express the use of
+game elements in a non-gaming practice to improve user experience and engagement [56]. Game-based learning
+indicates the process and practice of learning using games [57]. Whereas, serious games are custom-built games with
+a specific learning objective [53]. Research indicates that systems built using gamification, game-based learning, or
+serious games are a more attractive, appealing, useful educational method for introducing prevention education to
+children [58, 59, 53]. Through these kinds of systems, children can gain awareness about the need to protecting their
+bodies, learn how to recognize potential danger factors in their environment, and ask for help when in danger from
+trusted adults. More importantly, these methods help to form a link between home, social forces, and school [60].
+A recent study shows that these game-based approaches help children to learn about prevention against this sensitive
+issue while making sure they do not get traumatized [15].
+The popularity of the apps which used games or game-based components is evident from the usage frequency of
+apps found by our raters. Eight apps had an average usage frequency of more than 10 times over 12 months. Five of
+these apps (named “Orbit Rescue”, “Game on POSCO”, “Stop the Groomer”, “Child Abuse Prevention” and “Feel
+Safe”) were intended for children and all of them provided prevention education using either game-based components
+for teaching children or serious games focused on CSA prevention. Two of these apps (“Orbit Rescue”, and “Child
+Abuse Prevention”) had a usage frequency of 10 to 50. One of these apps used the serious game method while the
+other had a game-based learning approach. We should mention that these two apps also scored the highest rating
+according to our scale. Moreover, the scores from the perceived impact sub-scale also suggest that apps that utilize
+the approach of teaching children via game-based components or games have more potential for inducing behavior
+change regarding CSA education. Five of the 8 apps which had more than 4 in this sub-scale rating were the same
+apps that used such approaches. The usage statistics and calculated ratings of such apps in this review are conclusive
+to the analysis of the user reviews from app stores as well, suggesting that the game-based learning, gamification, and
+serious games approaches are the most efficient and most preferred methods for educating children in CSA prevention.
+25
+4.3. Design guidelines
+This study shows that the existing CSA education apps available in the app stores are not fully suitable for render-
+ing prevention education about CSA. They need further improvement on both software qualities (i.e., performance,
+aesthetics, usability) and CSA-specific features. Therefore, future development must consider the limitations found in
+the existing apps that have been pointed out in our study. Developers can test their apps using our rating scale to eval-
+uate the apps’ effectiveness. The CSA education rating scale devised in our study will also be helpful to developers
+for deciding the most important features necessary for a CSA education app.
+Following the reviews and ratings of the existing CSA education apps and evaluating the recent research on
+effective methods for rendering prevention education, we believe that some additional points should be considered
+by developers before designing an app for this purpose. Children tend to learn better when they find the learning
+constituents relatable to their life [29]. Therefore, the apps’ contents must include scenarios from real life. Game-
+based apps are better for educating children about sensitive issues like sexual abuse [61]. Hence, developers should
+focus on game-based learning, gamification or serious game approaches for creating future CSA education apps.
+Furthermore, user customization features should be increased so that children can easily get into the characters in the
+apps. The typical quiz-based learning apps often fail to engage children while teaching [62, 63]. Therefore, designers
+should consider ways where children can learn through playing and observing. If quiz methods are required for
+evaluation, children should be given the scope for fixing their mistakes in a way that goes beyond rote learning [15].
+Research shows that children who possess healthy self-esteem are more likely to accept the message delivered in
+CSA prevention education programs [7]. So developers should focus on creating apps that will promote behavioral
+change and help build a positive self-concept in children. The inclusion of parents or caregivers in the same program
+as children is specifically essential for teaching younger children [33]. This also helps children to choose their trusted
+adults and build healthy communication with them. Thus the apps must include information for both the children and
+parents. Also, the apps must promote the necessary knowledge for the trusted adults, so that they can act appropriately
+when an abusive incident is disclosed. Because when the adults will understand the dangers of CSA and be properly
+educated in prevention education, they will be more eager to educate their children using the CSA education apps.
+5. Conclusions and future work
+In this study, we have systematically reviewed the existing CSA education apps available in the app stores. For
+selecting apps that meet our study criteria we formulated specific keywords and inclusion criteria. From the initial
+191 apps, we finally selected 14 apps for review. For analyzing the selected apps, we devised an app rating scale
+by modifying the existing rating scales keeping in mind the specific needs of evaluating the CSA education apps.
+The verdict drawn from the use of our rating scale on the selected CSA apps and the analysis of the results showed
+that in its current state, the majority of apps in app stores do not meet satisfactory features required to teach children
+about CSA and its prevention. The flaws observed in this review show that not only important features are needed but
+26
+also the software quality of these apps need to be improved. Results also indicate that children prefer apps that use
+game-based learning approaches for teaching CSA education. This study also provides the necessary knowledge to
+developers and individuals regarding software quality characteristics and CSA education. Furthermore, it points at the
+possible directions of the advancement of research and development in CSA education apps. Moreover, individuals
+can gain insight from this study about what features a CSA education app must have to be truly useful. With the help
+of this study, developers will be able to design apps that will be eligible for motivating individuals to properly address
+CSA and become more aware of the importance of learning about CSA education.
+The opinion from a child expert can help to improve the rating scale for CSA education apps and provide a
+comprehensive CSA education structure for children. Therefore, future research will focus on including a specialist’s
+perspective regarding this topic for a more credible research outcome. Another future recommendation for this study
+would be to evaluate these apps with both children and adults in real-life settings. The necessary feedback from
+respective users can enhance the possibility of including more features. Also, from such a study, the effectiveness
+of these apps for providing CSA education would become clear. Our study included only those CSA apps that
+are available in English and Bangla languages since these are the languages that authors are familiar with. As a
+consequence, even though we reviewed an enormous number of CSA apps, we may have missed some apps because
+of our language barrier. Another factor that needs to be noted is that there may exist some apps that could not be
+accessed due to regional restrictions. Also, Since no prior research has been done on searching and reviewing the
+CSA education apps, the searching methods used in our review were modeled after those previously conducted in
+other research area [39, 17]. Thus, another research direction would be expanding the study regardless of searching
+criteria, language variations, and regional restrictions of the app stores.
+Acknowledgements
+The authors would like to thank Sumaiya Nazmin Nishu for her help with the app ratings.
+Funding Source
+This research did not receive any specific grant from funding agencies in the public, commercial, or non-profit
+sectors.
+27
+References
+[1] M. Singh, S. Parsekar, S. Nair, An epidemiological overview of child sexual abuse, Journal of Family Medicine and Primary Care 3 (4) (2014)
+430–435.
+[2] R. Csorba, R. Póka, P. Székely, A. Borsos, L. Balla, É. Oláh, Child sexual abuse, Orvosi hetilap 145 (5) (2004) 223–227.
+[3] J. D. Goldman, U. K. Padayachi, Some methodological problems in estimating incidence and prevalence in child sexual abuse research, The
+Journal of Sex Research 37 (4) (2000) 305–314.
+[4] World Health Organization, Global status report on preventing violence against children, Geneva: World Health Organization, 2020.
+[5] Darkness to light, Darkness to light, https://www.d2l.org/the-issue/statistics/ (accessed 13 January 2021).
+[6] Y.-R. Cho, J.-E. Kim, K.-M. Park, Differences in the Characteristics of Sexual Abuse Victimization between Low- and High-Grade Elementary
+School Children and Correlations among the Characteristics, Journal of Korean Academy of Community Health Nursing 26 (2) (2015) 119–
+127.
+[7] J. Sanderson, Child-focused sexual abuse prevention programs How effective are they in preventing child abuse?, Crime and Misconduct
+Commission Brisbane, Qld, 2004.
+[8] F. M. Daray, S. M. Rojas, A. J. Bridges, C. L. Badour, L. Grendas, D. Rodante, S. Puppo, F. Rebok, The independent effects of child sexual
+abuse and impulsivity on lifetime suicide attempts among female patients, Child Abuse & Neglect 58 (2016) 91–98.
+[9] O. Cullen, K. Zug Ernst, N. Dawes, W. Binford, G. Dimitropoulos, “Our Laws Have Not Caught up with the Technology”: Understanding
+Challenges and Facilitators in Investigating and Prosecuting Child Sexual Abuse Materials in the United States, Laws 9 (4) (2020) 1–19.
+[10] M. Hébert, F. Lavoie, C. Piché, M. Poitras, Proximate effects of a child sexual abuse prevention program in elementary school children, Child
+Abuse & Neglect 25 (2001) 505–522.
+[11] J. L. Holloway, M. L. Pulido, Sexual Abuse Prevention Concept Knowledge: Low Income Children Are Learning but Still Lagging, Journal
+of Child Sexual Abuse 27 (6) (2018) 642–662.
+[12] J. Rudolph, M. J. Zimmer-Gembeck, D. C. Shanley, R. Hawkins, Child Sexual Abuse Prevention Opportunities: Parenting, Programs, and
+the Reduction of Risk, Child Maltreatment 23 (1) (2018) 96–106.
+[13] Mobile Seva, Bal Suraksha, https://play.google.com/store/apps/details?id=com.cdac.safe_spaces_children_English,
+(accessed 28 January 2021).
+[14] Academy for Professional Excellence, Elements of Child Sexual Abuse, https://play.google.com/store/apps/details?id=com.
+andromo.dev88207.app127483, (accessed 21 December 2020).
+[15] C. Stieler-Hunt, C. M. Jones, B. Rolfe, K. Pozzebon, Examining key design decisions involved in developing a serious game for child sexual
+abuse prevention, Frontiers in psychology 5 (2014) 1–10.
+[16] E. Noei, M. D. Syer, Y. Zou, A. E. Hassan, I. Keivanloo, A study of the relation of mobile device attributes with the user-perceived quality of
+Android apps, Empirical Software Engineering 22 (6) (2017) 3088–3116.
+[17] J. Rivera, A. McPherson, J. Hamilton, C. Birken, M. Coons, S. Iyer, A. Agarwal, C. Lalloo, J. Stinson, Mobile Apps for Weight Management:
+A Scoping Review, JMIR mHealth and uHealth 4 (3) (2016) e87.
+[18] A. Tricco, E. Lillie, W. Zarin, K. O’Brien, H. Colquhoun, D. Levac, D. Moher, M. Peters, T. Horsley, L. Weeks, S. Hempel, E. Akl, C. Chang,
+J. Mcgowan, L. Stewart, L. Hartling, A. Aldcroft, M. Wilson, C. Garritty, S. Straus, Prisma extension for scoping reviews (prisma-scr):
+Checklist and explanation, Annals of Internal Medicine 169 (09 2018).
+[19] K. Stawarz, A. L. Cox, A. Blandford, Beyond self-tracking and reminders: Designing smartphone apps that support habit formation, in:
+Conference on Human Factors in Computing Systems - Proceedings, 2015, pp. 2653–2662.
+[20] F. Faux, R. Bastide, N. Souf, R. Zgheib, Smartphone-Based Collaborative System for Wounds Tracking Open Archive TOULOUSE Archive
+Ouverte (OATAO), in: eTELEMED 2016, 2016, pp. 104–109.
+[21] T. W. K. Poon, M. R. Friesen, Algorithms for size and color detection of smartphone images of chronic wounds for healthcare applications,
+IEEE Access 3 (2015) 1799–1808.
+28
+[22] M. R. Friesen, C. Hamel, R. D. McLeod, A mHealth application for chronic wound care: Findings of a user trial, International journal of
+environmental research and public health 10 (11) (2013) 6199–6214.
+[23] T. Vos-Draper, Poster 29 Wireless Seat Interface Pressure Mapping on a Smartphone: Feasibility Study in Users with SCI, Archives of
+Physical Medicine and Rehabilitation 94 (10) (2013) e21–e22.
+[24] M. A. Kabir, S. S. Rahman, M. M. Islam, S. Ahmed, C. Laird, Mobile apps for foot measurement in pedorthic practice: Scoping review,
+JMIR Mhealth Uhealth 9 (3) (2021) e24202.
+[25] S. R. Stoyanov, L. Hides, D. J. Kavanagh, O. Zelenko, D. Tjondronegoro, M. Mani, Mobile App Rating Scale: A New Tool for Assessing the
+Quality of Health Mobile Apps, JMIR mHealth uHealth 3 (1) (2015) e27.
+[26] S. R. Stoyanov, L. Hides, D. J. Kavanagh, H. Wilson, Development and validation of the user version of the mobile application rating scale
+(uMARS), JMIR mHealth uHealth 4 (2) (2016) 1–5.
+[27] K. J. Moon, K. M. Park, Y. Sung, Sexual Abuse Prevention Mobile Application (SAP MobAPP) for Primary School Children in Korea,
+Journal of Child Sexual Abuse 26 (5) (2017) 573–589.
+[28] Speckyboy, The Aesthetics of a Successful Mobile App: Lessons From Three Top Grossing Apps, https://speckyboy.com/
+the-aesthetics-of-a-successful-mobile-app-lessons-from-three-top-grossing-apps/, (accessed 25 December 2020).
+[29] J. Hamari, D. J. Shernoff, E. Rowe, B. Coller, J. Asbell-Clarke, T. Edwards, Challenging games help students learn: An empirical study on
+engagement, flow and immersion in game-based learning, Computers in Human Behavior 54 (2016) 170–179.
+[30] J. Torous, J. Nicholas, M. E. Larsen, J. Firth, H. Christensen, Clinical review of user engagement with mental health smartphone apps:
+Evidence, theory and improvements, Evidence Based Mental Health 21 (3) (2018) 116–119.
+[31] A. Kekäläinen, A. Kaikkonen, A. Kankainen, M. Cankar, T. Kallio, Usability Testing of Mobile Applications: A Comparison between
+Laboratory and Field Testing, Journal of Usability Studies 1 (1) (2005) 4–16.
+[32] K. Walsh, L. Brandon, Their Children’s First Educators: Parents’ Views About Child Sexual Abuse Prevention Education, Journal of Child
+and Family Studies 21 (5) (2012) 734–746.
+[33] S. R. Kang, S. J. Kim, K. A. Kang, Effects of Child Sexual Abuse Prevention Education Program Using Hybrid Application (CSAPE-H) on
+Fifth-Grade Students in South Korea, Journal of School Nursing (2020) 1–12.
+[34] N. Bennett, W. O. Donohue, Identifying Grooming of Children for Sexual Abuse : Gender Effects and Increased False Positives from Internet
+Information, International Journal of Psychology and Psychological Therapy (2020) 133–145.
+[35] L. Scholes, C. Jones, C. Stieler-hunt, B. Rolfe, K. Pozzebon, The Teachers ’ Role in Child Sexual Abuse Prevention Programs : Implications
+for Teacher Education, Australian Journal of Teacher Education 37 (11) (2012).
+[36] K. C. Chang, R. N. Zaeem, K. S. Barber, Is your phone you? how privacy policies of mobile apps allow the use of your personally identifiable
+information, in: 2020 Second IEEE International Conference on Trust, Privacy and Security in Intelligent Systems and Applications (TPS-
+ISA), IEEE Computer Society, 2020, pp. 256–262.
+[37] R. J. Tait, J. J. L. Kirkman, M. P. Schaub, A Participatory Health Promotion Mobile App Addressing Alcohol Use Problems (The Daybreak
+Program ): Protocol for a Randomized Controlled Trial, JMIR research protocols 7 (June) (2018).
+[38] C. Jones, L. Scholes, B. Rolfe, C. Stieler-Hunt, A serious-game for child sexual abuse prevention: An evaluation of orbit, Child Abuse and
+Neglect 107 (2020).
+[39] M. Milne-Ives, C. LamMEng, C. de Cock, M. H. van Velthoven, E. M. Ma, Mobile apps for health behavior change in physical activity, diet,
+drug and alcohol use, and mental health: Systematic review, JMIR mHealth uHealth 8 (3) (2020).
+[40] L. J. Cronbach, Coefficient alpha and the internal structure of tests, Psychometrika 16 (3) (1951) 297–334.
+[41] J. a. Gliem, R. R. Gliem, Calculating, Interpreting, and Reporting Cronbach’s Alpha Reliability Coefficient for Likert-Type Scales, 2003
+Midwest Research to Practice Conference in Adult, Continuing, and Community Education (2003) 82–88.
+[42] J. Sawa, T. Morikawa, Inter-rater reliability for multiple raters in clinical trials of ordinal scale, Drug Information Journal 41 (5) (2007)
+595–605.
+[43] K. A. Hallgren, Computing Inter-Rater Reliability for Observational Data: An Overview and Tutorial, Tutorials in Quantitative Methods for
+29
+Psychology 8 (1) (2012) 23–34.
+[44] T. K. Koo, M. Y. Li, A Guideline of Selecting and Reporting Intraclass Correlation Coefficients for Reliability Research, Journal of Chiro-
+practic Medicine 15 (2) (2016) 155–163.
+[45] N. Behnamnia, A. Kamsin, M. A. B. Ismail, A. Hayati, The effective components of creativity in digital game-based learning among young
+children: A case study, Children and Youth Services Review 116 (2020) 105227.
+[46] E. Guzman, L. Oliveira, Y. Steiner, L. C. Wagner, M. Glinz, User feedback in the app store: A cross-cultural study, in: 2018 IEEE/ACM 40th
+International Conference on Software Engineering: Software Engineering in Society (ICSE-SEIS), 2018, pp. 13–22.
+[47] R. Vasa, L. Hoon, K. Mouzakis, A. Noguchi, A preliminary analysis of mobile app user reviews, in: Proceedings of the 24th Australian
+Computer-Human Interaction Conference, OzCHI 2012, OzCHI ’12, Association for Computing Machinery, NY, USA, 2012, pp. 241–244.
+[48] M. C. Kenny, S. K. Wurtele, Preventing Childhood Sexual Abuse : An Ecological Approach, Journal of Child Sexual Abuse 21 (October
+2013) (2012) 361–367.
+[49] A. Othman, W. A. J. Wan Yahaya, B. Muniandy, Integration of persuasive multimedia in designing learning application for child sexual abuse,
+Jurnal Teknologi 77 (29) (2015) 97–101.
+[50] S. Smallbone, R. Wortley, Child sexual abuse in Queensland : Offender characteristics and modus operandi, Trends and Issues in Crime and
+Criminal Justice 193 (January) (2001).
+[51] S. K. Wurtele, Preventing Sexual Abuse of Children in the Twenty-First Century : Preparing for Challenges and Opportunities, Journal of
+Child Sexual Abuse 18 (May) (2014) 1–18.
+[52] L. Corral, A. Sillitti, G. Succi, Defining Relevant Software Quality Characteristics from Publishing Policies of Mobile App Stores, in:
+M. Awan, I.and Younas, X. Franch, C. e. Quer (Eds.), Mobile Web Information Systems, Vol. 8640, Springer, Cham, 2014, pp. 205–217.
+[53] L. Scholes, C. Jones, C. Stieler-Hunt, B. Rolfe, Serious games for learning: Games-based child sexual abuse prevention in schools, Interna-
+tional Journal of Inclusive Education 18 (9) (2014) 934–956.
+[54] A. Sánchez, M. Favero, Effectiveness of programs for the prevention of child sexual abuse: A comprehensive review of evaluation studies,
+European Psychologist 25 (2019) 1–15.
+[55] G. McKibbin, C. Humphreys, Future directions in child sexual abuse prevention: An Australian perspective, Child Abuse and Neglect
+105 (December 2019) (2020) 104422.
+[56] P. Pereira, E. Duarte, F. Rebelo, P. Noriega, A review of gamification for health-related contexts, in: A. Marcus (Ed.), Design, User Experience,
+and Usability. User Experience Design for Diverse Interaction Platforms and Environments, Vol. 8518 of Lecture Notes in Computer Science,
+Springer, Cham, 2014, pp. 742–753.
+[57] J. L. Plass, B. D. Homer, C. K. Kinzer, Foundations of game-based learning, Educational Psychologist 50 (4) (2015) 258–283.
+[58] A. Desmet, R. Shegog, D. Van Ryckeghem, G. Crombez, I. De Bourdeaudhuij, A Systematic Review and Meta-analysis of Interventions for
+Sexual Health Promotion Involving Serious Digital Games, Games Health Journal 4 (2) (2015) 78–90.
+[59] H. Haruna, X. Hu, S. K. W. Chu, R. R. Mellecker, G. Gabriel, P. S. Ndekao, Improving sexual health education programs for adolescent
+students through game-based learning and gamification, International Journal of Environmental Research and Public Health 15 (9) (2018).
+[60] Y. Shan, Protect Me: An interactive mobile educational tool for children to help and prevent sexual abuse, Master’s thesis, Rochester Institute
+of Technology (2019).
+[61] D. Schoech, J. F. Boyas, B. M. Black, N. Elias, Gamification for Behavior Change : Lessons from Developing a Social , Multiuser ,
+Web-Tablet Based Prevention Game for Youths, Journal of Technology in Human Services 31 (August 2013) (2013) 197–217.
+[62] S. Egenfeldt-nielsen, Beyond Edutainment: Exploring the Educational Potential of Computer Games, Lulu.com, Købmagergade 11A, 4. floor
+1150, Copenhagen, 2013.
+[63] J. Kirriemuir, A. McFarlane, Literature Review in Games and Learning, Nesta Futurelab Bristol, 2004.
+30
 

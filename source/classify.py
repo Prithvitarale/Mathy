@@ -17,6 +17,7 @@ import random
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
+import pandas as pd
 import seaborn as s
 # random.seed(42)
 
@@ -43,7 +44,8 @@ class classify:
         self.cv_x = []
         self.cv_y = []
 
-    def process_data(self, data_dir, concept):
+    def process_data(self, data_dir_without_star, concept):
+        data_dir = os.path.join(data_dir_without_star, "*")
         jj=0
         for j, dir_path in enumerate(glob.glob(data_dir)): #mathy, non_mathy
             print(dir_path)
@@ -91,7 +93,7 @@ class classify:
         print("non_mathy_train: "+str(len(self.non_mathy_train)))
         print()
         print("saving data...")
-        concept_path = os.path.join(data_dir, concept)
+        concept_path = os.path.join(data_dir_without_star, concept)
         os.mkdir(os.path.join(concept_path, "embeddings_"+concept))
         embeddings_path = os.path.join(concept_path, "embeddings_"+concept)
         np.save(os.path.join(embeddings_path, "train_x.npy"), self.train_x)
@@ -148,24 +150,17 @@ class classify:
         train_y = np.array(y)
         test_x = np.array(test_x)
         test_y = np.array(test_y)
-        # print(len(test_x))
-        # print(len(train_x))
 
-        seeds = range(0, 15)
-        # print(seeds)
+        seeds = range(0, 25)
         min_files = 6
-        sizes = np.arange(min_files, len(train_x), step=1)
+        # sizes = np.arange(min_files, len(train_x), step=1)
+        sizes = np.arange(min_files, 18, step=1)
 
-        train_scores = np.zeros((len(sizes)))
-        train_scores_stds = np.zeros((len(sizes)))
-        test_scores_stds = np.zeros((len(sizes)))
-        test_scores = np.zeros((len(sizes)))
+        test_scores_trains = pd.DataFrame(dtype=float, columns=["sizes", "seeds", "scores"])
+        train_scores_trains = pd.DataFrame(dtype=float, columns=["sizes", "seeds", "scores"])
 
         for i, train_x_size in enumerate(sizes):
-            train_score_train = np.zeros(len(seeds))
-            test_score_train = np.zeros(len(seeds))
             for j, seed in enumerate(seeds):
-                # print(seed)
                 train_x_subset, _, train_y_subset, _\
                     = train_test_split(train_x, train_y, train_size=train_x_size, random_state=seed)
                 new_model = None
@@ -174,47 +169,33 @@ class classify:
                 elif model == "svm":
                     new_model = svm.SVC(kernel="linear", random_state=seed)
                 elif model == "perceptron":
-                    # new_model = Perceptron(random_state=seed)
                     new_model = MLPClassifier(random_state=seed)
 
                 new_model.fit(train_x_subset, train_y_subset)
-                train_score_train[j] = new_model.score(train_x_subset, train_y_subset)
-                test_score_train[j] = new_model.score(test_x, test_y)
 
-            train_scores_stds[i] = train_score_train.std()
-            test_scores_stds[i] = test_score_train.std()
-            train_scores[i] = train_score_train.mean()
-            test_scores[i] = test_score_train.mean()
+                test_scores_trains.loc[-1] = [train_x_size, seed, new_model.score(test_x, test_y)]
+                test_scores_trains.index += 1
+                test_scores_trains=test_scores_trains.sort_index()
 
-        train_ci = [1.96*(j / np.sqrt(len(train_score_train))) for i, j in zip(train_scores, train_scores_stds)]
-        test_ci = [1.96*(j / np.sqrt(len(test_score_train))) for i, j in zip(test_scores, test_scores_stds)]
-        print(train_ci)
-        print(test_ci)
-        print(train_scores_stds)
-        print(test_scores_stds)
+                train_scores_trains.loc[-1] = [train_x_size, seed, new_model.score(train_x_subset, train_y_subset)]
+                train_scores_trains.index += 1
+                train_scores_trains = train_scores_trains.sort_index()
 
-        # have to replace with seaborn
+        # print(test_scores_trains[1])
         plt.grid()
-        plt.fill_between(sizes, train_scores-train_ci,
-                         train_scores+train_ci, color="green", alpha=0.1)
-        plt.fill_between(sizes, test_scores-test_ci,
-                         test_scores+test_ci, color="red", alpha=0.1)
-        plt.plot(sizes, train_scores, color="g", label="training scores", marker="o")
-        plt.plot(sizes, test_scores, color="r", label="test scores", marker="x")
+        s.lineplot(data=test_scores_trains, x="sizes", y="scores", marker="o", label="Test scores")
+        s.lineplot(data=train_scores_trains, x="sizes", y="scores", marker="x", label="Training scores")
+
         plt.ylabel("Score (average accuracy)")
         plt.xlabel("Number of Training Examples")
-        plt.title(concept.capitalize() + " concept")
+        plt.title("[framework] learning the " + concept.capitalize() + " concept")
         plt.legend(loc="lower left")
-        # print(len(train_scores))
-        plt.xlim(5, sizes[len(sizes)-1])
-        plt.ylim(0.5, 1.01)
-        # # # plt.show()
-        # s.lineplot(sizes, train_scores, ci=95)
-        # s.lineplot(sizes, test_scores, ci=95)
-        # plt.show()
+        plt.xlim(5, 18)
+        plt.xticks(np.arange(5, 20, 5))
+        plt.yticks(np.arange(0.8, 1.01, 0.1))
         plt.savefig(output)
 
-        return train_scores, test_scores, sizes
+        return test_scores_trains, train_scores_trains, sizes
 # research qs
 # voc refinement algorithm
 # look at limeade
@@ -283,3 +264,5 @@ main()
 
 
 # results -> concepts -> plots
+
+# range, legend, white space

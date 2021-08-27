@@ -1,544 +1,834 @@
-arXiv:2105.02773v1
-[cs.GL]
-4
+AI and Ethics — Operationalising Responsible
+AI
+Liming Zhu, Xiwei Xu, Qinghua Lu, Guido Governatori, Jon Whittle
+Abstract In the last few years, AI continues demonstrating its positive impact on
+society while sometimes with ethically questionable consequences. Building and
+maintaining public trust in AI has been identified as the key to successful and sus-
+tainable innovation. This chapter discusses the challenges related to operationalising
+ethical AI principles and presents an integrated view that covers high-level ethical
+AI principles, general notion of trust/trustworthiness and product/process support in
+the context of responsible AI, which helps improve both trust and trustworthiness
+of AI for a wider set of stakeholders.
+1 Introduction
+When it comes to AI and Ethics/Law1, there are two interrelated aspects of the
+topic. One is on how to design, develop, and validate AI technologies and systems
+responsibly (i.e., Responsible AI) so that we can adequately assure ethical and legal
+concerns, especially pertaining to human values. The other is the use of AI itself as
+a means to achieve the Responsible AI ends. In this chapter, we focus on the former
+issue.
+In the last few years, AI continues demonstrating its positive impact on society
+while sometimes with ethically questionable consequences. Not doing AI respon-
+sibly is starting to have devastating effect on humanity, not only on data protec-
+tion, privacy and bias but also on labour rights and climate justice [8]. Building and
+maintaining public trust in AI has been identified as the key to successful and sus-
+tainable innovation [6]. Thus, the issue of ethical AI or responsible AI has gathered
+Liming Zhu, Xiwei Xu, Qinghua Lu, Guido Governatori, Jon Whittle
+CSIRO Data61, 13 Garden Street, Eveleigh NSW, Australia
+e-mail: \{firstname.secondname}@data61.csiro.au
+1 Law is usually considered to set the minimum standards of behaviour while ethics sets the maxi-
+mum standards so we will use the word ”ethics” throughout the chapter.
+1
+arXiv:2105.08867v1
+[cs.AI]
+19
 May
 2021
-A Guide for New Program Committee Members at
-Theoretical Computer Science Conferences*
-Yfke Dulek1
-, Stacey Jeffery1
-, Christian Majenz1
-,
-Christian Schaffner2
-, Florian Speelman2
-, and Ronald de Wolf1,2
-1
-CWI, QuSoft
-2
-University of Amsterdam, QuSoft
-May 7, 2021
-Abstract
-In theoretical computer science, conferences play an important role in the scientific process. The deci-
-sions whether to accept or reject articles is taken by the program committee (PC) members. Serving on a
-PC for the first time can be a daunting experience. This guide will help new program-committee members
-to understand how the system works, and provide useful tips and guidelines. It discusses every phase of
-the paper-selection process, and the tasks associated to it.
-Introduction and Overview
-Scientific method and the role of conferences
-One of the core principles of modern scientific research is peer review. New research results are written up as
-articles and submitted to journals or conferences where they are reviewed by (usually multiple anonymous)
-experts in the field. These experts judge whether the article fulfills the scientific standards and fits the
-publication venue. Only after an article has passed this quality check by peers, it is considered published
-and becomes part of the scientific literature.
-Publication cultures differ vastly between different research fields. In computer science, it is common
-that research articles are first submitted to conferences, and only a subset of those articles are worked out
-to ”full versions” and later submitted to journals. In sharp contrast, the standard practice in mathematics
-and physics is to submit new research articles directly to journals.
-These differences in publication cultures lead to a very different understanding and experience of the
-role conferences play in this process. In computer science, conferences and their published proceedings are
-the main venues for publication and therefore very important. Researchers have quite a clear picture in their
-head about the ”ranking” or ”tier” of all conferences they submit to. The more prestigious conferences in
-theoretical computer science (TCS) like FOCS and STOC tend to receive hundreds of submissions, and have
-acceptance rates of around 30%, and the best conferences specialized in a particular subfield tend to have
-even lower acceptance rates. It is important for the career of junior researchers (PhD students and postdocs)
-in TCS to have articles published at good conferences, and the task of giving a conference presentation is
-often offered to these junior researchers in order to give them the opportunity to make their first contacts
-with the research community.
-*Feedback and suggestions are welcome and should be sent to c.schaffner@uva.nl.
-1
-For a long time, it has been common practice in some subfields of physics to make new research ar-
-ticles immediately available to the whole research community by putting them as pre-prints on servers
-like arxiv.org. It is great to see that almost all of computer science has adopted this practice by now. The
-two main effects are the following: On the one hand, it allows the research community to advance faster
-(without having to wait for the outcomes of the peer-review process). On the other hand, because all new
-research articles are freely available from these pre-print servers, it allows the community to move away
-from commercial publishers, making publicly funded research available to the whole world, and support-
-ing new open-access publication models such as overlay journals.
-What is a program committee (PC)?
-The reviewing process at a conference is coordinated by a program committee (PC). The members of this
-committee are themselves scientists that are active in the field of the conference. They are responsible
-for deciding which submissions will be accepted for a presentation and/or publication at the conference.
-Depending on the topic of your submission, a PC member can act as a reviewer themselves, or they can
-find a so-called subreviewer to give them an expert opinion about your submission.1
-Although some PC members stay on for multiple years, a new committee is generally formed for every
-new edition of a conference. The responsibilities of a PC member therefore center around a period of a few
-months in a single year.
-Note that TCS has a somewhat different conference process than other areas of computer science. A PC
-member in TCS roughly corresponds to ”area chair” in conferences in other areas such as machine learning.
-Timeline
-Most PCs follow a similar timeline, starting at the moment you receive your invitation, and ending at the
-conference itself. Most of the work is concentrated around the bidding, review, and discussion phase.
-Receive
-invitation
-Call for
-papers
-Submission
-deadline
-Bidding
-phase
-Review
-phase
-Review
-deadline
-Discussion
-phase
-Notification
-Wrap up
-Conference
-Click on the links to learn more about each phase.
-Abbreviations and terminology
-TCS Theoretical computer science
-PC Program committee (selects accepted papers)
-PC chair Program-committee chair (selects and leads PC), role is often fulfilled
-by two people
-SC Steering committee (selects PC chair, invited speakers, and is involved
-in organizing the conference)
-Local organizing commit-
-tee
-Takes care of the more practical details of organizing the conference
-(venue, food, website, etc.)
-Subreviewer Provides expert review on a submission (asked by a PC member)
-COI Conflict of interest
-1During the later stages of your PhD or beginning stages of a postdoc, you may have been contacted by someone requesting such
-a subreview – that person was serving on a PC.
-2
-Review score(s) Discrete value(s) attached to a review, indicating (scientific/editorial)
-quality of submission, confidence of the reviewer, etc.
-EasyChair, HotCRP Commonly used online tools for managing the review process.
-1 Invitation
-Before the call for submissions is published, the program committee chair has to assemble the members of
-the program committee. At this point in time, you may receive an invitation asking you to serve on the
-program committee for that year’s edition of the conference.
-During this phase:
- You gather information to make a decision about whether you want to join the PC.
- You respond to the PC chair to accept or decline.
-1.1 How to get invited to a PC?
-Usually it is up to the PC chair(s) to select the PC members, so you have to be on this person’s radar. PC
-chairs usually try to select a committee that covers all of the relevant research areas, is diverse in terms of
-people (in TCS, there is usually a higher demand for women and other minorities), and a good mix of more
-senior but also eager junior members. Senior members tend to provide more knowledgeable and more
-“expert” reviews, taking into account the broad picture, and all previous research. Junior members usually
-have more time and spend more effort to provide more extensive reviews, including closer reading and
-proof-checking.
-The following actions increase your chances to get invited to a PC:
-• Do good research, publish in good venues, and give good talks at conferences.
-• Provide good subreviews for conferences and journals, and be reliable as a subreviewer, e.g., by re-
-plying timely to review requests, stick to deadlines etc.
-• Happen to have a personal and/or professional connection with the PC chair. The PC chair often looks
-back on PCs which they have been on themselves, and checks the other PC members’ performances.
-Reliability is a very important factor in their decision.
-• Get recommended by somebody (usually more senior) who declines to be on the PC. You could ac-
-tively let your close colleagues/collaborators/supervisors know that you are looking for this oppor-
-tunity.
-• At some conferences, the steering committee keeps a list of “promising” young people who should be
-invited to serve on PCs soon. It is a bit pushy, but it might actually work to approach these members
-and offer to help on a next PC.
-1.2 Accept or reject the invitation
-Think carefully before accepting the invitation to join a program committee. Make sure to have gained
-some experience as a subreviewer before joining your first program committee, so you have some idea of
-the process and the expected time investment.
-3
-Advantages of serving on a program committee:
-• You actively contribute to a core part of the scientific process (namely to peer-review): serving on a
-PC is a service to the community and to science in general.
-• PC memberships increase your scientific credibility and visibility. It will be noticed by influential
-people if you are doing a good job on a PC.
-• You have (partial, but possibly quite a lot of) power to decide what is accepted to a conference. Ev-
-idently, with this power comes the responsibility to use it for the good of science and not for selfish
-motives.
-• You get an inside view of how the conference-review-and-selection process actually works (e.g. how
-much randomness is involved, what PC members care about in the discussion etc.), and can use this
-knowledge when preparing submissions for future conferences.
-• You get a sneak preview of the latest and greatest research results in the field.
-• You are externally motivated to read some interesting papers in depth.
-Disadvantages of serving on a program committee:
-• It costs a lot of time, energy and (potentially) nerves. Check carefully at what dates most of the work
-will be required (your highest workload will be right after the submission deadline, then it will be
-up to you how to balance the workload during the review phase, and then potentially high during
-the discussion phase), how many submissions you are expected to review, how close it will be to
-your core expertise etc. Expect to spend at least 2 to 3 hours on average on each paper you assign to
-yourself, excluding the discussion phase. As a junior PC member, you are likely to spend more time
-on the task.
-• If you do a bad job (like not providing reviews on time, not participating in the discussion, having
-vastly differing opinions), the community will notice, starting with the PC chair, and the other PC
-members you interacted with, and this will decrease your chances for being asked to join another PC,
-and, more generally, will negatively affect your colleagues’ opinion of you.
-• You are forced to read some bad submissions.
-Warning: Only consider serious offers, for conferences that you know and where you would consider
-submitting your own work. You should never have to pay to be part of a PC. Be wary of fake or spam
-invitations; when in doubt, ask a more senior member of your group for their opinion.
-2 Call for papers
-Once you accept the invitation, the PC chair draw up the “call for papers”, which will include your name
-and affiliation as a PC member. Sometimes a picture is included as well. The call for paper specifies
-the page limit, formatting, and whether simultaneous submission or submission of previously published
-papers are allowed. As PC member, you might voice your opinion on these issues to the PC chair. The
-call for papers also contains the deadlines and deadline for notification, so you might want to check if
-those dates make sense. Sometimes there will be an abstract submission deadline followed by a full paper
-submission deadline.
-During the rest of this phase, authors will prepare their manuscripts for submissions, so you do not
-have to do much. For most conferences, you are allowed to submit your own work as well (as an author).
-There may be limitations: for example, there may be a maximum number of allowed submissions, or your
-submission(s) may be held to higher standards.
-4
-During this phase:
- You double-check that your name is spelled correctly and the affiliation says what you want.
- You read the call for papers carefully and make sure your area of expertise is correctly repre-
-sented.
-3 Bidding phase
-Within a few days after the submission deadline, the PC chair will activate the bidding phase, where all
-PC members see a (usually very long and possibly intimidating) list of all submissions. You have a few
-days to indicate your preference for reviewing particular submissions. The goal is for the PC chair to assign
-three PC members to each paper (or more, typically five, for papers submitted by PC members), so you can
-calculate approximately how many papers will end up in your responsibility.
-During this phase:
- You look at all submissions (titles, abstracts, and an occasional closer look).
- You “bid” on submissions to express your interest in being responsible for reviewing them.
- You indicate any conflicts of interest (COIs).
-Bidding is often done by assigning points to each submission, for example ranging from -20 (“I really
-don’t want to review this”) to +20 (“please please assign me to this one”). The system works best if you use
-the whole spectrum of points, and not just the two extremes.
-Go through the list of submissions (looking at titles and abstracts, sometimes downloading the PDF and
-having a closer look), and give clear indication of which submission you would actually like to review, and
-maybe even more importantly, which you do not want to review. If there is a search functionality, you can
-search for keywords (e.g., “quantum” or “cryptanalysis”) in order to make a rough distinction between
-your favourite topics and those you have no idea about.
-The most useful thing you can contribute are high-confidence reviews, either by yourself or by people you
-can ask as subreviewers. If you find there are not many papers in your area(s) of expertise, you can also
-bid on papers on topics that you have close colleagues working on, so you will know some subreviewers,
-and they are likely to accept your request. However, keep in mind that in the end, you are responsible for
-making sure a proper review is submitted, so you have to be able to form an opinion if necessary. You
-should also be able to contribute meaningfully to the discussion phase.
-You can (and should) bid on any paper that you think you can confidently review. This is not necessarily
-limited to papers under your expertise. For example, if there is a submission on Basket Weaving, and you
-are confident that Basket Weaving does not fall under the topics of the conference, you can confidently
-write a rejecting review without having any expertise in Basket Weaving.
-3.1 Conflicts of Interest
-During the bidding phase, you are also asked to indicate possible conflicts of interest (COI) that have not
-already been caught by the system. COIs are often handled slightly differently from conference to confer-
-ence, the PC chair will give you clear instructions about this. If in doubt, double-check with the chair. At
-pretty much any conference, submissions (co-)authored by
-• yourself,
-• a person from the same institute as yours,
-• your (former) PhD student(s) and recent postdocs, or (former) PhD or postdoc advisor,
-5
-• family members or close personal relationships
-should be indicated (by you) as COIs, as you cannot be impartial while judging these submissions. In
-general, mark any submission where you feel unable to be impartial as COI, e.g. because of “previous
-history” you have had with an author or a particular submission. If in doubt, discuss with the chair.
-Once you mark a submission as COI, it will completely disappear from your view. This can be weird,
-because other PC members still see the submission (and its discussion), and you might hear them discussing
-a certain number of submissions in a particular state, and those numbers might not add up for you because
-of COIs. Basically, only the PC chair has the complete view of the whole process. PC chairs are often not
-allowed to submit anything themselves, as this complicates things even further (a PC co-chair would have
-to handle the PC chair’s submissions).
-Some conferences distinguish between “hard COI” and “soft COI”. We described “hard COI” above,
-meaning that you should have completely no involvement in discussion of the paper, and it should disap-
-pear from your view. A “soft COI” means that you have some interaction with the paper (for example, you
-have a competing paper, or maybe you had some old collaboration or connection with the author that does
-not rise to a hard COI). In this case you should declare your COI in the comments to the PC, so people are
-aware of it.
-3.2 Ethical dilemmas
-At conferences with anonymous submissions, refrain from googling the title of the paper in order to find
-out author names. You can be more impartial if you do not know (exactly) who wrote the submission.
-You are likely to encounter submissions that are very related to your own work (such as your own
-submissions to this or other conferences, almost finished work in progress, ideas you had previously, work
-of your students, etc.). On the one hand, your closeness to the subject area makes you the ideal referee for
-such submissions. On the other hand, your closeness to the subject makes it impossible or very hard for
-you to be impartial. It is important to keep in mind that as a PC member, you are bound to confidentiality,
-and you are not allowed to use any information or research results you encounter in the review process
-for your own research until the submission appears publicly. In practice, you can hardly make your brain
-split in halves and only think about your own work in one half, and do the PC work in the other half. In
-most cases, the submitted results will appear publicly (on a pre-print server) not long after submission and
-most definitely after acceptance. You have several options:
-• The easiest way out is to declare a COI, the submission will disappear from your worldview, and you
-try to forget you have ever seen it (at least until it pops up on some pre-print server).
-• If you feel that you are able to give an (almost) impartial review (in particular if there are probably no
-other qualified referees available), you should do so, but clearly indicate in the “comments to the PC”
-what your potential COI is. The situation is easier if your review is positive, because a negative review
-can be seen as you shooting down submissions competing with your own submission or interests. In
-case of a negative review, try to give good technical reasons, and possibly even comparisons to your
-own work.
-Unfortunately, it has happened before that paper X is submitted, a PC member gets it for review, and
-then posts a paper X’ with very similar result, and to add insult to injury, the paper X gets rejected and
-now it has been scooped by X’. Such episodes should increase your motivation to post your results publicly
-right after the time of submission.
-4 Review phase
-After all the PC members have indicated their reviewing preferences, usually 5-7 days after the submission
-deadline, the PC chair runs some optimization algorithm that assigns papers to reviewers. There might
-6
-also be a fair amount of manual adjustments. Then the reviewing phase starts, and generally lasts around a
-month. At the end of the reviewing phase, all your assigned submissions should have review score(s) and
-a review text. There is also an option for comments to the PC (visible to other PC members, but not the
-authors of the submission), or comments to the PC chair only. In addition to these three fields, there may
-be specific questions (e.g., about editorial quality of the submission) which can be free form or a numerical
-scale.
-During this phase:
- You familiarize yourself further with the submissions that were assigned to you.
- You review several submissions yourself.
- You contact external subreviewers to review the other submissions under your responsibility.
- You notify the PC chair of any bugs you or your subreviewers find in otherwise good submis-
-sions; they might give the authors a chance to rectify.
- You remind your subreviewers that their reviews are due.
- You edit and submit all reviews/scores before the deadline.
- You allocate time for last-minute reviews in case one of your subreviewers fails to deliver.
-As soon as you receive your pile of papers, download them and familiarize yourself a little better with
-them. This pile of paper will entertain you for a substantial part of the following month. For each submis-
-sion, get a feeling of the following aspects:
-• How likely it is that you can provide a high-confidence review yourself?
-• How long would it take you to review this submission? You probably already have an idea of how
-long it takes you to conference-review a paper. As a guideline, a minimal review of a submission with
-chances of acceptance will take you at least half a work day.
-• Can you think of a person (or two) who could ideally subreview this submission, in case you cannot
-review it yourself?
-Decide how many submissions of your pile you have time to review yourself, and how many you want to
-outsource to subreviewers. This decision depends on the amount of time and energy you have available,
-but generally PC members review about half of their assigned papers themselves. Some types of papers are
-suitable for reviewing yourself: papers you have already read, papers you anyway want to read, papers
-close to your expertise, papers that are easy to dismiss (because they seem out of scope, very messily
-written, claim that P=NP, etc.).
-You can also ask for informal opinions from colleagues who may not have time to give a full subreview,
-but are well positioned to comment on the context of certain results. In that case, indicate that you have
-done so in the comments to the PC. Collecting such an informal opinion can also be an option if you are
-having trouble finding a subreviewer and the deadline is getting close, as someone might be willing to
-respond with an informal opinion, especially on some specific aspect of the paper, who would not otherwise
-commit to writing a full review in the short timeframe.
-4.1 Writing reviews yourself
-A must-read is Ian Parburry’s (very old, but timeless) Guide for New Referees in Theoretical Computer
-Science. Remember that the goal is to provide high-confidence reviews! A good conference review is not
-too long, and it summarizes the main contributions of the submissions which also benefits the other PC
-7
-members, starting off the discussion. In case there is a rebuttal phase, clearly formulate questions that you
-would like the authors to answer.
-For conferences without proceedings, do not spend too much time giving feedback on the presentation,
-because the goal is not to produce a perfectly polished piece of writing in the proceedings. If a paper is
-badly written, especially if there are (many) typos in the mathematics, this can of course still affect the final
-score.
-As PC member, you should try to focus on what the central contributions of the paper are, rather than
-finding flaws in it. If a paper has a novel idea and would benefit the community to be aware of, then it
-might be worth accepting even if it has typos and some sloppy references. On the other hand, if the main
-result is boring, it does not matter how solid the execution is.
-Give rather extreme scores if you love or dislike submissions. Grades tend to be distributed normally
-around the mean, so a greater variance is appreciated. You can always adjust your grades later. Do not be
-afraid of indicating high confidence for submissions in your area, you actually are one of the experts in the
-field. Similarly, indicate (very) low confidence for submissions far outside of your expertise where your
-review is just a wild guess, try to avoid those anyways.
-The top submissions (clear accepts) and bottom submissions (clear rejects) are always easily identified,
-but the big bulk of the submissions will be in between. Be aware that the border between acceptance and
-rejection is not the middle score, but rather (usually) “weak accept”: some submissions with an average
-“weak accept” score may get in, most will not. Often, a submission needs at least one very positive opinion
-in order to get accepted.
-4.2 Managing subreviewers
-Do not wait for longer than a day with contacting potential subreviewers for a submission. Often there
-is one “obvious” reviewer for a paper, and other PC members will attempt to ask this person as well.
-Send along the review guidelines (and COI policy) to subreviewers. Often you can simply point them
-to a URL for this information. Give them a deadline which is 2-3 days before your own deadline, in case
-people are unreliable or something else goes wrong. This way, you have time to read through their review
-before entering it into the system, possibly adjusting the grades to what is expected, or mix in some of your
-own opinions. Some subreviewers fail to send in a review altogether, so reserve some time close to the
-deadline to do some last-minute reviews yourself.
-Depending on the type of conference and the size of your network, potential subreviewers might decline
-or never even respond. You can decrease this probability by:
-• sending out your requests as soon as possible, so that the subreviewer did not already agree to review
-for another PC member;
-• following up on your request if you don’t get a response to your request within approximately three
-days. Easychair (and other automated) emails sometimes end up in people’s spam folder or are
-otherwise ignored. You can use your own email to follow up, asking them to respond to the referee
-request;
-• asking potential subreviewers “informally” (via email or in-person) before sending out the official
-referee request. This partially resolves the spam-folder issue, but requires you to keep track of more
-communication channels;
-• adding a personalised message to the review request, rather than the standard message provided by
-the system;
-• asking people that you know personally, or for whom you have reviewed in the past.
-If you do not know any potential subreviewers with expertise in the topic of a given submission, you can
-look through the list of references for recent relevant papers and ask one of their authors. If the submission
-is a follow-up to a specific paper by different authors, you can ask one of those. You can also look at
-8
-the acknowledgement section, but those people could be “too close” to the submission. Avoid asking
-subreviewers from the same institute as the authors (this is a COI), other PC members, and of course the
-authors themselves. If the submissions are anonymous, you cannot avoid potentially doing so. In case that
-happens, the subreviewer will decline because of a COI.
-Ask your potential subreviewer for an explicit confirmation that they can commit to doing the review.
-If they do not respond, not even after a reminder, continue looking for another reviewer. Do not wait too
-long with this. You could even prepare a list of back-up subreviewers to ask, so that you can act quickly in
-case a request is declined or ignored.
-To the people that did respond and agree to review, send a reminder a few days before the deadline you
-have given them, and again if the review has not come in after the deadline is passed. Here is a template
-for a reminder email:
-Dear X,
-On [date] I sent you (via EasyChair) a referee request for the [conference
-name] submission [name of submission], which you kindly accepted.
-I didn’t get a reply yet. It is of course fine if you don’t want to do it,
-but could you please let me know either way, so that I know whether I have
-to look for someone else?
-Best regards,
-[you]
-Decide beforehand when to give up and switch to doing the review yourself. Usually, if one post-
-deadline reminder does not work, it is time to give up. Remember to reserve time to quickly review one or
-two papers yourself in case one of your subreviewers goes missing.
-When a subreviewer submits their review, do not just copy-paste it into the reviewing system, but
-instead:
-• Have a look at (at least) the introduction of the submission yourself. If the submission has only
-external reviewers and they are all positive, it may be wise to read the entire paper, so that at least
-one PC member has had a close look at it.
-• Edit and error-correct the review itself if needed. Doing so will also protect the privacy of your
-subreviewer: for example, it removes grammar mistakes that are typical to native speakers of specific
-languages.
-• Recalibrate the referee’s score(s) to ensure consistency among the submissions under your responsi-
-bility. If the acceptance rate of the conference is 20%, then roughly 20% of the submissions in your pile
-should receive an accepting score. But beware: this is by no means a hard rule, because your batch is
-biased: your area of expertise may be especially “hot” and fast-paced this year, you may have iden-
-tified many obvious rejects during bidding, etc. Often, recalibrating means toning over-enthusiastic
-scores down a notch to bring them in line with other scores in your batch.
-In case you make any changes to the text or scores of the subreview, you should specify and explain these
-changes concisely in the ”comments to the PC” field.
-4.3 Submissions by PC members (like yourself)
-Submissions by PC members often get more reviewers assigned (say, five instead of three), which usually
-means raising the difficulty to get accepted. The standards applied for those submissions are often a bit
-stricter than for other submissions. These higher standards can be a reason for preferring a competing
-submission of similar quality.
-9
-Often, there is a cap (usually around two) on the number of papers that a PC member is allowed to
-submit. This cap may interfere with your desired research output, especially if you are in the postdoc
-phase of your career. However, the benefits of serving on a PC of a relevant conference usually outweigh
-this drawback.
-5 Discussion phase
-You will not be able to see other PC member’s reviews until you have submitted your own. In most re-
-viewing systems, there is the option of putting submissions on a personal “watchlist”, which means that
-you get notified if there is a new comment in the discussion. Make sure all submissions on your pile (and
-others you are interested in) are on your watchlist. This does not always happen automatically.
-During this phase:
- You read the other reviews on the submissions in your pile, and potentially revise your score.
- You start and contribute to discussions on the papers in your pile, with the goal of clearing up
-any questions and reaching a consensus about acceptance or rejection.
- You may be asked (or be interested) to contribute to certain discussions outside your pile. Proac-
-tive contributions on top of your own pile are highly appreciated in this phase.
- You might give feedback to, or ask additional input from, your subreviewers.
- In case the conference allows rebuttals, you read and consider the authors’ rebuttals.
- You might vote or attend a physical PC meeting for the final decisions.
- You polish (or revise) reviews at the end of this phase, before they are being sent to the authors.
-Once the discussion phase has started, read carefully through the reviews of the other PC members (or
-their subreviewers), and check the scores they have given. You might want to look up names of subreview-
-ers that are unfamiliar to you. Immediately start off the discussion in case you disagree with somebody
-else’s opinion. If another review provides you with new and relevant information that you had missed (for
-example, another reviewer finds an error in a proof that cannot easily be fixed), you may decide to revise
-your own score based on that new information. That will help the PC chair to identify submissions with a
-low (or high) score.
-If you have limited time, focus on the borderline cases, as the good and bad submissions will “automat-
-ically” get accepted or rejected. Contribute to the discussion where it is necessary and useful.
-In case of very similar submissions, there might be comparative discussion boards, where two or more
-submissions are directly compared to each other, and all PC members from the individual submissions
-can participate (except if they have COIs with any of the involved submissions). In these comparison
-discussions, expert opinions of people knowing the details of multiple submissions are highly appreciated.
-Again, such a joint discussion can be rather weird (like a game of Werewolf) if you or others have COI with
-one of these papers. If this is the case, you should exclude yourself from the discussion as much as possible.
-You may even consider avoiding both submissions if you can already foresee a possible merger during the
-bidding phase, to prevent an ethical dilemma.
-Sometimes, the PC chair will ask you explicitly to have a look at another submission (on top of those
-that you have already reviewed). Read at least the title, abstract, and introduction to form a general opinion
-before looking at the other reviews.
-During the discussion phase, you do not have to limit yourself to the papers initially assigned to you.
-You should look for other papers where discussion is incomplete (i.e., reviewers have presented conflicting
-opinions and have not responded to each other), you have relevant expertise and/or the ranking looks
-10
-borderline. But also look for misclassified papers that are far from the borderline. You can also invite in
-other PC members to join the discussion. Try to watch out for papers in areas that are not ”fashionable”
-or are not well represented in the PC, and make sure they do not fall through the cracks due to lack of
-attention. In general you should be proactive and not assume that other people will take care of things
-that seem wrong.
-If you believe it has added value, you could ask the PC chair for the permission to forward the other
-reviews (without scores or names) to your subreviewer, and ask them for their input to the discussion. In
-particular, this could be useful for more junior subreviewers, also to give them a better idea how this whole
-reviewing process actually works, and what other (possibly much more senior) experts in the field have to
-say about the submission that they analyzed very carefully.
-5.1 Rebuttal phase
-Some conferences have a rebuttal phase, where the authors can read and respond to (“rebut”) reviews on
-their work. Depending on the settings, authors might not see the numerical scores, and no (final) decision
-has been made about acceptance or rejection at this point. The discussion phase continues after the rebuttal
-has been received.
-Read through the authors’ rebuttal. Do they address the concerns you had? If you believe it has added
-value, you might forward the authors’ rebuttal to your subreviewer and ask for input to the discussion.
-Instead of an explicit rebuttal phase, some conferences allow PC members to send questions to the
-authors via the PC chair, usually when there are narrow technical concerns about correctness, or other
-factual points.
-5.2 Decision phase
-As the discussion phase draws to a close, it is time to make decisions. Normally, the decisions about which
-submissions to accept will be initiated by the PC chair. Based on the given scores (possibly weighted with
-the confidence score), the PC chair will change the “status” of a submission to “preliminary accept”, or
-“preliminary reject”. If nobody speaks up in the discussion for a week or so, these decisions become final.
-Clear accepts and clear rejects are usually easy to handle. Most time will be spent on discussing submis-
-sions with diverging scores from different reviewers, and “borderline” papers.
-About a week before the date of notification, there are usually quite a bunch of (say 40) submissions left
-that are all competing for the remaining (say 20) spots. In this phase, pretty much any of the submissions in
-the running could make it in or not. If you want to, you can have a lot of influence in this phase by voicing
-a strong and well-argued opinion towards acceptance or rejection. PC members tend to be tired of all the
-hard work, and clear voices are appreciated.
-Often, the very last decisions are taken by a vote, e.g. an approval vote where you can vote for as many
-submissions as you want, and the ones with the most approvals get in. In some rare cases, there might be a
-physical PC meeting.
-5.3 Physical PC meetings
-Sometimes, the final decisions are taken at a physical PC meeting. Usually, it takes at least two days to
-go through all borderline cases, and it is very hard (or impossible) to have the same energy and thought
-level for all these cases. Outcomes of these meetings tend to be (even) more random than votes. At these
-meetings, you have a lot of influence by voicing good arguments at the right moment, it might feel like a
-political procedure. Of course, it is fun to meet all these clever PC members in person.
-5.4 Polishing reviews
-After the final decisions are taken, the PC chair will ask the PC members to “polish” their reviews. In
-addition, there might be one PC member per submission assigned to summarize the PC discussion for the
-11
-authors. As a courtesy to the authors, it is useful to reflect some of the PC discussion in the reviews to be
-sent to the authors. You now had an “inside view” of how the decision to accept/reject has taken place, so
-try to convey the main message to the authors, in particular in case of a “reject”.
-In case of a “reject”, you should also consider toning down any very enthusiastic reviews in order to
-prevent the authors from being confused by the conflicting reviews.
-6 After the author notification
-After the decisions and reviews have been sent to the authors, most of the hard work is done! There are a
-few small tasks left before the conference is over.
-During this phase:
- You help select invited speakers.
- You help select submissions deserving of an award, longer talk slot, etc.
- You might chair one or more sessions at the conference.
-6.1 Selecting invited speakers and best-(student)-paper awards
-One (pre-)final task of the PC, depending on the conference, is to help select the invited speakers. This
-process might happen together with input from the steering committee, or local organisers. Some of the
-accepted submissions might be upgraded to plenary talks.
-Often, you can select speakers or results you like, and argue why they should be invited, and some-
-times there will be a vote about it. Suggestions for suitable speakers are generally appreciated, as is any
-thoughtful input (also on issues of diversity). The PC chair should try to balance the topics/areas of invited
-speakers.
-6.2 Chairing a session at the conference
-PC members are the prime candidates for chairing a session at the conference, as they represent the body of
-people who have made the selection. You often get to chair the session closest to your own research, which
-can be fun. A few pointers:
-• Be on time for your session.
-• Make sure you can pronounce all author names (and titles) of your session. If you are unsure, it is OK
-to double-check with the speaker before the talk starts.
-• Pay attention to the talks.
-• Keep track of the time.
-• Ask the audience for questions, and if there is none (and time), ask at least one question yourself.
-Although you are welcome to attend the conference (especially if you authored an accepted work), being
-able to do so is not a requirement for serving on the PC.
-7 Further Resources
-The International Association for Cryptologic Research (IACR) maintains official guidelines for PC chairs
-and for reviewers as well as other documents relevant to this process.
-12
-2020 Ulle Endriss’ FAQ for submissions to AAMAS-2021
-July 2018 Aram Harrow on being QIP PC chair: What I learned from being QIP PC chair
-Aug 2017 Thomas Vidick on chairing the QCrypt PC: A beginner’s guide to PC chairing
-Mar 2015 Boaz Barak on chairing a STOC/FOCS committee: Tips for future FOCS/STOC program chairs
-Dec 2008 Graham Cormode on How NOT to review a paper: the tools and techniques of the adversarial
-reviewer
-Nov 1989 Ian Parberry on writing a high-quality review: A guide for new referees in theoretical computer
-science
-Acknowledgements
-The idea for this guide was conceived during the weekly group meeting of Christian Schaffner’s quantum-
-cryptography group at QuSoft. In autumn 2020, multiple group members were asked to serve on PCs for
-the first time. While a useful guide is readily available for first-time referees in TCS, we were unable to find
-an analogue document for first-time PC members. Reason enough to write our own! Most of the writing
-was done by CS, most of the editing by YD, all authors have contributed with their experiences and tips.
-We would like to thank Simon Apers, Boaz Barak, Léo Ducas, Ulle Endriss, Aram Harrow, Laura
-Mančinska, Nikhil Mande, Maris Ozols, and Bart Preneel for their insightful comments and additions.
-If you have any comments or suggestions, please let us know by email to c.schaffner@uva.nl. We are happy
-to incorporate and acknowledge those in future versions of this guide.
-13
+2 Liming Zhu, Xiwei Xu, Qinghua Lu, Guido Governatori, Jon Whittle
+high-level attention. Nearly one hundred principles and guidelines for ethical AI
+have been issued by private companies, research institutions, and public organisa-
+tions [25, 10] and some consensus around high-level principles has emerged [15].
+On the other hand, principles and guidelines are far from ensuring the trustwor-
+thiness of AI systems [31]. Complicating the issue further, humans and societies
+perceive trust in AI in intricate ways, which does not necessarily closely match the
+trustworthiness of a particular AI system [17, 28, 30].
+The remainder of the paper is organized as follows: Section 2 discusses the chal-
+lenges of existing works on ethical AI. The framework with an integrated view of
+three aspects of ethical AI is discussed in Section 3. Section 4 shares our experience
+and observations in a crop yield prediction project. Section 5 talks about the high-
+level ethical principles and their operationalization. Finally, section 6 concludes the
+chapter.
+2 Ethical AI Challenges
+2.1 Classification of Existing Works on Ethical AI
+Significant research has gone into addressing ethical AI challenges. In this section,
+we discuss the existing works, which fall into three large categories:
+1. High-level ethical principle frameworks. A large number of high-level eth-
+ical principle frameworks [25] (e.g., Australian AI Ethics Principles2). They
+identify the important ethical and legal principles responsible AI technologies
+and systems are supposed to adhere to. Some effort, such as [34], further di-
+vides these high-level principles into guidelines at the team, organisational and
+industry level. These high-level principles are hard to operationalise for many
+reasons [31] we will discuss later.
+2. Ethical algorithms. Significant research has gone into ethical algorithms where
+the formulation of some ethical/legal properties is amenable to mathematical
+definitions, analysis and theoretical guarantees. These include properties such
+as privacy [24] and fairness [29] or for specific types of AI systems [12]. This
+covers mechanisms that deal with pre-processing of data (to remove bias or in-
+dividualistic characteristics), the learning process itself (to take into considera-
+tion of ethical constraints), learned models (to be further compliant with ethical
+constraints) and predictive results (to correct for residual bias or revealing in-
+dividualistic information). However, these mechanisms are algorithm focused
+with limited theoretical heuristic, confined to a small number of quantification-
+amenable properties, and a small subset of ethical principles and human val-
+ues [33]. Most of the time, these ethical-aware algorithms are too complicated
+2 https://www.industry.gov.au/data-and-publications/
+building-australias-artificial-intelligence-capability/
+ai-ethics-framework/ai-ethics-principles
+AI and Ethics — Operationalising Responsible AI 3
+to explain to less numeracy-equipped stakeholders and not connected to the
+broader decision making process [6]. They are also not linked to the software
+development processes, especially system design methods, requirements engi-
+neering or user-centred design (UCD) processes.
+3. Human values in software engineering and their operationalisation. Re-
+cently, there has been emerging research in human values in software engineer-
+ing and their operationalisation [20, 21], including:
+a. Extension of value-based design methods (e.g., value-sensitive design -
+VSD) [19]
+b. Extension of human factor research on productivity and usability into hu-
+man values consideration but still limited to a small subset of human values
+[33]
+c. Software engineering methods for embedding human values and ethical
+consideration throughout the software development life cycle (SDLC) [20,
+36, 14]
+d. Architecture and design patterns that can improve (qualitatively or quanti-
+tatively) [7] or assure (with strong mathematical guarantees), “by-design”,
+certain ethical or human-value related quality attributes such as privacy and
+non-maleficence (e.g. security, safety and integrity) [38, 27]
+2.2 Issues of Existing Works on Ethical AI
+We identify three issues in current research work regarding operationalising ethical
+principles to achieve the ultimate trust from stakeholders.
+2.2.1 Mixing Inherent Trustworthiness with Perceived Trust
+The inherent and technical “trustworthiness” of an AI system can be directly re-
+flected in technologies/products via code, algorithms, data or system design or in-
+directly reflected via the software development processes). On the other hand, trust
+is a stakeholder’s (i.e., truster’s) subjective estimation of the trustworthiness of the
+AI system. This subjective estimation is based on a truster’s expected and preferred
+future behaviour of the AI system. Mixing the two in terms of identifying assur-
+ance mechanisms and presenting trustworthy evidence can overlook the additional
+and special mechanisms required to gain trust (different from the ones for gaining
+trustworthiness).
+A highly technically trustworthy system may not be trusted by trusters for one
+reason or another, rationally or irrationally. This is because a truster’s subjective
+estimation of the system’s trustworthiness and expectations may have a significant
+gap compared to the system’s inherent trustworthiness. It can also be the other way
+4 Liming Zhu, Xiwei Xu, Qinghua Lu, Guido Governatori, Jon Whittle
+around when a truster overestimates a system’s trustworthiness and puts undue trust
+into it.
+The reasons for this gap may be related to several issues:
+• a truster’s numeracy (impacting the understanding of different types of trust-
+worthiness evidence);
+• a truster’s prior beliefs and experiences;
+• a truster’s preferences and expectations on acceptable behaviours, types of evi-
+dence and explanation[30];
+• a system’s observable behaviours to a truster.
+2.2.2 Operationalising Ethical Principles
+There are many reasons why we still lack systematic methods to operationalise the
+high-level ethical principles. Some are due to the AI field’s relatively short history
+(e.g., compared with the medical field) thus lacking professional norms, legal and
+professional accountability mechanisms, clear common aims, fiduciary duties and
+importantly proven methods to translate principles into practices [31]. Others are
+due to the lack of consideration of a wider set of human values [32] such as political
+self-determination and data agency beyond technical dependencies [22].
+We believe another important factor is due to the relatively narrow attempt to op-
+erationalise human values and ethical principles into verifiable “product” trustwor-
+thiness (via mathematical guarantees) without systematically exploring a wider va-
+riety of mechanisms in development processes to improve both trustworthiness and
+trust. Looking at process mechanisms can include highly tailored evidence gather-
+ing and communication mechanisms for different types of trusters. These will help
+close the gap between their subjective estimation and the system’s more objective
+inherent trustworthiness.
+2.2.3 Unique Characteristics of AI
+Finally, many of the works do not actively consider the unique characteristics of AI
+during operationalisation. Referring to one [11] of the many definitions of AI, AI
+is a collection of interrelated technologies used to solve problems autonomously,
+and perform tasks to achieve defined objectives, in some cases without explicit
+guidance from a human being. AI has its own agency [10] reflected in its auton-
+omy (i.e., acting independently), adaptability (i.e., learning in order to react flexibly
+to unforeseen changes in the environment) and interactivity (i.e., perceiving and
+interacting with other agencies, human or artificial). So by AI’s definition and its
+inherent autonomy-related characteristics, it would be impossible (not simply hard)
+to accurately and completely specify all the goals, undesirable side-effects and con-
+straints (including ethical ones) at its finest level of details. This is known as the
+value alignment problem: given an optimisation algorithm, how to make sure the
+optimisation of its objective function results in outcomes that we actually want, in
+AI and Ethics — Operationalising Responsible AI 5
+all respects? As one saying goes, “It never does just what I want, but only what I tell
+it.” This inherent under-specification issue is both a boon and a bane of AI. Thus it
+is important not just to use guarantee mechanisms but to introduce a range of prod-
+uct and process-related risk mitigation mechanisms. This will include things like
+continuous validation and monitoring of systems [35] after deployment, broadening
+specifications and real-world validation [9].
+3 Our Solution
+Although previous work has produced high-level ethical AI principles, general no-
+tions of trust vs trustworthiness and product vs process support, they have not been
+integrated into the context of responsible AI. The contribution of this book chapter
+is the integrated view of the three aspects and how they help improve both trust and
+trustworthiness of AI for a wider set of stakeholders. This integrated view includes
+three components:
+• the difference between trust and trustworthiness in the context of ethical AI
+principles;
+• how different product and process mechanisms can achieve trustworthiness for
+different ethical principles;
+• how different product and process evidence can be presented to different types
+of trusters to improve the accuracy of their subjective estimation so they match
+the inherent trustworthiness of the systems.
+Our work also takes into consideration of the autonomy characteristics of AI and
+its inherent under-specification challenges. Figure 1 gives a graphical representation
+of our framework.
+For conceptualising the relationship between trust and trustworthiness, we use
+the definitions and concepts from Bauer’s work [4]:
+Trust PAito is truster Ai’s subjective estimate of the probability Pbj
+that Bj will
+display Ai’ preferred behavior Xkt1
+i.e., of Bj’s trustworthiness.
+In our work, Bj represents an AI system. The behaviours Xkt1
+displayed by Bj
+can include functional behaviours, behaviours that handle ethical constraints (e.g.
+privacy, security, reliability, safety and other human values and wellbeing) and
+meta-level behaviours (e.g.transparency, explainability [18] and accountability). A
+truster’s subjective estimate at t0 is about the AI system’s future behaviour at t1.
+There are some arguments around the concept of trust being binary (rather than
+probabilistic) in reality as you either trust something or not. When you eventually
+decide to accept a system to be trusted, you then accept the associated harm if the
+trusted party fails. We believe this binary notion is consistent with the probabilis-
+6 Liming Zhu, Xiwei Xu, Qinghua Lu, Guido Governatori, Jon Whittle
+Fig. 1 Conceptual Model.
+tic notion if you introduce a thresh-hold along the probability spectrum to discern
+trusted or not trusted.
+We use Australia’s ethical AI principles [11] and their definitions as a close-
+enough representation of the many similar ones [25, 15] around the world. Aus-
+tralia’s ethical AI principles contain eight key principles.
+• P1: Human, social and environmental wellbeing: Throughout their lifecycle, AI
+systems should benefit individuals, society and the environment.
+• P2: Human-centred values: Throughout their lifecycle, AI systems should re-
+spect human rights, diversity, and the autonomy of individuals.
+• P3: Fairness: Throughout their lifecycle, AI systems should be inclusive and
+accessible, and should not involve or result in unfair discrimination against in-
+dividuals, communities or groups.
+• P4: Privacy protection and security: Throughout their lifecycle, AI systems
+should respect and uphold privacy rights and data protection, and ensure the
+security of data.
+• P5: Reliability and safety: Throughout their lifecycle, AI systems should reli-
+ably operate in accordance with their intended purpose.
+• P6: Transparency and explainability: There should be transparency and respon-
+sible disclosure to ensure people know when they are being significantly im-
+pacted by an AI system, and can find out when an AI system is engaging with
+them.
+• P7: Contestability: When an AI system significantly impacts a person, commu-
+nity, group or environment, there should be a timely process to allow people to
+challenge the use or output of the AI system.
+AI and Ethics — Operationalising Responsible AI 7
+• P8: Accountability: Those responsible for the different phases of the AI sys-
+tem lifecycle should be identifiable and accountable for the outcomes of the AI
+systems, and human oversight of AI systems should be enabled.
+3.1 The difference Between Trust and Trustworthiness in the
+Context of Ethical Principles
+We group the eight principles in two categories based on their nature and charac-
+teristics. The first group includes the first five principles (P1–P5), which are human
+values and ethical constraints similar to the non-functional software qualities [23] to
+be considered. The second group includes the last three principles (P6, P7 and P8),
+which are meta-level governance issues.
+3.1.1 Principles as Software Qualities
+These principles sometimes can be framed as functional requirements of a software
+system. If that is the case, in the context of software engineering, the methodology of
+requirement engineering could be adopted to ensure that the requirements captured
+are as accurate and complete as possible. It’s worth noting again that AI systems
+can not be fully specified and will try to solve the problems autonomously with
+a level of independence and agency. On the other hand, there will be conflicting
+requirements whereby tradeoff decisions need to be made.
+Some principles, such as security, reliability and safety, are the non-functional
+properties well studied in the dependability research community [2]. These princi-
+ples can be captured as non-functional requirements and considered from the early
+stage of system design. There are technical mechanisms or reusable design frag-
+ments, like patterns and tactics, that could be applied to fulfil the quality require-
+ments [3]. Privacy is not a standard software quality [23], but has been treated as
+an increasingly important property of a software system to realise regulatory re-
+quirements, like GDPR (General Data Protection Regulation)3 and Australia Pri-
+vacy Act, into technical artifacts. Reusable practices and patterns have been sum-
+marised in both industry and academia for privacy [7]. Fairness is a concern that the
+machine learning developers should consider from the early stage of the data pro-
+cessing pipeline. Similar to before, collections of best practice and mechanisms to
+remove bias at different stages of the pipeline have been compiled [29]. The reason
+to group these principles is that they can be handled and validated using a similar ap-
+proach: the methodology of how non-functional properties are handled in software
+system design. Some principles can be validated in a quantifiable way, like reliabil-
+ity. Others could be validated against process-oriented best practices, methods and
+widely used patterns.
+3 General Data Protection Regulation, https://gdpr-info.eu/.
+8 Liming Zhu, Xiwei Xu, Qinghua Lu, Guido Governatori, Jon Whittle
+3.1.2 Principles as Governance Issues
+The principles within this group are largely governance issues and designed to im-
+prove truster’s confidence in the AI system. They can be seen as clear requirements
+for certain functionality provided by the software system or entities providing the
+system. For example, contestability requires a system or entity function that allows
+the trusters to challenge the output or use of the AI system. Transparency and ex-
+plainability are similar in that the users can have access to the system, data, algo-
+rithms to understand it, including receiving an explanation of a decision or predic-
+tion.
+3.1.3 Trust vs. Trustworthiness of Ethical AI Principles
+Each principle can have different implications in terms of trust vs. trustworthiness.
+Essentially, the difference is between what an AI system can objectively perform
+(trustworthiness) and what a truster/stakeholder “prefers/wants” (trust expectation)
+and their subjective estimation of the behaviour of the AI system. And it has been
+observed that human may have very different expectations of AI or human even
+their trustworthiness are similar [17]. We list these differences in Table 1.
+As we can see, trust is about subjective estimation and perception and often not
+limited to the AI system’s trustworthiness properties (whether via software artifacts
+or development processes). As identified in [28], multiple factors contributes to peo-
+ple’s trust in an AI system, including factors not related to a specific AI system such
+as current society safeguards such as regulations, overall AI uncertainty, job impact
+and familiarity of AI. Some factors may be related to the organisations that build the
+AI systems, use the AI system or evaluate the AI system. The specific characteristic
+of the AI system only plays a minor role in trust.
+3.2 Product and Process Mechanisms for Trustworthiness
+We continue using the same grouping as the last section to analyse the eight princi-
+ples to demonstrate different product and development process (including the peo-
+ple aspect) mechanisms to improve trustworthiness. This differentiation teases out a
+broader set of considerations to improve trustworthiness, which subsequently helps
+understand what are the different ways in which these mechanisms could be com-
+municated to different stakeholders/trusters to improve trust.
+For human, social and environment wellbeing and human-centred values, we
+also consider organisational culture and SDLC methods including roles and agile
+practices. For quality attributes related ethical principles, we apply architecture and
+design processes, patterns and tactics and refer to a range of data, model [9] and
+algorithmic considerations. [26]. We consider design process (“in design”), design
+AI and Ethics — Operationalising Responsible AI 9
+Table 1 Trust vs. Trustworthiness
+Trustworthiness Trust
+Human, social and
+environmental
+wellbeing
+whether stakeholder requirements are
+captured accurately and completely
+and tradeoff are made in an informed
+and consultative way
+whether a truster perceives the entity,
+the process and society safeguards [28]
+collecting requirements and making
+tradeoffs are trustworthy and whether a
+truster’s requirements are addressed
+adequately.
+Human-centred
+values
+whether comprehensive sets of
+relevant values are considered [37]
+throughout the SDLC
+whether a truster perceives the entity,
+the process and society safeguards [28]
+of developing, verifying and validating
+the system are trustworthy.
+Fairness whether data, learning algorithms,
+learned models, decisions, predic-
+tive results, and overall designs are
+developed with quantifiable fair-
+ness, privacy and security con-
+straints in mind and satisfy the reli-
+ability and safety requirements.
+whether a truster understands how
+these constraints are satisfied and
+perceives the entity, the process and
+society safeguards of developing,
+verifying and validating the system
+are trustworthy.
+Privacy protection
+and security
+Reliability and
+safety
+Transparency and
+explainability
+whether system requirements,
+specifications, data, algorithms,
+models, decisions, system designs and
+source code, i.e., all related artifacts,
+are open for stakeholder inspection
+and understandable.
+whether a truster perceives they can
+understand the artifacts and
+explanation associated or they can
+delegate such access and
+understanding to a trustworthy third
+party or society’s safeguard
+regulations.
+Contestability whether there is a timely process
+specified for people to challenge the
+use or output of the AI system at an
+individual decision, group or society
+level.
+whether a truster perceives there is a
+timely and trustworthy process run by
+trustworthy entities to challenge the
+use or output of the AI system at an
+individual decision, group or society
+level.
+Accountability whether there are entities and humans
+identified to be accountable for the
+outcomes of the AI systems.
+whether a truster perceives the
+identified accountable entities and
+humans are the right ones and can bear
+proportionate responsibilities under
+adverse outcomes.
+artifacts (“by-design”) and designers (“for designers”). [10] For governance issues,
+we build upon the principles in [10, 22, 5, 21].
+We introduce some considerations and examples across the Product and Pro-
+cess/People dimension in Table 2. Many of the mechanisms presented in the table
+rely on industry-wide and society-wide work, in particular:
+10 Liming Zhu, Xiwei Xu, Qinghua Lu, Guido Governatori, Jon Whittle
+Table 2 Product and Process Assurance Mechanisms
+Product Process and People
+Human, social and
+environmental
+wellbeing
+Wellbeing metrics and associated
+requirements and subsequent design
+and continuous validation and
+monitoring features. Misuse cases and
+entities, undesirable side effects
+Stakeholder engagement, independent
+boards and conflict/tradeoff resolution
+process. Roles, ceremonies and
+organisational culture.
+Human-centred
+values
+digital sovereignty [22], culture norms,
+value statement and stories, value
+definition and explicit tradeoffs,
+value-aware training data, learning
+algorithms, models and
+decisions/predictions, continuous
+validation and monitoring
+value tradeoff processes (with
+accuracy, profit and among different
+conflicting values). Roles, ceremonies
+and org culture.
+Fairness fairness definition and explicit
+tradeoffs, fairness-aware data, learning
+algorithms, models and
+decisions/predictions, continuous
+validation and monitoring,
+game-theoretical approach
+fairness tradeoff processes (with
+accuracy, profit and among different
+conflicting fairness measures) roles,
+ceremonies, org culture, org-level
+boards, licensed developers.
+Privacy protection
+and security
+privacy and security requirements,
+privacy/security-by-design
+architectures (such as federated
+learning), privacy-enhancing data
+treatment and learning algorithms
+(such as differential privacy,
+secure-multiparty-computation),
+continuous validation and monitoring
+privacy and security definition and
+tradeoff processes (with accuracy,
+profit and among different conflicting
+values). Roles, ceremonies, org
+culture.
+Reliability and
+safety
+reliability and safety requirements,
+reliability/safety architectures and
+designs patterns,
+reliability/safety-enhancing algorithms
+reliability and safety tradeoff processes
+(with other quality attributes). Roles,
+ceremonies, org culture.
+Transparency and
+explainability
+Features that generate human
+understandable explanations tailored
+for different stakeholders. Registration
+and record keeping, provenance and
+documentation of all artifacts.
+Explanations of data, algorithm,
+models and decisions. Adjust model
+complexity. Have “Why did you do
+that button”.
+open process across SDLC including
+full access to artifacts from
+stakeholders or 3rd parties
+representing stakeholders. Processes
+for iterative exploration and
+explanation. Consider “no algorithm
+allowed”.
+Contestability Features that allow human intervention
+of decisions ex ante and ex post.
+Contestability definition. Roles,
+ceremonies, org culture,process
+conformance to standard processes
+Accountability Features that allow provenance and
+traceability of artifacts and decisions
+that always have a clear accountable
+entity and human.
+Artifact specific life cycle management
+process (such as data
+accountability[21] and process
+creation).
+AI and Ethics — Operationalising Responsible AI 11
+• Multi-stakeholder sector-specific [6] and domain-specific guidelines (such as
+banned practices in digital platforms [13], regulating software-based medical
+devices [1], technical solutions and empirical knowledge bases [31]).
+• AI and data ethics board or other governance mechanisms at the organisation
+level [5] to oversee the overall AI-driven decision-making processes (not just
+algorithms and products).
+• Regulator levers that incentivise organisations and create a level playing field
+for ethical innovation [6] including validation and certification agencies.
+• Technical and non-technical ethics and human rights training for different roles
+and organisational awareness.
+• Incentives for employees to play a role in identifying AI ethical risks [5].
+• Ongoing monitoring and engagement with stakeholders [35, 5].
+Due to the under-specification and value alignment problem of AI, none of the
+assurance mechanisms can guarantee a desirable outcome alone. Each helps reduce
+the risk and the ongoing monitoring and engagement post-deployment plays a criti-
+cal role in identifying and mitigating undesirable side effects early.
+3.3 How to Present Trustworthiness Evidence to Different Types of
+Trusters
+It is important that we present trustworthiness evidence (e.g. product artifacts assur-
+ances and process/people assurances) to different types of trusters to help with their
+subjective estimation so the estimation matches the inherent trustworthiness of the
+AI systems. Here we have to take into considerations of two different aspects.
+Truster Preference: Based on expectation and past experiences, different types of
+trusters, such as AI algorithm developers, AI system developers, professional users
+of AI systems, affected subjects (whereby AI systems have impacts on them), reg-
+ulators and certifiers, or the general public may have different preferences of an AI
+system’s behaviour.
+Truster-Specific Verifiable Evidence: Different types of trusters may expect dif-
+ferent types of evidence for assuring the trustworthiness of an AI system. They may
+have different abilities to understand and assess the evidence and expect different
+types of explanations [30]. For example, an AI expert can assess the algorithms
+while a general public would have no use of the algorithms. A system developer
+may understand an AI algorithm and the data associated but have limited ability to
+evaluate the algorithm and bias in data.
+When presenting evidence, such as assurance mechanisms in the last section, the
+following factors should be taken into consideration:
+• Consider a stakeholder’s technical abilities to understand the evidence.
+• Consider a stakeholder’s resources and time to assess the evidence.
+12 Liming Zhu, Xiwei Xu, Qinghua Lu, Guido Governatori, Jon Whittle
+• Allow both stakeholders and 3rd parties who represent the stakeholders to ex-
+amine the evidence.
+• Allow broader ethical and legal ”standing” so the evidence can be produced and
+examined at an individual decision, group and society level by a wide range of
+stakeholders or their delegates.
+• Present both process and product assurance mechanisms to the right stakehold-
+ers in the right ways.
+• Focus more on process mechanisms when ethical principles can not be easily
+defined and quantified.
+• Focus more on the product mechanisms when ethical principles can be defined
+and quantified and technically assured.
+• Improve overall awareness/familiarity of AI, and understanding of broader AI
+issues such as current society safeguards, AI’s overall uncertainty and job im-
+pact.
+4 Example: Crop Yield Prediction Project
+In this section, we share our experience and observations in a crop yield prediction
+project. In the project, we applied a data-driven approach using machine learning
+algorithms to develop an improved version of a crop yield prediction model. The
+previous model was built using a domain model-driven approach and integrated
+into a commercialised software product. The project combines commercial satellite
+data and data collected from different farms, largely owned by individual farm-
+ers. The resulting machine learning model predicts future yields of farms in both
+the farm data collection region but also in new regions significantly different from
+the original regions. There are three types of stakeholders in the project: the tech-
+nical team (a research organisation playing the role of both AI system developer
+and operation-time learning coordinator), data contributor (i.e., participating farm-
+ers who provided the data), and model user (i.e., farmers who use the models for
+yield prediction). We used a federated machine learning approach to deal with the
+data ownership problems and the non-IID (independent and identically distributed)
+data distribution problem. The learning coordinator (i.e., the technical team) designs
+and operates the model training process on multiple, distributed data contributors.
+The model was first trained locally on a local server and then sent to a central server
+for aggregating and improving a global model. The model user performs inference
+using the aggregated global model. Trustworthiness and trust issues manifested dif-
+ferently for different stakeholders. We applied our approach retrospectively to the
+project and made the following observations in term of trust and trustworthiness.
+• Human, social and environmental wellbeing
+– Positive wellbeing requirements were considered for the project itself but
+not for wider issues outside the project.
+AI and Ethics — Operationalising Responsible AI 13
+– Potential misuse of data collected was considered but not for the predictive
+models.
+– Both data contributors and model users have high-level trust in the technical
+team as an entity but have very little trust in any third parties who may also
+use the data (even for claimed wellbeing improvement reasons).
+– Wellbeing requirements were specified as high-level goals, not quantifiable
+metrics.
+• Human-centred values
+– Human factors on usability and accessibility were considered, consulted
+and designed in the original prediction app.
+– No additional human-centred values were captured apart from the explicit
+ones below.
+• Fairness
+– Fairness issues were considered at the training data, learning algorithm and
+model level but not explicitly explained to data contributors and model
+users.
+– A range of product assurance mechanisms was used, such as:
+· Counterfactual analysis to discover potential hidden or proxy variables
+that lead to different yields.
+· Sensitive-variable-aware data pre-processing including random split
+crop separation (wheat vs. barley), location separation (at paddock and
+region level). Each attribute may have associations, thus becoming a
+proxy variable regarding sensitive and protected attributes.
+– Two team members built fairness-aware models in parallel as a process
+assurance.
+– Used domain attributes that were understandable to farmers (data contribu-
+tors and model users) in both training and explanation so farmers can have
+a higher level trust in the model regarding fairness across groups (not just
+accuracy).
+• Privacy and Security
+– The personal privacy of individual farmers and privacy/confidential info of
+farms were both identified as key requirements.
+– Potential misuses and harms of privacy info leakage were identified.
+– Both data contributors and model users have high-level trust in the technical
+team as an entity.
+– Federated learning, including strong privacy guarantees, was used as an
+architectural pattern fulfilling data privacy requirements.
+– The exchanged model updates was encrypted to improve model security.
+A model registry was established locally to maintain the mappings of en-
+crypted models to the decrypted models.
+– The concept of federated learning, privacy guarantee and security mech-
+anisms were difficult to explain to farmers, but the high-level trust in the
+14 Liming Zhu, Xiwei Xu, Qinghua Lu, Guido Governatori, Jon Whittle
+project team coupled with the notion that their data never left the local
+server and strong encryption was used gained adequate trust.
+• Transparency and Explainability
+– Transparency and explainability requirements were identified in the project.
+– Although the farmers would not be able to evaluate data, code and models
+directly, the project team nevertheless made all artifacts open to stakehold-
+ers (under privacy and confidentiality constraints).
+– Code, model and data provenance were captured in Git and Bitbucket.
+– On the data contributor side, a data contributor registry was built to store
+and manage the information of the participating farmers and their paddocks
+that joined the learning process. Further, a model versioning registry was
+implemented to keep track of all local model versions of each data contrib-
+utor and the corresponding global model. Both of the design mechanisms
+helped increase the trust of both model user and learning coordinator on the
+participating data contributors.
+– On the learning coordinator side, a decentralised aggregator was designed
+to replace the central server of the learning coordinator, which could be a
+possible single point of failure. This improved the trust of farmers (i.e., both
+data contributors and model users) on the learning coordinator.
+• Contestability
+– Data contributors can always withdraw from the projects with their data
+deleted. However, the model trained by their data will not be immediately
+updated to remove the data.
+– Model users always have the right not to use the prediction or allow the
+prediction to be used by others.
+• Accountability
+– The accountability was largely governed by the legal agreement between
+data contributors, model users and the project team.
+– No role-level accountability was established, but the provenance of data,
+model and code allowed accountability to be examined.
+5 Discussion
+5.1 Interpretation of high-level ethical principles
+Mappings of different ethical principles and guidelines have been recently studied in
+[25, 15]. Although a global consensus emerges on the core principles (e.g. privacy,
+transparency, fairness), there have been debates on the classification and definition
+AI and Ethics — Operationalising Responsible AI 15
+of AI ethical principles. As we are using Australia’s AI ethical principles, we discuss
+our interpretation and observations of these principles.
+• Autonomy. Autonomy is not discussed explicitly in the framework. Instead, a
+broader principle about human-centred values is given, which covers human
+rights, diversity, and the autonomy of individuals. Autonomy refers to the free-
+dom of AI system users to a range of activities, including self-sovereignty/determination,
+the establishment of relationships with others, selection of a preferred plat-
+form/technology, experimentation, surveillance, and manipulation [25]. This
+might conflict with AI systems’ inherent autonomy which refers to indepen-
+dent actions without a human being. Further, users (i.e., data owners) expect to
+exert full control over their data and activities without having to rely on others.
+To ensure autonomy, a distributed ledger technology like blockchain can play
+a vital role in the design and implementation of a decentralised AI platform, in
+which secure and self-determined interactions between stakeholders are enabled
+without a central coordinator.
+• Explainability. Explainability is listed together with transparency in Australia’s
+AI ethical principles. Transparency refers to disclosure of all related AI artifacts,
+such as source code, data, algorithms, models, and documentation. Although
+transparency enables explainability, explainability is more than helping stake-
+holders understand how an AI system works through responsible disclosure.
+Stakeholders expect to understand the reasons for AI system behaviour and in-
+sights about the causes of decisions. However, it is challenging to present the
+explanations (e.g., representation of data in a network - roles of layers/neurons)
+to gain the trust of stakeholders [16, 30] .
+• Accountability. Accountability principles are covered by most of the ethical AI
+principles and guidelines, including Australia’s AI ethical principles. Ethical AI
+is often present together with responsible AI. However, the difference between
+responsibility and accountability is rarely discussed. Responsibility refers to the
+duty to complete a task throughout the lifecycle of an AI system. For example,
+a developer may be responsible for implementing an algorithm in an AI project.
+Accountability is the duty to be accountable for a task after it is completed,
+which happens after a situation occurs. For example, an AI startup company’s
+CEO may be accountable for the inaccurate or biased decisions made by their
+AI system product and has to take the role to explain how the decision is made.
+Role-level accountable entities and humans should be clearly identified in AI
+projects. Product features and management processes that ensure provenance
+and traceability of AI artifacts and decisions can increase accountability of AI
+systems.
+5.2 Operationalising AI ethics
+AI ethics can be operationalised in a variety of different ways. There are more ap-
+proaches and mechanisms beyond high-level principles and low-level algorithms.
+16 Liming Zhu, Xiwei Xu, Qinghua Lu, Guido Governatori, Jon Whittle
+• Requirements. In addition to conventional functional requirements and non-
+functional requirements, ethical principles can be defined as a subset of require-
+ments of AI systems. As discussed in Section 3.1, the eight principles can be
+classified into three groups: 1) P1 and P2 principles as functional requirements,
+2) P3, P4 and P5 as non-functional requirements (software qualities), 3) P6,
+P7 and P8 as meta-level governance-related functional requirements to improve
+truster’s confidence. However, it is hard to justify whether the P1 and P2 (i.e.,
+human, social and environmental well being and human-centred values) are ful-
+filled adequately. Risk mitigation mechanism might be needed to deal with AI
+autonomy and ensure the fulfilment of P1 and P2.
+• Design. Design patterns/mechanisms can be proposed to address the ethical
+principles. Existing principles intend to protect users and the external world of
+AI system users. In distributed learning systems, trust issues also exist in be-
+tween participating nodes. For example, in federated learning systems, learning
+coordinator might become a single point of failure. Thus, all the stakeholders
+should be carefully considered in design patterns/mechanisms.
+• Operations. Continuous validation and monitoring mechanisms are needed to
+check the ethical principles continuously. Engaged stakeholders need to iden-
+tify the threshold for the significant impact which triggers the validation mech-
+anisms.
+• Governance.
+– Ethical maturity certification. An AI ethics maturity certification scheme/
+system could be developed to assess an organisation’s ethical maturity of
+AI project management. Based on the review of AI projects, different lev-
+els of ethical maturity certificates could be issued to an organisation. The
+level/type of certificate could be upgraded later.
+– Ethics review. Internal and external reviews on ethical impact can be con-
+ducted to address ethical principles. Representatives of stakeholders are ex-
+pected to join the reviews.
+– Project team. When the development team is set up, team members’ diver-
+sity (e.g., background, cultures, and disciplines) should be considered.
+6 Summary
+In this chapter, we explored the interaction of three issues related to humanity and
+AI: hard-to-operationalise ethical AI principles, general notion of trust vs trust-
+worthiness and product vs process support for trust/trustworthiness. We provided
+an integrated view of them in the context of AI ethical principles and responsible
+AI. It points to additional mechanisms especially process mechanisms and trust-
+enhancing mechanisms for different stakeholders. By using the example of crop
+yield prediction involving different types of data and stakeholders, we elicited the
+missing elements in operationalising ethical AI principles and potential solutions.
+AI and Ethics — Operationalising Responsible AI 17
+We envision some future directions in ethical AI such as quantifying trust and its
+link with trustworthiness and novel process mechanisms for improving trust and
+trustworthiness.
+References
+1. Australian Government Department of Health: Regulation of soft-
+ware based medical devices. https://www.tga.gov.au/
+regulation-software-based-medical-devices (2021). Accessed on 11
+Aprial 2021
+2. Avizienis, A., Laprie, J.C., Randell, B., Landwehr, C.: Basic concepts and taxonomy of de-
+pendable and secure computing. IEEE Trans. Dependable Secur. Comput. 1(1), 11–33 (2004).
+DOI 10.1109/TDSC.2004.2. URL https://doi.org/10.1109/TDSC.2004.2
+3. Bass, L., Clements, P., Kazman, R.: Software architecture in practice. Addison-Wesley Pro-
+fessional (2003)
+4. Bauer, P.C.: Conceptualizing trust and trustworthiness (2019)
+5. Blackman, R.: A practical guide to building ethical ai. https://hbr.org/2020/10/
+a-practical-guide-to-building-ethical-ai (2020). Accessed on 16 Decem-
+ber 2020
+6. CDEI: Review into bias in algorithmic decision mak-
+ing. https://www.gov.uk/government/publications/
+cdei-publishes-review-into-bias-in-algorithmic-decision-making/
+main-report-cdei-review-into-bias-in-algorithmic-decision-making
+(2020). Accessed on 16 December 2020
+7. Chia, S.Y., Xu, X., Paik, H.Y., Zhu, L.: Analysing and extending privacy patterns with archi-
+tectural context. In: Proceedings of the 36th Annual ACM Symposium on Applied Computing.
+Association for Computing Machinery, Virtual Event , Republic of Korea (2021)
+8. Crawford, K.: The hidden costs of ai. New Scientist 249(3327), 46–49 (2021)
+9. D’Amour, A., Heller, K., Moldovan, D., Adlam, B., Alipanahi, B., Beutel, A., Chen, C.,
+Deaton, J., Eisenstein, J., Hoffman, M.D., Hormozdiari, F., Houlsby, N., Hou, S., Jerfel, G.,
+Karthikesalingam, A., Lucic, M., Ma, Y., McLean, C., Mincu, D., Mitani, A., Montanari, A.,
+Nado, Z., Natarajan, V., Nielson, C., Osborne, T.F., Raman, R., Ramasamy, K., Sayres, R.,
+Schrouff, J., Seneviratne, M., Sequeira, S., Suresh, H., Veitch, V., Vladymyrov, M., Wang,
+X., Webster, K., Yadlowsky, S., Yun, T., Zhai, X., Sculley, D.: Underspecification presents
+challenges for credibility in modern machine learning (2020)
+10. Dignum, V.: Responsible Artificial Intelligence: How to Develop and Use AI in a Responsible
+Way. Springer International Publishing (2019)
+11. DISER: Australia’s ai ethics principles. https://industry.gov.au/
+data-and-publications/building-australias-artificial-intelligence-capability/
+ai-ethics-framework/ai-ethics-principles (2020). Accessed on 16 Decem-
+ber 2020
+12. Dong, M., Yuan, F., Yao, L., Wang, X., Xu, X., Zhu, L.: Survey for trust-aware recommender
+systems: A deep learning perspective (2020)
+13. European Commission: The digital services act package. https://ec.europa.eu/
+digital-single-market/en/digital-services-act-package (2020). Ac-
+cessed on 16 December 2020
+14. Ferrario, M.A., Simm, W., Forshaw, S., Gradinar, A., Smith, M.T., Smith, I.: Values-first se:
+Research principles in practice. In: 2016 IEEE/ACM 38th International Conference on Soft-
+ware Engineering Companion (ICSE-C), pp. 553–562 (2016)
+15. Fjeld, J., Achten, N., Hilligoss, H., Nagy, A., Srikumar, M.: Principled artificial intelligence:
+Mapping consensus in ethical and rights-based approaches to principles for ai. Berkman Klein
+Center Research Publication (2020-1) (2020)
+18 Liming Zhu, Xiwei Xu, Qinghua Lu, Guido Governatori, Jon Whittle
+16. Gilpin, L.H., Bau, D., Yuan, B.Z., Bajwa, A., Specter, M., Kagal, L.: Explaining explana-
+tions: An overview of interpretability of machine learning. In: 2018 IEEE 5th International
+Conference on Data Science and Advanced Analytics (DSAA), pp. 80–89 (2018). DOI
+10.1109/DSAA.2018.00018
+17. Hidalgo, C.A., Orghiain, D., Canals, J.A., De Almeida, F., Martı́n, N.: How Humans Judge
+Machines. MIT Press (2020)
+18. Holzinger, A., Langs, G., Denk, H., Zatloukal, K., Müller, H.: Causability and explainabil-
+ity of artificial intelligence in medicine. Wiley Interdisciplinary Reviews: Data Mining and
+Knowledge Discovery 9(4), e1312 (2019)
+19. van den Hoven, J., Vermaas, P.E., van de Poel, I.: Design for values: An introduction. In:
+J. van den Hoven, P.E. Vermaas, I. van de Poel (eds.) Handbook of Ethics, Values, and Techno-
+logical Design: Sources, Theory, Values and Application Domains, pp. 1–7. Springer Nether-
+lands, Dordrecht (2015)
+20. Hussain, W., Perera, H., Whittle, J., Nurwidyantoro, A., Hoda, R., Shams, R.A., Oliver, G.:
+Human values in software engineering: Contrasting case studies of practice. IEEE Transac-
+tions on Software Engineering pp. 1–1 (2020). DOI 10.1109/TSE.2020.3038802
+21. Hutchinson, B., Smart, A., Hanna, A., Denton, E., Greer, C., Kjartansson, O., Barnes, P.,
+Mitchell, M.: Towards accountability for machine learning datasets: Practices from software
+engineering and infrastructure (2020)
+22. IEEE SA: Ethically aligned design: A vision for prioritizing human well-being with au-
+tonomous and intelligent systems. https://standards.ieee.org/content/
+ieee-standards/en/industry-connections/ec/autonomous-systems.
+html (2019). Accessed on 16 December 2020
+23. ISO: Iso/iec25010:2011 systems and software engineering–systems and software quality re-
+quirements and evaluation (square)–system and software quality models. International Orga-
+nization for Standardization 34, 2910 (2011)
+24. Ji, Z., Lipton, Z.C., Elkan, C.: Differential privacy and machine learning: a survey and review
+(2014)
+25. Jobin, A., Ienca, M., Vayena, E.: The global landscape of ai ethics guidelines. Nature Machine
+Intelligence 1(9), 389–399 (2019)
+26. Kearns, M., Roth, A.: The Ethical Algorithm: The Science of Socially Aware Algorithm De-
+sign. Oxford University Press USA (2019)
+27. Lo, S.K., Lu, Q., Wang, C., Paik, H.Y., Zhu, L.: A systematic literature review on federated
+machine learning: From a software engineering perspective (2020)
+28. Lockey, S., Gillespie, N., Curtis, C.: Trust in artificial intelligence: Australian
+insights. https://home.kpmg/au/en/home/insights/2020/10/
+artificial-intelligence-trust-ai.html (2020). DOI 10.14264/b32f129.
+Accessed on 16 December 2020
+29. Mehrabi, N., Morstatter, F., Saxena, N., Lerman, K., Galstyan, A.: A survey on bias and fair-
+ness in machine learning (2019)
+30. Miller, T.: Explanation in artificial intelligence: Insights from the social sciences. Artificial In-
+telligence 267, 1 – 38 (2019). DOI https://doi.org/10.1016/j.artint.2018.07.007. URL http:
+//www.sciencedirect.com/science/article/pii/S0004370218305988
+31. Mittelstadt, B.: Principles alone cannot guarantee ethical ai. Nature Machine Intelligence
+1(11), 501–507 (2019). DOI 10.1038/s42256-019-0114-4
+32. Mougouei, D., Perera, H., Hussain, W., Shams, R., Whittle, J.: Operationalizing human values
+in software: A research roadmap. In: Proceedings of the 2018 26th ACM Joint Meeting on
+European Software Engineering Conference and Symposium on the Foundations of Software
+Engineering, ESEC/FSE 2018, p. 780–784. Association for Computing Machinery, New York,
+NY, USA (2018)
+33. Perera, H., Hussain, W., Whittle, J., Nurwidyantoro, A., Mougouei, D., Shams, R.A., Oliver,
+G.: A study on the prevalence of human values in software engineering publications, 2015 –
+2018. In: Proceedings of the ACM/IEEE 42nd International Conference on Software En-
+gineering, ICSE ’20, p. 409–420. Association for Computing Machinery, New York, NY,
+AI and Ethics — Operationalising Responsible AI 19
+USA (2020). DOI 10.1145/3377811.3380393. URL https://doi.org/10.1145/
+3377811.3380393
+34. Shneiderman, B.: Bridging the gap between ethics and practice: Guidelines for reliable, safe,
+and trustworthy human-centered ai systems. ACM Trans. Interact. Intell. Syst. 10(4) (2020).
+DOI 10.1145/3419764. URL https://doi.org/10.1145/3419764
+35. Staples, M., Zhu, L., Grundy, J.: Continuous validation for data analytics systems. In: Pro-
+ceedings of the 38th International Conference on Software Engineering Companion, ICSE
+’16, p. 769–772. Association for Computing Machinery, New York, NY, USA (2016). DOI
+10.1145/2889160.2889207. URL https://doi.org/10.1145/2889160.2889207
+36. Thew, S., Sutcliffe, A.: Value-based requirements engineering: Method and experience. Re-
+quirements Engineering 23(4), 443–464 (2018). DOI 10.1007/s00766-017-0273-y. URL
+https://doi.org/10.1007/s00766-017-0273-y
+37. Whittle, J.: Is your software valueless? IEEE Software 36(3), 112–115 (2019). DOI 10.1109/
+MS.2019.2897397
+38. Zhang, W., Lu, Q., Yu, Q., Li, Z., Liu, Y., Lo, S.K., Chen, S., Xu, X., Zhu, L.: Blockchain-
+based federated learning for device failure detection in industrial iot. IEEE Internet of Things
+Journal pp. 1–1 (2020). DOI 10.1109/JIOT.2020.3032544
 

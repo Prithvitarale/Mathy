@@ -1,844 +1,790 @@
-UW CSE Technical Report 02-12-01 1
-Value Sensitive Design: Theory and Methods
-Batya Friedman
-The Information School
-University of Washington
-Box 352840
-Seattle, WA 98195 USA
-+1 206 616 2548
-batya@u.washington.edu
-Peter H. Kahn, Jr.
-Department of Psychology
-University of Washington
-Box 351525
-Seattle, WA 98195 USA
-+1 206 616 9395
-pkahn@u.washington.edu
-Alan Borning
-Dept. of CS and Engineering
-University of Washington
-Box 352350
-Seattle, WA 98195 USA
-+1 206 543 6678
-borning@cs.washington.edu
+TOWARDS MEASURING AND QUANTIFYING THE
+COMPREHENSIBILITY OF PROCESS MODELS - THE PROCESS
+MODEL COMPREHENSION FRAMEWORK
+Michael Winter1
+*, Rüdiger Pryss2
+, Matthias Fink3
+, Manfred Reichert1
+1
+Institute of Databases and Information Systems, Ulm University, Ulm, Germany;
+{michael.winter,manfred.reichert}@uni-ulm.de
+2
+Institute of Clinical Epidemiology and Biometry, University of Würzburg, Würzburg, Germany;
+ruediger.pryss@uni-wuerzburg.de
+3
+Ventum Consulting GmbH & Co. KG, Infanteriestraße 11A, 80797 München;
+matthias.fink@ventum.de
+*Corresponding author
+Preprint puplished on arXiv.org
 ABSTRACT
-Value Sensitive Design is a theoretically grounded
-approach to the design of technology that accounts for
-human values in a principled and comprehensive manner
-throughout the design process. It employs an integrative
-and iterative tripartite methodology, consisting of
-conceptual, empirical, and technical investigations. We
-explicate Value Sensitive Design by drawing on three
-research and design projects. One project involves cookies
-and informed consent in web browsers; the second involves
-projection technology in an office environment; the third
-involves user interactions and interface for an integrated
-land use, transportation, and environmental simulation.
-Keywords
-Awareness, cookies, democracy, design methods, ethics,
-human values, indicators, informed consent, privacy and
-public space, projection technology, simulation, social
-computing, theory, Value Sensitive Design, web browsers
-INTRODUCTION
-The CHI community has had a longstanding interest in
-designing systems that support enduring human values.
-Numerous researchers have focused, for example, on the
-value of privacy [1, 2, 9, 10, 20, 26], ownership and
-property [15], physical welfare [14], freedom from bias [8],
-universal usability [24, 27], autonomy [25, 29], informed
-consent [16], and trust [3, 20, 22, 30].
-Despite such interest, there remains a need for an
-overarching theoretical and methodological framework by
-which to handle the value dimensions of design work. In
-response, such an approach has emerged, called Value
-Sensitive Design. Value Sensitive Design’s early work
-helped to shape successful CHI panels in 1994, 1999, and
-2001, and an edited volume titled Human Values and the
-Design of Computer Technology [4]. More recently, the
-National Science Foundation sponsored two successful
-workshops on Value Sensitive Design (see
-www.ischool.washington.edu/vsd). These workshops have,
-in turn, led various workshop participants to draw on Value
-Sensitive Design in their current work. Moreover, Value
-Sensitive Design helped frame a chapter titled “Human
-Values, Ethics, and Design” in the recent Handbook of
-Human-Computer Interaction [6].
-Although Value Sensitive Design has become increasingly
-useful and visible in the CHI community, there has not yet
-been an overarching account of it in the literature. In this
-paper, we offer such an account, emphasizing Value
-Sensitive Design’s theory and methods. Our goal is to
-provide enough detail such that other researchers and
-designers can systematically build on and critically
-examine this approach.
-We begin by situating Value Sensitive Design in the
-context of other approaches to ethics and design. Then we
-describe Value Sensitive Design’s integrative tripartite
-methodology that involves conceptual, empirical, and
-technical investigations, employed iteratively. Next, we
-explicate Value Sensitive Design by drawing on three
-research and design projects. One project involves cookies
-and informed consent in web browsers; the second involves
-projection technology in an office environment; the third
-involves user interactions and interface for an integrated
-land use, transportation, and environmental simulation.
-WHAT IS VALUE SENSITIVE DESIGN?
-Value Sensitive Design is a theoretically grounded
-approach to the design of technology that accounts for
-human values in a principled and comprehensive manner
-throughout the design process.
-Early interest in computer technology, values, and design
-emerged in the work Norbert Wiener (1954) and others.
-More recently, such interest has led to such areas as
-Computer Ethics, Social Informatics, Participatory Design,
-and Computer-Supported Cooperative Work.
-Elsewhere [6], we have reviewed these approaches in some
-depth, delineating what each brings in terms of values and
-design to the HCI community, and where in our view each
-is limited. In brief, Computer Ethics advances our
-understanding of key values that lie at the intersection of
-computer technology and human lives. However, the field
-often remains too divorced from technical implementations,
-and has focused too often on a single value at a time. Yet,
-as HCI professionals, we commonly wrestle with design
-trade-offs among competing values. Social Informatics has
-Dept. Of Computer Science & Engineering
-University of Washington
-Technical Report 02-12-01
-December 2002
-UW CSE Technical Report 02-12-01 2
-been successful in providing socio-technical analyses of
-deployed technologies. But it, too, often yields too little in
-terms of actual changes in design and says little about the
-design process. Computer Supported Cooperative Work
-(CSCW) has been successful in the design of new
-technologies to help people collaborate effectively in the
-workplace. But its original domain (the workplace), and its
-emphasis on the value of cooperation, are narrowly framed.
-Finally, Participatory Design substantively embeds
-democratic values into its practice and brings to the table
-important techniques, such as Future Workshops.
-However, when applied in diverse contexts, Participatory
-Design may not provide enough guidance when divisive
-constituencies argue on the basis of narrowly conceived
-self interests and hostile prejudices: after all, at least in
-principle, Participatory Design values each participant’s
-voice, even those that appear uncaring and unjust.
-While sharing and adopting many interests and techniques
-from the above approaches, Value Sensitive Design brings
-forward a unique constellation of features. First, Value
-Sensitive Design seeks to be proactive: to influence the
-design of technology early in and throughout the design
-process. Second, Value Sensitive Design enlarges the
-arena in which values arise to include not only the work
-place (as traditionally in the field of CSCW), but also
-education, the home, commerce, online communities, and
-public life. Third, Value Sensitive Design enlarges the
-scope of human values beyond those of cooperation
-(CSCW) and participation and democracy (Participatory
-Design) to include all values, especially those with moral
-import. Fourth, Value Sensitive Design contributes a
-unique integrative methodology that involves conceptual,
-empirical, and technical investigations. Fifth, Value
-Sensitive Design is an interactional theory: values are
-viewed neither as inscribed into technology (an endogenous
-theory), nor as simply transmitted by social forces (an
-exogenous theory). Rather people and social systems affect
-technological development, and new technologies shape
-(but do not rigidly determine) individual behavior and
-social systems [6]. Sixth, Value Sensitive Design draws on
-moral epistemology to offer a principled approach to design
-that maintains that certain values (such as those that pertain
-to human welfare, rights, and justice) have moral standing
-independent of whether a particular person or group
-upholds such values. Seventh, moral epistemology aside,
-Value Sensitive Design maintains that certain values are
-universally held, although how such values play out in a
-particular culture at a particular point in time can vary
-considerably. For example, even while living in an igloo,
-Inuits have conventions that ensure some forms of privacy;
-yet such forms of privacy are not maintained by separated
-rooms, as they are in most Western cultures. Generally, the
-more concretely (act-based) one conceptualizes a value, the
-more one will be led to recognizing cultural variation;
-conversely, the more abstractly one conceptualizes a value,
-the more one will be led to recognizing universals. Value
-Sensitive Design seeks to work both levels, the concrete
-and abstract, depending on the design problem at hand.
-THE TRIPARTITE METHODLOGY: CONCEPTUAL,
-EMPIRICAL, AND TECHNICAL INVESTIGATIONS
-Think of an oil painting by Monet or Cézanne. From a
-distance it looks whole; but up close you can see many
-layers of paint upon paint. Some paints have been applied
-with careful brushstrokes, others perhaps energetically with
-a palate knife or fingertips, conveying outlines or regions of
-color. The diverse techniques are employed one on top of
-the other, repeatedly, and in response to what has been laid
-down earlier. Together they create an artifact that could
-not have been generated by a single technique in isolation
-of the others. So, too, with Value Sensitive Design. An
-artifact (e.g., system design) emerges through iterations
-upon a process that is more than the sum of its parts.
-Nonetheless, the parts provide us with a good place to start.
-Value Sensitive Design builds on an iterative methodology
-that integrates conceptual, empirical, and technical
-investigations; thus, as an initial step toward conveying
-Value Sensitive Design, we describe each investigation
-separately.
-Conceptual Investigations
-What are values? Whose values should be supported in the
-design process? How are values supported or diminished
-by particular technological designs? How should we
-engage in trade-offs among competing values in the design,
-implementation, and use of information systems (e.g.,
-autonomy vs. security, or anonymity vs. trust)? Should
-moral values (e.g., a right to privacy) have greater weight,
-or even trump, non-moral values (e.g., aesthetic
-preferences)? Value Sensitive Design takes up these
-questions under the rubric of conceptual investigations:
-philosophically informed analyses of the central constructs
-and issues under investigation.
-Careful working conceptualizations of specific values
-clarify fundamental issues raised by the project at hand, and
-provide a basis for comparing results across research teams.
-For example, in their analysis of trust in online system
-design, Friedman, Kahn, and Howe [7] first offer a
-philosophically informed working conceptualization of
-trust. They propose that people trust when they are
-vulnerable to harm from others, yet believe those others
-would not harm them even though they could. In turn, trust
-depends on people’s ability to make three types of
-assessments. One is about the harms they might incur. The
-second is about the good will others possess toward them
-that would keep those others from doing them harm. The
-third involves whether or not harms that do occur lie
-outside the parameters of the trust relationship. From such
-conceptualizations, Friedman et al. were able to distinguish
-what they meant by trust online from what other
-researchers have meant by the term. For example, the
-Computer Science and Telecommunications Board, in their
-thoughtful publication Trust in Cyberspace [23], adopted
-the terms “trust” and “trustworthy” to describe systems that
-perform as expected along the dimensions of correctness,
-UW CSE Technical Report 02-12-01 3
-security, reliability, safety, and survivability. Such a
-definition, which equates “trust” with expectations for
-machine performance, differs markedly from one that says
-trust is fundamentally a relationship between people
-(sometimes mediated by machines).
-Conceptual investigations do not by themselves involve
-costly empirical analyses, but instead thoughtful
-consideration of how stakeholders might be socially
-impacted by one’s technological designs. Two classes of
-stakeholders exist: direct and indirect. Direct stakeholders
-refer to parties – individuals or organizations – who interact
-directly with the computer system or its output. Indirect
-stakeholders refer to all other parties who are affected by
-the use of the system. Often, indirect stakeholders are
-ignored in the design process. For example, computerized
-medical records systems have been designed with many of
-the direct stakeholders in mind (e.g., insurance companies,
-hospitals, doctors, and nurses) but with too little regard for
-the values, such as the value of privacy, of a rather
-important group of indirect stakeholders: the patients.
-Empirical Investigations
-Conceptual investigations can only go so far. Depending
-on the questions at hand, many analyses will need to be
-informed by empirical investigations of the human context
-in which the technical artifact is situated. Empirical
-investigations are also often needed to evaluate the success
-of a particular design. Empirical investigations encompass
-any human activity that can be observed, measured, or
-documented. Thus, the entire range of quantitative and
-qualitative methods used in social science research may be
-applicable here, including observations, interviews,
-surveys, experimental manipulations, collection of relevant
-documents, and measurements of user behavior and human
-physiology.
-Empirical investigations can focus, for example, on the
-following questions: How do stakeholders apprehend
-individual values in the interactive context? How do they
-prioritize competing values in design trade-offs? How do
-they prioritize individual values and usability
-considerations? Are there differences between espoused
-practice (what people say) compared with actual practice
-(what people do)? Moreover, because the development of
-new technologies affects groups as well as individuals,
-questions emerge of how organizations appropriate value
-considerations in the design process. For example,
-regarding value considerations, what are organizations’
-motivations, methods of training and dissemination, reward
-structures, and economic incentives? How can designers
-bring values into consideration, and in the process generate
-increased revenue, employee satisfaction, customer loyalty,
-or other desirable outcomes for their companies?
-Usability stands in a unique relationship with Value
-Sensitive Design. In terms of a general framework, four
-relationships between usability and human values with
-ethical import can be identified. First, a design can be good
-for usability and independently good for human values with
-ethical import (e.g., a highly usable adaptable interface can
-also promote user autonomy). Second, a design can be
-good for usability but at the expense of human values with
-ethical import (e.g., a highly usable system for surveillance
-that undermines the value of privacy). Third, a design can
-be good for human values with ethical import but at the
-expense of usability (e.g., a web browser setting that asks
-the user to accept or decline each cookie individually
-supports the value of informed consent, but is largely
-unusable due to the nuisance factor). And fourth, a design
-good for usability may be necessary to support human
-values with ethical import (e.g., in order to have a fair
-national election using a computerized voting system, all
-citizens of voting age must be able to use the system). It is
-important for HCI professionals to be aware of the complex
-relationships between usability and human values with
-ethical import. At times, the two support one another; at
-other times it will be necessary to give ground judiciously
-on one or the other to create a viable design.
-Technical Investigations
-Value Sensitive Design adopts the position that
-technologies in general, and information and computer
-technologies in particular, provide value suitabilities that
-follow from properties of the technology. That is, a given
-technology is more suitable for certain activities and more
-readily supports certain values while rendering other
-activities and values more difficult to realize. For example,
-a screwdriver is well suited for tightening screws but
-functions poorly as a ladle, pillow, or wheel. Or an online
-calendar system that displays individuals’ scheduled events
-in detail readily supports accountability within an
-organization but makes privacy difficult.
-In one form, technical investigations focus on how existing
-technological properties and underlying mechanisms
-support or hinder human values. For example, some video-
-based collaborative work systems provide blurred views of
-office settings, while other systems provide clear images
-that reveal detailed information about who is present and
-what they are doing. Thus the two designs differentially
-adjudicate the value trade-off between an individual’s
-privacy and the group’s awareness of individual members’
-presence and activities.
-In the second form, technical investigations involve the
-proactive design of systems to support values identified in
-the conceptual investigation. For example, Fuchs [9]
-developed a notification service for a collaborative work
-system in which the underlying technical mechanisms
-implement a value hierarchy whereby an individual’s desire
-for privacy overrides other group members’ desires for
-awareness.
-At times, technical investigations – particularly of the first
-form – may seem similar to empirical investigations insofar
-as both involve technological and empirical activity.
-However, they differ markedly on their unit of analysis.
-Technical investigations focus on the technology itself.
-Empirical investigations focus on the people who or larger
-UW CSE Technical Report 02-12-01 4
-social systems that configure, use, or are otherwise affected
-by the technology.
-VALUE SENSITIVE DESIGN IN PRACTICE: THREE
-RESEARCH AND DESIGN PROJECTS
-To illustrate Value Sensitive Design’s integrative and
-iterative tripartite methodology, we draw on three research
-projects with real world applications, one completed and
-two under way. Each project represents a unique design
-space.
-Cookies and Informed Consent in Web Browsers
-Informed consent provides a critical protection for privacy,
-and supports other human values such as autonomy and
-trust. Applying Value Sensitive Design, Friedman, Felten
-and their colleagues [5, 16] sought to improve the support
-for informed consent in web-based interactions, particularly
-through the development of new technical mechanisms for
-cookie management in the web browser.
-Friedman et al. began their project with a conceptual
-investigation of informed consent itself. They drew on
-diverse literature, such as the Belmont Report (which
-delineates ethical principles and guidelines for the
-protection of human subjects), to show that the concept of
-“informed” encompasses disclosure and comprehension.
-Disclosure refers to providing accurate information about
-the benefits and harms that might reasonably be expected
-from the action under consideration. Comprehension refers
-to the individual’s accurate interpretation of what is being
-disclosed. In turn, the concept of “consent” encompasses
-voluntariness, competence, and agreement. Voluntariness
-refers to ensuring that the action is not controlled or
-coerced, and that an individual could reasonably decline
-participation should he or she wish to. Competence refers
-to possessing the mental, emotional, and physical
-capabilities needed to give informed consent. Finally,
-agreement refers to a clear opportunity to accept or decline
-to participate.
-To validate and refine their resulting conceptual analysis,
-and initiate their technical design work, Friedman et al.
-then conducted a retrospective analysis of how the cookie
-and web-browser technology embedded in Netscape
-Navigator and Internet Explorer changed – with respect to
-informed consent – over a 5-year period, beginning in
-1995. This investigation of each browser’s technological
-properties and underlying mechanisms led them to
-conclude that, while cookie technology has improved over
-time regarding informed consent, some startling problems
-remained. For example, as of 1999, in both Netscape
-Navigator and Internet Explorer, the information disclosed
-about a cookie still did not adequately specify what the
-information will be used for or how the user might benefit
-or be harmed by its use. Moreover, the default setting for
-both browsers was to accept all cookies with no obvious
-visibility to the user.
-Friedman et al. then used the results from the above
-conceptual and technical investigations to guide their
-redesign of the Mozilla browser (the open-source code for
-Figure 1. Screen shot of the Mozilla implementation showing the
-peripheral awareness of cookies interface (at the left) and the just-
-in-time cookie management tool (in the center). Each time a cookie
-is set, a color-coded entry for that cookie appears in the sidebar.
-Third party cookies are red; others are green. At the user’s
-discretion, he or she can click on any entry to bring up the Mozilla
-cookie manager for that cookie.
-Netscape Navigator). Specifically, they developed three
-new types of mechanisms: (a) peripheral awareness of
-cookies; (b) just-in-time information about individual
-cookies and cookies in general; and (c) just-in-time
-management of cookies (see Figure 1). They periodically
-conducted formative evaluations of their work in progress
-to assess how well their design supported the user
-experience of informed consent. Their assessment
-instruments for informed consent also drew from and later
-provided guidance to their conceptual investigation. For
-example, during one of the initial empirical investigations,
-Friedman et al. discovered that users wanted to control
-cookies with only minimal distraction from their task at
-hand. This finding not only contributed to the technical
-designs described above (which in response incorporated
-peripheral awareness and just-in-time interventions), but
-also enhanced the initial conceptual investigation (for
-example by adding the criterion of minimizing distraction
-from the task at hand).
-Thus, this project helps illustrate the iterative and
-integrative nature of Value Sensitive Design. While the
-project began with a conceptual investigation of relevant
-values, it moved quickly to the development of new
-technical mechanisms to support those values, to empirical
-validation of the technical work in light of the conceptual
-investigations, and back again to the refinement of the
-technical mechanisms. This project also demonstrates that
-Value Sensitive Design can be applied successfully to
-mainstream Internet software for a diverse group of users.
-Office Window of the Future
-Steve glances up from his desk to see the plaza and
-fountain area outside his building. The sun has broken
-through the clouds and small groups of people are
-gathering, including two co-workers he has wanted to
-UW CSE Technical Report 02-12-01 5
-catch up with. Spur of the moment, Steve grabs his
-lunch and dashes outside to catch his co-workers.
-There’s nothing particularly startling about this workplace
-scenario – except that Steve works in an interior office.
-Instead of a real window looking out onto the plaza, Steve
-has a large screen video plasma display that continuously
-projects the local outdoor scene in real-time.
-This scenario – an inside “office window of the future” – is
-currently being researched as both a laboratory experiment
-and a field study by Kahn, Friedman, and their colleagues.
-Previous psychological literature suggests that viewing
-natural scenes can promote positive physiological and
-psychological effects [12]. Accordingly, there is an
-increasing awareness that buildings need to be designed
-with nature in mind, and in view. But can technology
-substitute for a direct view of nature?
-Kahn et al.’s laboratory experiment involves individuals
-working in one of three conditions in the otherwise
-identical office: a real window view of a beautiful nature
-scene (of a fountain, plaza, and extended green areas and
-trees); a real-time HDTV projection of the identical scene
-on a large plasma display that covers the original window
-(see Figure 2); and a blank wall (mimicking an inside
-office). Psychological measures include (a) physiological
-data (electrocardiogram and skin conductance), (b)
-behavioral data (performance on cognitive and creativity
-tasks; video and audio observational data); and (c) social-
-cognitive data (based on an hour-long interview with each
-participant at the conclusion of the tasks to garner each
-participant’s perspective on the experience). Kahn et al.’s
-overarching hypothesis is that the HDTV video plasma
-display window will garner some but not all of the
-psychological benefits of the real window, and more
-psychological benefits compared to the blank wall.
-In shaping their research, Kahn et al. explicitly drew on
-Value Sensitive Design. Three ideas are worth
-highlighting. First, Kahn et al. engaged in an initial
-conceptual investigation of the values implicated and
-stakeholders affected by such projection technology. At
-that point, it became clear that an important class of
-indirect stakeholders (and their respective values) needed to
-be included: namely, the individuals who, by virtue of
-walking through the fountain scene, unknowingly had their
-images displayed on the video plasma display in the
-“inside” office. In other words, if this application of
-projection technology were to take hold societally (as web
-cams and surveillance cameras have begun to) then it
-would potentially encroach on the privacy of individuals in
-public spaces – an issue that has been receiving increasing
-attention in the field of computer ethics and public
-discourse [17]. Thus, in addition to their experimental data
-collection with potential users of this future plasma window
-(direct stakeholders), Kahn et al. embarked on two
-additional but complementary empirical investigations with
-indirect stakeholders: (a) a survey of 750 people in the
-Figure 2. Person (demonstrator) working in an office with a “window
-of the future” – a large screen plasma display that is projecting real-
-time HDTV images of the local outdoor scene.
-plaza about privacy in general, and in particular having
-their real-time images captured and projected on plasma
-displays in nearby and distant offices; and (b) in-depth
-social cognitive interviews with 30 people in the plaza
-about similar issues.
-Second, under the rubric of empirical investigations, Value
-Sensitive Design supports multiple empirical methods to be
-used in concert to address the question at hand. For
-example, in assessing whether human welfare is enhanced
-by the plasma window, Kahn et al. sought physiological
-and performance data, as well as data regarding the user’s
-conscious perceptions of those effects.
-Third, Kahn et al. plan to draw on the results of their
-conceptual and empirical investigations to help shape their
-future technical investigations, particularly in terms of how
-nature (as a source of information) can be embedded in the
-design of projection technologies to further human well-
-being. Their goal here is to address values early on in the
-design of what may become a potentially widely deployed
-technology.
-UrbanSim: Integrated Land Use, Transportation, and
-Environmental Simulation
-In many regions in the United States (and globally), there is
-increasing concern about pollution, traffic jams, resource
-consumption, loss of open space, loss of coherent
-community, lack of sustainability, and unchecked sprawl.
-Elected officials, planners, and citizens in urban areas
-grapple with these difficult issues as they develop and
-evaluate alternatives for such decisions as making a major
-transportation investment, establishing an urban growth
-boundary, or changing incentives or taxes. These decisions
-interact in complex ways, and, in particular, transportation
-and land use decisions interact strongly with each other.
-There are both legal and common sense reasons to try to
-understand the long-term consequences of these
-UW CSE Technical Report 02-12-01 6
-interactions and decisions. Unfortunately, the need for this
-understanding far outstrips the capability of the analytic
-tools used in current practice.
-In response to this need, Waddell, Borning, and their
-colleagues have been developing UrbanSim, a large
-simulation package for predicting patterns of urban
-development for periods of twenty years or more, under
-different possible scenarios [18, 28]. Its primary purpose is
-to provide urban planners and other stakeholders with tools
-to aid in more informed decision-making, with a secondary
-goal to support further democratization of the planning
-process. When provided with different scenarios –
-packages of possible policies and investments – UrbanSim
-models the resulting patterns of urban growth and
-redevelopment, of transportation usage, and of resource
-consumption and other environmental impacts. Currently
-UrbanSim is undergoing a large-scale 5-year
-redevelopment and extension in terms of its underlying
-architecture, interface, and social goals. Under the
-direction of Borning and Friedman, Value Sensitive Design
-is central to this endeavor.
-Figure 3. Results displayed in a map format from UrbanSim of the
-Eugene/Springfield, Oregon simulation, forecasting land use
-patterns over a 14-year period (in this case, employment density).
-The outputs are generated by the simulated interactions among
-demographic change, economic change, real estate development,
-transportation, and other actors and processes in the urban
-environment.
-To date, UrbanSim has been applied in Eugene/Springfield,
-Oregon (Figure 3), Honolulu, Hawaii, and Salt Lake City,
-Utah. Application to the Seattle, Washington, and
-Houston, Texas regions is under way. Moreover,
-UrbanSim has been recently been brought into the middle
-of a land use and transportation dispute in Salt Lake City.
-The situation is this. A new freeway had been planned for
-the Salt Lake City area, and after years of controversy,
-construction was imminent. In response, an environmental
-group (the Sierra Club) brought a lawsuit, wherein they
-claimed that the potential land use and environmental
-impacts of the proposed freeway had not been adequately
-evaluated, as required by law. In a June 2002 out-of-court
-settlement, all parties agreed to use UrbanSim to conduct
-this evaluation. Still more recently, the Governor’s Office
-in the state of Utah has sought to move land use and
-transportation decision-making away from litigation and
-toward mediation. The plan is to use UrbanSim as an
-integral part of this endeavor, to proactively shape social
-process.
-From the standpoint of conceptual investigations,
-UrbanSim as a design space poses tremendous challenges.
-For one thing, the UrbanSim research team cannot focus on
-a few key values, as occurred in the Web Browser project
-(e.g., the value of informed consent), or Office Window of
-the Future project (e.g., the value of privacy in public
-spaces, and physical and psychological well-being).
-Rather, disputing stakeholders bring to the table widely
-divergent values about environmental, political, moral, and
-personal issues. How does one characterize the wide-
-ranging and deeply held values of diverse stakeholders,
-both present and future? Moreover, how does one
-prioritize the values implicated in the decisions? Should
-the simulation handle moral and non-moral values
-differently, particularly in the interface? What if
-stakeholders’ beliefs about human psychology, land use
-patterns, and economic development (and their related
-benefits and risks) are misinformed or shortsighted?
-Should the simulation seek to educate its users? The
-questions abound. Defensible conceptual answers are
-needed for the success of the technical artifact.
-To illustrate how Value Sensitive Design is being applied
-in this project, we describe a few emerging answers. In
-their conceptual investigations, Borning et al. distinguished
-between explicitly supported values (i.e., ones that they
-explicitly wanted to embed in the simulation) and
-stakeholder values (i.e., ones that were important to some
-but not necessarily all of the stakeholders). Examples of
-stakeholder values are environmental sustainability,
-walkable neighborhoods, space for business expansion,
-affordable housing, freight mobility, minimal government
-intervention, minimal commute time, open space
-preservation, property rights, and environmental justice. In
-contrast to the explicitly supported values, these
-stakeholder values may often be in conflict. Next, Borning
-et al. committed to three specific moral values to be
-explicitly supported. One was fairness, and more
-specifically freedom from bias. The simulation should not
-discriminate unfairly against any group of stakeholders. A
-second was accountability. Insofar as possible,
-stakeholders should be able to confirm that their values are
-reflected in the simulation, evaluate and judge its validity,
-and develop an appropriate level of confidence in its
-output. The third was democracy. The simulation should
-support the democratic process in the context of land use,
-transportation, and environmental planning. In turn, as part
-of supporting the democratic process, Borning et al.
-decided that the model should not a priori rule out any one
-set of stakeholder values, but instead, should allow
-UW CSE Technical Report 02-12-01 7
-different stakeholders to evaluate the alternatives according
-to the values that are important to them.
-Most of the technical choices in the design of the UrbanSim
-software are in response to the need to generate indicators
-and other evaluation measures that respond to different
-strongly-held stakeholder values. For example, for some
-stakeholders, walkable, pedestrian-friendly neighborhoods
-are very important. But being able to model walking as a
-transportation mode makes difficult demands on the
-underlying simulation, requiring a finer-grained spatial
-scale than is needed for modeling automobile transportation
-alone. In turn, being able to answer questions about
-walking as a transportation mode supports two explicitly
-supported values: fairness (not to privilege one
-transportation mode over another), and democracy (an
-important value to a significant number of stakeholders).
-As a second example of technical choices being driven by
-value considerations, UrbanSim’s software architecture is
-designed to support rapid evolution in response to changed
-or additional requirements. For instance, the component
-models were designed to be easily reconfigured; and the
-system was designed to write the simulation results into an
-SQL database such that individuals can easily query it to
-produce new indicators quickly and as needed. For the
-same reasons, UrbanSim’s software development
-methodology (an adaptation and extension of Extreme
-Programming) is tuned toward an agile development
-process.
-UrbanSim’s involvement in the Utah dispute also helps to
-illustrate how Value Sensitive Design’s iterative and
-integrative investigations can play out in a large social and
-political landscape. For example, the original UrbanSim
-interface contains a preset group of indicators that can be
-displayed in a graph or cartographic format. This interface
-assumes that determining the set of indicators is not itself a
-critical activity for the stakeholders during negotiations.
-But in the context of facilitating a settlement, it could be
-very useful for the interface to the simulation to help
-stakeholders characterize their underlying values, and agree
-upon the indicators to be computed by the simulation to
-help them evaluate the outcomes in light of those values.
-To support this process, Borning et al. have prototyped a
-new interface for UrbanSim, which fundamentally changes
-how the users interact (and perceive their interaction) with
-the underlying simulation.
-In the coming years, the value of informed democratic
-participation will become a more prominent part of the
-UrbanSim agenda. For example, it is common for state and
-local elected officials to debate complicated legislation
-about land use and transportation that may eventually find
-its way onto the ballot for public vote. UrbanSim has the
-potential to contribute to this democratic process by
-providing a tool which legislators, the press, and ultimately
-the voting public can use to understand better the short and
-long-term implications of the proposed legislation. In the
-coming years, Borning et al. will also draw on existing
-empirical research on people’s environmental concepts and
-values [12, 13] to shape their conceptual investigations. In
-other words, conceptualizations of people’s values in
-complex and long-standing disputes need to be rooted
-empirically in human psychology, not just philosophy.
-Thus, in brief, Borning et al. are using Value Sensitive
-Design to investigate how a technology – an integrated land
-use, transportation, and environmental computer simulation
-– affects human values, on the individual and
-organizational levels; and how human values can continue
-to drive the technical investigations, including refining the
-model, data, and interface.
-CONCLUSION
-Elsewhere, we have argued that the CHI community needs
-to hold out human values with ethical import as a central
-design criterion – along with the traditional criteria of
-usability, reliability, and correctness – by which systems
-and the work of their designers may be judged [6]. As with
-the traditional criteria, we need not require perfection, but
-commitment. One of our goals in this paper has been to
-provide enough specificity to the theory and methods of
-Value Sensitive Design such that values can become more
-coherently part of the CHI standards.
-Taken more broadly, Value Sensitive Design offers a
-response to researchers who have identified a pervasive
-problem across fields related to Human Computer
-Interaction, namely that various approaches do certain
-things well, but leave out crucial components. For
-example, Orlikowski and Iacono [19] reviewed ten years of
-work in Information Systems Research and found that the
-technological artifact itself “tends to disappear from view,
-be taken for granted, or is presumed to be unproblematic
-once it is built and installed” (p. 121). Similarly, in
-reviewing the field of Social Informatics, Johnson [11]
-writes: “One aspect that still confounds me is how to
-reconcile the basic premise of social informatics – that it is
-critical to gain knowledge of the social practices and values
-of the intended users – with the basic work of system
-developers. How, if at all, can programmers practice and
-apply social informatics?” (p. 18). Value Sensitive Design
-answers this question by arguing that in socio-technical
-analyses, both the social and the technical need to be taken
-seriously, and integrated. Toward this end, Value Sensitive
-Design proposes the integration and iteration of conceptual,
-empirical, and technical investigations – and seeks to
-ground them within an overarching theory with intellectual
-commitments from the social sciences, philosophy, and
-system design.
-ACKNOWLEDGMENTS
-Value Sensitive Design has emerged over the past decade
-and benefited from discussions with many people. We
-would like particularly to acknowledge Edward Felten,
-Jonathan Grudin, Clifford Nass, Helen Nissenbaum, John
-Thomas, Terry Winograd, and our respective research
-groups. This research was supported in part by NSF
-UW CSE Technical Report 02-12-01 8
-Awards IIS-9911185, SES-0096131, EIA-0121326, and
-EIA-0090832.
-REFERENCES
-1. Ackerman, M. S., and Cranor, L. Privacy critics: UI
-components to safeguard users’ privacy, in Extended
-Abstracts of CHI 1999, ACM Press, 258-259.
-2. Agre, P. E. Introduction. In P. E. Agre and M.
-Rotenberg (eds.), Technology and Privacy: The New
-Landscape (pp. 1-28). MIT Press, Cambridge, MA,
-1997.
-3. Fogg, B. J., and Tseng, H. The elements of computer
-credibility, in Proceedings of CHI 1999, ACM Press,
-80-87.
-4. Friedman, B. (ed.) Human Values and the Design of
-Computer Technology. Cambridge University Press,
-New York NY, 1997.
-5. Friedman, B., Howe, D. C., and Felten, E. Informed
-consent in the Mozilla browser: Implementing Value-
-Sensitive Design, in Proceedings of HICSS-35, 2002,
-IEEE Computer Society, Abstract, p. 247; CD-ROM of
-full papers, OSPE101.
-6. Friedman, B. and Kahn, P. H., Jr. Human values,
-ethics, and design. In J. Jacko and A. Sears (eds.),
-Handbook of Human-Computer Interaction. Lawrence
-Erlbaum Associates, Mahwah NJ, in press.
-7. Friedman, B., Kahn, P. H., Jr., and Howe, D. C. Trust
-online. Commun. ACM, 43, 12 (Dec 2000), 34-40.
-8. Friedman, B., and Nissenbaum, H. Bias in computer
-systems. ACM Transactions on Information Systems,
-14, 3 (1996), 330-347.
-9. Fuchs, L. AREA: A cross-application notification
-service for groupware, in Proceedings of ECSCW 1999,
-Kluwer, Dordrechet Germany, 61-80.
-10.Jancke, G., Venolia, G. D., Grudin, J., Cadiz, J. J. and
-Gupta, A. Linking public spaces: Technical and social
-issues, in Proceedings of CHI 2001, 530-537.
-11.Johnson, E. H. Getting beyond the simple assumptions
-of organization impact [social informatics]. Bulletin of
-the American Society for Information Science, 26, 3
-(2000), 18-19.
-12.Kahn, P. H., Jr. The Human Relationship with Nature:
-Development and Culture. MIT Press, Cambridge MA,
-1999.
-13.Kahn, P. H., Jr., and Kellert, S. R. (eds). Children and
-Nature: Psychological, Sociocultural, and Evolutionary
-Investigations. MIT Press, Cambridge MA, 2002.
-14.Leveson, N. G. Software safety in embedded computer
-systems. Commun. ACM, 34, 2 (1991), 34-46.
-15.Lipinski, T. A., and Britz, J. J. Rethinking the
-ownership of information in the 21st
-century: Ethical
-implications. Ethics and Information Technology, 2, 1
-(2000), 49-71.
-16.Millett, L., Friedman, B., and Felten, E. Cookies and
-web browser design: Toward realizing informed consent
-online, in Proceedings of CHI 2001, ACM Press, 46-52.
-17.Nissenbaum, H. Protecting privacy in an information
-age: The problem with privacy in public. Law and
-Philosophy, 17, (1998), 559-596.
-18.Noth, M., Borning, A., and Waddell, P. An extensible,
-modular architecture for simulating urban development,
-transportation, and environmental impacts. Computers,
-Environment and Urban Systems, in press. Available at
-www.urbansim.org/papers.
-19.Orlikowsi, W. J., and Iacono, C. S. Research
-commentary: desperately seeking the “IT” in IT
-research—a call to theorizing the IT artifact.
-Information Systems Research, 12, 2 (2001), 121-134.
-20.Palen, L., and Grudin, J. Discretionary adoption of
-group support software: Lessons from calendar
-applications. In B.E. Munkvold (ed.), Organizational
-Implementation of Collaboration Technology, London,
-England, Springer, in press.
-21.Riegelsberger, J., and Sasse, M. A. Face it – Photos
-don’t make a web site trustworthy, in Extended
-Abstracts of CHI 2002, ACM Press, 742-743.
-22.Rocco, E. Trust breaks down in electronic contexts but
-can be repaired by some initial face-to-face contact, in
-Proceedings of CHI 1998, ACM Press, 496-502.
-23.Schneider, F. B. (ed.). Trust in Cyberspace. National
-Academy Press, Washington, D.C., 1999.
-24.Shneiderman, B. Universal usability. Commun. of the
-ACM, 43, 5 (2000), 84-91.
-25.Suchman, L. Do categories have politics? The
-language/action perspective reconsidered. CSCW
-Journal, 2, 3 (1994), 177-190.
-26.Tang, J. C. Eliminating a hardware switch: Weighing
-economics and values in a design decision. In B.
-Friedman (ed.), Human Values and the Design of
-Computer Technology, (pp. 259-269). Cambridge Univ.
-Press, New York NY, 1997.
-27.Thomas, J. C. Steps toward universal access within a
-communications company. In B. Friedman (ed.),
-Human Values and the Design of Computer
-Technology, (pp. 271-287). Cambridge Univ. Press,
-New York NY, 1997.
-28.Waddell, P. UrbanSim: Modeling urban development
-for land use, transportation, and environmental
-planning. Journal of the American Planning
-Association, 68, 3 (2002), 297-314.
-29.Winograd, T. Categories, disciplines, and social
-coordination. CSCW Journal, 2, 3 (1994), 191-197.
-30.Zheng, J., Bos, N., Olson, J., & Olson, G. M. Trust
-without touch: Jump-start trust with social chat, in
-Extended Abstracts of CHI 2001, ACM Press, 293-294.
+Process models constitute crucial artifacts in modern information systems and, hence, the proper
+comprehension of these models is of utmost importance in the utilization of such systems. Generally,
+process models are considered from two different perspectives: process modelers and readers. Both
+perspectives share similarities and differences in the comprehension of process models (e.g., diverse
+experiences when working with process models). The literature proposed many rules and guidelines
+to ensure a proper comprehension of process models for both perspectives. As a novel contribution
+in this context, this paper introduces the Process Model Comprehension Framework (PMCF) as a
+first step towards the measurement and quantification of the perspectives of process modelers and
+readers as well as the interaction of both regarding the comprehension of process models. Therefore,
+the PMCF describes an Evaluation Theory Tree based on the Communication Theory as well as
+the Conceptual Modeling Quality Framework and considers a total of 96 quality metrics in order
+to quantify process model comprehension. Furthermore, the PMCF was evaluated in a survey with
+131 participants and has been implemented as well as applied successfully in a practical case study
+including 33 participants. To conclude, the PMCF allows for the identification of pitfalls and provides
+related information about how to assist process modelers as well as readers in order to foster and
+enable a proper comprehension of process models.
+Keywords Process Model · Process Modeling · Process Model Comprehension · Process Quality · Process Model
+Comprehension Framework
+1 Introduction
+Business Process Management (BPM) describes the discipline in bridging the gap between business, technology, and
+human workers in organizations [1]. In more detail, modern information technologies (e.g., process-aware information
+systems; PAIS) are the enabler towards the automation of the processes in organizations and comprising the interaction
+between humans and the application of technology (i.e., human-driven processes) [2]. As a prerequisite for the
+successful utilization of PAIS, it must be ensured that the numerous processes of organizations are comprehended
+correctly and that respective information as well as knowledge about these processes are proper documented; either
+textually or visually [3]. Thereby, in order to sustain competitive advantage, an easy to comprehend and correct
+documentation of process information and knowledge is essential [4]. In this context, an established approach to
+document process information and knowledge is to rely on the technique of process modeling, in which respective
+arXiv:2106.12880v1
+[cs.SE]
+24
+Jun
+2021
+Process Model Comprehension Framework
+information as well as knowledge are visually documented in process models. More specifically, process models
+summarize the individual processes of organizations with their logical sequence of activities and functions, together
+with involved stakeholders or exchanged data. For this reason, one of the main purposes of process models is to
+communicate information and knowledge about corresponding processes. As a result, process models should be created
+in a way that involved stakeholders do not encounter any challenges in the comprehension of such models in order to
+take full advantage of their benefits [5].
+In general, all stakeholders involved in working with process models can be assigned into a group consisting of process
+modelers, process readers, or a combination of both [6]. Initially, a process modeler consolidates required information
+and knowledge about a process and, hence, creates a corresponding process model based on it. Thereby, the process
+modeler should be aware that the created process model reflects a high model quality in order to ensure a proper process
+model comprehension [7]. Accordingly, with the assistance of the created process model, process readers are able
+to extract information as well as knowledge about related processes. However, a process model of high quality that
+is comprehensible for the initial model creator does not ensure that even a process reader is able to comprehend the
+same model [8]. Usually, the two major reasons for this are, on one the hand, that there exists a gap of experience
+and expectations (i.e., different perspectives) in working with process models [9]. On the other hand, pitfalls (e.g.,
+modeling errors) in the communication of process knowledge as well as information between process modelers and
+readers describe another reason [10]. To tackle these issues, specific guidelines and frameworks in literature exist
+putting an emphasis on quality aspects (e.g., consistency in process models) to foster the comprehension of conceptual
+as well as process models. For example, one of the most influential frameworks for conceptual modeling constitutes the
+SEQUAL framework introduced in [11]. This framework considers three different quality dimensions (i.e., syntactic,
+semantic, and pragmatic quality) and provides means of improvement for each quality dimensions in order to maintain
+a high quality in conceptual models, thus having a positive influence on the comprehension of such models. Further, the
+authors in [12] are addressing shortcomings (e.g., static view upon semantic quality) of the SEQUAL framework and
+propose an adjusted framework. In addition, a significant enhancement of this work describes the consideration of as-is
+as well as to-be states (i.e., domain and knowledge). Based on semiotics, an integrative framework for information
+systems is discussed in [13]. Thereby, the authors consider the interaction of three worlds (i.e., material, personal, and
+social) derived from Sociomateriality Theory and use this kind of interaction to discuss deficits and improvements in
+model comprehension. Another framework for the evaluation of the quality and comprehension in conceptual models
+constitutes the Bung-Wand-Weber (BWW) framework [14]. It comprises metrics to evaluate the quality in conceptual
+models. Thereby, a focus is set on the modeling process and the BWW framework considers how objects from the
+real world change during the transformation into a conceptual model and the impact on the model quality as well as
+comprehension during this transformation. Moreover, the Guidelines of Modeling (GoM) describe another framework
+to measure the quality in process models from different viewpoints in order to foster model comprehension [15]. In
+this context, the work presented in [16] describes a set of seven process modeling guidelines (7PMG) assisting process
+modelers in the creation of comprehensible models. Finally, the work presented in [17] introduces the Comprehensive
+Process Model Quality Framework (CPMQF). The CPMQF summarizes existing knowledge about process model
+quality and structures related knowledge based on six key questions, with an emphasis on completeness and relevance
+of quality aspects in process models. However, all discussed works are mainly on a theoretical basis and none provides
+an applicable measurement and the quantification of the perspectives of process modelers and readers in process
+model comprehension. As a consequence, the identification of aspects in a process model that are hard to comprehend
+(i.e., noise) is still tedious, because the results presented in the discussed works might be too abstract (i.e., no clear
+directional guidance for process model improvement). In addition, especially novices or non-experts may find it difficult
+to recognize their benefits in the context of process model comprehension.
+For this reason, in line with prior conducted research and as a further contribution to improve our understanding of
+working with process models, we try to foster process model comprehension with an approach that recapitulates and
+quantifies the specific perspectives of process modelers and readers as well as the interaction between both groups
+as main determinants in model comprehension. Therefore, this paper presents the Process Model Comprehension
+Framework (PMCF). The PMCF describes the first step towards a framework to measure the comprehensibility of
+process models from the perspective of process modelers, readers, and the interaction of both. Therefore, in a consensus
+building process with experts from BPM and existing literature, an Evaluation Theory Tree (ETT) with 96 quality
+metrics was defined. The ETT was evaluated in a survey with 131 students and practitioners to determine the importance
+and degree of impact on process model comprehension of the quality criteria as well as metrics used in the ETT. In
+conclusion, the PMCF quantifies process model comprehension on evaluated process models taking both the perspective
+of process modelers and readers into account. To demonstrate the applicability of the PMCF, a case study with 33
+participants from industry was conducted. In general, the PMCF shall unravel general pitfalls that needed to be addressed
+in order to ensure a proper comprehension of process models. Furthermore, a uniform model comprehensibility is
+pursued with the application of the PMCF between process modelers and readers. In the future, the PMCF is intended
+to provide additional assistance for organizations in the efficient and effective utilization of information systems.
+2
+Process Model Comprehension Framework
+The structure of this paper is as follows: Section 2 provides theoretical fundamentals of the PMCF. The PMCF and the
+defined ETT are presented in Section 3. Section 4 describes the implementation of the PMCF. In Section 5, the PMCF
+is demonstrated in a case study. In addition, based on the case study, Section 5 presents how existing process models
+in a practical environment can be improved in terms of process model comprehension with the PMCF. Furthermore,
+current limitations as well as implications of the PMCF and future work are discussed in this section. Finally, Section 6
+summarizes the paper.
+2 Theoretical Fundamentals
+This section introduces the underlying theoretical fundamentals of the PMCF: the Communication Theory (see Section
+2.1) and the Conceptual Modeling Quality Framework (CMQF) (see Section 2.2). Figure 1 illustrates the theoretical
+fundamentals with their related contribution (i.e., green), their emerging issue (i.e., red), and corresponding focus (i.e.,
+blue) of the subsequent fundament.
+Figure 1: Theoretical Fundamentals and their focus
+2.1 Communication Theory
+According to the Communication Theory (see Figure 2), a process model constitutes an artifact utilized for the
+communication of information and knowledge about a process between two participants [18]. Thereby, the two
+participants involved in this kind of communication can be denoted as transmitter (i.e., process modeler) and receiver
+(i.e., process reader) of information and knowledge. More specifically, the process modeler encodes respective
+information and knowledge about a process within a medium. In this context, the medium describes a process model.
+In general, a process model delineates a conceptual model that is used to transfer information and knowledge about
+a subject the model represents (e.g., order to cash process) [19]. Thereby, a process model is expressed in terms
+of a particular process modeling language (e.g., Business Process Model and Notation (BPMN)), which is used to
+communicate information and knowledge about events, activities, decisions, data, and involved participants [20].
+Thereby, a process modeling language is described by two components: (1) alphabet (i.e., set of graphemes) and (2)
+grammar (i.e., systematic description of the process modeling language). Hence, it is important that a process modeler
+has an adequate understanding of the alphabet and the corresponding grammar for the proper documentation of process
+information and knowledge in a process model. In turn, captured information and knowledge in a process model
+is decoded by a process reader. In decoding, the human perception constitutes the central information processing
+system and describes the two psychological processes (a) visual perception (i.e., processing of visual information
+and knowledge) and (b) comprehension (i.e., interpretation of information and knowledge). As a consequence, the
+encoding as well as the decoding of information and knowledge in a process model results in different perspectives for
+process modelers and readers. Consequently, pitfalls (i.e., noise) may occur between the communication of process
+modelers and readers. In particularly, noise defines perturbations in the comprehension of process models. These
+perturbations cause ambiguities between process modelers as well as readers regarding the communicated information
+and knowledge in a process model, thus leading to a non-uniform process model comprehension. For example, the
+conception of the process modeler about the process or the used modeling language for the creation of a corresponding
+process model are potential noise factors in the encoding phase [21]. Regarding the process model, the intention (e.g.,
+process optimization), with which the process model (e.g., textual or visual) is perceived, denotes another noise factor
+[22]. Finally, reasons for noise in the decoding phase are mainly the perceptual as well as cognitive processing (e.g.,
+expertise in working with process models) of information and knowledge in the process model [23]. Generally, the
+occurrence of noise in this context depends on many additional factors [24, 25, 9].
+3
+Process Model Comprehension Framework
+A significant reason for the occurrence of noise between the three aspects encoding, process model, and decoding is
+mainly due to the lack of the overall process model quality in this communication procedure [26]. Thereby, quality
+defines characteristics aspects (e.g., process modeling expertise, correctness of a process model) that can be measured
+and compared with each other (e.g., degree of excellence) [27]. In this context, the Conceptual Modeling Quality
+Framework (CMQF), therefore, defines a set of quality aspects in order to prevent noise and, at the same time, to assure
+a high quality in the creation and comprehension of conceptual models (e.g., process model).
+Figure 2: Communication Theory
+2.2 Conceptual Modeling Quality Framework
+The Conceptual Modeling Quality Framework (CMQF) presents a unified overview considering the quality of the
+conceptual modeling process as well as the quality of the corresponding final result (i.e., conceptual model) [28]. Figure
+3 presents the CMQF with corresponding clusters, dimensions, and layers with related quality types (i.e., physical: red,
+knowledge: green, learning: purple, development: blue). In general, the CMQF addresses figuratively occurring noise
+known from the Communication Theory (see Section 2.1) without having a concrete perspective of a process modeler
+nor a reader. Importantly, the CMQF defines two horizontal clusters describing the physical (i.e., real world) and the
+cognitive reality (i.e., cognitive perception). The physical reality refers to the domain of discourse [29], whereas the
+cognitive reality describes the constructed representation of the perception from the real world. Moreover, for each
+horizontal cluster, the CMQF defines four vertical clusters: domain, model, language, and representation. These four
+vertical clusters represent the conceptual modeling process. In particular, the domain refers to the process environment,
+which can be depicted in a conceptual model. The conceptual model, in turn, is created in terms of a particular modeling
+language resulting in a specific representation of the conceptual model. Moreover, all clusters comprise eight different
+quality dimensions. These eight quality dimensions constitute either physical or cognitive artifacts in conceptual
+modeling. Moreover, the quality dimensions are associated with quality types, summarized in four different layers: the
+physical (see Figure 3, red), knowledge (see Figure 3, green), learning (see Figure 3, purple), and development (see
+Figure 3, blue) layer. In the physical layer, the appropriateness of a conceptual model for the depiction of a process and
+its environment is evaluated. The knowledge layer states that for each physical representation a cognitive equivalent
+representation in the perception exists. Furthermore, the learning layer explains how information and knowledge
+are acquired by the interpretation of the real world. Finally, the development layer describes that knowledge and
+information are used in the creation of physical artifacts (e.g., conceptual model). The quality types define for each
+layer the relationship between a reference and a purpose of application. More specifically, the reference constitutes the
+chosen quality dimension, whereas the purpose of application depicts the quality dimension that is being considered
+across all quality dimensions. Moreover, to draw on the Communication Theory, the quality types are responsible for
+the prevention of noise. For example, the quality aspect between the physical domain (i.e., reference) and the domain
+knowledge (i.e., purpose of application) depends strongly on the perception of a person. Hence, it is of importance to
+ensure that the person has a correct understanding of the domain. The four layers as well as the quality types (i.e., seven
+in physical, seven in learning, four in learning, and six in development) depict the conceptual modeling process and, at
+the same time, preserve the completeness as well as the correctness of the final conceptual model.
+4
+Process Model Comprehension Framework
+Figure 3: Conceptual Modeling Quality Framework (CMQF)
+3 Process Model Comprehension Framework
+The Process Model Comprehension Framework (PMCF) is an adaption of the CMQF and considers the comprehension
+of process models based on the fundamentals of the Communication Theory (see Section 2). The PMCF allows for
+the measurement of the perspectives of process modelers and readers as well as the interaction between both as main
+determinants in the context of process model comprehension. As novelty, the PMCF is capable to quantify process
+model comprehension for different perspectives (i.e., process modelers and readers) and facilitates the identification of
+noise in model comprehension. Figure 4 delineates the PMCF. As known from the CMQF (see Fig. 3), the two vertical
+clusters (i.e., physical and cognitive reality), the four layers (physical (P1 - 7, red), knowledge (K1 - 7, green), learning
+(L1 - 4, purple), and development (D1 - 6, blue) remain unchanged in the PMCF. The four vertical clusters (i.e., domain,
+model, language, and representation), the inherent eight quality dimensions as well as the associated quality types have
+been adapted accordingly to fit to the requirements concerning process models. The first vertical cluster refers to the
+process and its environment as well as the process knowledge thereof. The second cluster, in turn, considers the process
+model and related model knowledge. Similarly as in the second cluster, the third cluster correlates the used process
+modeling language with respective knowledge. Finally, the fourth cluster describes the representation of the process
+in the real world and in the perception. In the PMCF, the same quality types from the CMQF are used, but are not
+considered as unidirectional relationships. Instead, the relationships between the quality types are bidirectional. The
+reason is that a quality type between two dimensions, on the one hand, leads to knowledge gain and, on the other hand,
+indicates the necessary knowledge level to assure a high model quality. For example, consider the quality type K1
+in Fig. 4, this quality type between the Process Domain Knowledge (i.e., reference) and Process Model Knowledge
+(i.e., purpose of application) addresses the fact that describes which knowledge level about the process is required
+(e.g., information about value-adding activities) to represent this process in a process model. On the contrary, changing
+reference with purpose of application, describes that the comprehension of a process model consequently results in new
+insights (e.g., identification of bottlenecks) about the process.
+3.1 Evaluation Theory Tree (ETT)
+Based on the fundamentals discussed, an Evaluation Theory Tree (ETT) was defined [30]. In general, the ETT represents
+a convolution of the PMCF. Hence, the roots of the ETT consider the perspectives of the process modelers and readers.
+The reason for two roots in the ETT is due to the fact that aspects exist that cannot be mapped directly between both
+perspectives. For example, the creation of a process model is only relevant for process modelers. Therefore, process
+modelers and readers must be considered separately. Each perspective, in turn, consists of a number of aggregated
+quality criteria in the context of process model comprehension. These quality criteria are related to the eight quality
+dimensions from the PMCF (see Figure 4). Furthermore, the quality criteria and metrics were obtained from existing
+literature in a related review as well as from conducted interviews with domain experts from the field of BPM.
+Literature review: In literature, there exists numerous works focusing on process model quality in order to, on one the
+hand, improve the creation and, on the other hand, to foster the comprehension of process models [9, 31]. Moreover,
+different frameworks as well as guidelines with an emphasis on process model quality were defined for this context
+as well (see Section 1). Regarding the PMCF, several data sources and publication libraries (e.g., Google Scholar,
+SpringerLink, IEEE Xplore Digital Library) were examined for works concerning process model quality during process
+5
+Process Model Comprehension Framework
+Figure 4: Process Model Comprehension Framework (PMCF)
+model creation and comprehension. Therefore, search strings were elaborated with the combinations of keywords
+derived from our knowledge of the subject focus (e.g., process model quality).
+Interviews: In the conducted interviews, eight domain experts (i.e., from academia and industry) with many years of
+expertise in the field of BPM were personally consulted. The used catalog of questions contained a set of opinion (e.g.,
+Which quality aspects in a process model are essential in the creation of a complete and correct process documentation,
+but also to ensure that the created model can be comprehended by all involved stakeholders?), behavioral (e.g., How
+can it be avoided that a process modeler creates an incorrect model?), and competency (e.g., When does the application
+of a process modeling language or the creation/comprehension of a process model become too complex?) questions in
+terms of preservation of quality in process modeling as well as process model comprehension. From the given answers
+of the interviewed domain experts, quality criteria and metrics were identified referring on the perspective of process
+modelers, readers, and synergies covering both perspectives.
+The categorization of the quality criteria and corresponding metrics were done within a consensus decision-making
+process, involving participants from industry and academia as well as obtained insights from the literature review,
+including the interviews.
+As a result, the perspective of process modeler comprises the following six main quality criteria:
+• Process Modeling Language: This criterion covers crucial aspects (e.g., workflow patterns) that a process
+model language should support for the creation of high quality process models.
+• Process Modeling Tool: The quality of created process models are dependent of the used process modeling tool.
+Hence, this criterion summarizes vital aspects (e.g., process views) about tool-support in process modeling.
+• Information: This criterion is concerned with process information retrieval and addresses aspects like correct-
+ness and completeness of process information.
+• Errors: Semantic (e.g., logical errors) and syntactic (e.g., errors in modeling conventions) errors in a process
+model are subject of this criterion.
+• Person: Person-related characteristics (e.g., process modeling experience) are considered in this criterion.
+• Process Modeling Guidelines: This criterion covers guidelines and rules (i.e., from enterprise and academic)
+that were defined in order to create process models of high quality.
+These quality criteria are subdivided into several sub-metrics, resulting in 54 different quality metrics.
+Regarding the perspective of process reader, 42 quality metrics are summarized in a total of seven main quality criteria,
+which are defined as follows:
+• Process Modeling Language: This criterion addresses aspects (e.g., modeling language complexity) that define
+comprehensible process modeling language.
+• Medium: The subject of this criterion is the question with which medium (e.g., paper-based) is the process
+model comprehended.
+• Information: This criterion deals about which kind of process information (e.g., process participants) are
+included in the process model.
+6
+Process Model Comprehension Framework
+• Person: Person-related characteristics (e.g., process modeling experience) are considered in this criterion.
+• Level of Detail: In this criterion, the level of detail (e.g., abstract or concrete) of the comprehended process
+model is addressed.
+• Representation Factors: Aspects about the process model representation (e.g., number of elements) and the
+model structure (e.g., block structure) are subject of this criterion.
+• Comprehension Questions: Process model comprehension performance analysis (e.g., comprehension ques-
+tions) are considered in this criterion.
+Altogether, the ETT contains 96 quality metrics. Each of the 96 metrics can be assigned to one or more quality types in
+the PMCF (e.g., learnability of a modeling language refers to K1 in Figure 4). Further, the evaluation of the quality
+types facilitates the identification of noise (e.g., difference in process model knowledge) between process modelers and
+readers as known from the PMCF. Due to space limitations, Figure 5 only presents an excerpt of the ETT (see Appendix
+A).
+Figure 5: Excerpt from the ETT
+In order to measure and quantify process model comprehension, the importance and the impact on process model
+comprehension for each quality criterion and its related metric in the ETT had to be determined. For example, as
+shown in [32], the number of elements in a process model constitutes a more critical factor having a stronger impact on
+process model comprehension juxtaposed to the labeling of process model elements. For this reason, a survey with 131
+participants from academia as well as industry was conducted. The participants of the survey were asked to rate and
+place the quality criteria as well as related metrics for both considered perspectives (i.e., process modeler and reader) in
+an order from important to unimportant to determine the rank and the impact of each quality criterion and metric. For
+the determination of the rank, the results were analyzed with the weighted arithmetic mean X̄ that is defined as follows:
+X̄ =
+Pn
+k=1 wkpi,k
+Pn
+k=1 wk
+, (1)
+where k is the rank, n is the number of ranks, wk is the weighting factor for the rank k, i is the quality metric, and pi,k
+is the percentage choice of the quality metric i on the rank k.
+The weighting factor wk had to be determined, since each quality criterion and related metric exert a different impact
+on process model comprehension. For the calculation of the weighting factor wk, the following evaluation methods
+for information retrieval were juxtaposed in a series of repeated measurements: Rank Sum, Reciprocal Rank, Rank
+Exponent, Discounted Cumulative Gain, and Distance Normalized Logarithm [33]. Most considered methods showed
+a disparate differentiation between the quality criteria and metrics (i.e., Rank Sum, Rank Exponent, Discounted
+Cumulative Gain). Moreover, the methods presented no standardized distance between the highest and the lowest rank
+as well the ranks in between. In more detail, the provided weighting factors of those methods exhibited a limited growth
+leading to an incorrect differentiation of the quality criteria and metrics. However, further analyses demonstrated that
+a cubic (i.e., Reciprocal Rank) or an exponential growth (i.e., Distance Normalized Logarithm (DNLog)) should be
+considered in this context. A comparison of both methods revealed that the DNLog was more suitable for our purpose.
+The reason for this decision was that the DNLog ensures a more detailed weighting of the quality criteria as well as
+metrics. For example, a vital criterion or metric (e.g., syntactical process model correctness [34]) has a more significant
+impact on process model comprehension and should be given a greater weight compared to negligible ones (e.g., avoid
+7
+Process Model Comprehension Framework
+OR routing process model elements [16]). As a result, the DNLog was chosen for the calculation of the weighting
+factor wk, which is defined as:
+wk = 10(n−k)
+log10(d)
+(n−1) , (2)
+where n is the number of items, k is the rank, and d is the score in the survey.
+Equations (1) and (2) were used to analyze the responses from the 131 participants of the survey and to determine the
+rank as well as the impact of all quality criteria and related metrics on process model comprehension for the perspective
+of process modelers, readers, and the interaction between both perspectives.
+4 Implementation of the Process Model Comprehension Framework
+This section presents how the PMCF is implemented in order to measure and quantify process model comprehension.
+For this purpose, the ETT has been implemented in a Microsoft Excel workbook template (see Appendix B). According
+to the Communication Theory, this workbook is used to evaluate process models regarding their comprehensibility to
+unravel noise between the communication of process modelers and readers. Note that the workbook consists of nine
+sheets:
+1 Configuration 2 Process Modeling Language Complexity
+3 Supported Patterns 4 Quality Metrics
+5 Questionnaire for Process Modeler 6 Questionnaire for Process Reader
+7 Perspective of Process Modeler 8 Perspective of Process Reader
+9 Summary
+The workbook supports the evaluation of process models expressed in terms of the following process modeling
+languages: Business Process Modeling and Notation (BPMN) 2.0, Event-driven Process Chains (EPCs), and UML
+Activity Diagrams. Since the relevant sheets are predefined with the results obtained from the survey (i.e., weighting of
+the quality criteria and metrics), only the sheets (4), (5), and (6) must be completed to quantify the perspectives (i.e.,
+process modeler, reader, and both) in the context of process model comprehension. Changes in the remaining sheets are
+only necessary if factors (e.g., weighting factor wk) shall be adjusted, further quality criteria and metrics need to be
+introduced, or the workbook shall be extended to support additional modeling languages. Regarding the latter, in all
+sheets, respective information for the newly introduced modeling language must be added.
+(1) Configuration: Process modeling languages have various impact on process model comprehension (e.g., in terms
+of expressiveness) [6]. Thus, the operationalization thereof is performed in the workbook in (2). Moreover, with respect
+to comparability, all results in the workbook are normalized within an interval between [1, 10]. Thereby, a 1 represents a
+worse outcome, whereas a 10 indicates the best outcome regarding process model comprehension. Hence, in this sheet,
+the complexity coefficient kCik calculated in (2) (see Equation (5)) is normalized to C̄i for each process modeling
+language within an interval between [1, 10], and is defined as follows:
+C̄i = 10 −
+(10 ∗ kCik) − kCik
+MAX(Cn) ∗ 10
+, (3)
+where i is the process modeling language, kCik is the complexity score for the specific process modeling language i,
+and Cn is the set of all complexity scores.
+Another factor having an impact on process model comprehension is the use of workflow patterns in a process model.
+These patterns play a crucial role in the creation of such models and are, therefore, especially for process modelers of
+importance [35]. The impact of workflow patterns, (i.e., Pi calculated in (3), currently just for control flow patterns) is
+shown in this sheet and is included in the determination of the process model comprehension score for the perspective
+of process modelers (see (7)).
+(2) Process Modeling Language Complexity: In general, a process modeling language is composed of a number of
+modeling elements, their characteristics (e.g., different activity types), and their relations (e.g., different flow types such
+as sequence or data), which define the expressiveness of respective language [36]. Based on this consideration, the
+workbook defines the complexity of a process modeling language Ci as a three-dimensional vector:
+Ci = (xi, yi, zi), (4)
+8
+Process Model Comprehension Framework
+where i is the process modeling language, xi is the number of elements of the modeling language, yi is the number of
+characteristics per element, and zi is the number of relationships per element [37].
+Accordingly, the number of elements, their characteristics as well as their relations reflect the complexity of a modeling
+language. With the Euclidean norm, Ci can be converted to the complexity score kCik for a specific process modeling
+language i:
+kCik =
+q
+x2
+i + y2
+i + z2
+i (5)
+(3) Supported Patterns: The expressiveness as well as suitability of a process modeling language is not only determined
+by the number of elements, their characteristics, and their relations (see (2)), but also by the number of supported
+workflow patterns [35]. Workflow patterns describe specific mechanisms supporting stakeholders dealing with the
+complexity of process models (e.g., consideration of different perspectives such as control flow and data). For this
+reason, [38] defined a set of workflow patterns, which are considered in the workbook. In this context, the workbook
+supports the following workflow pattern types: control flow, data, and resource patterns. Furthermore, for each workflow
+pattern type, the workbook considers which workflow patterns are fully, partially, or not supported in the respective
+modeling language. Based on this consideration, the score for supported patterns Pi is determined as follows:
+Pi = mi + ni + oi, (6)
+where i is the process modeling language, mi is the number of fully and partially supported control flow patterns, ni is
+the number of fully and partially supported data patterns, and oi is the number of fully and partially supported resource
+patterns.
+Pi (in percentage, currently just for control flows patterns) is used in (1) for the determination of the process model
+comprehension score pertaining to the perspective of process modelers (see (7)).
+(4) Quality Metrics: In this sheet, for the perspective of process modelers and readers, the quality metrics from the
+PMCF (i.e., ETT) related to the evaluated process model are determined. In particular, for each quality metric, an
+explanation of the respective metric is given as well as an instruction on how to determine the corresponding metric
+(e.g., number of in-/outgoing edges per process modeling element). The metrics are determined either as described in
+respective literature or must be determined manually considering the process model to be evaluated. If the determined
+result has not yet been normalized, the result will be normalized in an additional step within an interval between [1, 10].
+Thereby, a result towards the right boundary (i.e., 10) describes a more positive impact on the comprehension of the
+process model.
+(5) Questionnaire for Process Modeler: The comprehension of a process model depends not only on factors of the
+respective process model (e.g., size of the process model), but also on the perception of the original creator (i.e.,
+process modeler) of the model. Thereby, a process modeler has personal related characteristics (e.g., expertise in
+process modeling) in the context of process modeling as well as an individual interpretation about the information and
+knowledge regarding the process and its related model. Furthermore, there exist a specific mental interpretation about
+the process and resulting process model in the mind of the process modeler. As described in Section 2.1, noise may
+occur in the communication of process information and knowledge between the process modeler as well as readers.
+For this reason, it is important to capture and know both personal related characteristics as well as the interpretation
+of the process modeler (i.e., perspective of process modelers) to identify respective noise and to initiate countersteps.
+Therefore, the original process modeler of a corresponding model has to answer a specific questionnaire capturing
+personal related characteristics as well as the related interpretation of the process and its resulting process model. The
+questionnaire consists of a set of 49 different questions addressing quality criteria and metrics from the ETT to capture
+the perspective of the process modeler. The questions types are a set of true-or-false and Likert scale questions. The
+responses are compiled to a score within the interval [1, 10], whereas ten indicates a more positive impact on process
+model comprehension.
+(6) Questionnaire for Process Reader: Similar to the process modeler, a specific questionnaire to capture the
+perspective of process readers has to be answered. This questionnaire consists of 24 questions related to corresponding
+quality criteria as well as metrics from the ETT in order to gather the perception and interpretation of process readers
+about the comprehended process model. Equally to (5), the responses reflect a score within the interval [1, 10], whereas
+ten constitutes the best score regarding process model comprehension.
+(7) Perspective of Process Modeler: This sheet contains all the ranked as well as weighted quality criteria and
+corresponding metrics from the ETT for process modelers. The individual scores are automatically generated based on
+the results obtained from the sheets (1), (4), and (5). Hence, this sheet requires no interaction and is used exclusively
+9
+Process Model Comprehension Framework
+for aggregating and calculating the process model comprehension score for process modelers. Therefore, as a first step,
+the sum of all quality metrics Qc of the respective criterion is calculated:
+Qc =
+n
+X
+i=1
+i, (7)
+where c is the quality criterion, i is the quality metric, and n is the number of quality metrics.
+The final process model comprehension score for process modelers Sm, which represents a score within the interval
+[1, 10] (i.e., ten is the best), is built from the sum of all aggregated quality criterion Qc:
+Sm =
+6
+X
+c=1
+= Qc (8)
+Based on Qc, possible factors for noise can be identified by considering related quality metrics with a score towards the
+left boundary within the interval [1, 10] (see Section 5).
+(8) Perspective of Process Reader: Similar to (7), the process model comprehension score for process readers Sr is
+determined in this sheet. Hence, all ranked as well as weighted quality criteria and corresponding metrics from the ETT
+are shown here. The determination of the score is carried out in the same way as described in (7), only with relevant
+aspects for process readers. Therefore, no changes are required in this sheet. The process model comprehension score
+for process readers reflects a score within the interval [1, 10] (i.e., ten is the best), based on the sum of the aggregated
+quality criteria for process readers. As with the process modeler, factors for noise in the comprehension of a process
+model can be identified on the basis of the individual calculated scores for respective quality criterion and related
+metrics (see Section 5).
+(9) Summary: The final sheet in the workbook presents the quantified process model comprehension scores on the
+evaluated process model. Here, the scores for the perspective of process modelers Sm and readers Sr as well as the
+interaction of both Sb are presented. The single scores are within the interval [1, 10], whereas 1 indicates the worst
+score regarding process model comprehension and 10 the best. Thereby, the scores for process modelers and readers are
+determined in the sheets (7) and (8), respectively. The score for the interaction of both perspectives Sb is determined as
+follows:
+Sb = (wm ∗ Sm) + (wr ∗ Sr), (9)
+where wm is the weight for process modelers and wr is the weight for process readers.
+The two weights wm and wr were determined within the survey with the specific question asking about which aspect in
+a process model is considered to be more significant, i.e., ease of creation (wm) or ensuring proper comprehensibility
+(wr). Hence, the percentage distribution was calculated from the responses given.
+5 Case Study and Application of the Process Model Comprehension Framework
+In order to demonstrate the applicability of the PMCF (i.e., workbook), a case study with 33 participants from industry
+was conducted (see Appendix C). According to collected demographic data, all participants stated that they already
+had been working with process models. Hence, the experience in process modeling as well as model comprehension
+was between a novice and intermediate level. The participants were asked to comprehend five real-world scenarios
+from a business consultant company. Each scenario was documented in two different process model variants (i.e.,
+ten in total), with a respective emphasis on the following process modeling aspects: start events, end events, loops,
+parallelism, and decomposition. In one variant, mentioned aspects were explicitly documented in a process model, while
+in the other models, they were only implicitly (i.e., described in an activity) documented. In addition, for each process
+model, participants needed to answer a set of four true-or-false comprehension questions about semantic aspects in the
+models. Regarding the PMCF, the workbook sheets (4) Quality Metrics, (5) Questionnaire for Process Modeler, and (6)
+Questionnaire for Process Reader were completed accordingly. Thereby, the sheet (4) was completed by considering the
+characteristics of the process models (e.g., number of modeling elements). The sheet (5) was answered by the original
+creator of the process models. Thereby, there was only one original creator for each process model. Finally, the sheet
+(6) was answered by the 33 participants of the study after each comprehended process model. Table 1 presents the
+results from the case study. In detail, the table shows, for each process model and respective variant, the mean of the
+10
+Process Model Comprehension Framework
+results from the comprehension questions (i.e., max is four) as well as the determined process model comprehension
+scores with the workbook for the process modeler, reader (i.e., average), and both (i.e., average).
+Table 1: Demonstration of the applicability of the PMCF
+Variant 1 (Explicit) Variant 2 (Implicit)
+Process Model Result Perspective Result Perspective
+Process Model 1
+(Start Event)
+2.76
+Modeler 5.20
+1.56
+Modeler 5.19
+Reader 6.35 Reader 6.30
+Both 6.17 Both 6.14
+Process Model 2
+(End Event)
+2.38
+Modeler 5.39
+2.00
+Modeler 5.39
+Reader 6.37 Reader 6.39
+Both 6.22 Both 6.23
+Process Model 3
+(Loop)
+1.82
+Modeler 4.74
+1.06
+Modeler 4.70
+Reader 6.29 Reader 6.26
+Both 6.06 Both 6.04
+Process Model 4
+(Parallelism)
+1.94
+Modeler 4.69
+1.65
+Modeler 4.70
+Reader 6.47 Reader 6.28
+Both 6.20 Both 6.05
+Process Model 5
+(Decomposition)
+2.47
+Modeler 5.90
+2.19
+Modeler 5.89
+Reader 6.38 Reader 6.35
+Both 6.30 Both 6.29
+Note: Perspective scores range within the interval [1, 10], whereas ten
+indicates the best score regarding process model comprehension
+According to the results from the comprehension questions, the variants with explicitly documented process modeling
+aspects had a more positive impact on process model comprehension (i.e., higher comprehension scores). Considering
+both perspectives, in general, the process model comprehension scores mainly confirm this observation (i.e., higher
+perspective scores). Only for the second implicit process model (i.e., end event) variant, the score is slightly higher.
+Consider Table 1, there are only small differences in the comprehension scores between the perspectives, compared
+to the differences in the comprehension questions. A reason is that the use of questions represents a simple metric,
+which is susceptible to deviations (e.g., guessing or heterogeneous distribution of expertise). The PMCF, in turn, not
+only considers the performance in model comprehension (i.e., answering of the questions), but also a variety of quality
+metrics, which each have a different strong impact on process model comprehension, leading to a more fine-grained
+result. Furthermore, which is not apparent from the consideration of the comprehension question results only, there are
+differences between the process modelers and readers. Regarding the process readers, the PMCF workbook results
+in a comprehension score of about 6. Since the comprehension score is within the interval [1, 10] (i.e., 10 is the
+best), it indicates that the process models are slightly above the average in terms of process model comprehension.
+Furthermore, it is remarkable that the original creator of the process models evaluated their own created process
+models as less comprehensible in the retrospect compared to respective readers. The comprehension scores for process
+modelers are approximately between 4 and 6. A reason could be that the process modelers during the answering of the
+PMCF worksheet (5) Questionnaire for Process Modeler have critically recapitulated their own process model. More
+specifically, single items from the PMCF worksheet (5) (e.g., knowledge about process domain, correctness of process
+information) may had drawn attention to possible deficits in the process model. Since process modelers and readers
+have different perspectives, a uniform comprehension of the process models used in the study was not given, due to
+occurring noise in the communication of process information and knowledge.
+5.1 Application of the Process Model Comprehension Framework
+The PMCF allows for the identification of reasons for difficulties as well as noise (e.g., discrepancies in process
+domain knowledge) during the comprehension of the presented process models in order to initiate steps to improve
+respective models. Therefore, the workbook sheets (7) Perspective of Process Modeler and (8) Perspective of Process
+Reader may be considered. As described in Section 4, these sheets are aggregating and calculating the process model
+comprehension scores for respective perspectives. For this purpose, the sum of all quality metrics for each quality
+criterion are calculated (i.e., six for process modeler and seven for process reader; see Section 4). Afterwards, the final
+comprehension score is determined from the sum of the aggregated quality criteria and compiled to a score within the
+interval [1, 10], whereas 10 indicates the best score regarding process model comprehension. In the optimum case, the
+final comprehension score is 10, which means that the quality criteria and metrics have also been aggregated to a value
+of 10.
+In the following, an example is presented how the insights from the PMCF worksheets may be used in order to foster
+11
+Process Model Comprehension Framework
+process model comprehension. Therefore, the results regarding the third process model (i.e., explicit loop) from the
+process modeler and a reader are considered (see Appendix D).
+Perspective of Process Modeler: Considering the individual scores we obtained from the case study, for example, we
+noticed for the perspective of the process modeler that the score regarding the quality criterion Information (see Section
+3) is 5.01. Thereby, the quality criterion Information is concerned with process information retrieval and consists
+of the following metrics: completeness (i.e., Is the process information complete?), correctness (i.e., Is the process
+information correct?), availability (i.e., What availability does the process information have?), and method (i.e., Which
+methods are available for process information retrieval?). Regarding the two latter metrics, in our example, the score is
+2.1 for availability and 1.6 for method. As a direct consequence, the original process modeler had difficulties with the
+availability of process information (i.e., only textual process documentations were available) as well as in the choice
+of methods for process information retrieval (i.e., only the study of the textual process information was available).
+Therefore, an increase in the availability of process information and methods for information retrieval would, on the
+one hand, lead to the creation of a better comprehensible process model because process information can be collected
+more effectively. On the other hand, as a result, an increase in these two metrics would have a positive effect on the
+score regarding the quality criterion Information, thus leading to an increase in the final process model comprehension
+score for the process modeler, reader and the interaction between both perspectives.
+Perspective of Process Reader: Considering the perspective of process readers and their individual scores obtained
+from the case study, for example, the score regarding the quality criterion Person (see Section 3) is 5.34 in our example.
+In more detail, the process model readers have stated that their experience of working with process models (e.g., number
+of analyzed process models) is maximum at the level of an intermediate. Moreover, contemplating the quality criterion
+Representation Factors and related metrics that are concerned with structural factors of the process models (e.g., block
+structure), the score is 3.68. These scores provide us with indications about how to increase the final comprehension
+score for the perspective of process reader. On the one hand, process readers should be more concerned with different
+kind of process models in order to increase their experience in working with such models. Further, on the other, the
+used process models in the study could be adjusted by respecting a consistent block structure. These steps would then
+have a positive impact on the final comprehension score of process readers but also on the comprehension score of
+process modeler as well as the interaction between both.
+In summary, the conducted case study demonstrated the successful application of the PMCF in a practical environment.
+The results indicated that there is a non-uniform comprehension of process models between process modelers and
+readers. Moreover, the PMCF revealed that process modelers and readers are confronted with different challenges
+(i.e., noise) in process model comprehension. In general, although the PMCF is still in the early stage of development,
+it can already be applied on real-world process models of organizations for identifying potentials for process model
+improvements, i.e., in order to prevent noise in the communication of process information and knowledge, thus fostering
+the general comprehension of such models.
+5.2 Limitations
+Although the PMCF is still applicable in practical environments, it is noteworthy that it is still in an early stage of
+development and that the PMCF is a first step towards measuring and quantifying process model comprehension. Hence,
+the PMCF as well as the developed workbook are currently confronted with limitations that need to be discussed and
+will be subject of future work. First, the interpretation of the calculated process model comprehension scores must
+be evaluated. In detail, the results range in the interval between [1, 10], whereas 10 indicates the best score regarding
+process model comprehension. The first applications of the workbook demonstrated that the calculated scores are
+reliable (see Section 5). However, the workbook must be applied on many more process models in order to be able
+to interpret differences in the scores accurately and to define a score threshold, from which process models are well
+comprehensible for the general public. Second, the use of the DNLog in order to determine the weights (i.e., wk) for
+the quality criteria as well as metrics should be further evaluated. Third, the normalization of the results from the
+quality criteria and related metrics as well as the meaningful applicability of the normalization approach need to be
+further evaluated as well. Fourth, in general, the completeness, accuracy, and validity of the PMCF as well as the
+workbook need to be scrutinized in detail as the PMCF contains a great number of quality criteria and metrics. These
+quality aspects are derived from the process of adaption of the CMQF, a literature review, and conducted interviews.
+However, myriads of quality aspects exist that currently do not fall within the scope of the PMCF [31, 39]. These
+include, in particular, cognitive aspects, which, as known from recent studies in this context, exert a significant impact
+on the comprehension of process models [10, 40]. Moreover, cognitive aspects may be the critical mediator in the
+communication of process information as well as knowledge between process modelers and readers.
+12
+Process Model Comprehension Framework
+5.3 Implications
+With this paper, we highlight the important implications of the PMCF and the ability to measure and to quantify
+process model comprehension for practice. Process models constitute vital artifacts in the application of information
+technologies (e.g., PAIS). In particular, during the utilization of information systems, undiscovered errors made (e.g.,
+incorrect process documentation due to noise in the communication of process information and knowledge) may have
+critical impacts in the later utilization and, hence, projects might not deliver the required results or even fail. For
+this reason, it is of importance that process models are created correctly as well as accurately. At the same time, it
+should be ensured that these models are comprehensible for all involved stakeholders. In this context, a process model
+is an artifact used for the communication of process information and knowledge between participants (see Section
+2.1). During this kind of communication, noise may occur that may impairs the comprehension of process models.
+Therefore, during process model comprehension, the PMCF allows for the measurement and quantification of the
+perspectives of process modelers, readers, and the interaction between both. This allows for the identification of noise,
+which could therefore be addressed ensuring a proper process model comprehension. Moreover, since the PMCF covers
+different quality criteria and metrics covering various aspects (e.g., process modeling tools, medium (see Section 3.1))
+for respective perspectives, organizations are able to identify concrete deficiencies in the context of process models with
+the provided scores of the PMCF. Further, despite the preliminary focus on the comprehension of process models, the
+insights obtained with the PMCF also affect the creation of process models (see Section 5.4). Thus, in the creation or
+optimization of process models, factors for noise in the communication of process information and knowledge can be
+avoided paving the way for process models of high quality. With the support and extensibility of additional process
+modeling languages, the PMCF assists organizations in the selection of an appropriate modeling language. This is
+applicable when a process modeling language is selected for the first time (e.g., in the early phases of the information
+systems development process), or in case of a modeling language change, which is, for example, pursued due to a
+process model redesign.
+5.4 Future Work
+The used approach of definition for the PMCF allows for an appropriate extensibility. More specifically, novel quality
+criteria or metrics can be added to the ETT. Therefore, to address the discussed limitations (see Section 5.2), the
+PMCF is currently used in ongoing studies that evaluate different process models from theory as well as practice
+with heterogeneous participant groups. The objective is, on the one hand, to improve our general interpretation of
+the calculated process model comprehension scores and, on the other hand, to identify additional noise factors in the
+communication of process knowledge and information between process modeler as well as reader. The unraveled
+insights allow for the definition of directives towards creating better comprehensible process models with high quality.
+In this context, the results for the different perspectives obtained from the PMCF are juxtaposed with existing rules
+and guidelines (e.g., Guidelines of Modeling [15], Seven Process Modeling Guidelines [16], which are intended to
+ensure a proper comprehension of process models, in order to evaluate their contribution regarding process model
+comprehension. Moreover, the weighting factor wk is examined in detail and will be adjusted as well as refined
+accordingly when, for example, new quality criteria and metrics are added. In addition, other approaches, in addition
+to the already evaluated one (see Section 3) to determine the weighting factor wk are juxtaposed to the DNLog in
+order to evaluate their appropriateness. Furthermore, the PMCF will be extended and enriched with further quality
+criteria and metrics to obtain more fine-grained scores. In this context, we are currently augmenting the PMCF with
+additional criteria and metrics to include the creation of process models (i.e., process of process modeling) [41]. This
+augmentation should ensure that process models are created in a high quality and in a comprehensible form from the
+very beginning and, thus, should prevent the occurrence of noise in the communication of process knowledge as well
+as information. Support for additional process modeling languages and workflow patterns are subject of future work.
+Finally, to pave the way for cognitive aspects, the PMCF will be integrated into the conceptual framework of the authors
+that incorporates concepts from cognitive neuroscience and psychology introduced in [42].
+6 Conclusion
+This paper presented the Process Model Comprehension Framework (PMCF) as a first step towards measuring and
+quantifying the comprehensibility of process models. Based on the Communication Theory and the CMQF, the PMCF
+considers the perspectives of process modelers and readers as well as the interaction between them as main determinants
+in process model comprehension. Therefore, in order to identify and prevent noise (i.e., misinterpretation in the
+communication of process information and knowledge due to person- and model-related characteristics) in model
+comprehension, an ETT was defined composed of a set of quality criteria and 96 metrics in total. Thereby, the quality
+criteria and related metrics were obtained from interviews with experts in the field of Business Process Management and
+in a literature review. Further, these quality aspects are ranked and weighted with regard to their importance and impact
+13
+Process Model Comprehension Framework
+on process model comprehension in a survey with 131 participants from academia and industry. The ETT and the
+results from the survey have been implemented in an Excel workbook, which allows to measure and quantify process
+model comprehension on existing process models. The application of the workbook and how to improve process
+models based on the results obtained was demonstrated successfully in a case study with 33 participants from industry.
+Accordingly, the PMCF and its corresponding workbook shall contribute to identify and avoid pitfalls (i.e., noise) in the
+communication of process knowledge and information between process modelers and readers. In addition, the PMCF
+wants to ensure that process models implemented in information systems are of high quality for the purpose of a proper
+model comprehensibility. Therefore, the calculated process model comprehension scores with the PMCF and related
+workbook serve as a signpost in order to foster and ensure a correct comprehension of process models. Further, the
+initial creation of comprehensible process models or the optimization of existing models is supported by the PMCF. In
+general, the PMCF and the future work thereof shall assist organizations in all phases (i.e., design, implementation, and
+management) in the utilization of information systems.
+Appendix
+A
+The complete depiction of the ETT can be found at: https://tinyurl.com/wtfmh9q
+B
+The workbook template can be found at: https://tinyurl.com/roky2tf
+C
+Study materials can be found at: https://tinyurl.com/yx3ht8ry
+D
+The example worksheet can be found at: https://tinyurl.com/y8p3yjcs
+References
+[1] Fatemeh Rahimi, Charles Møller, and Lars Hvam. Business process management and it management: The missing
+integration. International Journal of Information Management, 36(1):142–154, 2016.
+[2] Marlon Dumas, Wil M Van der Aalst, and Arthur H Ter Hofstede. Process-aware information systems: bridging
+people and software through process technology. John Wiley & Sons, 2005.
+[3] Michael Zimoch, Tim Mohring, Rüdiger Pryss, Thomas Probst, Winfried Schlee, and Manfred Reichert. Using
+insights from cognitive neuroscience to investigate the effects of event-driven process chains on process model
+comprehension. In Proc 1st Int. Conf on Cognitive Business Process Management (CBMS), pages 446–459, 2017.
+[4] Artem Polyvyanyy, Sergey Smirnov, and Mathias Weske. Process model abstraction: A slider approach. In Proc.
+12th Int. Conf. on Enterprise Distributed Object Computing (EDOC), pages 325–331, Munich, GER, 2008.
+[5] Afef Awadid and Selmin Nurcan. Consistency requirements in business process modeling: a thorough overview.
+Software & Systems Modeling, 18(2):1097–1115, 2019.
+[6] Michael Zimoch, Rüdiger Pryss, Johannes Schobel, and Manfred Reichert. Eye tracking experiments on process
+model comprehension: lessons learned. In Proc. 18th Int. Wksh. on Business Process Modeling, Development and
+Support (BPMDS), pages 153–168, 2017.
+[7] Isel Moreno-Montes de Oca, Monique Snoeck, Hajo A Reijers, and Abel Rodríguez-Morffi. A systematic literature
+review of studies on business process modeling quality. Information and Software Technology, 58:187–205, 2015.
+[8] Jan Mendling, Jan Recker, Hajo A. Reijers, and Henrik Leopold. An empirical review of the connection between
+model viewer characteristics and the comprehension of conceptual process models. Information Systems Frontiers,
+21(5):1111–1135, 2019.
+14
+Process Model Comprehension Framework
+[9] Kathrin Figl. Comprehension of procedural visual business process models. Business & Information Systems
+Engineering, 59(1):41–67, 2017.
+[10] Cornelia Haisjackl, Pnina Soffer, Shao Yi Lim, and Barbara Weber. How do humans inspect bpmn models: an
+exploratory study. Software & Systems Modeling, 17(2):655–673, 2018.
+[11] Odd Ivar Lindland, Guttorm Sindre, and Arne Solvberg. Understanding quality in conceptual modeling. IEEE
+Software, 11(2):42–49, 1994.
+[12] John Krogstie, Guttorm Sindre, and Håvard Jørgensen. Process models representing knowledge for action: a
+revised quality framework. European Journal of Information Systems, 15(1):91–102, 2006.
+[13] John Mingers and Leslie Willcocks. An integrative semiotic framework for information systems: The social,
+personal and material worlds. Information and Organisation, 24(1):48–70, 2014.
+[14] Andreas Gehlert, Daniel Pfeiffer, and Jörg Becker. The bww-model as method engineering theory. In Proc 13th
+Amer. Conf. on Information Systems (AMCIS), 2007.
+[15] Jörg Becker, Michael Rosemann, and Christoph Von Uthmann. Guidelines of Business Process Modeling, volume
+1806, pages 30–49. Springer, 2000.
+[16] Jan Mendling, Hajo A Reijers, and Wil MP van der Aalst. Seven process modeling guidelines (7pmg). Information
+and Software Technology, 52(2):127–136, 2010.
+[17] Philipe De Meyer and Jan Claes. An overview of process model quality literature-the comprehensive process
+model quality framework. arXiv preprint arXiv:1808.07930, 2018.
+[18] Daniel Moody. The “physics” of notations: toward a scientific basis for constructing visual notations in software
+engineering. IEEE Transactions on Software Engineering, 35(6):756–779, 2009.
+[19] Alberto Rodrigues Da Silva. Model-driven engineering: A survey supported by the unified conceptual model.
+Computer Languages, Systems & Structures, 43:139–155, 2015.
+[20] Mateja Kocbek, Gregor Jošt, Marjan Heričko, and Gregor Polančič. Business process model and notation: The
+current state of affairs. Computer Science and Information Systems, 12(2):509–539, 2015.
+[21] Jan Claes, Irene Vanderfeesten, Frederik Gailly, Paul Grefen, and Geert Poels. The structured process modeling
+method (spmm) what is the best way for me to construct a process model? Decision Support Systems, 100:57–76,
+2017.
+[22] Joshua De Bock and Jan Claes. The origin and evolution of syntax errors in simple sequence flow models in bpmn.
+In Proc. 30th Int. Conf. on Advanced Information Systems Engineering (CAiSE), pages 155–166, 2018.
+[23] Danilo Caivano, María Fernández-Ropero, Ricardo Pérez-Castillo, Mario Piattini, and Michele Scalera. Artifact-
+based vs. human-perceived understandability and modifiability of refactored business processes: An experiment.
+Journal of Systems and Software, 144:143–164, 2018.
+[24] Marina Trkman, Jan Mendling, Peter Trkman, and Marjan Krisper. Impact of the conceptual model’s representation
+format on identifying and understanding user stories. Information and Software Technology, 116, 2019.
+[25] Jan Mendling, Gustaf Neumann, and Wil Van Der Aalst. Understanding the occurrence of errors in process models
+based on metrics. In Confed. Int Conf On the Move to Meaningful Internet Systems (OTM), pages 113–130, 2007.
+[26] John Krogstie. Quality of business process models. In Quality in Business Process Modeling, pages 53–102.
+Springer, 2016.
+[27] Mihaela Ghicajanu, Sabina Irimie, Laura Marica, and Rares Munteanu. Criteria for excellence in business.
+Procedia economics and finance, 23:445–452, 2015.
+[28] H James Nelson, Geert Poels, Marcela Genero, and Mario Piattini. A conceptual modeling quality framework.
+Software Quality Journal, 20(1):201–228, 2012.
+[29] Stephen Regoczei and Edwin PO Plantinga. Creating the domain of discourse: Ontology and inventory. Interna-
+tional Journal of Man-Machine Studies, 27(3):235–250, 1987.
+[30] Christina A Christie and Marvin C Alkin. Evaluation theory tree re-examined. Studies in Educational Evaluation,
+34(3):131–135, 2008.
+[31] Ahmet Dikici, Oktay Turetken, and Onur Demirors. Factors influencing the understandability of process models:
+A systematic literature review. Information and Software Technology, 93:112–129, 2018.
+[32] Miles Tallon, Michael Winter, Rüdiger Pryss, Katrin Rakoczy, Manfred Reichert, Mark W Greenlee, and Ulrich
+Frick. Comprehension of business process models: Insight into cognitive strategies via eye tracking. Expert
+Systems with Applications, 136:145–158, 2019.
+15
+Process Model Comprehension Framework
+[33] Tetsuya Sakai. On the reliability of information retrieval metrics based on graded relevance. Information
+Processing & Management, 43(2):531–548, 2007.
+[34] Henrik Leopold, Jan Mendling, and Oliver Günther. Learning from quality issues of bpmn models from industry.
+IEEE Software, 33(4):26–33, 2015.
+[35] Stephen A White. Process modeling notations and workflow patterns. Workflow Handbook, pages 265–294, 2004.
+[36] Beate List and Birgit Korherr. An evaluation of conceptual business process modelling languages. In Proc 21st
+Int. Conf on ACM Symposium on Applied Computing (SAC), pages 1532–1539, 2006.
+[37] Ralf Laue and Volker Gruhn. Complexity metrics for business process models. In Proc. 9th Int. Conf. on Business
+Information Systems (BIS), pages 1–12, 2006.
+[38] Wil M. P. van der Aalst. Workflow patterns. Encyclopedia of Database Systems, pages 3557–3558, 2009.
+[39] A Faye Borthick and Gary P Schneider. Detecting errors in and making inferences from business process
+representations. Journal of Emerging Technologies in Accounting, 13(2):185–194, 2016.
+[40] Michael Zimoch, Rüdiger Pryss, Georg Layher, Heiko Neumann, Thomas Probst, Winfried Schlee, and Manfred
+Reichert. Utilizing the capabilities offered by eye-tracking to foster novices’ comprehension of business process
+models. In Proc. 2nd Int. Conf on Cognitive Computing (ICCC), pages 155–163, 2018.
+[41] Andrea Burattin, Michael Kaiser, Manuel Neurauter, and Barbara Weber. Learning process modeling phases from
+modeling interactions and eye tracking data. Data & Knowledge Engineering, 121:1–17, 2019.
+[42] Michael Zimoch, Rüdiger Pryss, Thomas Probst, Winfried Schlee, and Manfred Reichert. Cognitive insights into
+business process model comprehension: preliminary results for experienced and inexperienced individuals. In
+Proc. 18th Int. Wksh. on Business Process Modeling, Development and Support (BPMDS), pages 137–152, 2017.
+16
 

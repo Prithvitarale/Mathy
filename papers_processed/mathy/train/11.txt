@@ -1,1 +1,1195 @@
-UniversityofPennsylvaniaScholarlyCommonsStatisticsPapersWhartonFacultyResearch2008StochasticLinearOptimizationUnderBanditFeedbackVarshaDaniUniversityofChicagoThomasP.HayesToyotaTechnologicalInstituteShamM.KakadeUniversityofPennsylvaniaFollowthisandadditionalworksat:http://repository.upenn.edu/statistics_papersStochasticLinearOptimizationUnderBanditFeedbackAbstractIntheclassicalstochastick-armedbanditproblem,ineachofasequenceofTrounds,adecisionmakerchoosesoneofkarmsandincursacostchosenfromanunknowndistributionassociatedwiththatarm.Thegoalistominimizeregret,definedasthedifferencebetweenthecostincurredbythealgorithmandtheoptimalcost.Inthelinearoptimizationversionofthisproblem(firstconsideredbyAuer[2002]),weviewthearmsasvectorsinRn,andrequirethatthecostsbelinearfunctionsofthechosenvector.Asbefore,itisassumedthatthecostfunctionsaresampledindependentlyfromanunknowndistribution.Inthissetting,thegoalistofindalgorithmswhoserunningtimeandregretbehavewellasfunctionsofthenumberofroundsTandthedimensionalityn(ratherthanthenumberofarms,k,whichmaybeexponentialinnoreveninfinite).Wegiveanearlycompletecharacterizationofthisproblemintermsofbothupperandlowerboundsfortheregret.Incertainspecialcases(suchaswhenthedecisionregionisapolytope),theregretispolylog(T).Ingeneralthough,theoptimalregretisΘ∗(√T)—ourlowerboundsruleoutthepossibilityofobtainingpolylog(T)ratesingeneral.Wepresenttwovariantsofanalgorithmbasedontheideaof“upperconfidencebounds.”Thefirst,duetoAuer[2002],butnotfullyanalyzed,obtainsregretwhosedependenceonnandTarebothessentiallyoptimal,butwhichmaybecomputationallyintractablewhenthedecisionsetisapolytope.Thesecondversioncanbeefficientlyimplementedwhenthedecisionsetisapolytope(givenasanintersectionofhalf-spaces),butgivesupafactorof√nintheregretbound.Ourresultsalsoextendtothesettingwherethesetsampledfromπ.Onlythelossf(x)isrevealedtothelearner(andnotthefunctionf(·)).Weassumethattheexpectedlossisafixedlinearfunction,i.e.thatE[f(x)]=µ·x,wheretheexpectationiswithrespecttofsampledfromπ(technically,wemakeaslightlyweakerassumption,preciselystatedinthenextsection).ThegoalistominimizethetotallossoverTsteps.Asisstandard,successismeasuredbytheregret—thedifferencebetweentheperformanceofthelearnerandthatoftheoptimalalgorithmwhichhasknowledgeofπ.Notethattheoptimalalgorithmheresimplychoosesthebestdecisionwithrespecttothelinearmeanvectorµ.Perhapsthemostimportantandnaturalexampleinthisparadigmisthe(stochastic)onlinelinearprogrammingprob-lem.Here,Disspecifiedbylinearinequalityconstraints.Ifthemeanµwereknown,thenthisissimplyalinearpro-grammingproblem.Instead,ateachround,thelearneronlyobservesnoisyfeedbackofthechosendecision,withrespecttotheunderlyinglinearcostfunction.1.1SummaryofOurResultsandRelatedWorkAuer[2002]providesthefirstanalysisofthisproblem.ThispaperbuildsandimprovesupontheworkofAuer[2002]inanumberofways.ArelatedmodelwasconsideredbyAbeandLong[1999],wherethedecisionsetsareallowedtovaryasafunctionofthetime.Ourresultscanbeextendedtothismoregeneralmodel,whichwediscussinSection7.WhileAuer[2002]providesanelegantdeterministical-gorithm,basedonupperconfidenceboundsofµ,ananalysisoftheperformanceofthisalgorithmwasnotprovided,duetorathersubtleindependenceissues(thoughitwasconjecturedthatthissimplealgorithmwassufficient).Instead,amorecomplicatedmasteralgorithmwasanalyzed—thismasteralgorithmcalledthesimplerupperconfidencealgorithmasasubroutine.Inthiswork,wedirectlyanalyzethesimplerup-perconfidencealgorithm.Unfortunately,implementingthisalgorithmincertaincases(whenDislargeorinfinite)maybeinefficient.However,wealsoprovideamodificationtothisalgorithm(thatusesadifferentconfidenceregionbasedontheL1-norm),whichmaybeimplementedefficientlyforthecasewhenDisan(infinite)convexset,givencertainor-acleoptimizationaccesstoD.TheanalysisofAuer[2002]achievesaregretboundofO∗((log|D|)3/2poly(n)√T)wherenisdimensionofthedecisionspace,Tisthetimehorizon,and|D|isthenumberoffeasibledecisions.Forthesimplerupperconfidencealgo-rithm,weshowthatitenjoysaboundofO∗(n√T),whichdoesnotdependonthecardinalityofthedecisionregion,|D|.Whilethisalgorithmmaybeinefficientinsomecases,wealsoprovideanefficientalgorithm(thatusesaslightlydifferentconfidenceregion),whichachievesaslightlyworseboundofO∗(n3/2√T).UsingtheresultinAuer[2002],onecanalsoderiveaboundoftheformO(poly(n)√T)forin-finitedecisionsetsbyappealingtoanaive(inefficient)cov-eringargument(wherethealgorithmisrunonanappropri-atelyfinecoverofD).However,thisargumentresultsinalesssharpboundintermsofn1,thoughabetterreductionto1UsingAuer[2002],onecanderivethelesssharpboundofO∗(n5/2√T)forarbitrarycompactdecisionsetswithtwoobser-vations.First,throughacoveringargument,weneedonlyconsiderAuer[2002]maybepossible.Forthecaseoffinitedecisionsets,suchastheK-armbanditcase,aregretthatisonlylogarithmicinthetimehori-zonisachievable.Inparticular,inadifferentlineofwork,Aueretal.[2002]showedthattheoptimalregretfortheK-armbanditcasewascharacterizedasK∆logT,where∆isthe“gap”betweentheperformanceofthebestarmandthesecondbestarm.Thisresultisstatedintermsoftheproblemdependentconstant∆,soonecanviewitastheasymptoticregretforagivenproblem.Infact,historically,thereislonglineofworkintheK-armbanditliterature(e.g.[LaiandRobbins.,1985,Agrawal,1995])concernedwithobtainingoptimalratesforafixedproblem,whichareoftenlogarith-micinTwhenstatedintermsofsomeproblemdependentconstant.Hence,inoursetting,inthecasewhere|D|isfinite,weknowthatalogratewhichmeasurestheerrorofbµtasanapproximationtothetruemean,µ,underthenorminducedbyAt.Wewillshowthat,withprobabilitygreaterthan1−δ,Zt≤βtforalltforeitheralgorithm.ForConfidenceBall2,thisdirectlyimpliesthatµ∈B2t.ForConfidenceBall1,notethat||A1/2t(bµt−µ)||1≤√n||A1/2t(bµt−µ)||2=pnZtsoifZt≤βtthenµ∈B1t.ThenextlemmaboundsthegrowthofZt.Lemma12Forallt,Zt≤n+2t−1Xτ=1ητx†τ(bµτ−µ)1+w2τ+t−1Xτ=1η2τw2τ1+w2τ.Proof:Fornotationalconvenience,define:Yt=At(bµt−µ)Wehavethefollowingrelations:Zt=Y†tA−1tYtYt=Xτ<tητxτ−µYt+1=Yt+ηtxtwhichareimmediatefromthedefinitionsofAt,bµt,andηt.NowexaminingthegrowthofZt,wehave:Zt+1=Y†t+1A−1t+1Yt+1=(Yt+ηtxt)†A−1t+1(Yt+ηtxt)=Y†tA−1t+1Yt+2ηtx†tA−1t+1Yt+η2tx†tA−1t+1xt(1)ApplyingthematrixinversionlemmatoA−1t+1,wenotethat:A−1t+1=(At+xtx†t)−1=A−1t−A−1txtx†tA−1t1+x†tA−1txt=A−1t−A−1txtx†tA−1t1+w2tWecanusethistoboundthethreetermsof(1)asfollows.Forthefirstterm,Y†tA−1t+1Yt=Y†tA−1tYt−(Y†tA−1txt)21+w2t≤Zt.Forthesecondterm,2ηtx†tA−1t+1Yt=2ηtx†tA−1tYt−2ηtx†tA−1txtx†tA−1tYt1+w2t=2ηtx†tA−1tYt−2ηtw2tx†tA−1tYt1+w2t=2ηtx†tA−1tYt1+w2t=2ηtx†t(bµt−6LowerBoundAnalysisRecallnisevenandthatDn=(S1)n/2istheCartesianproductofn/2circles,i.e.Dn={(x1,...,xn):x21+x22=x23+x24=···=x2n−1+x2n=1}.Underthecostvectorµ∈Dn/n,onecanseethattheprobabilityofobservingaparticularloss`inthenextroundequalsPr(`t=`|µ,xt)=1+`µ·xt2.(3)since`thassupport{−1,1}andmeanµ·xt.Notetheprob-abilitythat`t=1isboundedbetween1/4and3/4.Also,theoptimaldecisionisx∗=−nµ∈Dn,whichachievesanexpectedlossofµ·x∗=−1/2.Fixanindex1≤i≤n/2,andconsiderR(i)T,thecontri-butiontothetotalregretfromthechoiceofx(i)=(x2i−1,x2i),i.e.,thecomponentfromthei’thcircle.Moreprecisely,R(i)T=TXt=1(µ(i)·x(i)t+1n)=TXt=1r(i)Twhereµ(i)=(µ2i−1,µ2i)andr(i)Tistheinstantaneousre-gret.Clearly,wehaveRT=Pn/2i=1R(i)T.Thus,theproofofTheorem3reducestoprovingalowerboundE(R(i)T)=Ω(√T).Letusconditionontheeventthatthei’thcomponentofµ,namely(µ2i−1,µ2i),isoneoftwovectors,ν1,ν2∈S1/n,suchthatkν1−ν2k=ε(whereε≤2/n).Wefurtherconditionontheexactvaluesoftheothern/2−1componentsofµ,thusleavingonlytwopossibilitiesforµ,whichwecallµ1andµ2.Wedenoteε=kν1−ν2k=kµ1−µ2k.Notethatµisuniformover{µ1,µ2}inthisevent.Ultimately,wewillchooseεasafunctionTandn.Tomakethisconditioningprecise,considerthefollow-ingtwo-stagesamplingprocedureforµ,wherewefirstsam-pleµ1andµ2andthensampleµuniformlyatrandomover{µ1,µ2}—wedothissamplingsuchthatthemarginaldis-tributionoverµisstilluniformoverDn/n.Moreprecisely,firstsampleν1andν2suchthat||ν1−ν2||=εandsuchthatthemarginaldistributionsProb(ν1)andProb(ν2)arebothuniformoverS1/n.Independently,sampletheremain-ingcomponentsµ(j),wherej6=i,uniformlyatrandomoverS1/n.Thisprovidesuswithµ1andµ2(whichonlydifferinthei-thcomponent).Finally,wesampleµuniformlyatrandomover{µ1,µ2}.Bythetowerpropertyofconditionalexpectations(Fubini’stheorem),E(r(i)t)=EEµ(r(i)t|Ht,{µ1,µ2})wheretheinnerexpectationisoverµwhichliesin{µ1,µ2}.OurnextLemma,roughlyspeaking,provesthatdeci-sionsxtthatprovidemoreinformationaboutthevalueofµ,necessarilyproducemoreinstantaneousregret.More-over,theresultholdsevenifthealgorithmwereallowedtomagicallyknowthevaluesofµ1,µ2.Thisplacesthealgo-rithmdesigneronthehornsofadilemma:giveupondis-tinguishingthecasesµ=µ1andµ=µ2,orplayhigh-regretdecisionstotrytoacquiretheinformation.AsweshallseeintheproofofTheorem3,eitherway,weendupwithE(R(i)T=Ω(√T):intheformercase,withcertainty,andinthelattercase,withhighprobability.Letbt:=Pr(µ=µ1|Ht)−Pr(µ=µ2|Ht)bethebiastowardsµ1attimet.Notethatb0=0,andthatthesequence(bt)isamartingalewithrespectto(Ht).OurLemmagivesalowerboundonregretintermsofthemartingaledifferencesbt+1−bt.Wehavenotattemptedtooptimizetheconstants.Lemma15Forεasdefinedabove,forallt≥1,foranyse-quenceofdecisionsx1,...,xtandoutcomes`1,...,`t−1,`t,theregretfromroundtsatisfiesEµ(r(i)t|Ht,{µ1,µ2})≥7nε2256+|bt+1−bt|218nε21{|bt|≤1/2}.Proof:Letpt=Pr(µ=µ1|Ht).Thenbt=2pt−1.ByBayes’ruleandequation3,wehavethat:pt+1=Pr(`t|µ=µ1)ptPr(`t|Ht)=pt(1+`t(µ1·xt))pt(1+`t(µ1·xt))+(1−pt)(1+`t(µ2·xt))=pt(1+`t(µ1·xt))1+pt`t(µ1·xt)+(1−pt)`t(µ2·xt)Hencebt+1−bt=2(pt+1−pt)=2pt(1+`t(µ1·xt))−pt−p2t`t(µ1·xt)−pt(1−pt)`t(µ2·xt)1+pt`t(µ1·xt)+(1−pt)`t(µ2·xt)=2pt(1−pt)`t(µ1−µ2)·xt1+pt`tµ1·xt+(1−pt)`tµ2·xt.Since|µi·xt|≤kµikkxtk=q12npn2=1/2,thede-nominatoroftheaboveexpressionisatleast1/2.Sincept(1−pt)≤1/4,itfollowsthat|bt+1−bt|≤|`t||(µ1−µ2)·xt|=|`t||(ν1−ν2)·x(i)t|=ε|α|,(4)whereαmaybedefinedasfollows.Letv1betheunitvectorinthedirectionofν1−ν2,andletv2betheunitvectorinthedirectionofν1+ν2.Notethatv1,v2isanorthonormalbasisfortheplane,sincekν1k=kν2k.Decomposex(i)t=αv1+βv2,andE(µ(i)|Ht,{µ1,µ2})=γv1+δv2.Bydefinitionofbt,E(µ(i)|Ht,{µ1,µ2})=ν1+ν22+btν
+Graph Clustering: Block-models and model free
+results
+Anonymous Author(s)
+Affiliation
+Address
+email
+Abstract
+Clustering graphs under the Stochastic Block Model (SBM) and extensions are
+1
+well studied. Guarantees of correctness exist under the assumption that the data
+2
+is sampled from a model. In this paper, we propose a framework, in which we
+3
+obtain “correctness” guarantees without assuming the data comes from a model.
+4
+The guarantees we obtain depend instead on the statistics of the data that can be
+5
+checked. We also show that this framework ties in with the existing model-based
+6
+framework, and that we can exploit results in model-based recovery, as well as
+7
+strengthen the results existing in that area of research.
+8
+1 Introduction: a framework for clustering with guarantees without model
+9
+assumptions
+10
+In the last few years, model-based clustering in networks has witnessed spectacular progress. At
+11
+the central of intact are the so-called block-models, the Stochastic Block Model (SBM), Degree-
+12
+Corrected SBM (DC-SBM) and Preference Frame Model (PFM). The understanding of these models
+13
+has been advanced, especially in understanding the conditions when recovery of the true clustering is
+14
+possible with small or no error. The algorithms for recovery with guarantees has also been improved.
+15
+However, the impact of the above results is limited by the assumption that the observed data come
+16
+from the model.
+17
+This paper proposes a framework to provide theoretical guarantees for the results of model based
+18
+clustering algorithms, without making any assumption about the data generating process. To de-
+19
+scribe the idea, we need some notation. Assume that a graph G on n nodes is observed. A model-
+20
+based algorithm clusters G, and outputs clustering C and parameters M(G, C).
+21
+The framework is as follows: if M(G, C) fits the data G well, then we shall prove that any other
+22
+clustering C0
+of G that also fits G well will be a small perturbation of C. If this holds, then C with
+23
+model parameters M(G, C) can be said to capture the data structure in a meaningful way.
+24
+We exemplify our approach by obtaining model-free guarantees for the SBM and PFM models.
+25
+Moreover, we show that model-free and model-based results are intimately connected.
+26
+2 Background: graphs, clusterings and block models
+27
+Graphs, degrees, Laplacian, and clustering Let G be a graph on n nodes, described by its ad-
+28
+jacency matrix Â. Define ˆ
+di =
+Pn
+j=1 Âij the degree of node i, and D̂ = diag{ ˆ
+di} the diagonal
+29
+matrix of the node degrees. The (normalized) Laplacian of G is defined as1
+L̂ = D̂−1/2
+ÂD̂−1/2
+. In
+30
+1
+Rigorously speaking, the normalized graph Laplacian is I − L̂ [10].
+Submitted to 29th Conference on Neural Information Processing Systems (NIPS 2016). Do not distribute.
+extension, we define the degree matrix D and the Laplacian L associated to any matrix A ∈ Rn×n
+,
+31
+with Aij = Aji ≥ 0, in a similar way.
+32
+Let C be a partitioning (clustering) of the nodes of G into K clusters. We use the shorthand notation
+33
+i ∈ k for “node i belongs to cluster k”. We will represent C by its n×K indicator matrix Z, defined
+34
+by
+35
+Zik = 1 if i ∈ k, 0 otherwise, for i = 1, . . . n, k = 1, . . . K. (1)
+Note that ZT
+Z = diag{nk} with nk counting the number of nodes in cluster k, and ZT
+ÂZ =
+36
+[nkl]K
+k,l=1 with nkl counting the edges in G between clusters k and l. Moreover, for two indicator
+37
+matrices Z, Z0
+for clusterings C, C0
+, (ZT
+Z0
+)kk0 counts the number of points in the intersection of
+38
+cluster k of C with cluster k0
+of C0
+, and (ZT
+D̂Z0
+)kk0 computes
+P
+i∈k∩k0
+ˆ
+di the volume of the same
+39
+intersection.
+40
+“Block models” for random graphs (SBM, DC-SBM, PFM) This family of models contains
+41
+Stochastic Block Models (SBM) [19, 1], Degree-Corrected SBM (DC-SBM) [18] and Prefer-
+42
+ence Frame Models (PFM) [21]. Under each of these model families, a graph G with adja-
+43
+cency matrix Â over n nodes is generated by sampling its edges independently following the law
+44
+Âij ∼ Bernoulli(Aij), for all i > j. The symmetric matrix A = [Aij] describing the graph is the
+45
+edge probability matrix. The three model families differ in the constraints they put on an acceptable
+46
+A. Let C∗
+be a clustering. The entries of A are defined w.r.t C∗
+as follows (and we say that A is
+47
+compatible with C∗
+).
+48
+SBM: Aij = Bkl whenever i ∈ k, j ∈ l, with B = [Bkl] ∈ RK×K
+symmetric and non-negative.
+49
+DC-SBM: Aij = wiwjBkl whenever i ∈ k, j ∈ l, with B as above and w1, . . . wn non-negative
+50
+weights associated with the graph nodes.
+51
+PFM: A satisfies D = diag(A1), D−1
+AZ = ZR where 1 denotes the vector of all ones, Z is
+52
+the indicator matrix of C∗
+, and R is a stochastic matrix (R1 = 1, Rkl ≥ 0), the details are
+53
+in [21]
+54
+While perhaps not immediately obvious, the SBM is a subclass of the DC-SBM, and the latter a
+55
+subclass of the PFM. Another common feature of block-models, that will be significant throughout
+56
+this work is that for all three, Spectral Clustering algorithms [16] have been proved to work well
+57
+estimating C∗
+.
+58
+3 Main theorem: blueprint and results for PFM, SBM
+59
+Let M be a model class, such as SBM, DC-SBM, PFM, and denote M(G, C) ∈ M to be a model
+60
+that is compatible with C and is fitted in some way to graph G (we do not assume in general that this
+61
+fit is optimal).
+62
+Theorem 1 (Generic Theorem) We say that clustering C fits G well w.r.t M iff M(G, C) is “close
+63
+to” G. If C fits G well w.r.t M, then (subject to other technical conditions) any other clustering C0
+64
+which also fits G well is close to C, i.e. dist(C, C0
+) is small.
+65
+In what follows, we will instantiate this Generic Theorem, and the concepts therein; in
+66
+particular the following will be formally defined. (1) Model construction, i.e an algorithm
+67
+to fit a model in M to (G, C). This is necessary since we want our results to be
+68
+computable in practice. (2) A goodness of fit measure between M(C, G) and the data G.
+69
+(3) A distance between clusterings. We adopt the widely used Misclassification Error (or Hamming)
+70
+distance defined below.
+71
+The Misclassification Error (ME) distance between two clusterings C, C0
+over the same set of n
+72
+points is
+73
+dist(C, C0
+) = 1 −
+1
+n
+max
+π∈SK
+X
+i∈k∩π(k)
+1, (2)
+where π ranges over all permutations of K elements SK, and π(k) indexes a cluster in C0
+. If the
+74
+points are weighted by their degrees, a natural measure on the node set, the Weighted ME (wME)
+75
+2
+distance is
+76
+distˆ
+d(C, C0
+) = 1 −
+1
+Pn
+i=1
+ˆ
+di
+max
+π∈SK
+X
+i∈k∩π(k)
+ˆ
+di . (3)
+In the above,
+P
+i∈k∩k0
+ˆ
+di represents the total weight of the set of points assigned to cluster k by C
+77
+and to cluster k0
+by C0
+. Note that in the indicator matrix representation of clusterings, this is the
+78
+k, k0
+element of the matrix ZT
+D̂Z0
+∈ RK×K
+. While dist is more popular, we believe distˆ
+d is more
+79
+natural, especially when node degrees are dissimilar, as ˆ
+d can be seen as a natural measure on the
+80
+set of nodes, and distˆ
+d is equivalent to the earth-mover’s distance.
+81
+3.1 Main result for PFM
+82
+Constructing a model Given a graph G and clustering C of its nodes, we wish to construct a PFM
+83
+compatible with C, so that its Laplacian L satisfies that ||L̂ − L|| is small.
+84
+Let the spectral decomposition of L̂ be
+85
+L̂ = [Ŷ Ŷlow]
+
+Λ̂ 0
+0 Λ̂low
+ 
+Ŷ T
+Ŷ T
+low
+
+= Ŷ Λ̂Ŷ T
++ ŶlowΛ̂lowŶ T
+low (4)
+where Ŷ ∈ Rn×K
+, Ŷlow ∈ Rn×(n−K)
+and Λ̂, Λ̂low diagonal matrices of dimension K, respectively
+86
+n − K. To ensure that the matrices Ŷ , Ŷlow are uniquely defined we assume throughout the paper
+87
+that L̂’s K-th eigengap, i.e, |λK| − |λK+1|, is non-zero.
+88
+Assumption 1 The eigenvalues of L̂ satisfy λ̂1 = 1 ≥ |λ̂2| ≥ . . . ≥ |λ̂K| > |λ̂K+1| ≥ . . . |λ̂n|.
+89
+Denote the subspace spanned by the columns of M, for any M matrix, by R(M), and || || the
+90
+Euclidean or spectral norm.
+91
+PFM Estimation Algorithm
+Input Graph G with Â, D̂, L̂, Ŷ , Λ̂, clustering C with indicator matrix Z.
+Output (A, L) = PFM(G, C)
+1. Construct an orthogonal matrix derived from Z.
+YZ = D̂1/2
+ZC−1/2
+, with C = ZT
+D̂Z the column normalization of Z. (5)
+Note Ckk =
+P
+i∈k
+ˆ
+di the volume of cluster k.
+2. Project YZ on Ŷ and perform Singular Value Decomposition.
+F = Y T
+Z Ŷ = UΣV T
+(6)
+3. Change basis in R(YZ) to align with Ŷ .
+Y = YZUV T
+. Complete Y to an orthonormal basis [Y B] of Rn
+. (7)
+4. Construct Laplacian L and edge probability matrix A.
+L = Y Λ̂Y T
++ (BBT
+)L̂(BBT
+), A = D̂1/2
+LD̂1/2
+. (8)
+92
+Proposition 2 Let G, Â, D̂, L̂, Ŷ , Λ̂ and Z be defined as above, and (A, L) = PFM(G, C). Then,
+93
+1. D̂ and L, or A define a PFM with degrees ˆ
+d1:n.
+94
+2. The columns of Y are eigenvectors of L with eigenvalues λ̂1:K.
+95
+3. D̂1/2
+1 is an eigenvector of both L and L̂ with eigenvalue λ̂1 = 1.
+96
+3
+The proof is relegated to the Supplement, as are all the omitted proofs.
+97
+PFM(G, C) is an estimator for the PFM parameters given the clustering. It is evidently not the
+98
+Maximum Likelihood estimator, but we can show that it is consistent in the following sense.
+99
+Proposition 3 (Informal) Assume that G is sampled from a PFM with parameters D∗
+, L∗
+and com-
+100
+patible with C∗
+, and let L = PFM(G, C∗
+). Then, under standard recovery conditions for PFM (e.g
+101
+[21]) ||L∗
+− L|| = o(1) w.r.t. n.
+102
+Assumption 2 (Goodness of fit for PFM) ||L̂ − L|| ≤ ε.
+103
+PFM(G, C) instantiates M(G, C), and Assumption 2 instantiates the goodness of fit measure. It
+104
+remains to prove an instance of Generic Theorem 1 for these choices.
+105
+Theorem 4 (Main Result (PFM)) Let G be a graph with ˆ
+d1:n, D̂, L̂, λ̂1:n as defined, and L̂ sat-
+106
+isfy Assumption 1. Let C, C0
+be two clusterings with K clusters, and L, L0
+their correspond-
+107
+ing Laplacians, defined as in (8), and satisfy Assumption 2. Set δ = 4(K−1)ε2
+(|λ̂K |−|λ̂K+1|)2
+and δ0 =
+108
+mink Ckk/ maxk Ckk with C defined as in (5), where k indexes the clusters of C. Then, whenever
+109
+δ ≤ δ0,
+110
+distˆ
+d(C, C0
+) ≤
+maxk Ckk
+P
+k Ckk
+δ, (9)
+with distˆ
+d being the weighted ME distance (3).
+111
+In the remainder of this section we outline the proof steps, while the partial results of Proposition 5,
+112
+6, 7 are proved in the Supplement. First, we apply the perturbation bound called the Sinus Theorem
+113
+of Davis and Kahan, in the form presented in Chapter V of [20].
+114
+Proposition 5 Let Ŷ , λ̂1:n, Y be defined as usual. If Assumptions 1 and 2 hold, then
+115
+|| diag(sin θ1:K(Ŷ , Y ))|| ≤
+ε
+|λ̂K| − |λ̂K+1|
+= ε0
+(10)
+where θ1:K are the canonical (or principal) angles between R(Ŷ ) and R(Y ) (see e.g [8]).
+116
+The next step concerns the closeness of Y, Ŷ in Frobenius norm. Since Proposition 5 bounds the
+117
+sinuses of the canonical angles, we exploit the fact that the cosines of the same angles are the singular
+118
+values of F = Y T
+Ŷ of (6).
+119
+Proposition 6 Let M = Y Y T
+, M̂ = Ŷ Ŷ T
+and F, ε0
+as above. Assumptions 1 and 2 imply that
+120
+1. ||F||2
+F = trace MM̂T
+≥ K − (K − 1)ε02
+.
+121
+2. ||M − M̂||2
+F ≤ 2(K − 1)ε02
+.
+122
+Now we show that all clusterings which satisfy Proposition 6 must be close to each other in the
+123
+weighted ME distance. For this, we first need an intermediate result. Assume we have two clus-
+124
+terings C, C0
+, with K clusters, for which we construct YZ, Y, L, M, respectively Y 0
+Z, Y 0
+, L0
+, M0
+as
+125
+above. Then, the subspaces spanned by Y and Y 0
+will be close.
+126
+Proposition 7 Let L̂ satisfy Assumption 1 and let C, C0
+represent two clusterings for which L, L0
+127
+satisfy Assumption 2. Then, ||Y T
+Z Y 0
+Z||2
+F ≥ K − 4(K − 1)ε02
+= K − δ
+128
+The main result now follows from Proposition 7 and Theorem 9 of [14], as shown in the Supplement.
+129
+This proof approach is different from the existing perturbation bounds for clustering, which all use
+130
+counting arguments. The result of [14] is a local equivalence, which bounds the error we need in
+131
+terms of δ defined above (“local” meaning the result only holds for small δ).
+132
+4
+3.2 Main Theorem for SBM
+133
+In this section, we offer an instantiation of Generic Theorem 1 for the case of the SBM. As before,
+134
+we start with a model estimator, which in this case is the Maximum Likelihood estimator.
+135
+SBM Estimation Algorithm
+Input Graph with Â, clustering C with indicator matrix Z.
+Output A = SBM(G, C)
+1. Construct an orthogonal matrix derived from Z: YZ = ZC−1/2
+with C = ZT
+Z.
+2. Estimate the edge probabilities: B = C−1
+ZT
+ÂZC−1
+.
+3. Construct A from B by A = ZBZT
+.
+136
+Proposition 8 Let B̃ = C1/2
+BC1/2
+and denote the eigenvalues of B̃, ordered by decreasing mag-
+137
+nitude, by λ1:K. Let the spectral decomposition of B̃ be B̃ = UΛUT
+, with U an orthogonal matrix
+138
+and Λ = diag(λ1:K). Then
+139
+1. A is a SBM.
+140
+2. λ1:K are the K principal eigenvalues of A. The remaining eigenvalues of A are zero.
+141
+3. A = Y ΛY T
+where Y = YZU.
+142
+Assumption 3 (Eigengap) B is non-singular (or, equivalently, |λK| > 0.
+143
+Assumption 4 (Goodness of fit for SBM) ||Â − A|| ≤ ε.
+144
+With the model (SBM), estimator, and goodness of fit defined, we are ready for the main result.
+145
+Theorem 9 (Main Result (SBM)) Let G be a graph with incidence matrix Â, and λ̂A
+K the K-th
+146
+singular value of Â. Let C, C0
+be two clusterings with K clusters, satisfying Assumptions 3 and 4.
+147
+Set δ = 4Kε2
+|λ̂A
+K |2
+and δ0 = mink nk/ maxk nk, where k indexes the clusters of C. Then, whenever
+148
+δ ≤ δ0, dist(C, C0
+) ≤ δ maxk nk/n, where dist represents the ME distance (2).
+149
+Note that the eigengap of Â, Λ̂A
+K is not bounded above, and neither is ε. Since the SBM is less
+150
+flexible than the PFM, we expect that for the same data G, Theorem 9 will be more restrictive than
+151
+Theorem 4.
+152
+4 The results in perspective
+153
+4.1 Cluster validation
+154
+Theorems like 4, 9 can provide model free guarantees for clustering. We exemplify this procedure in
+155
+the experimental Section 6, using standard spectral clustering as described in e.g [19, 18, 16]. What
+156
+is essential is that all the quantities such as ε and δ are computable from the data.
+157
+Moreover, if Y is available, then the bound in Theorem 4 can be improved.
+158
+Proposition 10 Theorem 4 holds when δ is replaced by δY = K− < M̂, M >F +(K − 1)(ε0
+)2
++
+159
+2
+p
+2(K − 1)ε0
+||M̂ − M||F , with ε0
+= ε/(|λ̂K| − |λ̂K+1|) and M, M̂ defined in Proposition 6.
+160
+4.2 Using existing model-based recovery theorems to prove model-free guarantees
+161
+We exemplify this by using (the proof of) Theorem 3 of [21] to prove the following.
+162
+Theorem 11 (Alternative result based on [21] for PFM) Under the same conditions as in Theo-
+163
+rem 4, distˆ
+d(C, C0
+) ≤ δWM , with δWM = 128 Kε2
+(|λ̂K |−|λ̂K+1|)2
+.
+164
+5
+It follows, too, that with the techniques in this paper, the error bound in [21] can be improved by a
+165
+factor of 128.
+166
+Similarly, if we use the results of [19] we obtain alternative model-free guarantee for the SBM.
+167
+Assumption 5 (Alternative goodness of fit for SBM) ||L̂2
+−L2
+||F ≤ ε, where L̂, L are the Lapla-
+168
+cians of Â and A = SBM(G, C) respectively.
+169
+Theorem 12 (Alternative result based on [19] for SBM) Under the same conditions as in Theo-
+170
+rem 9, except for replacing Assumption 4 with 5, dist(C, C0
+) ≤ δRCY with δRCY = ε2
+|λ̂K |4
+16 maxk nk
+n .
+171
+A problem with this result is that Assumption 5 is much stronger than 4 (being in Frobenius norm).
+172
+The more recent results of [18] (with unspecified constants) in conjunction with our original As-
+173
+sumptions 3, 4, and the assumption that all clusters have equal sizes, give a bound of O(Kε2
+/λ̂2
+K)
+174
+for the SBM; hence our model-free Theorem 9 matches this more restrictive model-based theorem.
+175
+4.3 Sanity checks and Extensions
+176
+It can be easily verified that if indeed G is sampled from a SBM, or PFM, then for large enough n,
+177
+and large enough model eigengap, Assumptions 1 and 2 (or 3 and 4) will hold.
+178
+Some immediate extensions and variations of Theorems 4, 9 are possible. For example, one could
+179
+replace the spectral norm by the Frobenius norm in Assumptions 2 and 4, which would simplify
+180
+some of the proofs. However, using the Frobenius norm would be a much stronger assumption [19]
+181
+Theorem 4 holds not just for simple graphs, but in the more general case when Â is a weighted graph
+182
+(i.e. a similarity matrix). The theorems can be extended to cover the case when C0
+is a clustering
+183
+that is α-worse than C, i.e when ||L0
+− L̂|| ≥ ||L − L̂||(1 − α).
+184
+4.4 Clusterability and resilience
+185
+Our Theorems also imply the stability of a clustering to perturbations of the graph G. Indeed, let L̂0
+186
+be the Laplacian of G0
+, a perturbation of G. If ||L̂0
+− L̂|| ≤ ε, then ||L̂0
+− L|| ≤ 2ε, and (1) G0
+is
+187
+well fitted by a PFM whenever G is, and (2) C is δ stable w.r.t G0
+, hence C is what some authors [9]
+188
+call resilient.
+189
+A graph G is clusterable when G can be fitted well by some clustering C∗
+. Much work [4, 7] has
+190
+been devoted to showing that clusterability implies that finding a C close to C∗
+is computationally
+191
+efficient. Such results can be obtained in our framework, by exploiting existing recovery theorems
+192
+such as [19, 18, 21], which give recovery guarantees for Spectral Clustering, under the assumption of
+193
+sampling from the model. For this, we can simply replace the model assumption with the assumption
+194
+that there is a C∗
+for which L (or A) satisfies Assumptions 1 and 2 (or 3 and 4).
+195
+5 Related work
+196
+To our knowledge, there is no work of the type of Theorem 1 in the literature on SBM, DC-SBM,
+197
+PFM. The closest work is by [6] which guarantees approximate recovery assuming G is close to a
+198
+DC-SBM.
+199
+Spectral clustering is also used for loss-based clustering in (weighted) graphs and some stability
+200
+results exist in this context. Even though they measure clustering quality by different criteria, so that
+201
+the ε values are not comparable, we review them here. The recent paper of [17], Theorem 1.2 states
+202
+that if the K-way Cheeger constant of G is ρ(k) ≤ (1 − λ̂K+1)/(cK3
+) then the clustering error2
+203
+distˆ
+d(C, Copt
+) ≤ C/c = δP SZ. In the current proof, the constant C = 2 × 105
+; moreover, ρ(K)
+204
+cannot be computed tractably. In [15], the bound δMSX depends on εMSX, the Normalized Cut
+205
+scaled by the eigengap. Since both bounds refer to the result of spectral clustering, we can compare
+206
+the relationship between δMSX and εMSX; for [15], this is δMSX = 2εMSX[1 − εMSX/(K − 1)],
+207
+2
+The results is stronger, bounding the perturbation of each cluster individually by δP SZ , but it also includes
+a factor larger than 1, bounding the error of K-means algorithm.
+6
+which is about K − 1 times larger than δ when  = MSX. In [5], dist(C, C0
+) is defined in terms of
+208
+||Y T
+Z − Y 0
+Z||2
+F , and the loss is (closely related) to ||Â − SBM(G, C)||2
+F . The bound does not take
+209
+into account the eigengap, that is, the stability of the subspace Ŷ itself.
+210
+Bootstrap for validating a clustering C was studied in [11] (see also references therein for earlier
+211
+work). In [3] the idea is to introduce a statistics, and large deviation bounds for it, conditioned on
+212
+sampling from a SBM (with covariates) and on a given C.
+213
+6 Experimental evaluation
+214
+Experiment Setup Given G, we obtain a clustering C0 by spectral clustering [16]. Then we
+215
+calculate clustering C by perturbing C0 with gradually increasing noise. For each C, we construct
+216
+PFM (C, G)and SBM(C, G) model, and further compute , δ and δ0. If δ ≤ δ0, C is guaranteed to be
+217
+stable by the theorems. In the remainder of this section, we describe the data generating process for
+218
+the simulated datasets and the results we obtained.
+219
+220
+PFM Datasets We generate from PFM model with K = 5, n = 10000, λ1:K =
+221
+(1, 0.875, 0.75, 0.625, 0.5). eigengap = 0.48, n1:K = (2000, 2000, 2000, 2000, 2000). The
+222
+stochastic matrix R and its stationary distribution ρ are shown below. We sample an adjacency
+223
+matrix Â from A (shown below).
+224
+ρ =
+
+25 .12 .17 .18 .28
+
+R =
+
+
+
+
+
+.79 .02 .06 .03 .10
+.03 .71 .23 .00 .02
+.09 .16 .69 .00 .06
+.04 .00 .00 .80 .16
+.10 .01 .03 .11 .76
+
+
+
+
+
+A Â
+225
+Perturbed PFM Datasets A is obtained from the previous model by perturbing its principal
+226
+subspace (details in Supplement). Then we sample Â from A.
+227
+228
+Lancichinetti-Fortunato-Radicchi (LFR) simulated matrix [12] The LFR benchmark graphs
+229
+are widely used for community detection algorithms, due to heterogeneity in the distribution
+230
+of node degree and community size. A LFR matrix is simulated with n = 10000, K = 4,
+231
+nk = (2467, 2416, 2427, 2690) and µ = 0.2, where µ is the mixing parameter indicating the
+232
+fraction of edges shared between a node and the other nodes from outside its community.
+233
+234
+Political Blogs Dataset A directed network ~
+A of hyperlinks between weblogs on US politics,
+235
+compiled from online directories by Adamic and Glance [2], where each blog is assigned a political
+236
+leaning, liberal or conservative, based on its blog content. The network A contains 1490 blogs.
+237
+After erasing the disconnected nodes, n = 983. We study Â = ( ~
+AT ~
+A)3
+, which is a smoothed
+238
+undirected graph. For ~
+AT ~
+A we find no guarantees.
+239
+240
+The first two data sets are expected to fit the PFM well, but not the SBM, while the LFR data is
+241
+expected to be a good fit for a SBM. Since all bounds can be computed on weighted graphs as well,
+242
+we have run the experiments also on the edge probability matrices A used to generate the PFM and
+243
+perturbed PFM graphs.
+244
+The results of these experiments are summarized in Figure 1. For all of the experiments, the cluster-
+245
+ing C is ensured to be stable by Theorem 4 as the unweighted error grows to a breaking point, then
+246
+the assumptions of the theorem fail. In particular, the C0 is always stable in the PFM framework.
+247
+7
+Comparing δ from Theorem 9 to that from Theorem 4, we find that Theorem 9 (guarantees for SBM)
+248
+is much harder to satisfy. All δ values from Theorem 9 are above 1, and not shown.3
+In particular,
+249
+for the SBM model class, the C cannot be proved stable even for the LFR data.
+250
+Note that part of the reason why with the PFM model very little difference from the clustering C0 can
+251
+be tolerated for a clustering to be stable is that the large eigengap makes PFM(G, C) differ from
+252
+PFM(G, C0) even for very small perturbations. By comparing the bounds for Â with the bounds
+253
+for the “weighted graphs” A, we can evaluate that the sampling noise on δ is approximately equal
+254
+to that of the clustering perturbation. Of course, the sampling noise varies with n, decreasing for
+255
+larger graphs. Moreover, from Political Blogs data, we see that “smoothing” a graph, by e.g. taking
+256
+powers of its adjacency matrix, has a stability inducing effect.
+257
+Figure 1: Quantities , δ, δ0 from Thm 4 plotted vs dist(C, C0) for various datasets: Â denotes a simple graph, while A denotes a
+weighted graph (i.e. a non-negative matrix). For the Political Blogs: Truth means C0 is true clustering of [2], spectral means C0 is obtained
+from spectral clustering. For SBM, δ is always greater than δ0.
+7 Discussion
+258
+This paper makes several contributions. At a high level, it poses the problem of model free validation
+259
+in the area of community detection in networks. The stability paradigm is not entirely new, but
+260
+using it explicitly with model-based clustering (instead of cost-based) is. So is “turning around” the
+261
+model-based recovery theorems to be used in a model-free framework.
+262
+All quantities in our theorems are computable from the data and the clustering C, i.e do not con-
+263
+tain undetermined constants, and do not depend on parameters that are not available. As with
+264
+distribution-free results in general, making fewer assumptions allows for less confidence in the con-
+265
+clusions, and the results are not always informative. Sometimes this should be so, e.g when the
+266
+data does not fit the model well. But it is also possible that the fit is good, but not good enough
+267
+to satisfy the conditions of the theorems as they are currently formulated. This happens with the
+268
+SBM bounds, and we believe tighter bounds are possible for this model. It would be particularly
+269
+interesting to study the non-spectral, sharp thresholds of [1] from the point of view of model-free
+270
+recovery. A complementary problem is to obtain negative guarantees (i.e that C is not unique up to
+271
+perturbations).
+272
+At the technical level, we obtain several different and model-specific stability results, that bound the
+273
+perturbation of a clustering by the perturbation of a model. They can be used both in model-free
+274
+and in existing or future model-based recovery guarantees, as we have shown in Section 3 and in the
+275
+experiments. The proof techniques that lead to these results are actually simpler, more direct, and
+276
+more elementary than the ones found in previous papers.
+277
+3
+We also computed δRCY but the bounds were not informative.
+8
+References
+278
+[1] Emmanuel Abbe and Colin Sandon. Community detection in general stochastic block models:
+279
+fundamental limits and efficient recovery algorithms. arXiv preprint arXiv:1503.00609, 2015.
+280
+[2] Lada A Adamic and Natalie Glance. The political blogosphere and the 2004 us election:
+281
+divided they blog. In Proceedings of the 3rd international workshop on Link discovery, pages
+282
+36–43. ACM, 2005.
+283
+[3] Edoardo M. Airoldi, David S. Choi, and Patrick J. Wolfe. Confidence sets for network struc-
+284
+ture. Technical Report arXiv:1105.6245, 2011.
+285
+[4] Pranjal Awasthi. Clustering under stability assumptions. In Encyclopedia of Algorithms, pages
+286
+331–335. 2016.
+287
+[5] Francis Bach and Michael I. Jordan. Learning spectral clustering with applications to speech
+288
+separation. Journal of Machine Learning Research, 7:1963–2001, 2006.
+289
+[6] Maria-Florina Balcan, Christian Borgs, Mark Braverman, Jennifer Chayes, and Shang-Hua
+290
+Teng. Finding endogenously formed communities. In Proceedings of the Twenty-Fourth An-
+291
+nual ACM-SIAM Symposium on Discrete Algorithms, pages 767–783. SIAM, 2013.
+292
+[7] Shai Ben-David. Computational feasibility of clustering under clusterability assumptions.
+293
+CoRR, abs/1501.00437, 2015.
+294
+[8] Rajendra Bhatia. Matrix analysis, volume 169. Springer Science & Business Media, 2013.
+295
+[9] Yonatan Bilu and Nathan Linial. Are stable instances easy? CoRR, abs/0906.3162, 2009.
+296
+[10] Fan RK Chung. Spectral graph theory, volume 92. American Mathematical Soc., 1997.
+297
+[11] Brian Karrer, Elizaveta Levina, and M. E. J. Newman. Robustness of community structure in
+298
+networks. Phys. Rev. E, 77:046119, Apr 2008.
+299
+[12] Andrea Lancichinetti, Santo Fortunato, and Filippo Radicchi. Benchmark graphs for testing
+300
+community detection algorithms. Physical review E, 78(4):046110, 2008.
+301
+[13] Marina Meila and Jianbo Shi. Learning segmentation by random walks. In Neural Information
+302
+Processing Systems, 2001.
+303
+[14] Marina Meilă. Local equivalence of distances between clusterings – a geometric perspective.
+304
+Machine Learning, 86(3):369–389, 2012.
+305
+[15] Marina Meilă, Susan Shortreed, and Liang Xu. Regularized spectral learning. In Robert Cow-
+306
+ell and Zoubin Ghahramani, editors, Proceedings of the Artificial Intelligence and Statistics
+307
+Workshop(AISTATS 05), 2005.
+308
+[16] A. Y. Ng, M. I. Jordan, and Y. Weiss. On spectral clustering: Analysis and an algorithm.
+309
+In T. G. Dietterich, S. Becker, and Z. Ghahramani, editors, Advances in Neural Information
+310
+Processing Systems 14, Cambridge, MA, 2002. MIT Press.
+311
+[17] Richard Peng, He Sun, and Luca Zanetti. Partitioning well-clustered graphs with k-means and
+312
+heat kernel. In Proceedings of the Annual Conference on Learning Theory (COLT), pages
+313
+1423–1455, 2015.
+314
+[18] Tai Qin and Karl Rohe. Regularized spectral clustering under the degree-corrected stochastic
+315
+blockmodel. In Advances in Neural Information Processing Systems, pages 3120–3128, 2013.
+316
+[19] Karl Rohe, Sourav Chatterjee, and Bin Yu. Spectral clustering and the high-dimensional
+317
+stochastic blockmodel. The Annals of Statistics, pages 1878–1915, 2011.
+318
+[20] Gilbert W Stewart and Ji-guang Sun. Matrix perturbation theory, volume 175. Academic press
+319
+New York, 1990.
+320
+[21] Yali Wan and Marina Meila. A class of network models recoverable by spectral clustering.
+321
+In Daniel Lee and Masashi Sugiyama, editors, Advances in Neural Information Processing
+322
+Systems (NIPS), page (to appear), 2015.
+323
+9
+8 Supplementary Material for Graph Clustering: Block-models and model
+324
+free results
+325
+Proof of Proposition 2
+326
+1. Proof by verification.
+327
+2. LY = Y Λ̂Y T
+Y + (BBT
+)L̂(BBT
+)Y = Y Λ̂. Since B is the orthogonal complement of
+328
+Y , it follows that it is a stable subspace as well.
+329
+3. This is a well known result; see for example [20].
+330
+The celebrated Sinus Theorem is reproduced here for completeness.
+331
+Theorem 13 (Sinus Theorem of Davis-Kahan, from [20], Theorem V.3.6) Let L̂ be a Hermi-
+332
+tian matrix with spectral resolution given by (4), Y be any n × K matrix with orthonormal
+333
+columns, and M any symmetric K × K matrix with eigenvalues µ1:K. Let R = L̂Y − Y M
+334
+and ∆ = minλ∈λ̂K+1:n,µ∈µ1:K
+|λ − µ| > 0. Then, for any unitarily invariant norm || ||,
+335
+|| diag(sin θ1:K(Ŷ , Y ))|| ≤ ||R||
+∆ , where θ1:K are the canonical angles between R(Ŷ ) and R(Y ).
+336
+Proof of Proposition 5 This is a corollary of Theorem 3.6 in [20]. If eigenvalues are sorted by their
+absolute values, then λ̂K+1:n ∈ [−|λ̂K+1|, |λ̂K+1|] and µ1:K ∈ R\(−|λ̂K+1|−∆, |λ̂K+1|+∆). If
+we set M = Λ̂, so that λ̂1:K ∈ R \ (−|λ̂K+1| − ∆, |λ̂K+1| + ∆). Now we view Y as a perturbation
+of Ŷ , hence
+R = L̂Y − Y Λ̂ = L̂Y − LY + (LY − Y Λ̂) = (L̂ − L)Y (11)
+||R|| = ||(L̂ − L)Y || ≤ ||L̂ − L||||Y || ≤ ε. (12)
+From Theorem 13 the result follows. 2
+337
+Proof of Proposition 6 For 1:
+||F||2
+F = trace FFT
+= trace UΣV T
+V ΣUT
+= trace UT
+UΣV T
+V Σ = trace Σ2
+= 1 +
+K
+X
+k=2
+cos2
+θk = 1 +
+K
+X
+k=2
+(1 − sin2
+θk) = K −
+K
+X
+k=2
+sin2
+θk since θ1 = 0 (13)
+≥ K − (K − 1)ε02
+(14)
+For 2: Denote trace M̂T
+M =< M̂, M >F . Then ||M − M̂||2
+F = ||M||2
+F + ||M̂||2
+F − 2 <
+338
+M̂, M >F ≤ K + K − 2(K − (K − 1)ε02
+) = 2(K − 1)ε02
+. 2
+339
+Proof of Proposition 7 We have that | < M − M̂, M0
+− M̂ >F | ≤ ||M − M̂||F ||M0
+− M̂||F .
+From Proposition 6 the r.h.s is no larger than 2(K − 1)ε02
+.
+− < M − M̂, M0
+− M̂ >F ≤ ||M − M̂||F ||M0
+− M̂||F ≤ 2(K − 1)ε02
+(15)
+− < M, M0
+>F + < M̂, M >F + < M̂, M0
+>F −||M̂||2
+F ≤ 2(K − 1)ε02
+(16)
+< M, M0
+>F ≥ < M̂, M >F + < M̂, M0
+>F −K − 2(K − 1)ε02
+(17)
+≥ 2K − 2(K − 1)ε02
+− K − 2(K − 1)ε02
+= K − 4(K − 1)ε02
+2
+(18)
+Now, note that trace MM0
+= trace Y Y T
+Y 0
+(Y 0
+)T
+= trace((Y 0
+)T
+Y ))(Y T
+Y 0
+) = ||Y T
+Y 0
+||2
+F .
+340
+Moreover, by (7), YZ and Y differ by a unitary transformation. Since || ||F is unitarily invariant,
+341
+the result follows.
+342
+Proof of Theorem 4 We apply Theorem 9 of [14] with AX = Z, AX0 = Z0
+, and ÃX = Y , ÃX0 =
+343
+Y 0
+. It follows that pXYkk0 =
+P
+i∈k∩k0
+ˆ
+di/
+Pn
+i=1
+ˆ
+di. Hence, the point weights are proportional to
+344
+ˆ
+d1:n. Also, evidently, pmin/pmax = δ0, and the result follows.
+345
+Note that we use the fact that both PFM’s have degrees equal to ˆ
+d1:n to obtain this proof. 2
+346
+Proposition 14 Assumptions 3 and 4, imply || diag(sin θ1:K(Ŷ , Y ))|| ≤ ε/|λ̂A
+K| = ε0
+, where λ̂A
+K
+347
+is the K-th eigenvalue of Â.
+348
+10
+Proof of Proposition 14 We consider Â a perturbation of A, its eigenvectors Ŷ as the perturbed
+eigenvectors of A and M = Λ̂. Then, R = AŶ − Ŷ Λ̂
+||R|| = ||AŶ − Ŷ Λ̂|| (19)
+= ||(AŶ − ÂŶ ) + (ÂŶ − Ŷ Λ̂)|| (20)
+≤ ||(A − Â)Ŷ || (21)
+≤ ||A − Â||||Ŷ || ≤ ε. (22)
+The separation between Λ̂ and the residual spectrum of A is |λ̂K|. From the main Davis-Kahan
+349
+theorem 13 the result follows. 2
+350
+Proof of Proposition 8 The proofs of 1 and 2 are straightforward. To show 3, note that A =
+351
+ZC−1
+ZT
+ÂZC−1
+ZT
+= YZC1/2
+BC1/2
+Y T
+Z = YZUΛUT
+Y T
+Z = Y ΛY T
+. The definition of B
+352
+above shows that this is the Maximum Likelihood estimator of B given the clustering C.
+353
+⇔ Bkl =
+#edges from cluster k to cluster l
+nknl
+(23)
+Proof of Theorem 9 We now follow the steps outlined in section 3 with ε0
+from Proposition 14 to
+354
+obtain our main stability result.
+355
+Proof of Proposition 10 In the Proof of Proposition 7, we replace the bounds corresponding to
+356
+< M̂, M >F , ||M̂ − M||F by the actual values computed from M, M̂. We obtain
+357
+< M, M0
+>F ≥< M̂, M >F −(K − 1)(ε0
+)2
+− 2
+p
+2(K − 1)ε0
+||M̂ − M||F . (24)
+Proof of Proposition 3
+358
+From the Proof of this theorem, we have that ||L∗
+− L̂|| = o(1), ||(D∗
+)1/2
+− D̂1/2
+|| = o(1),
+359
+||λ∗
+− Λ̂|| = o(1), and ||Ŷ − Y ∗
+|| = o(1). Let Z be the indicator matrix of C∗
+. The principal
+360
+eigenvectors of L∗
+are Y ∗
+= (D∗
+)1/2
+Z(C∗
+)−1/2
+. It follows then that ||ZT
+D̂Z − ZT
+D∗
+Z|| =
+361
+o(1), and since C = ZT
+D̂Z, YZ = D̂1/2
+ZC−1/2
+we have that ||YZ − Y ∗
+|| = o(1), ||F∗
+−
+362
+F|| = o(1) where F∗
+= Y T
+Y ∗
+. Moreover, since ||Ŷ − Y ∗
+|| = o(1), ||F − I|| = o(1) Hence
+363
+||UV T
+− I|| = o(1). Since the choice of B depends only on R(YZ), it follows immediately that
+364
+||BBT
+L̂BT
+B − B∗
+(B∗
+)T
+L∗
+(B∗
+)T
+B∗
+|| = o(1). Now, L = YZUV T
+Λ̂V UT
+Y T
+Z + BBT
+L̂BT
+B,
+365
+and L∗
+= Y ∗
+Λ∗
+(Y ∗
+)T
++ B∗
+(B∗
+)T
+L∗
+(B∗
+)T
+B∗
+, which completes the proof. 2
+366
+perturbation of the PFM model To obtain a noisy PFM model A, we calculate the first K piecewise
+367
+constant [15] eigenvectors V of the transition matrix P = D−1
+A, from which we obtain V ∗
+by
+368
+perturbing each entry in V with a noise  ∼ unif(0, 10−4
+). The perturbed similarity matrix A is
+369
+then obtained as A = D1/2
+(D1/2
+V ∗
+Λ̂V ∗T
+D1/2
++ ŶlowΛ̂lowŶ T
+low)D1/2
+. An adjacency matrix Â is
+370
+generated from A. In figure 2, we show the perturbed graphs A and Â.
+371
+A Â
+Figure 2: Left: the visualization of the perturbed A. Right: the visualization of the perturbed Â
+11
+

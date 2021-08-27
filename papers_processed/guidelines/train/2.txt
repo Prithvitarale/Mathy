@@ -1,2270 +1,1081 @@
-Data Science Methodologies:
-Current Challenges and Future Approaches
-Iñigo Martineza,b,∗
-, Elisabeth Vilesb,c
-, Igor G Olaizolaa
-aVicomtech Foundation, Basque Research and Technology Alliance (BRTA), Donostia-San Sebastián 20009, Spain
-bTECNUN School of Engineering, University of Navarra, Donostia-San Sebastián 20018, Spain
-cInstitute of Data Science and Artificial Intelligence, University of Navarra, Pamplona 31009, Spain
-Abstract
-Data science has employed great research efforts in developing advanced analytics, improving data models and cultivating
-new algorithms. However, not many authors have come across the organizational and socio-technical challenges that
-arise when executing a data science project: lack of vision and clear objectives, a biased emphasis on technical issues,
-a low level of maturity for ad-hoc projects and the ambiguity of roles in data science are among these challenges. Few
-methodologies have been proposed on the literature that tackle these type of challenges, some of them date back to the
-mid-1990, and consequently they are not updated to the current paradigm and the latest developments in big data and
-machine learning technologies. In addition, fewer methodologies offer a complete guideline across team, project and data
-& information management. In this article we would like to explore the necessity of developing a more holistic approach
-for carrying out data science projects. We first review methodologies that have been presented on the literature to work
-on data science projects and classify them according to the their focus: project, team, data and information management.
-Finally, we propose a conceptual framework containing general characteristics that a methodology for managing data
-science projects with a holistic point of view should have. This framework can be used by other researchers as a roadmap
-for the design of new data science methodologies or the updating of existing ones.
-Keywords: data science, machine learning, big data, data science methodology, project life-cycle, organizational
-impacts, knowledge management, computing milieux
-1. Introduction
-In recent years, the field of data science has received in-
-creased attention and has employed great research efforts
-in developing advanced analytics, improving data models
-and cultivating new algorithms. The latest achievements
-in the field are a good reflection of such undertaking [1]. In
-fact, the data science research community is growing day
-by day, exploring new domains, creating new specialized
-and expert roles, and sprouting more and more branches of
-a flourishing tree called data science. Besides, the data sci-
-ence tree is not alone, as it is nourished by the neighboring
-fields of mathematics, statistics and computer science.
-However, these recent technical achievements do not go
-hand in hand with their application to real data science
-projects. In 2019, VentureBeat [2] revealed that 87% of
-data science projects never make it into production and
-a NewVantage survey [3] reported that for 77% of busi-
-nesses the adoption of big data and artificial intelligence
-(AI) initiatives continue to represent a big challenge. Also
-∗Corresponding author
-Email addresses: imartinez@vicomtech.org (Iñigo Martinez),
-eviles@tecnun.es (Elisabeth Viles), iolaizola@vicomtech.org
-(Igor G Olaizola)
-[4] reported that 80% of analytics insights will not deliver
-business outcomes through 2022 and 80% of data science
-projects will “remain alchemy, run by wizards” through
-2020. With the competitive edge that such advanced tech-
-niques provide to researchers and practitioners, it is quite
-remarkable to witness such low success rates in data sci-
-ence projects.
-Regarding how data science teams are approaching and
-developing projects across diverse domains, Leo Breiman
-[5] states that there are two cultures on statistical model-
-ing: a) the forecasting branch which is focused on building
-efficient algorithms for getting good predictive models to
-forecast the future, and b) the modeling branch that is
-more interested on understanding the real world and the
-underlying processes. From the latter perspective, theory,
-experience, domain knowledge and causation really mat-
-ter, and the scientific method is essential. On this wise,
-philosophers of science from the XX century such as Karl
-Popper, Thoman Kuhn, Imre Lakatos, or Paul Feyerabend
-theorized about how the process of building knowledge and
-science unfolds [6]. Among other things, these authors
-discussed the nature and derivation of scientific ideas, the
-formulation and use of the scientific method, and the im-
-plications of the different methods and models of science.
-In spite of the obvious differences, in this article we would
-Preprint submitted to Big Data Research - Elsevier June 15, 2021
-arXiv:2106.07287v1
-[cs.LG]
-14
-Jun
+arXiv:2106.11036v1
+[cs.CY]
+31
+May
 2021
-like to motivate data scientists to discuss the formulation
-and use of the scientific method for data science research
-activities, along the implications of different methods for
-executing industry and business projects. At present, data
-science is a young field and conveys the impression of a
-handcrafted work. However, among all the uncertainty
-and the exploratory nature of data science, there could be
-indeed a rigorous “science”, as it was understood by the
-philosophers of science, and that can be controlled and
-managed in an effective way.
-On the literature, few authors [7, 8] have come across
-the organizational and socio-technical challenges that arise
-when executing a data science project, for instance: lack
-of vision, strategy and clear objectives, a biased emphasis
-on technical issues, lack of reproducibility, and the ambi-
-guity of roles are among these challenges, which lead to
-a low level of maturity in data science projects, that are
-managed in ad-hoc fashion.
-Even though these issues do exist in real-world data
-science projects, the community has not been overly con-
-cerned about them, and not enough has been written about
-the solutions to tackle these problems. As it will be illus-
-trated on section 4, some authors have proposed method-
-ologies to manage data science projects, and have come up
-with new tools and processes to handle the cited issues.
-However, while the proposed solutions are leading the
-way to tackle these problems, the reality is that data sci-
-ence projects are not taking advantage of such method-
-ologies. On a survey [9] carried out in 2018 to profession-
-als from both industry and not-for-profit organizations,
-82% of the respondents did not follow an explicit process
-methodology for developing data science projects, but 85%
-of the respondents considered that using an improved and
-more consistent process would produce more effective data
-science projects.
-Considering a survey from KDnuggets in 2014 [10], the
-main methodology used by 43% of responders was CRISP-
-DM. This methodology has been consistently the most
-commonly used for analytics, data mining and data sci-
-ence projects, for each KDnuggets poll starting in 2002 up
-through the most recent 2014 poll [11]. Despite its popu-
-larity, CRISP-DM was created back in the mid-1990 and
-has not been revised since its creation.
-Therefore, the aim of this paper is to conduct a crit-
-ical review of methodologies that help in managing data
-science projects, classifying them according to their focus
-and evaluating their competences dealing with the exist-
-ing challenges. As a result of this study we propose a
-conceptual framework containing features that a method-
-ology for managing data science projects with a holistic
-point of view could have. This scheme can be used by
-other researchers as a roadmap to expand currently used
-methodologies or to design new ones.
-From this point onwards, the paper is structured as
-follows: A contextualization of the problem is presented
-in section 2, where some definitions on the terms “data
-science” and “big data” are provided to avoid any seman-
-tic misunderstanding and additionally frame what a data
-science project is about. Section 2 also presents the orga-
-nizational and socio-technical challenges that arise when
-executing a data science project. Section 3 describes the
-research methodology used in the article and introduces
-the research questions. Section 4 presents a critical review
-of data science project methodologies. Section 5 discusses
-the results obtained and finally, section 6 describes the di-
-rections on how to extend this research in the future and
-the main conclusions of the paper.
-2. Theoretical Framework
-2.1. Background and definitions
-In order to avoid any semantic misunderstanding, we start
-by defining the term “data science” more precisely. Its
-definition will help explaining the particularities of data
-science projects and frame the management methodology
-proposed in this paper.
-2.1.1. Data science
-Among the authors that assemble data science from long-
-established areas of sciences, there is a overall agreement
-on the fields that feed and grow the tree of data science.
-For instance, [12] defines data science as the intersection
-of computer science, business engineering, statistics, data
-mining, machine learning, operations research, six sigma,
-automation and domain expertise, whereas [13] states that
-data science is a multidisciplinary intersection of mathe-
-matics expertise, business acumen and hacking skills. For
-[14], data science requires skills ranging from traditional
-computer science to mathematics to art and [15] presents
-a Venn diagram with data science visualized as the join-
-ing of a) hacking skills b) math and stats knowledge and
-c) substantive expertise. By contrast, for the authors of
-[16], many data science problems are statistical engineer-
-ing problems, but with larger, more complex data that
-may require distributed computing and machine learning
-methods in addition to statistical modeling.
-Yet, few authors look on the fundamental purpose of
-data science, which is crucial to understand the role of data
-science in the business & industry areas and its possible
-domain applications. For the authors of [9], data science is
-the analysis of data to solve problems and develop insights,
-whereas [17] states that data science uses “statistical and
-machine learning techniques on big multi-structured data
-in a distributed computing environment to identify correla-
-tions and causal relationships, classify and predict events,
-identify patterns and anomalies, and infer probabilities,
-interest and sentiment”. For them, data science combines
-expertise across software development, data management
-and statistics. As on [18], data science is described as
-the field that studies the computational principles, meth-
-ods and systems for extracting and structuring knowledge
-from data.
+Know Your Model (KYM): Increasing Trust in AI and Machine
+Learning
+Mary Roszel
+University of Luxembourg
+Luxembourg
+mary.roszel@uni.lu
+Robert Norvill
+University of Luxembourg
+Luxembourg
+robert.norvill@uni.lu
+Jean Hilger
+Banque et Caisse d’Epargne de l’Etat
+Luxembourg
+jean.hilger@ext.uni.lu
+Radu State
+University of Luxembourg
+Luxembourg
+radu.state@uni.lu
+ABSTRACT
+The widespread utilization of AI systems has drawn attention to
+the potential impacts of such systems on society. Of particular con-
+cern are the consequences that prediction errors may have on real-
+world scenarios, and the trust humanity places in AI systems. It is
+necessary to understand how we can evaluate trustworthiness in
+AI and how individuals and entities alike can develop trustworthy
+AI systems. In this paper, we analyze each element of trustworthi-
+ness and provide a set of 20 guidelines that can be leveraged to en-
+sure optimal AI functionality while taking into account the greater
+ethical, technical, and practical impacts to humanity. Moreover, the
+guidelines help ensure that trustworthiness is provable and can be
+demonstrated, they are implementation agnostic, and they can be
+applied to any AI system in any sector.
+1 INTRODUCTION
+Artiﬁcial intelligence (AI) systems are being utilized in nearly ev-
+ery sector, with notable applications in autonomous systems, bank-
+ing, education, medical, manufacturing, and robotics. In recent years,
+advancements in the ﬁeld of AI have drawn attention to concerns
+of the large-scale impacts of such AI systems [2], urging aware-
+ness of the potential harm that these systems may cause. With the
+increasing utilization of AI systems, particularly in high-stakes ar-
+eas such as autonomous vehicles, health-care services, and surveil-
+lance, it is vital that we consider their trustworthiness.
+Consider, for example, the use of AI in medical diagnoses and
+decisions where an AI assists medical personnel in making deci-
+sions based on diagnostic scans. In theory, these systems would be
+of great use by allowing for faster and more accurate diagnoses,
+allowing hospitals to treat additional patients, and reduce human
+error. However, while these systems perform well in controlled en-
+vironments, in real-world applications they often perform poorly
+and increase the time required to make the diagnosis [5]. In this ex-
+ample, the issue of trust in such a system comes into consideration
+on multiple levels: the system must have the trust of the medical
+personnel utilizing it, the patient, and its greater community. How
+do we trust that the decisions these systems make are accurate,
+and who takes the blame if a patient is misdiagnosed, or if time is
+wasted on attempting to use a faulty system?
+Trustworthiness of an AI system implies that the development
+of such a system considers the greater ethical, technical, and practi-
+cal impacts to humanity. Our paper frames trustworthy AI around
+eight key principles as discussed in Fjeld et al. [14]: accountabil-
+ity, fairness and non-discrimination, human control of technology,
+privacy, professional responsibility, promotion of human values,
+safety and security, and transparency and explainability. To en-
+courage large-scale AI adoption and increase trust, the burden is
+on the creators should address these principles in their deployed
+systems. However, developing a completely trustworthy AI system
+is a diﬃcult task. Currently, there is no formal method for tracking
+and reporting how developers address issues of trust. Without such
+a method, the wide-scale development of trustworthy AI systems
+is greatly hindered.
+Further, the development of such systems may lead to prob-
+lems including scalability and compliance; with the development
+of complex models, how do companies and individuals ensure their
+systems are trustworthy, and at what cost? For example, in the ﬁ-
+nancial sector, Know Your Customer (KYC) refers to the legal re-
+quirements institutions have to ensure they know the true identity
+of their clients. State-of-the-art technologies have been success-
+fully leveraged to ease the burden of compliance [36]. We envis-
+age a similar regulatory landscape for the use of AI tools whereby
+institutions utilizing AI must be able to prove their tools can be
+trusted. Moreover, ensuring compliance with current and future
+legislation will enable the data economy to operate, ensuring AI is
+put to the best possible use.
+Toward developing trust in AI (and easing regulatory burden),
+we propose the concept of Know Your Model (KYM), the idea that
+all models have a unique identity and that model characteristics
+can be leveraged to know and trust models. The concept of KYM
+is inﬂuenced by the idea that all models have a unique identity and
+that model characteristics can be leveraged to know and trust mod-
+els. To "know" a model implies collecting, recording, and storing
+detailed records of the processes undergone during the develop-
+ment of a model, subsequently establishing model identity.
+To know a model, we propose 20 key guidelines that creators
+should address to establish a model’s identity, particularly in re-
+spect 4 core concepts: eﬃcacy, reliability, safety, and responsi-
+bility. These guidelines provide a general framework that is appli-
+cable to any and all AI implementations, rather than prescribing
+a particular implementation. The proposed guidelines are concise
+suggestions of important aspects that creators should be able to
+address about their AI systems in regards to processes, methodol-
+ogy, and trust. These guidelines can be leveraged by creators to in-
+crease transparency and trustworthiness in their AI development
+processes.
+Our aim is not to provide a deﬁnitive solution for developing
+trust in AI, rather to suggest key areas for increased attention in
+development, considering technical, ethical, and legal aspects in
+addition to trust. Therefore, the primary aim of this paper is to out-
+line a method to establish model identity with a general framework
+that all creators can apply to AI system development. The informa-
+tion required to fulﬁll the guidelines will vary by the complexity
+of each system, with more complex systems requiring greater at-
+tention to nuances in their use of data and modeling processes.
+This attention to detail will beneﬁt creators by ensuring that the
+appropriate information is collected during each stage of AI devel-
+opment and easing the burden of proof for the eﬀectiveness and
+trustworthiness of their systems.
+The rest of this paper is structured as follows. Section 2 dis-
+cusses the current ﬁeld of trustworthy AI and eight principles fre-
+quently observed in trustworthy AI research. Section 3 presents
+related work in tracking the development of AI systems. Section 4
+provides an overview of KYM, emphasizing the need for eﬃcacy,
+reliability, safety, and responsibility. This section describes in de-
+tail the 4 core concepts of KYM. Section 5 lists the guidelines KYM
+and how developers can leverage them. Finally, Section 6 summa-
+rizes the contributions in this paper and discusses the challenges
+and future work needed to establish KYM and increase trust in AI.
+2 TRUSTWORTHY AI
+The domain of trustworthy AI has gained traction in recent years
+with an increase in concern about the impact of AI deployment on
+society. When developing AI systems we often consider its accu-
+racy in decision making, but accuracy alone is not enough in high-
+stake scenarios (such as judicial decisions, and fraud detection)
+where an incorrect decision may have undesirable consequences.
+The large-scale adoption of AI systems greatly depends on devel-
+oping trust in not only their performance but also their greater pur-
+pose and transparency. Developing trust in AI is a dynamic process,
+it is crucial to continuously develop and maintain trust throughout
+all stages of development and deployment [41].
+While no consensus has been found on the formal deﬁnition
+of trustworthy AI, focus has been placed on eight key principles
+frequently observed in the domain: accountability, fairness and
+non-discrimination, human control of technology, privacy, profes-
+sional responsibility, promotion of human values, safety and se-
+curity, and transparency and explainability [14]. Increasing trust
+in AI requires that companies and developers closely analyze how
+they address these key principles during the development of their
+systems. In this section, we outline these key areas and the chal-
+lenges they pose in the development of trustworthy AI systems.
+2.1 Accountability
+With AI becoming increasingly prevalent in society, there is in-
+creasing concern about who will be accountable for the decisions
+and impact of AI technologies. The principle of accountability calls
+for the veriﬁability and replicability of AI systems, as well as call-
+ing attention to the need for auditing, regulatory, and legal require-
+ments and responsibility [14].
+In particular, the veriﬁability and replicability of AI systems are
+paramount for building trust. Developers should ensure that all
+experiments and results are replicable (reproducible), and provide
+enough information to be able to be validated. Without this infor-
+mation, users may ﬁnd the systems, and organizations who made
+them, untrustworthy.
+Further, the principle of accountability is particularly important
+when considering regulatory conditions. For regulatory bodies stan-
+dards for accountability in AI remain an open question as they seek
+a balance between creator responsibility and taking full advantage
+of the capabilities of AI [13].
+2.2 Fairness & Non-Discrimination
+The fairness and non-discrimination principle calls for the consid-
+eration, detection, and prevention of discrimination and bias in the
+development of AI systems. As these systems are often used in
+sensitive or high-stakes areas, it is vital that decisions are made
+without discriminatory or biased inﬂuence toward particular de-
+mographic groups or populations. Biased and discriminatory prac-
+tices in AI have been identiﬁed in nearly every type of system, in-
+cluding, advertisement, chatbots, employment decisions, legal de-
+cisions, facial and voice recognition, and search engines [32]. Cre-
+ators need to consider how their systems make decisions and po-
+tential harmful eﬀects they may cause.
+Research in this area provides many solutions for auditing, and
+improving bias and fairness in AI systems. Typically, bias is un-
+intentionally introduced with biased training data and can be ad-
+dressed with statistical methods applied to data or models [6]. For a
+complete survey of such methods, we suggest the article by Mehrabi
+et al. [32].
+2.3 Human Control of Technology
+With the increasing amount of AI systems making sensitive and
+high-stakes decisions, it is vital to consider where we shift con-
+trol of decision-making from humans to AI. Consider the case of
+autonomous vehicles: self-driving vehicles are able to make deci-
+sions and operate without human control, but there are continual
+ethical concerns about the decisions made in accident-scenarios
+[37].
+Research in this area calls for the ability for humans to review
+the decisions made by AI, or for AI to be built with the ability for
+humans to intervene, especially in the case of dangerous or costly
+decisions [24]. In particular, the ﬁeld of human-computer interac-
+tion includes a great body of work on human control in AI but has
+found it diﬃcult to establish guidelines for the design of AI systems
+with adequate human control [48].
+2.4 Privacy
+Privacy is a signiﬁcant concern in all systems where the use of
+personal data has signiﬁcant social and economic impact [29]. Con-
+cerns over privacy in AI systems are particularly prevalent, with
+the high volume of data used for sensitive decisions, such as adver-
+tisement, surveillance, health-care decisions, and money lending
 2
-There has also been a growing interest on defining the
-work carried out by data scientists and listing the neces-
-sary skills to become a data scientist, in order to better
-understand its role among traditional job positions. In
-this sense, [19] defines data scientist as a person who is
-“better at statistics than any software engineer and bet-
-ter at software engineering than any statistician” as [20]
-presents a “unicorn” perspective of data scientists, and
-states that data scientists handle everything from finding
-data, processing it at scale, visualizing it and writing up
-as a story.
-Among the hundreds of different interpretations that
-can be found for data science, we take the comments in-
-cluded above as a reference and provide our own definition
-to frame the rest of the article:
-Data science is an multidisciplinary field that lies be-
-tween computer science, mathematics and statistics, and
-comprises the use of scientific methods and techniques, to
-extract knowledge and value from large amounts of struc-
-tured and/or unstructured data.
-Hence, from this definition we draw that data science
-projects aim at solving complex real problems via data-
-driven techniques. In this sense, data science can be ap-
-plied to almost every existing sector and domain out there:
-banking (fraud detection [21], credit risk modeling [22],
-customer lifetime value [23]), finance (customer segmen-
-tation [24], risk analysis [25], algorithmic trading [26]),
-health-care (medical image analysis [27], drug discovery
-[28], bio-informatics [29],), manufacturing optimization (fail-
-ure prediction [30], maintenance scheduling [31], anomaly
-detection [32]), e-commerce (targeted advertising [33], prod-
-uct recommendation [34], sentiment analysis [35]), trans-
-portation (self driving cars [36], supply chain management
-[37], congestion control [38]) just to mention some of them.
-Even though data science can be seen as an application-
-agnostic discipline, we believe that it in order to appropri-
-ately extract value from data it is highly recommended to
-have an expertise in the application domain.
-2.1.2. Big data technologies
-Looking back at the evolution of data science during the
-last decade, its rapid expansion is closely linked to the
-growing ability to collect, store and analyze data gener-
-ated at an increasing frequency [39]. In fact, during the
-mid-2000s there were some fundamental changes in each of
-these stages (collection, storage and analysis) that shifted
-the paradigm of data science and big data.
-With respect to collection, the growth of affordable and
-reliable interconnected sensors, built in smart-phones and
-industrial machinery, has significantly changed the way
-statistical analysis is approached. In fact, traditionally
-the acquisition cost was so high that statisticians carefully
-collected data in order to be necessary and sufficient to
-answer a specific question. This major shift in data col-
-lection has indeed provoked an explosion of the amount of
-machine-generated data. In regards to storage, we must
-highlight the development of new techniques to distribute
-data across nodes in a cluster and the development of dis-
-tributed computation to run in parallel against data on
-those cluster nodes. Hadoop and Apache Spark ecosystems
-are good examples of new technologies that contributed to
-the advances in collection and storage techniques. Besides,
-a major breakthrough for the emergence of new algorithms
-and techniques for data analysis has been the increase in
-the computation power, both in CPUs and GPUs. Spe-
-cially the latest advances in GPUs have pushed forward
-the expansion of deep learning techniques, very eager of
-fast matrix operations [40].
-In addition to the improvements on collection, storage
-and analysis, data science has benefited from a huge com-
-munity of developers and researchers, coming from cutting
-edge companies and research centers. In our terminol-
-ogy, “big data”, which is commonly defined by the 5 V’s
-(volume, velocity, variety, veracity, value) is a subset field
-within data science that focuses on data distribution and
-parallel processing.
-Overall, during the last years the data science commu-
-nity has pursued the excellence and has employed great
-research efforts in developing advanced analytics, focusing
-of solving technical problems and as a consequence the or-
-ganizational and socio-technical challenges have been put
-aside. The following section summarizes the main prob-
-lems faced by data science professionals during real busi-
-ness and industry projects.
-2.2. Current Challenges
-Leveraging data science within a business organizational
-context involves additional challenges beyond the analyt-
-ical ones. The studies mentioned at the introduction of
-this paper just reflect the existing difficulty in executing
-data science and big data projects. Here below we have
-gathered some of the main challenges and pain points that
-come out during a data science project, both at the orga-
-nizational level and a technical level.
-Coordination, collaboration and communication
-The field of data science is evolving from a work done
-by individual, “lone wolf” data scientists, towards a work
-carried out by a team with specialized disciplines. Con-
-sidering data science projects as a complex team effort,
-[41, 9, 42] bring up coordination, defined as “the man-
-agement of dependencies among task activities” as the
-biggest challenge for data science projects. Poorly coordi-
-nated processes result in confusion, inefficiencies and er-
-rors. Moreover, this lack of efficient coordination happens
-both within data analytics teams and across the organiza-
-tion [43].
-Apart from lack of coordination, for [44, 45, 46] there
-are clear issues of collaboration and [47, 48] highlight a
-lack of transparent communication between the three main
-stakeholders: business (client), analytics team and the IT
-department. For instance, [44] mentions the difficulty for
-analytics teams to deploy to production, coordinate with
+[14]. In the European Union, the General Data Protection Regula-
+tion (GDPR) highly regulates the use of personal and private data
+in AI, with large ﬁnancial penalties levied on businesses who do
+not comply [47]. In particular, the clause that provides users with
+the "right to be forgotten", where users have the right to request
+that their personal data be deleted, is particularly important in AI
+privacy. Researchers have called attention to the issues with ap-
+plying this clause to AI, pointing out that the complete deletion of
+private data in AI may be impossible as AI systems do not "forget"
+data in the same way as humans [46].
+2.5 Professional Responsibility
+Professional Responsibility targets the individuals and entities in-
+volved in AI system design, development, and deployment [14]. As
+these individuals have a direct eﬀect on the behavior and impacts
+of AI systems, it is vital for us to consider the intentions, abilities,
+integrity, and trustworthiness of such individuals. Research in this
+ﬁeld focuses on developer responsibility (ethical, legal, and scien-
+tiﬁc) for the design and impact of their systems [10].
+2.6 Promotion of Human Values
+The promotion of human values (often also called the beneﬁcence
+principle [15]) is of particular importance when considering the
+ethical implications of AI systems. This principle implies that AI
+should be designed and strongly inﬂuenced by human values, in-
+cluding moral, ethical, and societal norms [11]. This principle also
+includes ensuring that AI are leveraged to beneﬁt society, aim to-
+ward positive change, and consider sustainability and environmen-
+tal impact [20]. This principle is very broadand lacks a concrete
+deﬁnition within the ﬁeld, making technical implementations chal-
+lenging [18]. There are no known tools that deal directly with pro-
+viding technical applications for human values-alignment during
+AI development [34].
+2.7 Safety & Security
+Safety and security are both vital to consider when developing
+trustworthy AI. In recent years, damages caused by autonomous
+vehicles, manipulation of public-facing AI systems, and software
+problems have harmed public perceptions of the safety and secu-
+rity of AI systems in society [2]. This principle covers AI safety,
+assessing the safety of AI systems, and security, assessing how se-
+cure an AI system is, and ensuring the robustness of an AI system
+from adversarial attacks.
+AI safety is both a technical and ethical concern, where poten-
+tially negative impacts on society could occur due to unintended
+accidents or failures [45]. Security ﬂaws can contribute to these
+failures, where attacks bymalicious actors can misclassify inputs
+to worsen or manipulate performance or gain information about
+the model and data it was trained on [26]. Often, the principles of
+privacy and safety and security are interconnected, where issues
+in one domain are likely to have an impact on the other. For ex-
+ample, [31] found that information leakage in the privacy domain
+aﬀects model robustness and adversarial security.
+Several solutions have been proposed to improve the safety and
+security of AI systems. To achieve safety, one may consider the four
+principles of safety: Inherently safe design, Safety reserves, Safe
+fail and Procedural safeguards [33]. In regards to security, while
+no solution is complete, systems can be developed to detect and
+address adversarial issues and attacks [35].
+2.8 Transparency & Explainability
+Transparency and explainability refer to the principle that the op-
+erations and outcomes of an AI model should be understandable
+to a human. This area of research is quite active, with many advo-
+cating for explainable decisions and transparency in sharing data
+and model information. These concepts are particularly vital to in-
+creasing trust in AI [30].
+Research into explainability and transparency aims toward in-
+terpretablity, developing AI in which a person can understand a
+model and its decisions, which in turn increases trust in the sys-
+tem [12]. At the base level, users should understand how a model
+is developed, its function, and how it reached its outcomes. This
+requires transparency. Ideally, developers should be transparent
+about an AI system’s quality, intent, performance, and reasoning
+[28].
+However, as modeling becomes more complex, understanding
+becomes more diﬃcult and opaque. Providing an interpretation for
+how an AI model works becomes a signiﬁcant issue, as does provid-
+ing a metric for measuring a model’s explainability. In addition, the
+type of explanation needed depends on the user, and therefore so
+does the metric needed to measure explainability, further compli-
+cating the issue [22]. The ﬁeld of explainability and transparency
+is interdisciplinary and additional research is needed to formalize
+model interpretability, its evaluation, and how transparent creators
+should be about their models [1]. The ﬁeld is very active, with so-
+lutions including utilizing transparent algorithms and models and
+providing post-hoc explanations about decisions. For a complete
+analysis of this ﬁeld, we suggest the article by Arrieta et al. [4].
+3 RELATED WORK
+In recent years, there has been an increase in attempts to improve
+the transparency of the creation and deployment of AI. This in-
+cludes transparency in model and data sharing, data lineage, and
+tracking the entire machine learning lifecycle. This section describes
+related work in tracking the development of AI systems, including
+a summary of the current state-of-the-art in AI provenance and
+transparency trends, data lineage, and machine learning lifecycle
+tracking.
+3.1 Current Trends Toward AI Transparency
+Transparency in AI development and deployment requires clear
+communication of a variety of factors, such as the attainment and
+use of data, model development, deployment, and updating, and
+the functional details and purpose of systems. In particular, in re-
+cent years, importance has been placed on machine learning and
+data provenance. Provenance in AI includes the collection and pro-
+cessing of information about the end-to-end development process
+of an AI system or use of data, aiming to improve replication, trac-
+ing, quality, and trust [19].
 3
-the IT department and explain data science to business
-partners. [44] also reveals the lack of support from the
-business side, in a way that there is not enough business
-input or domain expertise information to achieve good re-
-sults. Overall, it seems that the data analytics team and
-data scientists in general are struggling to work efficiently
-alongside the IT department and the business agents.
-In addition, [48] points out ineffective governance mod-
-els for data analytics and [43] emphasize inadequate man-
-agement and a lack of sponsorship from top management
-side. In this context, [49] affirm that working in confusing,
-chaotic environments can be frustrating and may lower
-team members’ motivation and their ability to focus on
-the project objectives.
-Building data analytics teams
-In other terms, [50] brings out problems to engage the
-proper team for the project and [45, 46, 43, 48, 51] high-
-light the lack of people with analytics skills. These short-
-ages of specialized analytical labor have caused every ma-
-jor university to launch new big data, analytics or data sci-
-ence programs [42]. In this regard, [46] advocates the need
-for a multidisciplinary team: data science, technology,
-business and management skills are necessary to achieve
-success in data science projects. For instance, [9] states
-that data science teams have a strong dependence on the
-leading data scientist, which is due to process immaturity
-and the lack of a robust team-based methodology.
-Defining the data science project
-Data science projects often have highly uncertain inputs
-as well as highly uncertain outcomes, and are often ad-
-hoc [52], featuring significant back-and-forth among the
-members of the team, and trial-and-error to identify the
-right analysis tools, programs, and parameters.
-The exploratory nature of such projects makes chal-
-lenging to set adequate expectations [17], establish realis-
-tic project timelines and estimate how long projects would
-take to complete [8]. In this regard, [50, 53] point out that
-the scope of the project can be difficult to know ex ante,
-and understanding the business goals is also a troubling
-task.
-More explicitly, the authors in [47, 43, 48] highlight
-the absence of clear business objectives, insufficient ROI
-or business cases, and an improper scope of the project.
-For [54] there is a biased emphasis on the technical issues,
-which has limited the ability of organizations to unleash
-the full potential of data analytics. Rather than focusing
-of the business problem, data scientists have been often
-obsessed with achieving state of the art results on bench-
-marking tasks, but searching for a small increase in perfor-
-mance can in fact make models too complex to be useful.
-This mindset is convenient for data science competitions,
-such as Kaggle [55], but not for the industry. Kaggle com-
-petitions are actually great for machine learning educa-
-tion, but they can set wrong expectations about what to
-demand in real-life business settings [56].
-Stakeholders vs Analytics
-Besides, more often than not the project proposal is not
-clearly defined [44] and there is not enough involvement
-by the business side, who might just provide the data and
-barely some domain information, assuming that the data
-analytics team will do the rest of the “magic” by itself.
-The high expectations set up by machine learning and
-deep learning techniques has induced a misleading percep-
-tion that these new technologies can achieve whatever the
-business suggests at a very low cost, and this is very far
-from reality [57]. The lack of involvement by the business
-side can also be caused by a lack of understanding between
-both parties: data scientists may not understand the do-
-main of the data, and the business is usually not familiar
-with data analysis techniques. In fact, the presence of an
-intermediary that understands both the language of data
-analytics and the domain of application can be crucial to
-make these two parties understand each other and reduce
-this data science gap [58].
-The exposed project management issues may be the
-result of a low level of process maturity [52] and a lack of
-consistent methods and processes to approach the topic of
-data science [45]. Furthermore, the consequences of such
-low adoption of processes and methodologies may also lead
-to delivering the “wrong thing” [41, 9, 59], and “scope
-creep” [41, 9]. In fact, the lack of effective processes to
-engage with stakeholders increases the risk that teams will
-deliver something that does not satisfy stakeholder needs.
-The most obvious portrayal of such problem is the zero
-impact and lack of use of the project results by the business
-or the client [44].
-Driving with data
-The use of a data-driven approach defines the main partic-
-ularity of a data science project. Data is at the epicenter
-of the entire project. Yet, it also produces some partic-
-ular issues discussed below. Hereafter we have gathered
-the main challenges that arise when working with data,
-whether related to the tools, to the technology itself, or to
-information management.
-A reiterated complain in real data science projects by
-data scientists is the quality of the data: whether data is
-difficult to access [46], or whether is “dirty” and has is-
-sues, data scientists usually conclude that data has not
-enough potential to be suitable for machine learning algo-
-rithms. Understanding what data might be available [50],
-its representativeness for the problem at hand [46] and its
-limitations [53] is critical for the success of the project. In
-fact, [59] states that the lack of coordinated data cleaning
-or quality assurance checks can lead to erroneous results.
-In this regard, data scientists tend to forget about the val-
-idation stage. In order to assure a robust validation of the
-proposed solution under real industrial and business con-
-ditions, data and/or domain expertise must be gathered
-with enough anticipation.
-Considering the big data perspective is also important
-[60]. An increase in data volume and velocity intensifies
+3.1.1 Data Transparency. As the outcomes of AI systems depend
+directly on training data use (and misuse), data transparency, in-
+cluding transparency in data collection, utilization, and storage, is
+an area of signiﬁcant concern in trustworthy AI.
+Data provenance (or data lineage) methods aim to improve repli-
+cation, tracing, quality assessment in data use and data transforma-
+tion processes [19]. Several researchers have proposed data prove-
+nance and lineage solutions for the tracking of data and data trans-
+formations during the machine learning lifecycle [43, 44, 51]. Fur-
+ther, Bertino et al. [8] proposes the use of blockchain technology to
+encourage data transparency and ensure that data collection and
+utilization coincide with ethical principles.
+While these solutions assist with internal data provenance, sev-
+eral researchers have also advocated for private, secure, and stan-
+dardized methods for data sharing. Gebru et al. [16] proposeddatasheets
+for datasets, a standardization method for the documentation of
+datasets. These datasheets include information on "operating char-
+acteristics, test results, recommended uses, ... motivation, compo-
+sition, collection process, [and] recommended uses", providing de-
+tailed questions for dataset creators to provide. Similarly, Bender
+and Friedman [7] propose data statements for dataset characteriza-
+tion in natural language processing, considering also the general-
+ization of experiments and composition of datasets in respect to
+bias. Further, Holland et al. [23] propose a standardized diagnostic
+method for an overview of the core components of a dataset with
+the dataset nutrition label.
+Considering legality and regulations, Yanisky-Ravid and Hal-
+lisey [49] propose the AI Data Transparency Model, encouraging
+data audits by both stakeholders and third-parties to assess data
+use (and misuse) and storage, to encourage replicability and com-
+pliance.
+3.1.2 Model Transparency. Due to the rising complexity in mod-
+eling, model transparency and provenance methods have quickly
+gained traction. Research has focused both on end-to-end tracking
+of provenance information in the machine learning lifecycle, and
+in evaluation of models for performance and trust.
+Several modeling provenance solutions have been proposed.Schel-
+ter et al. [40] propose a system for the extraction and storage of
+meta-data and provenance information commonly observed in the
+machine learning lifecycle. Hummer et al. [25] propose ModelOps,
+a cloud-based framework for end-to-end AI pipeline management,
+including support for addressing several trustworthy principles,
+such as reliability, traceability, quality control, and reproducibility.
+Further, several tools for complete asset tracking of AI pipelines
+have also been developed, focusing on tracking modeling inputs,
+results, and production processes [17, 27, 50].
+In regards to AI documentation, a recent trend is the use of Fact-
+Sheets. Arnold et al. [3] proposes FactSheets to communicate "pur-
+pose, performance, safety, security, and provenance information"
+from the creator to the user of an AI service. Sokol and Flach [42]
+extended this with a taxonomy for characterizing and assessing
+explainability in AI with Explainability FactSheets. However, Hind
+et al. [21] found that developers found these FactSheets challeng-
+ing and time-consuming to complete, noting issues with developer
+recall about modeling details, data transformation documentation,
+privacy and ownership concerns, and lack of clarity.
+3.2 Summary
+It is clear that academics and industry alike have established prac-
+tices to encourage transparency and increase trust in AI develop-
+ment and deployment. The current focus is placed on data and
+model provenance, aiming to improve replicability, tracing, qual-
+ity assessment, and trustworthiness in the AI lifecycle.
+While research has focused on tracking information about AI
+development, there are no concrete solutions for integrating trans-
+parent solutions with trustworthy principles. Current solutions fo-
+cus primarily on one stage of the AI lifecycle, or only a handful
+of trustworthy principles, neglecting to give proper attention to
+the "whole picture" required in developing a trustworthy system.
+To increase trust in AI, we propose a framework that creators can
+leverage to increase the transparency and trustworthiness of their
+AI development processes.
+4 KNOW YOUR MODEL (KYM)
+In this section, we provide an overview of ourproposedKYM frame-
+work. We propose 20 guidelines that provide clarity on the eﬃ-
+cacy, reliability, safety, and responsibility of a given AI sys-
+tem’s purpose, data treatment, modeling processes, and trustwor-
+thiness. These guidelines provide a framework for creators to lever-
+age in their AI development processes to increase transparency
+and trustworthiness. This framework aims toward increasing user
+trust in AI systems and outcomes and easing the burden on cre-
+ators by providing a clear set of guidelines that considers prove-
+nance, trust, and technical, ethical, and legal responsibility.
+The concept of KYM is inﬂuenced by the idea that all models
+have a unique identity and that model characteristics can be lever-
+aged to know and trust models. To "know" a model implies col-
+lecting, recording, and storing detailed records of the processes
+undergone during the development of a model, subsequently es-
+tablishing model identity. A developer should record enough infor-
+mation about a model to clearly establish its identity. In this case,
+model identity refers to the minimum information to distinguish
+one model from another, or establish a model’s uniqueness. KYM
+strives for all models to have a unique model identity, allowing
+model characteristics to be leveraged to know and trust models.
+To encourage large-scale AI adoption, we must increase the trust
+that users have in models and modeling processes. The user may
+be a customer, employee, or the developer of the system, trust from
+each is equally important. While a solution to create a perfect trust-
+worthy AI system is not currently available, by increasing trans-
+parency in how developers record how they address each principle,
+we believe that users will have the information needed to assess a
+model’s trustworthiness.
+This need for transparency highlights the necessity of the KYM
+framework. KYM provides a framework for developers to address
+key areas about their AI systems, focusing on eﬃcacy, reliability,
+safety, and responsibility. These four key concepts cover all eight
+principles of trustworthy AI to ensure complete coverage in KYM.
+Further, KYM includes guidelines for the utilization and prepara-
+tion of data, modeling processes (model type, hyperparameter tun-
+ing, feature extraction, etc.), and methods for addressing aspects
+of trustworthiness in model development.
 4
-the computation requirements and hence the dependence
-of the project on IT resources [8]. In addition, the scale of
-the data magnifies the technology complexity and the nec-
-essary architecture and infrastructure [48] and as a result
-the corresponding costs [43].
-In other terms, [46, 43, 60] also highlight the impor-
-tance of data security and privacy, and [43, 48] point out
-the complex dependency on legacy systems and data inte-
-gration issues.
-In relation to the limitations of machine learning algo-
-rithms, one of most repeated issues is that popular deep
-learning techniques require many relevant training data
-and their robustness is every so often called into question.
-[51] brings up the excessive model training and retrain-
-ing costs. In fact, data scientists tend to use 4 times as
-much data as they need to train machine learning mod-
-els, which is resource intensive and costly. Apart from
-that, [51] points out that data scientists can often focus
-on the wrong model performance metrics, without mak-
-ing any reference to overall business goals or trade-offs
-between different goals.
-Deliver insights
-[41, 9, 60] point out the issue of slow information and data
-sharing among the team members. They state that these
-poor processes for storing, retrieving and sharing data and
-documents wastes time as people need to look for informa-
-tion and increases the risk for using the wrong version. In
-relation to this, [41, 9, 59] reveal a lack of reproducibil-
-ity in data science projects. In fact, they call for action
-and development of new tools to tackle the lack of repro-
-ducibility, since it might be “impossible to further build
-on past projects given the inconsistent preservation of rel-
-evant artifacts” like data, packages, documentation, and
-intermediate results.
-This can be a serious problem for the long-term sus-
-tainability of data science projects. In several applied data
-science projects, the main outcome of the project may not
-be the machine learning model or the predicted quantity
-of interest, but an intangible such as the project process
-itself or the generated knowledge along its development.
-While it is essential to reach the project goals, in some
-cases it is more important to know how the project did
-reach those goals, what path did it follow and understand
-why it took those steps and not other ones. This gener-
-ated knowledge about the route that a data science project
-follows is crucial for understanding the results and paves
-the way for future projects. That is why this knowledge
-has to be managed and preserved in good condition, and
-for that the ability to reproduce data science tasks and
-experiments is decisive. [51] states that retaining institu-
-tional knowledge is a challenge, since data scientists and
-developers are in short supply and may jump to new jobs.
-To tackle this problem, [51] proposes to document ev-
-erything and create a detailed register for all new machine
-learning models, thus enabling future hires to quickly repli-
-cate work done by their predecessors. In this regard, [53]
-noted knowledge-sharing within data science teams and
-across the entire organization as one key factor for project
-success and [43, 48] added data & information manage-
-ment as well.
-In relation to data management, [51] also pointed out
-the issue of multiple similar but inconsistent data sets,
-where many versions of the same data sets could be circu-
-lating within the company, with no way to identify which
-is the correct one.
-Summary
-The presented problematic points have been classified in
-three main categories, according to whether they relate to
-the a) team or organization, b) to the project manage-
-ment or c) to the data & information management. This
-taxonomy is meant to facilitate and better understand the
-types of problems that arise during a data science project.
-In addition, this classification will go hand in hand with
-the review of data science methodologies that will be in-
-troduced later in the paper. An alternative classification
-system for big data challenges is proposed on [60], defined
-by data, process and management challenges. For them,
-data challenges are related to the characteristics of data
-itself, process challenges arise while processing the data
-and management challenges tackle privacy, security, gov-
-ernance and lack of skills. We claim that the proposed tax-
-onomy of challenges incorporates this classification and has
-a broader view. Table 1 summarizes the main challenges
-that come out when executing real data science projects.
-Some of the challenges listed on table 1 are consid-
-ered to be a symptom or reflection of a larger problem,
-which is the lack of a coherent methodology in data sci-
-ence projects, as was stated by [7]. In this sense, [9] sug-
-gested that an augmented data science methodology could
-improve the success rate of data science projects. In the
-same article, the author presented a survey carried out in
-2018 to professionals from both industry and not-for-profit
-organizations, where 82% of the respondents declared that
-they did not follow an explicit process methodology for
-developing data science projects, but 85% of the respon-
-dents considered that using an improved and more con-
-sistent process would produce more effective data science
-projects.
-Therefore, in this article we would like to explore the
-following research questions:
-• RQ1: What methodologies can be found on the lit-
-erature to manage data science projects?
-• RQ2: Are these available methodologies prepared
-to meet the demands of current challenges?
-3. Research Methodology
-In order to investigate the state-of-the-art in data science
-methodologies, in this article we have opted for a critical
-review of the literature. Saunders and Rojon [61] define a
+While the framework of KYM addresses all principles, it is the
+developers’ responsibility to decide which guidelines are most im-
+portant to address for their system. We advocate for transparency
+in the use of data, development of models, and how issues of AI
+trustworthiness are addressed, while recognizing that this trans-
+parency is diﬀerent among the various types of AI systems. As
+deﬁnitively proving that a model is trustworthy is quite diﬃcult,
+we suggest that developers maintain thorough records on meth-
+ods taken to address trust concerns. Developers should record tech-
+niques and tools they used to address issues in each area, and jus-
+tiﬁcations for why a check was not completed or required. Due
+to the rapidly evolving nature of AI development and AI research,
+KYM suggests that developers remain vigilant in addressing issues
+of trust with regular checks and updates, particularly in respect to
+fairness, privacy, security, safety, user understanding, and reliabil-
+ity.
+The rest of this section outlines the four principles of KYM. In
+the following section, the guidelines for KYM are proposed.
+4.1 Eﬃcacy
+Eﬃcacy in KYM ensures that models produce the desired result.
+With the increase in the use of AI in everyday settings, it is vital
+to ensure that the outcomes of models are appropriate for their
+intended purpose, that the model performs well, and that outcomes
+are fair and beneﬁcial to society. As systems can have unintended
+outcomes, it should be veriﬁed that models perform in the way that
+the developer intended.
+The concept of Eﬃcacy addresses the trustworthy AI principles
+of Transparency & Explainability and Fairness & Non-Discrimination.
+In KYM, the principle of eﬃcacy calls for:
+• Transparency in the purpose, intentions, and outcomes of
+models, including intended purpose, use, target groups, and
+expected outputs.
+• Eﬀortstoward improving human understanding of processes,
+operations, and outcomes of the AI pipeline.
+• Careful attention to fairness and non-discrimination in data
+and modeling to reduce bias and discrimination in outcomes.
+4.2 Reliability
+Reliability in KYM ensures that models are reliable in their outputs
+and developmental processes. The concept of reliability in KYM
+primarily addresses the trustworthy AI principle of Accountability.
+Here, it is important to consider the processes that are used in de-
+velopment: Is the process appropriate for the intended purpose?
+Are the outcomes and processes veriﬁable, reproducible, and reli-
+able? Would another method produce more reliable results? Are
+the appropriate regulatory and legal processes followed?
+Of critical importance in this concept is replicability: developers
+should be able to reproduce the outcomes of their models and trace
+the model back to its origin. This includes ensuring proper prove-
+nance with records of data used, data transformations undergone,
+modeling processes (development environment, model type, hy-
+perparameter tuning, etc.), and inference veriﬁcation. Users should
+be able to verify the developmental products of models. KYM ad-
+vocates that developers keep clear records of their model develop-
+ment so that a clear auditing process can be completed.
+Additionally, attention should be given to data and modeling
+quality. The collection, preparation, and treatment of data are vital
+to consider when considering model identity. Data has a profound
+impact on the modeling process. The type and quality of data used
+for the development of an AI system have direct consequences on
+the quality of the models and inferences. For instance, data of poor
+quality or poorly leveraged data can lead to unreliable and incor-
+rect models [38]. Therefore, careful attention to data processes is
+required. KYM requires reliability in the data use and data trans-
+formation in modeling systems.
+The principle of reliability calls for:
+• Transparency in developmental processes, including the use
+and transformation processes of data, and feature extrac-
+tion, training and testing, and prediction outcomes.
+• Reliability in outcomes and developmental processes, includ-
+ing the appropriate use of methods, availability, and consis-
+tency.
+• Replicability or veriﬁability of outcomes and processes.
+• Attention to data quality to avoid bad, inadequate or inap-
+propriate data collection, utilization, or transformation pro-
+cesses.
+• Data and model provenance.
+• Attention to ethical, legal, and regulatory environments and
+requirements.
+This concept is particularly important in regulatory environ-
+ments, where developers may be required to verify the exact pro-
+cesses undergone during model development and reproduce rele-
+vant results.
+4.3 Safety
+The large-scale adoption of AI requires that users are conﬁdent
+that AI systems are safe to use and do not pose undue harm to
+the user or society as a whole. The need for safety is considered
+with great importance in KYM. The concept of Safety in KYM ad-
+dresses the trustworthy AI principles of Safety & Security and Pri-
+vacy. Here, the concept of safety includes assessing the safety, secu-
+rity, and privacy of AI systems from unintended accidents, breaches,
+and threats to user privacy.
+This principle calls for:
+• Building AI systems with careful attention to safety, includ-
+ing safe design, contingencies in case of error or failure, and
+audits or standards to assess initial and continuous system
+safety.
+• System and model stability, including attention to failures
+and their causes, maintenance to address and ﬁx failures
+upon occurrence, and reducing failure rates [39].
+• Robustness to threats to security, including robustness to
+attacks from adversaries or malicious actors and continual
+attention to state-of-the-art security techniques.
+• Careful attention to user privacy, including (personal) data
+collection, utilization, and storage. This also includes any
+legal or regulatory requirements for securing user informa-
+tion.
 5
-Team Management Project Management Data & Information Management
-Poor coordination Low level of process maturity Lack of reproducibility
-Collaboration issues across teams Uncertain business objectives Retaining and accumulation of knowledge
-Lack of transparent communication Setting adequate expectations Low data quality for ML
-Inefficient governance models Hard to establish realistic project timelines Lack of quality assurance checks
-Lack of people with analytics skills Biased emphasis on technical issues No validation data
-Rely not only on leading data scientist Delivering the wrong thing Data security and privacy
-Build multidisciplinary teams Project not used by business Investment in IT infrastructure
-Table 1: Data science projects main challenges
-critical literature review as a “combination of our knowl-
-edge and understanding of what has been written, our
-evaluation and judgment skills and our ability to structure
-these clearly and logically in writing”. They also point out
-several key attributes of a critical literature review: a) it
-discusses and evaluates the most relevant research relevant
-to the topic, b) it acknowledges the most important and
-relevant theories, frameworks and experts within the field,
-c) it contextualizes and justifies aims and objectives and d)
-it identifies gaps in knowledge that has not been explored
-in previous literature.
-The presented critical literature review was carried out
-based on the preceding concepts and through a compari-
-son of literature on data science project management. The
-main reason to go for a critical review rather than a sys-
-tematic review was that information regarding the use of
-data science methodologies is scattered among different
-sources, such as scientific journals, books, but also blogs,
-white papers and open online publishing platforms. The
-information available on informal sources was indeed very
-important to understand the perspective of real data sci-
-ence projects. In order to select articles for inclusion, a set
-of selection criteria was set:
-• Source and databases used for search: Web of Sci-
-ence, Mendeley, Google Scholar, Google
-• Time period: from 2010 until 2020 (exception on
-CRISP-DM, from 1995)
-• Language: English
-• Document type: journal paper, conference paper,
-white paper. Both academic and practitioner papers
-were used. Practitioner articles were also included as
-they could provide an industry-level perspective on
-the data science methodologies.
-• Content: all papers selected had to do with data sci-
-ence project methodologies either directly (title, or
-text), or indirectly (inferred by the content). All the
-included papers involved findings related to at least
-one of the three categories of methodologies analyzed
-in this review (i.e. team, project and data & infor-
-mation dimensions of data science project manage-
-ment).
-Ultimately, a total of 19 studies (from 1996 to 2019)
-were selected for examination. Each study contained a lot
-of information, and thus, it was decided that the best way
-to compare studies was through the creation of a compar-
-ative table. This first table attempted to separate the key
-elements of the studies into four points:
-1. Paper details (Author / Journal / Year)
-2. Main ideas and keywords
-3. Perspective (team, project, data & information)
-4. Findings
-Afterwards, a second table was created to analyze how
-each methodology met the demands of the identified chal-
-lenges. This table has been partitioned into three separate
-tables [2,3,4], one for each category of challenges. The
-first column takes into account the challenges identified
-on section 2 for team management, project management
-and data & information management. In order to deal
-these challenges, methodologies design and implement dif-
-ferent processes. Examples of such processes have been
-included on the second column. Based on the proposal
-of each methodology, a score is assigned to each criteria.
-These scores attempt to capture the effort put by the au-
-thors to solve each challenge. Taking as a reference [62],
-the following punctuation system has been used:
-• 0: criteria not fulfilled at all
-• 1: criteria hardly fulfilled
-• 2: criteria partially fulfilled
-• 3: criteria fulfilled to a great extend
-The quantitative information included on the tables
-[2,3,4] has also been illustrated in a triangular plot (Figure
-1 right). Each axis represents a category of challenges
-- team, project, data & information - and the value in
-percentage (%) reflects how well a methodology addresses
-those challenges. More specifically, the percentage value is
-calculated as the ratio between the sum of the scores and
-the maximum possible sum in each category. For example,
-the project management category has 7 challenges, so the
-maximum possible score is 7·3 = 21. A methodology that
-obtains 14 points will have a percentage score of 14/21 =
-66%.
-The percentage scores included in the triangular plot
-were also exploited to estimate the integrity of methodolo-
-gies, which measures how well a given methodology covers
-all three categories of challenges. Figure 1 (left) illustrates
+4.4 Responsibility
+Responsibility in KYM bridges the gap between technical imple-
+mentation and legal and ethical implications, addressing the trust-
+worthy AI principles of Professional Responsibility, Human Control
+of Technology, and Promotion of Human Values. In addition to tech-
+nical information about AI systems, creators must pay close atten-
+tion to societal, social, and developer roles in the overarching im-
+pact of their systems.
+The principle of responsibility in KYM is perhaps the most ab-
+stract. With the large variation in the applications of AI systems,
+responsibility will have a diﬀerent meaning to each creator. Rather
+than providing concrete guidelines in this area, KYM encourages
+creators to be transparent about the impacts and purposes of their
+systems, who was involved in their creation, and the level at which
+human control is required and provided.
+The principle of responsibility calls for:
+• Transparency about developer or creator identity, includ-
+ing transparency about stakeholders and entities involved
+in the design and deployment of AI systems.
+• Careful attention to the level at which human control is re-
+quired and provided, including clarity on the implementa-
+tion of human control in a system, opportunities for human
+intervention and review, and safeguards in the absence of
+human control.
+• Consideration of the societal impact, purpose, and value of
+AI systems, and methods to maximize their beneﬁt to soci-
+ety.
+5 KEY GUIDELINES OF KYM
+In this section, we deﬁne the key guidelines of KYM. These guide-
+lines summarize the information developers are encouraged to record
+to establish model identity. The key words "MUST", "MUST NOT",
+"REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+"RECOMMENDED", "MAY", and "OPTIONAL" in this document
+are to be interpreted as described in RFC 2119 [9].
+Example applications of each of these guidelines are provided
+in Tables 1 and 2 .
+5.1 Eﬃcacy
+5.1.1 E1: Creators SHOULD describe the intended purpose, use, tar-
+get user, and outputs of the system. Creators SHOULD record infor-
+mation on the intentions of their AI systems. This may include
+brief descriptions of the intended purpose or goals of the system,
+expected use, sample use-cases, target user of the system and its
+outcomes, release dates, and time-frame-of-validity of the system.
+In cases where intentions and outcomes are misaligned, the ex-
+tent of the misalignment and any positive and negative impacts
+SHOULD be known and recorded. Further, Creators SHOULD (brieﬂy)
+be transparent about the expected outputs of the system, as the ex-
+pected and observed outputs may diﬀer.
+5.1.2 E2: Creators MUST record (statistical) metrics about training
+and test datasets. To ensure that the training and test dataset dis-
+tributions match, metrics about the datasets MUST be recorded. If
+applicable, this SHOULD include metrics on demographic informa-
+tion.
+5.1.3 E3: Creators SHOULD describe the expected performance on
+unseen data. Once deployed, AI systems may experience data that
+is vastly diﬀerent than the data used to train/test the system. Cre-
+ators SHOULD describe the expected performance on unseen data,
+such as data from diﬀerent distributions.
+5.1.4 E4: Creators SHOULD record methods taken to reduce bias,
+discrimination, and fairness issues in data and modeling outcomes,
+and SHOULD record specific metrics on bias, discrimination, and
+fairness.. Creators SHOULD record any methods taken to address
+bias, discrimination, and fairness issues in data or modeling out-
+comes. This may include data treatment techniques and remedia-
+tion, model checks and remediation, and outcome veriﬁcation.
+Even in cases where careful attention is paid to reduce bias in
+input data, algorithms may still exhibit biased behaviors. Develop-
+ers are encouraged to pursue methods to measure fairness in their
+outcomes, using state-of-the-art methods and tools.
+5.1.5 E5: Creators SHOULD aim for increased understandability.
+Developers SHOULD attempt to increase understanding of all stages
+of AI development to diﬀerent users and groups. Detail eﬀorts taken
+to improve explainability, transparency, human-AI interactions (re-
+view, validation, etc.) of the developmental processes and outcomes
+of AI systems. This may include providing explanations on model
+decisions, clarity in model processes and techniques utilized, and
+interpreting model development and functionality in language ap-
+propriate to the target user.
+5.2 Reliability
+5.2.1 RL1: Creators MUST record the processes followed in the de-
+velopment of the AI system. Document and justify the implemented
+algorithms and techniques, collection, utilization, and storage of
+data, veriﬁcation and testing methods, and output generation of
+the system. Documentation MUST be thorough and include all in-
+formation needed to identify and justify utilized methods, iden-
+tify storage locations, and replicate outcomes. The extent of the
+required information will vary greatly depending on system type.
+5.2.2 RL2: Creators MUST ensure adequate provenance for data.
+Creators MUST maintain clear records of data collection, utiliza-
+tion, and transformation processes. Records MUST be adequate,
+clear, and complete enough to determine the origin of the data,
+assess data quality, and understand any transformations that oc-
+curred. Records may include, but are not limited to, data collection
+process and techniques, the identity of data owner or licensing en-
+tity, dataset creation time, type and amount of data utilized, dataset
+utilization in development, and data updating practices.
+5.2.3 RL3: Creators MUST ensure adequate provenance for end-to-
+end model development. Developers MUST maintain clear records
+of developmental processes undergone in AI design, development,
+and deployment. These records MUST be complete enough to be
+able to replicate model results and outcomes. Records may include
+data (and/or meta-data) on feature extraction, training and testing,
+and prediction outcomes, date and time of modeling stages, devel-
+opment environment (development language, packages used, etc.),
+model version, time of the last update, changes in performance
 6
-the integrity scores for the reviewed methodologies. The
-integrity is calculated as the ratio between the area of the
-triangle and the area of the triangle with perfect scores
-100% on the three categories, which clearly has the max-
-imum area (3
-√
-3/4). Calculating the area of the triangle
-using the three percentage scores is not straightforward,
-as it is explained in the Appendix A.
-Therefore, tables [2,3,4] quantitatively evaluate the qual-
-itative characteristics of each methodology and its suitabil-
-ity to take on the challenges identified on section 2 for the
-management of teams, projects and data & information.
-4. Results: Critical Review of Data Science Method-
-ologies
-Hereunder we review a collection of methodologies that
-propose guidelines for managing and executing data sci-
-ence projects. Each methodology is described in detail in
-order to analyze how well it meets the demands of the
-presented challenges. This includes a description of struc-
-ture, features, principles, artifacts, and recommendations.
-Each methodology is concluded with a summary of its
-main strengths and drawbacks. We suggest the reader to
-check the scores given to each methodology after reading
-the corresponding critical review.
-4.1. CRISP-DM
-Cross-Industry Standard Process for Data Mining (CRISP-
-DM) [63] is an open standard process model developed by
-SPSS and Teradata in 1996 that describes common ap-
-proaches used by data mining experts. It presents a struc-
-tured, well defined and extremely documented process it-
-erative process. CRISP-DM breaks down the lifecycle of a
-data mining project into six phases: business understand-
-ing, data understanding, data preparation, modeling, eval-
-uation and deployment.
-The business understanding phase focuses on the project
-objectives and the requirements from a business perspec-
-tive, and converts this information into a data science
-problem. Thus it tries to align business and data sci-
-ence objectives, setting adequate expectations and focus-
-ing of delivering what the business is expecting. The out-
-come of this stage is usually a fixed project plan, which
-hardly takes into account the difficulty to establish realis-
-tic project timelines due to the exploratory nature of data
-science projects and their intrinsic uncertainty.
-The rest of the stages (data preparation, modeling,
-evaluation and deployment) are quite straight-forward, and
-the reader is surely familiar with them. An strict adher-
-ence to the CRISP-DM process forces the project man-
-ager to document the project and the decisions made along
-the way, thus retaining most of the generated knowledge.
-Apart from that, the data preparation phase involves data
-quality assessment tests, while the evaluation phase gives
-a noticeable importance to the validation and evaluation
-of the project results.
-Nevertheless, one of the main shortcomings of CRISP-
-DM is that it does not explain how teams should organize
-to carry out the defined processes and does not address
-any of the above mentioned team management issues. In
-this sense, in words of [64], CRISP-DM needs a better
-integration with management processes, demands to align
-with software and agile development methodologies, and
-instead of simple checklists, it also needs method guidance
-for individual activities within stages.
-Overall, CRISP-DM provides a coherent framework for
-guidelines and experience documentation. The data sci-
-ence lifecycle presented by CRISP-DM is commonly used
-as a reference by other methodologies, that replicate it
-with different variations. However, CRISP-DM was con-
-ceived in 1996, and therefore is not updated to the current
-paradigm and the latest developments in data science tech-
-nologies, especially in regard of big data advancements.
-In words of industry veteran Gregory Piatetsky of KD-
-Nuggets: “CRISP-DM remains the most popular method-
-ology for analytics, data mining, and data science projects,
-with 43% share in latest KDnuggets survey [10], but a re-
-placement for unmaintained CRISP-DM is long overdue”.
-4 Coherent and well documented iterative process
-5 Does not explain how teams should organize and
-does not address any team management issues
-4.2. Microsoft TDSP
-Microsoft Team Data Science Process (TDSP) by Microsoft
-[65] is an “agile, iterative data science methodology that
-helps improving team collaboration and learning”. It is
-very well documented and it provides several tools and
-utilities that facilitate its use. Unfortunately, TDSP is
-very dependent on Microsoft services and policies, and
-this complicates a broader use. In fact, we believe that
-any methodology should be independent of any tools or
-technologies. As it was defined on [66], a methodology is a
-general approach that guides the techniques and activities
-within a specific domain with a defined set of rules, meth-
-ods and processes and does not rely on certain technolo-
-gies or tools. With independence of the Microsoft tools
-in which TSDP relies, this methodology provides some
-interesting processes, both on project, team and data &
-information management, which have been summarized.
-The key components of TDSP are: 1) data science life-
-cycle definition 2) a standardized project structure 3) in-
-frastructure and resources and 4) tools and utilities for
-project execution.
-TDSP’s project lifecycle is like CRISP-DM and in-
-cludes five iterative stages: a) Business Understanding
-b) Data Acquisition and Understanding c) Modeling d)
-Deployment and e) Customer Acceptance. It is indeed a
-iterative and cyclic process: the output of the “Data Ac-
-quisition and Understanding” phase can feed back to the
-“Business Understanding” phase, for example.
+Table 1: The Know Your Model (KYM) Guidelines for Eﬃcacy (E#) and Reliability (RL#). An example application of each guide-
+line is provided. These examples are simpliﬁed. Real-world applications may require longer and more technical justiﬁcations.
+Know Your Model Guidelines Example Application of Guideline
+E1 Creators SHOULD describe the intended
+purpose, use, target user, and output of
+the system.
+[Navigation] "The system is a navigation system that users can use to map the most
+eﬃcient path from one location to another. The system outputs the shortest path as
+deﬁned by the estimated travel time from one input to another, utilizing available
+geographical information at the time of request."
+E2 Creators MUST record (statistical) met-
+rics about training and test datasets.
+[Logistics AI] "The system was trained on a combination of our weekly, quarterly,
+and annual volume information. This data shows an average purchase of 10,000
+units.(sd = 1,000), with higher throughput events with an average of 15,000 units
+(sd=2,500) occurring around holidays. It was conﬁrmed that the training and test
+datasets exhibit identical distributions."
+E3 Creators SHOULD describe the expected
+performance on unseen data
+[Medical AI] "Data from low-quality or outdated equipment will result in poor
+performance. Shadowing or blurring in images may negatively aﬀect model per-
+formance."
+E4 Creators SHOULD record methods taken
+to reduce bias, discrimination, and fair-
+ness issues in data and modeling out-
+comes, and SHOULD record speciﬁc met-
+rics on bias, discrimination, and fair-
+ness.
+[Criminal Sentencing AI] "In order to ensure racial fairness in sentences, all poten-
+tially identifying racial information has been removed from the dataset. Addition-
+ally, the system was evaluated by experts in racial justice and equality in order to
+mitigate potential problems with bias. Bias remediation was performedusing [state-
+of-the-art tool]. A bias was identiﬁed and mitigated with a re-weighing method."
+E5 Creators SHOULD aim for increased un-
+derstandability.
+[Medical AI] "This model is designed to be used by trained doctors. The system
+provides diagnostic information and justiﬁcations that explain the qualities used
+for each decision. Furthermore, the system provides documentation to provide ad-
+ditional information."
+RL1 Creators MUST record the processes fol-
+lowed in the development of the AI sys-
+tem.
+[E-Commerce AI] "This model leverages neural network technology, building on re-
+search previously published in the domain. Model training and testing were tracked
+locally and will be stored for three years following the end-of-life of the product.
+Data is collected and stored in accordance with international regulation."
+RL2 Creators MUST ensure adequate prove-
+nance for data.
+[Social Media AI] "Textual data was parsed from three social media websites be-
+tween the dates of January and May 2020, and stored on a private server. Data were
+not checked for quality. Datasets are documented internally. The system maintains
+an index of all data as well as a log of all changes to the data set. Unigram transfor-
+mation and punctuation removal were utilized."
+RL3 Creators MUST ensure adequate prove-
+nance for end-to-end model develop-
+ment.
+[Advertising AI] "Complete records of metadata from model training, testing, and
+prediction were taken utilizing an end-to-end asset tracking tool."
+RL4 Creators MUST record evaluation and
+performance metrics.
+[Classiﬁcation AI] "Models were trained using a 70/30 test/train split, 10-fold cross-
+validation, and evaluated using prediction accuracy and AUC. The chosen model
+has an 80.2% accuracy rate, with a sensitivity/speciﬁcity rate of 74.5%/61.8% respec-
+tively."
+RL5 Creators SHOULD track model update
+performance and information inges-
+tion.
+[Social Media AI] "We capture user data upon each deployment and retrain the
+model with the captured data. Model performance is analyzed with each update
+and must remain within ±15%."
+RL6 Creators SHOULDrecord metrics on out-
+come replicability.
+[Robotics AI] "In order to reproduce the system results, a docker ﬁle has been pro-
+vided. By leveraging this dataset and docker ﬁle, the system will produce the same
+results. This docker ﬁle was created using the following dataset and model settings."
+between updates, algorithms and techniques used, training condi-
+tions (i.e. hyperparameters), use of the dataset in each stage, testing
+performance & results, etc.
+5.2.4 RL4: Creators MUST record evaluation and performance met-
+rics. Developers MUST record detailed records of the evaluation
+and performance processes used. Creators MUST maintain a record
+of the metrics and techniques that were used to measure the per-
+formance of their systems, such as accuracy, precision/recall, error
+rates, F-1 scores, AUC, etc. It is suggested that signiﬁcant techni-
+cal data is recorded. Metrics for both intermediary and ﬁnal models
+are encouraged.
 7
-Table 2: Methodology Scores on Project Management
-To address the challenges of... Methodology provides... [4.1] [4.2] [4.3] [4.4] [4.5] [4.6] [4.7] [4.8] [4.9] [4.10] [4.11] [4.12] [4.13] [4.14] [4.15] [4.16] [4.17] [4.18] [4.19]
-Low level of process maturity data science lifecycle: high level
-tasks / guideline / project man-
-agement scheme
-3 3 3 3 3 0 3 3 2 3 3 3 3 3 2 2 3 3 3
-Uncertain business objectives schematic to prevent making the
-important questions too late in
-time
-2 2 2 2 1 0 1 3 3 2 3 3 1 1 3 2 0 3 2
-Set adequate expectations gives importance to the business
-or industry understanding phase
-3 3 2 3 2 0 2 3 3 2 2 3 2 3 2 2 1 2 3
-Hard to establish realistic project
-timelines
-processes to control and monitor
-how long specific steps will take
-0 1 0 0 3 2 0 0 0 3 0 2 2 0 0 0 0 0 0
-Biased emphasis on technical issues involved with aligning business
-requirements and data science
-goals
-2 2 3 2 0 0 1 3 3 3 2 0 2 1 2 2 1 2 2
-Delivering the ”wrong thing” makes sure that the outcome
-of the project is what the
-client/researcher is expecting
-2 3 1 2 1 0 0 3 3 2 2 3 2 3 0 2 0 2 2
-Results not used by business methods for results evaluation,
-integration of the service or prod-
-uct in the client environment and
-provides necessary training
-2 3 1 2 0 0 0 3 2 2 2 3 2 3 2 0 0 3 3
-total 14 17 12 14 10 2 7 18 16 17 14 17 14 14 11 10 5 15 15
-% over perfect (21) 67 81 57 67 48 10 33 86 76 81 67 81 67 67 52 48 24 71 71
-Table 3: Methodology Scores on Team Management
-To address the challenges of... Methodology provides... [4.1] [4.2] [4.3] [4.4] [4.5] [4.6] [4.7] [4.8] [4.9] [4.10] [4.11] [4.12] [4.13] [4.14] [4.15] [4.16] [4.17] [4.18] [4.19]
-Poor coordination establishes roles/responsibilities
-in a data science project
-0 3 3 3 3 3 3 2 1 0 2 0 1 0 2 2 1 3 0
-Collaboration issues across teams defines clear tasks and problems
-for every person, and how to col-
-laborate
-0 3 3 3 3 3 1 0 0 2 2 0 0 0 0 0 3 3 0
-Lack of transparent communication describes how teams should work
-to communicate, coordinate and
-collaborate effectively
-0 2 0 2 2 3 3 0 0 1 2 0 2 0 0 0 3 0 0
-Inefficient governance models describes how to coordinate with
-IT and approaches the deploy-
-ment stage
-0 0 2 3 2 3 0 1 3 2 1 3 1 0 1 3 0 2 3
-Rely not only on leading data scien-
-tist
-shares responsibilities, promotes
-training of employees
-0 1 2 1 2 2 0 2 0 1 2 1 1 0 2 0 0 2 0
-Build multidisciplinary teams promotes teamwork of multidisci-
-plinary profiles
-0 2 1 2 1 2 1 0 1 1 1 3 0 0 2 1 2 0 1
-total 0 11 11 14 13 16 8 5 5 5 10 7 5 0 7 6 9 10 4
-% over perfect (18) 0 61 61 78 72 89 44 28 28 42 56 39 28 0 39 33 50 56 22
-Table 4: Methodology Scores on Data & Information Management
-To address the challenges of... Methodology provides... [4.1] [4.2] [4.3] [4.4] [4.5] [4.6] [4.7] [4.8] [4.9] [4.10] [4.11] [4.12] [4.13] [4.14] [4.15] [4.16] [4.17] [4.18] [4.19]
-Lack of reproducibility offers setup for assuring repro-
-ducibility and traceability
-0 3 3 1 2 2 3 0 3 0 0 0 0 0 0 0 3 0 2
-Retaining and accumulation of
-knowledge
-generation and accumulation of
-knowledge: data, models, experi-
-ments, project insights, best prac-
-tices and pitfalls
-2 2 3 3 2 3 3 0 3 1 0 1 0 0 1 0 3 0 2
-Low data quality for Machine Learn-
-ing algorithms
-takes into account the limitations
-of Machine Learning techniques
-1 0 0 2 0 0 0 0 0 0 0 0 2 1 0 1 2 1 2
-Lack of quality assurance checks tests to check data limitations in
-quality and potential use
-2 3 0 2 1 0 1 0 0 3 2 0 2 2 0 2 2 3 2
-No validation data robust validation of the proposed
-solution & makes hypothesis
-2 2 3 2 2 0 0 3 1 2 3 2 1 1 2 0 0 0 2
-Data security and privacy concerned about data security
-and privacy
-0 0 0 2 0 0 2 0 0 2 0 0 2 0 2 0 0 2 0
-Investment in IT infrastructure preallocates resources for invest-
-ment on IT resources
-0 1 2 0 1 0 0 3 3 3 2 3 2 2 2 2 0 2 2
-total 7 11 11 12 8 5 9 6 10 11 7 6 9 6 7 5 10 8 12
-% over perfect (21) 33 52 52 57 38 24 43 29 48 52 33 29 43 29 33 24 48 38 57
-Score Punctuation System: criteria not fulfilled at all (0), hardly fulfilled (1), partially fulfilled (2), fulfilled to a great extend (3).
-Legend: 4.1 CRISP-DM; 4.2 Microsoft TDSP; 4.3 Domino DS Lifecycle; 4.4 RAMSYS; 4.5 Agile Data Science Lifecycle; 4.6 MIDST; 4.7 Development Workflows for Data
-Scientists; 4.8 Big Data Ideation, Assessment and Implementation; 4.9 Big Data Management Canvas; 4.10 Agile Delivery Framework; 4.11 Systematic Research on Big Data;
-4.12 Big Data Managing Framework; 4.13 Data Science Edge; 4.14 Foundational Methodology for Data Science; 4.15 Analytics Canvas; 4.16 AI Ops; 4.17 Data Science
-Workflow; 4.18 EMC Data Analytics Lifecycle; 4.19 Toward data mining engineering
+Table 2: The Know Your Model (KYM) Guidelines for Safety (S#) and Responsibility (RS#). An example application of each
+guideline is provided. These examples are simpliﬁed. Real-world applications may require longer and more technical justiﬁ-
+cations.
+Know Your Model Guidelines Example Application of Guideline
+S1 Creators MUST assess safety to users
+and society.
+[Robotics AI] "In the event of detected compromise, the system can be placed into
+a fail-safe state by the activation of a hardware cutoﬀ or a software shutdown. In
+order to comply with safety standards, this system has several human-tracking
+safety features that override the AI in situations where humans can potentially be
+harmed."
+S2 Creators MUST assess potential security,
+safety, and privacy failure points.
+[Finance AI] "The system was designed with the following threat model in mind.
+The system is an online banking platform with the potential for both denial-of-
+service, and database attacks. Additionally, the model is trained on user-data which
+has been anonymized, however, attacks do exist that could de-anonymize users.
+Finally, the model itself is vulnerable to data poisoning or similar attacks. "
+S3 Creators SHOULD record metrics for se-
+curity robustness.
+[E-Commerce AI] "Our system is regularly tested to comply with PCI DSS stan-
+dards. We have also received ISO/IEC 27001:2013 certiﬁcation for our handling of
+critical data."
+S4 Creators MUST ensure user privacy, and
+appropriate treatment and use of pri-
+vate data.
+[E-Commerce AI] "Only data that is relevant to the product is collected, with con-
+sent of the individual. Private data is stored on an encrypted server."
+S5 Creators SHOULD ensure secure data
+utilization and storage.
+[Personal Services AI] "Data is stored on an encrypted disk, where access is granted
+by keys. All data changes are signed by key, for easy traceability."
+RP1 Creators SHOULD disclose or record
+all entities involved in system develop-
+ment.
+[Human Resource AI] "Our team is composed of machine learning engineers, statis-
+ticians, and social scientists, all graduates of accredited universities. We consulted
+with an AI domain expert during development."
+RP2 Creators SHOULD detail the implemen-
+tation of human-AI interactions.
+[Medical AI] "The system uses patient characteristics and health information to for-
+mulate diagnoses. The decisions must be conﬁrmed by a human before a diagnosis
+can be made."
+RP3 Creators SHOULD describe the impact,
+value, and beneﬁt of the system.
+[Chatbot] "The system allows for rapid interactions with customers. This increases
+availability, provides immediate assistance to customers, and reduces the need for
+customer service staﬀ. The system is only used for our business and does not have
+any larger foreseen societal impacts."
+RP4 Creators MUST comply with legal and
+regulatory requirements.
+[Finance AI] "Our system complies with GDPR regulations on the use of private
+data, and internal regulations on the use of private data and clarity in decisions."
+5.2.5 RL5: Creators SHOULD track model update performance and
+information ingestion. Developers SHOULD clearly track model up-
+dates and how new data is used and aﬀects performance. If new
+data is ingested after deployment, developers SHOULD record the
+origin of the new data, how it is integrated into the system, and if
+there are any bounds for performance changes.
+5.2.6 RL6: Creators SHOULD record metrics on outcome replicabil-
+ity. Developers SHOULD measure the replicability of outcomes of
+their AI systems, utilizing state-of-the-art metrics.
+5.3 Safety
+5.3.1 S1: Creators MUST assess safety to users and society. The de-
+velopment of systems MUST consider safety at the forefront. De-
+velopers MUST pay careful attention to safe design, failure con-
+tingencies, and safety standards. Consideration MUST be given to
+how the AI system impacts its surroundings, individuals, and soci-
+ety as a whole, and whether its use or deployment poses any safety
+risks. In the case that there are safety concerns, creators MUST be
+transparent in any safety concerns or issues the AI system may
+have.
+5.3.2 S2: Creators MUST assess potential security, safety, and pri-
+vacy failure points. Assessments of potential security, safety, and
+privacy failure points present in models (and solutions if available)
+MUST be undertaken.
+5.3.3 S3: Creators SHOULD record metrics for security robustness.
+Creators SHOULD record metrics taken for improving the robust-
+ness of their systems from adversarial attacks and malicious actors
+(i.e. checks undergone for adversarial concerns). Due to the rapidly
+evolving nature of AI security, developers SHOULD continuously
+engage in improving security robustness utilizing state-of-the-art
+techniques.
+5.3.4 S4: Creators MUST ensure user privacy, and appropriate treat-
+ment and use of private data. Developers MUST be acutely aware of
+the treatment of user data and the role of user data in their systems
+development and outcomes. For private data, creators SHOULD
 8
-Figure 1: Quantitative summary of the reviewed methodologies: a) integrity value is represented on the bar plot and b) each category’s scores
-are illustrated on the triangular plot, with the line color representing the integrity
-At the business understanding stage, TDSP is con-
-cerned about defining SMART (Specific, Measurable, Achiev-
-able, Relevant, Time-bound) objectives and identifying
-the data sources. In this sense, one of the most interest-
-ing artifacts is the charter document: this standard tem-
-plate is a living document that keeps updating throughout
-the project as new discoveries are made and as business
-requirements change as well. This artifact helps docu-
-menting the project discovery process, and also promotes
-transparency and communication, as long as stakehold-
-ers are involved in it. Besides, iterating upon the charter
-document facilitates the generation and accumulation of
-knowledge and valuable information for future projects.
-Along with other auxiliary artifacts, this document can
-help tracing back on the history of the project and repro-
-ducing different experiments. Regarding reproducibility,
-for each tested model, TDSP provides a model report: a
-standard, template-based report with details on each ex-
-periment.
-In relation to the quality assessment, a data quality
-report is prepared during the data acquisition and under-
-standing phase. This report includes data summaries, the
-relationships between each attribute and target, variable
-ranking, and more. To ease this task, TDSP provides an
-automated utility, called IDEAR, to help visualize the data
-and prepare data summary reports. In the final phase the
-customer validates whether the system meets their busi-
-ness needs and whether it answers the questions with ac-
-ceptable accuracy.
-TDSP addresses the weakness of CRISP-DM’s lack of
-team definition by defining four distinct roles (solution ar-
-chitect, project manager, data scientist, and project lead)
-and their responsibilities during each phase of the project
-lifecycle. These roles are very well defined from a project
-management perspective and the team works under Agile
-methodologies, which improve the collaboration and the
-coordination. Their responsibilities regarding the project
-creation, execution and development are clear.
-4 Integral methodology: provides processes both on
-project, team and data & information management
-5 Excessive dependence on Microsoft tools and tech-
-nologies
-4.3. Domino DS Lifecycle
-Domino Data Lab introduced its data science project life-
-cycle in a 2017 white-paper [59]. Inspired by CRISP-DM,
-agile, and a series of client observations, it takes “a holis-
-tic approach to the entire project lifecycle from ideation
-to delivery and monitoring.” The methodology is founded
-on three guiding principles: a) “Expect and embrace it-
-eration” but “prevent iterations from meaningfully delay-
-ing projects, or distracting them from the goal at hand”.
-b) “Enable compounding collaboration” by creating com-
-ponents that are re-usable in other projects. c) “Antic-
-ipate auditability needs” and “preserve all relevant arti-
-facts associated with the development and deployment of
-a model”.
-The proposed data science lifecycle is composed of the
-following phases: a) ideation b) data acquisition and ex-
-ploration c) research and development d) validation e) de-
-livery f) monitoring
-The ideation mirrors the business understanding phase
-from CRISP-DM. In this phase business objectives are
-identified, success criteria are outlined and if it is the
+consider regulatory requirements for storage, deletion, and use of
+data, including requirements for consent.
+5.3.5 S5: Creators SHOULD ensure secure data utilization and stor-
+age. Creators SHOULD ensure that all data is used and stored se-
+curely.
+5.4 Responsibility
+5.4.1 RP1: Creators SHOULD disclose or record all entities involved
+in system development. Record the identities (or aﬃliations), qual-
+iﬁcations, and diversity of all entities involved (including stake-
+holders, businesses, domain experts, individuals, teams, etc.) in the
+design, development, and deployment of the AI system. This may
+include the experience and credentials of developers, team diver-
+sity, and the investments and interests of developers (and other
+stakeholders) in model development.
+5.4.2 RP2: Creators SHOULD detail the implementation of human-
+AI interactions. Creators SHOULD understand the implementation
+of human-AI interactions in the system. This may include areas
+where human review is allowed and/or required, opportunities for
+human intervention, and human role in AI decisions.
+5.4.3 RP3: Creators SHOULD describe the impact, value, and bene-
+fit of the system. Creators SHOULD justify the impacts, values, and
+beneﬁts that the AI system has to society. This may also include
+any potential detriments to society (and justiﬁcations for why the
+AI system maintains value).
+5.4.4 RP4: Creators MUST comply with legal and regulatory re-
+quirements. With the rising legal and regulatory requirements for
+AI development, careful attention MUST be given to national, inter-
+national, and vocational requirements for AI design, development,
+and deployment.
+6 DISCUSSION AND FUTURE WORK
+With the proliferation of AI into greater society, members of academia
+and industry alike should strive for the development of robust,
+trustworthy systems. The complexity and wide array of applica-
+tions in AI systems complicate the process of creating trust, placing
+the burden on each creator to establish a method for building and
+maintaining trust. Toward developing trust in AI, we propose the
+Know Your Model (KYM) framework, a set of guidelines that can
+be leveraged to establish model identity and increase transparency
+and trust in their AI development processes.
+The KYM guidelines aim to provide a comprehensive frame-
+work for creators to leverage to address both provenance and prin-
+ciples of trust in the design, development, and deployment of their
+AI systems. Although previous eﬀorts have been made to increase
+transparency and trust in AI, the focus has been placed primarily
+on provenance rather than trust. In those methods that do address
+trust, attention is only given to one or two principles, neglecting
+the importance of others. Our framework aims to merge prove-
+nance methods with a focus on trust, providing a complete frame-
+work for creators to assess their current and future AI processes.
+Further, our framework considers the importance of technical, eth-
+ical, and legal responsibility, providing guidelines that bridge the
+gap between research and industry.
+As deﬁnitively proving that a system or model is trustworthy
+is quite diﬃcult, we suggest that developers maintain thorough
+records on methods taken to address trust concerns. By increas-
+ing transparency, developers ensure clarity on how key issues are
+addressed, and users have the information needed to assess trust
+where necessary. Areas of trust to address include the eight princi-
+ples of trustworthy AI: accountability, fairness and non-discrimination,
+human control, privacy, professional responsibility, promotion of
+human values, safety and security, and transparency and explain-
+ability. Developers should record techniques and tools they used to
+address issues in each area, and justiﬁcations for why a check was
+not completed or required. These should be frequently checked
+and updated for every new model or model update. Given the cur-
+rent state of trust in AI, we believe that increasing transparency in
+this way is the next step in increasing overall trust.
+It should be noted that while KYM provides a set of guidelines
+for creators to leverage, it does not provide a method for shar-
+ing this information among users, or outside of an organization.
+This distinction should be made by the creator depending on the
+unique factors of their systems. In general, we advocate for thor-
+ough records and complete transparency within the development
+team and internal users (where applicable), but understand that in-
+formation sharing and transparency will be considerably diﬀerent
+with external users, such as customers and the general public.
+We believe that further attention is warranted on developing a
+formalized system for KYM. As the state of AI research is rapidly
+evolving, we do not suggest speciﬁc methodologies to address the
+KYM guidelines technically (such as speciﬁc tools or software to
+analyze fairness or bias). It would be of beneﬁt to develop a for-
+malized system which includes up-to-date methods to analyze the
+guidelines technically. Further, it would be of extreme value if the
+guidelines of KYM could be streamlined into an automated system
+for record-keeping for creators to leverage. Future work in this
+area is needed. This may include clear avenues for the sharing of
+information with external users, such as customers or the general
+public.
+It is our hope that KYM, model identity, and transparency in AI
+become more prevalent over time. With KYM, we strive to provide
+a framework to guide creators in increasing transparency and trust
+in AI. With these guidelines, we hope to encourage a new era of
+transparency and trust in AI.
+REFERENCES
+[1] Amina Adadi and Mohammed Berrada. 2018. Peeking inside the black-box: a
+survey on explainable artiﬁcial intelligence (XAI). IEEE access 6 (2018), 52138–
+52160.
+[2] Dario Amodei, Chris Olah, Jacob Steinhardt, Paul Christiano, John Schul-
+man, and Dan Mané. 2016. Concrete problems in AI safety. arXiv preprint
+arXiv:1606.06565 (2016).
+[3] Matthew Arnold, Rachel KE Bellamy, Michael Hind, Stephanie Houde, Sameep
+Mehta, Aleksandra Mojsilović, Ravi Nair, K Natesan Ramamurthy, Alexandra
+Olteanu, David Piorkowski, et al. [n.d.]. FactSheets: Increasing trust in AI ser-
+vices through supplier’s declarations of conformity. IBM Journal of Research and
+Development ([n. d.]).
+[4] Alejandro Barredo Arrieta, Natalia Díaz-Rodríguez, Javier Del Ser, Adrien Ben-
+netot, Siham Tabik, Alberto Barbado, Salvador García, Sergio Gil-López, Daniel
+Molina, Richard Benjamins, et al. 2020. Explainable Artiﬁcial Intelligence (XAI):
+Concepts, taxonomies, opportunities and challenges toward responsible AI. In-
+formation Fusion 58 (2020), 82–115.
+[5] Emma Beede, Elizabeth Baylor, Fred Hersch, Anna Iurchenko, Lauren Wilcox,
+Paisan Ruamviboonsuk, and Laura M Vardoulakis. 2020. A human-centered
+evaluation of a deep learning system deployed in clinics for the detection of
 9
-Figure 2: CRISP-DM Figure 3: Microsoft TDSP Figure 4: Domino DS Lifecycle Figure 5: RAMSYS
-case, the initial ROI analysis is performed. This phase
-also integrates common agile practices including develop-
-ing a stakeholder-driven backlog and creating deliverable
-mock-ups. These preliminary business analysis activities
-can dramatically reduce the project risk by driving align-
-ment across stakeholders.
-The data acquisition and exploration phase incorpo-
-rates many elements from the data understanding and data
-preparation phases of CRISP-DM. The research and devel-
-opment phase is the “perceived heart” of the data science
-process. It iterates through hypothesis generations, ex-
-perimentation, and insight delivery. DominoLab recom-
-mends starting with simple models, setting a cadence for
-insight deliveries, tracking business KPIs, and establish-
-ing standard hardware and software configurations while
-being flexible to experiment.
-The validation stage highlights the importance of en-
-suring reproducibility of results, automated validation checks,
-and the preservation of the null results. In the delivery
-stage, Domino recommends to preserve links between de-
-liverable artifacts, flag dependencies, and develop a mon-
-itoring and training plan. Considering models’ non deter-
-ministic nature, Domino suggests monitoring techniques
-that go beyond standard software monitoring practices:
-for example, using control groups in production models to
-keep track of model performance and value creation to the
-company.
-Overall, Domino’s model does not describe every sin-
-gle step but is more informative to lead a team towards
-better performance. It effectively integrates data science,
-software engineering, and agile approaches. Moreover, it
-leverages agile strategies, such as fast iterative deliveries,
-close stakeholder management, and a product backlog. In
-words of [67] Domino’s lifecycle should not be viewed as
-mutually exclusive with CRISP-DM or Microsoft’s TDSP;
-rather its “best practices” approach with “a la carte” ele-
-ments could augment these or other methodologies as op-
-posed to replace them.
-4 Holistic approach to the project lifecycle. Effectively
-integrates data science, software engineering, and ag-
-ile approaches
-5 Informative methodology rather than prescriptive
-4.4. RAMSYS
-RAMSYS [68] by Steve Moyle is a methodology for sup-
-porting rapid remote collaborative data mining projects.
-It is intended for distributed teams and the principles that
-guide the design of the methodology are: light manage-
-ment, start any time, stop any time, problem solving free-
-dom, knowledge sharing, and security.
-This methodology follows and extends the CRISP-DM
-methodology, and it allows the data mining effort to be
-expended at very different locations communicating via a
-web-based tool. The aim of the methodology is to enable
-information and knowledge sharing, as well as the freedom
-to experiment with any problem solving technique.
-RAMSYS defines three roles, named “modellers”, “data
-master” and “management committee”. The “data mas-
-ter” is responsible for maintaining the database and ap-
-plying the necessary transformations. The “management
-committee” ensures that information flows within the net-
-work and that a good solution is provided. This commit-
-tee is also responsible for managing the interface with the
-client and setting up the challenge relative to the data
-science project in hand: defining the success criteria, re-
-ceiving and selecting submissions. In this way, “modellers”
-experiment, test the validity of each hypothesis and pro-
-duce new knowledge. With that, they can suggest new
-data transformations to the “data master”. One of the
-strengths of the RAMSYS model is the relative freedom
-given to modellers in the project to try their own ap-
-proaches. Modellers benefit of central data management,
-but have to conform to the defined evaluation criteria.
-The “information vault” is an proposed artifact that
-contains the problem definition, the data, and the hypoth-
-esis about the data and the models, among other concepts.
-Moreover, RAMSYS proposes the use of the “hypothe-
-sis investment account”, which contains all the necessary
-operations to refute or corroborate an hypothesis: the
-hypothesis statement, refutation/corroboration evidence,
-proof, hypothesis refinement and generalization. This ar-
-tifact can be used to extract reusable knowledge in the
-form of lessons learned for future projects.
-Therefore, RAMSYS intends to allow the collaborative
-work of remotely placed data scientists in a disciplined
-manner in what respects the flow of information while al-
-lowing the free flow of ideas for problem solving. Of course,
-this methodology can be applied to more common data
+diabetic retinopathy. In Proceedings of the 2020 CHI conference on human factors
+in computing systems. 1–12.
+[6] Rachel KE Bellamy, Kuntal Dey, Michael Hind, Samuel C Hoﬀman, Stephanie
+Houde, Kalapriya Kannan, Pranay Lohia, Jacquelyn Martino, Sameep Mehta,
+Aleksandra Mojsilovic, et al. 2018. AI Fairness 360: An extensible toolkit for
+detecting, understanding, and mitigating unwanted algorithmic bias. arXiv
+preprint arXiv:1810.01943 (2018).
+[7] Emily M Bender and Batya Friedman. 2018. Data statements for natural lan-
+guage processing: Toward mitigating system bias and enabling better science.
+Transactions of the Association for Computational Linguistics 6 (2018), 587–604.
+[8] Elisa Bertino, Ahish Kundu, and Zehra Sura. 2019. Data transparency with
+blockchain and AI ethics. Journal of Data and Information Quality (JDIQ) 11,
+4 (2019), 1–8.
+[9] Scott Bradner. 1997. RFC2119: Key words for use in RFCs to Indicate Require-
+ment Levels.
+[10] Mark Coeckelbergh. 2020. Artiﬁcial intelligence, responsibility attribution, and
+a relational justiﬁcation of explainability. Science and engineering ethics 26, 4
+(2020), 2051–2068.
+[11] Virginia Dignum. 2017. Responsible artiﬁcial intelligence: designing AI for hu-
+man values. (2017).
+[12] Finale Doshi-Velez and Been Kim. 2017. Towards a rigorous science of inter-
+pretable machine learning. arXiv preprint arXiv:1702.08608 (2017).
+[13] Finale Doshi-Velez, Mason Kortz, Ryan Budish, Chris Bavitz, Sam Gershman,
+David O’Brien, Kate Scott, Stuart Schieber, James Waldo, DavidWeinberger, et al.
+2017. Accountability of AI under the law: The role of explanation. arXiv preprint
+arXiv:1711.01134 (2017).
+[14] Jessica Fjeld, Nele Achten, Hannah Hilligoss, Adam Nagy, and Madhulika Sriku-
+mar. 2020. Principled artiﬁcial intelligence: Mapping consensus in ethical and
+rights-based approaches to principles for AI. Berkman Klein Center Research
+Publication 2020-1 (2020).
+[15] Luciano Floridi and Josh Cowls. 2019. A uniﬁed framework of ﬁve principles for
+AI in society. Issue 1.1, Summer 2019 1, 1 (2019).
+[16] Timnit Gebru, Jamie Morgenstern, Briana Vecchione, Jennifer Wortman
+Vaughan, Hanna Wallach, Hal Daumé III, and Kate Crawford. 2018. Datasheets
+for datasets. arXiv preprint arXiv:1803.09010 (2018).
+[17] Gharib Gharibi, Vijay Walunj, Raju Nekadi, Raj Marri, and Yugyung Lee. 2021.
+Automated end-to-end management of the modeling lifecycle in deep learning.
+Empirical Software Engineering 26, 2 (2021), 1–33.
+[18] Thilo Hagendorﬀ. 2020. The ethics of AI ethics: An evaluation of guidelines.
+Minds and Machines 30, 1 (2020), 99–120.
+[19] Melanie Herschel, Ralf Diestelkämper, and Houssem Ben Lahmar.2017. A survey
+on provenance: What for? What form? What from? The VLDB Journal 26, 6
+(2017), 881–906.
+[20] High-Level Expert Group on AI. 2019. Ethics guidelines
+for trustworthy AI. Report. European Commission, Brussels.
+https://ec.europa.eu/digital-single-market/en/news/ethics-guidelines-trustworthy-ai
+[21] Michael Hind, Stephanie Houde, Jacquelyn Martino, Aleksandra Mojsilovic,
+David Piorkowski, John Richards, and Kush R Varshney. 2020. Experiences with
+improving the transparency of ai models and services. In Extended Abstracts of
+the 2020 CHI Conference on Human Factors in Computing Systems. 1–8.
+[22] Robert R Hoﬀman, Shane T Mueller, Gary Klein, and Jordan Litman. 2018. Met-
+rics for explainable AI: Challenges and prospects. arXiv preprint arXiv:1812.04608
+(2018).
+[23] Sarah Holland, Ahmed Hosny, Sarah Newman, Joshua Joseph, and Kasia
+Chmielinski. 2018. The dataset nutrition label: A framework to drive higher
+data quality standards. arXiv preprint arXiv:1805.03677 (2018).
+[24] Kristina Höök. 2000. Steps to take before intelligent user interfaces become real.
+Interacting with computers 12, 4 (2000), 409–426.
+[25] Waldemar Hummer, Vinod Muthusamy, Thomas Rausch, Parijat Dube, Kaoutar
+El Maghraoui, Anupama Murthi, and Punleuk Oum. 2019. Modelops: Cloud-
+based lifecycle management for reliable and trusted ai. In 2019 IEEE International
+Conference on Cloud Engineering (IC2E). IEEE, 113–120.
+[26] Olakunle Ibitoye, Rana Abou-Khamis, Ashraf Matrawy, and M Omair Shaﬁq.
+2019. The Threat of Adversarial Attacks on Machine Learning in Network
+Security–A Survey. arXiv preprint arXiv:1911.02621 (2019).
+[27] Samuel Idowu, Daniel Strüber, and Thorsten Berger. 2021. Asset Management
+in Machine Learning: A Survey. arXiv preprint arXiv:2102.06919 (2021).
+[28] Rahul Iyer, Yuezhang Li, Huao Li, Michael Lewis, Ramitha Sundar, and Katia
+Sycara. 2018. Transparency and explanation in deep reinforcement learning
+neural networks. In Proceedings of the 2018 AAAI/ACM Conference on AI, Ethics,
+and Society. 144–150.
+[29] Zhanglong Ji, Zachary C Lipton, and Charles Elkan. 2014. Diﬀerential privacy
+and machine learning: a survey and review. arXiv preprint arXiv:1412.7584
+(2014).
+[30] Zachary C Lipton. 2018. The Mythos of Model Interpretability: In machine learn-
+ing, the concept of interpretability is both important and slippery. Queue 16, 3
+(2018), 31–57.
+[31] Qiang Liu, Pan Li, Wentao Zhao, Wei Cai, Shui Yu, and Victor CM Leung. 2018.
+A survey on security threats and defensive techniques of machine learning: A
+data driven view. IEEE access 6 (2018), 12103–12117.
+[32] Ninareh Mehrabi, Fred Morstatter, Nripsuta Saxena, Kristina Lerman, and Aram
+Galstyan. 2019. A surveyon bias and fairness in machine learning. arXiv preprint
+arXiv:1908.09635 (2019).
+[33] Niklas Möller and Sven Ove Hansson. 2008. Principles of engineering safety:
+Risk and uncertainty reduction. Reliability Engineering & System Safety 93, 6
+(2008), 798–805.
+[34] Jessica Morley, Luciano Floridi, Libby Kinsey, and Anat Elhalal. 2019. From what
+to how. An overview of AI ethics tools, methods and research to translate prin-
+ciples into practices. arXiv preprint arXiv:1905.06876 (2019).
+[35] Maria-Irina Nicolae, Mathieu Sinn, Minh Ngoc Tran, Beat Buesser, Ambrish
+Rawat, Martin Wistuba, Valentina Zantedeschi, Nathalie Baracaldo, Bryant
+Chen, Heiko Ludwig, et al. 2018. Adversarial Robustness Toolbox v1. 0.0. arXiv
+preprint arXiv:1807.01069 (2018).
+[36] Robert Norvill, Cyril Cassanges, Wazen Shbair, Jean Hilger, Andrea Cullen, and
+Radu State. 2020. A security and privacy focused kyc data sharing platform. In
+Proceedings of the 2nd ACM International Symposium on Blockchain and Secure
+Critical Infrastructure. 151–160.
+[37] Sven Nyholm and Jilles Smids. 2016. The ethics of accident-algorithms for self-
+driving cars: An applied trolley problem? Ethical theory and moral practice 19, 5
+(2016), 1275–1289.
+[38] Hillary Sanders and Joshua Saxe. 2017. Garbage in, garbage out: How purport-
+edly great ML models can be screwed up by bad data. Proceedings of Blackhat
+2017 (2017).
+[39] Suchi Saria and Adarsh Subbaswamy. 2019. Tutorial: safe and reliable machine
+learning. arXiv preprint arXiv:1904.07204 (2019).
+[40] Sebastian Schelter, Joos-Hendrik Boese, Johannes Kirschnick, Thoralf Klein, and
+Stephan Seufert. 2017. Automatically tracking metadata and provenance of ma-
+chine learning experiments. In Machine Learning Systems Workshop at NIPS. 27–
+29.
+[41] Keng Siau and Weiyu Wang. 2018. Building trust in artiﬁcial intelligence, ma-
+chine learning, and robotics. Cutter Business Technology Journal 31, 2 (2018),
+47–53.
+[42] Kacper Sokol and Peter Flach. 2020. Explainability fact sheets: a framework
+for systematic assessment of explainable approaches. In Proceedings of the 2020
+Conference on Fairness, Accountability, and Transparency. 56–67.
+[43] Renan Souza, Leonardo Azevedo, Vítor Lourenço, Elton Soares, Raphael Thiago,
+Rafael Brandão, Daniel Civitarese, Emilio Brazil, Marcio Moreno, Patrick Val-
+duriez, et al. 2019. Provenance data in the machine learning lifecycle in com-
+putational science and engineering. In 2019 IEEE/ACM Workﬂows in Support of
+Large-Scale Science (WORKS). IEEE, 1–10.
+[44] Renan Souza, Leonardo Azevedo, Raphael Thiago, Elton Soares, Marcelo Nery,
+Marco AS Netto, Emilio Vital, Renato Cerqueira, Patrick Valduriez, and Marta
+Mattoso. 2019. Eﬃcient runtime capture of multiworkﬂow data using prove-
+nance. In 2019 15th International Conference on eScience (eScience). IEEE, 359–
+368.
+[45] Kush R Varshney and Homa Alemzadeh. 2017. On the safety of machine learn-
+ing: Cyber-physical systems, decision sciences, and data products. Big data 5, 3
+(2017), 246–255.
+[46] Eduard Fosch Villaronga, Peter Kieseberg, and Tiﬀany Li. 2018. Humans forget,
+machines remember: Artiﬁcial intelligence and the right to be forgotten. Com-
+puter Law & Security Review 34, 2 (2018), 304–313.
+[47] Paul Voigt and Axel von dem Bussche. 2017. The EU General Data Protection
+Regulation (GDPR): A Practical Guide (1st ed.). Springer Publishing Company,
+Incorporated.
+[48] Qian Yang, Aaron Steinfeld, Carolyn Rosé, and John Zimmerman. 2020. Re-
+examining whether, why, and how human-ai interaction is uniquely diﬃcult to
+design. In Proceedings of the 2020 chi conference on human factors in computing
+systems. 1–13.
+[49] Shlomit Yanisky-Ravid and Sean K Hallisey. 2019. Equality and Privacy by De-
+sign: A New Model of Artiﬁcial Intelligence Data Transparency Via Auditing,
+Certiﬁcation, and Safe Harbor Regimes. Fordham Urb. LJ 46 (2019), 428.
+[50] Matei Zaharia,Andrew Chen, Aaron Davidson, Ali Ghodsi, Sue Ann Hong, Andy
+Konwinski, Siddharth Murching, Tomas Nykodym, Paul Ogilvie, Mani Parkhe,
+et al. 2018. Accelerating the Machine Learning Lifecycle with MLﬂow. IEEE Data
+Eng. Bull. 41, 4 (2018), 39–45.
+[51] Zhao Zhang, Evan R Sparks, and Michael J Franklin. 2017. Diagnosing machine
+learning pipelines with ﬁne-grained lineage. In Proceedings of the 26th Interna-
+tional Symposium on High-Performance Parallel and Distributed Computing. 143–
+153.
 10
-science team that share location. The clear definition of
-the responsibilities for each role allows effective collabora-
-tion and the tools that support this methodology are well
-defined to be applied to real projects.
-4 Considers distributed teams and enables information
-and knowledge sharing
-5 Lack of support for sharing datasets and models
-4.5. Agile Data Science Lifecycle
-Agile Data Science Lifecycle [69] by Russell Jurney presents
-a framework to perform data science combined with agile
-philosophy. This methodology asserts that the most effec-
-tive and suitable way for data science to be valuable for
-organizations is through a web application, and therefore,
-under this point of view, doing data science evolves into
-building applications that describe the applied research
-process: rapid prototyping, exploratory data analysis, in-
-teractive visualization and applied machine learning.
-The book includes the “Agile Data Science manifesto”,
-which attempts to apply agility to the practice of data sci-
-ence, and is based on several principles: 1) Iterate, iterate,
-iterate: the author emphasizes the iterative nature of the
-creating, testing and training learning algorithms. 2) Ship
-intermediate output: throughout cycles of iteration, any
-intermediate output is committed and shared with other
-team members. In this sense, by sharing work on a con-
-tinual basis, the methodology promotes feedback and the
-creation of new ideas. 3) Prototype experiments over im-
-plementing tasks: it is uncertain if an experiment will lead
-to any valuable insight. 4) Integrate the tyrannical opin-
-ion of data in product management: it is important to
-listen to the data. 5) Climb up and down the data value
-pyramid: the data value pyramid provides a process path
-from initial data collection to discovering useful actions.
-The generation of value increases as the team climbs to
-higher layers of the pyramid. 6) Discover and pursue the
-critical path to a killer product. The critical path is the
-one that leads to something actionable that creates value.
-7) Describe the process, not just the end state. Document
-the process to understand how the critical path was found.
-Overall, Agile Data Science tries to align data sci-
-ence with the rest of the organization. Its main goal is
-to document and guide exploratory data analysis to dis-
-cover and follow the critical path to a compelling product.
-The methodology also takes into account that products
-are built by teams of people, and hence it defines a broad
-spectrum of team roles, from customers to the DevOps
-engineers.
-4 Rapid delivery of value from data to customer.
-More realistic feedback: assess value in deliverables
-5 Agile is less straightforward, works better in dynamic
-environments and evolving requirements
-4.6. MIDST
-Kevin Crowston [70] presents a theoretical model of socio-
-technical affordances for stigmergic coordination. The goal
-of this methodology is to better support coordination in
-data science teams by transferring findings about coordi-
-nation from free/libre open source software (FLOSS) de-
-velopment. For that purpose, the authors design and im-
-plement a system to support stigmergic coordination.
-A process is stigmergic if the work done by one agent
-provides a stimulus (stigma) that attracts other agents
-to continue the job. Thus, stigmergic coordination is a
-form of coordination that is based on signals from shared
-work. The organization of the collective action emerges
-from the interaction of the individuals and the evolving
-environment, rather than from a shared plan or direct in-
-teraction.
-As it is claimed on the article, the specific tools that
-would be useful to data science teams might be different
-than the features that are important for FLOSS dev teams,
-making it difficult to configure a data science collaboration
-environment using existing tools. That is why the authors
-propose an alternative approach based on stigmergic coor-
-dination and developed a web-based data science applica-
-tion to support it. In this regard, a theory of affordance
-to support stigmergic coordination is developed, which is
-based on the following principles: visibility of work, use of
-clear genres of work products and combinability of contri-
-butions.
-The proposed framework is targeted to improve the
-collaboration between data scientists, and does not at-
-tempt to cover project management nor data management
-issues. It should be taken into consideration that the pre-
-sented web-based application was further tested on real
-cases with students. While it is true that some of the
-reviewed methodologies are explained together with use
-cases, most lack empirical and field experimentation. That
-is why the effort put by this methodology in that direction
-is specially emphasized.
-4 Improves collaboration between data scientists through
-stigmergic coordination.
-5 Exclusively focused on improving team coordination
-4.7. Development Workflows for Data Scientists
-Development Workflows for Data Scientists [53] by Github
-and O’Reilly Media gathers various best practices and
-workflows for data scientists. The document examines
-how several data-driven organizations are improving de-
-velopment workflows for data science.
-The proposed data science process follows an iterative
-structure: a) ask interesting question b) examine previous
-work c) get data d) explore the data e) model the data
-f) test g) document the code h) deploy to production i)
-communicate results
-11
-Figure 6: Agile Data Science Life-
-cycle
-Figure 7: MIDST Figure 8: Development Workflows
-for Data Scientists
-Figure 9: Big Data Ideation, As-
-sessment and Implementation
-The process starts by asking an interesting question,
-which is described as one of the hardest tasks in data sci-
-ence. Understanding the business goals and the data lim-
-itations are required prior to asking interesting questions.
-In this regard, defining a suitable success measure for both
-the business and the data science team is also described
-as a challenge. The next step in the process is examin-
-ing previous work. However, more often than not data
-science teams are coming across non-structured projects
-and scattered knowledge, which complicates understand-
-ing previous work. In this sense, they recommend the use
-of tools to make data science work more discoverable, such
-as the Airbnb’s Knowledge Repo [71].
-From then on, data is obtained and explored. Re-
-garding the data collection, the authors claim that is not
-enough to just gather relevant data, but to also understand
-how it was generated and deal with security, compliance
-and anonymization aspects. To help during the data ex-
-ploration, it is recommended to have a good data directory
-structure. Tools such as cookiecutter can take care of all
-the setup and boilerplate for data science projects.
-With reference to the data modeling, it is suggested
-to create two teams: one for building models and a com-
-pletely independent one to evaluate and validate the mod-
-els. Doing so, data training leaks are prevented and also
-the success criteria is kept safe from the model creation
-process. The next step on the process, testing, is yet a
-debated area. Here is where data science and software de-
-velopment practices deviate: in data science there is a lot
-of trial and error, which can be incompatible with test-
-driven frameworks. Still, it is recommended to use testing
-technologies to improve interpretability, accuracy, and the
-user experience.
-Having a documentation phase is without a doubt an
-innovative yet logical point for data science methodologies.
-In fact, documenting the working solution is not always
-enough, since it is equally valuable to know the pitfalls and
-the dead ends. It is recommended to create a codebook
-to record all steps taken, tools used, data sources, results
-and conclusions reached. This phase is directly related
-to the “examining previous work” phase, as having a well
-documented project will help subsequent projects. Then
-models are deployed to production. For this task, it is
-proposed to use an standard git-flow to version all changes
-to the models. Finally, the last step in the process is to
-communicate the results, which together with asking the
-initial question, can be the most problematic steps.
-This methodology is built upon the recommendations
-from first-class data-driven organizations, and there lies
-its main strength. It includes novel phases in the data
-science workflow, such as “previous work examination”,
-“code documentation” and “results communication”. It
-also proposes a team structure and roles: data scientist,
-machine learning engineer, data engineer. Overall, it is
-concluded that ultimately a good workflow depends on the
-tasks, goals, and values of each team, but it recommends
-to produce results fast, reproduce, reuse and audit results,
-and enable collaboration and knowledge sharing.
-4 Built upon recommendations and best-practices from
-first-class data-driven organizations
-5 Lacks an in-depth breakdown of each phase
-4.8. Big Data Ideation, Assessment and Implementation
-Big data ideation, assessment and implementation by Mar-
-tin Vanauer [57] is a methodology to guide big data idea
-generation, idea assessment and implementation manage-
-ment. It is based on big data 4V’s (volume, variety, ve-
-locity, value and veracity), IT value theory, workgroup
-ideation processes and enterprise architecture management.
-The authors claim that the introduction of big data re-
-sembles an innovative process, and therefore they follow a
-model of workgroup innovation to propose their methodol-
-ogy, which is structured in two phases: ideation and imple-
-mentation. Ideation refers to the generation of solutions
-by applying big data to new situations. Implementation
-is related to the evaluation of the developed solutions and
-the subsequent realization.
-More specifically, for the ideation phase two perspec-
-tives are defined: either there are business requirements
-that can be better fulfilled by IT, which the authors called
-“Business First” (BF), or, the IT department opens up
-new business opportunities, so called “Data First” (DF).
-Under this perspective, there is no such thing as “Technol-
-ogy First”. The authors claim that prioritizing technology
-is not feasible because technology should not be introduced
-as an end by itself, but in a way in which it provides value
-12
-to the business.Therefore, the ideation phase either resem-
-bles the identification of business needs (BF), or the devel-
-opment of new business models based on an identification
-of available data (DF).
-Each phase (ideation and implementation) is also struc-
-tured into the transition and action sub-phases: 1) Ideation
-transition: comprises the mission definition and identifica-
-tion of objectives. Two artifacts are used to support this
-stage: the “Modelling and Requirements Engineering” for
-the BF and the “Key Resources Assessment” for the DF
-perspective. 2) Ideation action: here creative solutions are
-identified by preparing a business use case (BF) or a value
-proposition (DF), assisted by a “Business Model Canvas”.
-3) Implementation transition: involves evaluating and se-
-lecting the most appropriate ideas. Here is where a finan-
-cial and organizational feasibility study is carried out, by
-means of a cost/benefit analysis (BF) or a value proposi-
-tion fit assessment (DF). The technical feasibility is also
-analyzed using EAM methods for impact assessment and
-rollout. 4) Implementation action: finally, the implemen-
-tation roadmap is developed.
-This proposal introduces a totally new perspective that
-has nothing to do with the rest of presented methodolo-
-gies. It shows a completely different pipeline, that breaks
-away from the CRISP-DM-based data analytics lifecycles.
-Its main strength comes from the structure of ideation
-and implementation phases, but more importantly from
-the distinction of business-first vs data-first perspectives,
-which define the subsequent paths to be followed. How-
-ever, it does not address team related challenges, nor data
-management issues.
-4 Distinction of business-first vs data-first perspectives
-5 Overlooks team related and data management issues
-4.9. Big Data Management Canvas
-Big Data Management Canvas by Michael Kaufmann [72]
-is a reference model for big data management that oper-
-ationalizes value creation from data by linking business
-targets with technical implementation.
-This research article proposes a big data management
-process that helps knowledge emerge and create value.
-Kaufmann asserts that creating value from big data relies
-on “supporting decisions with new knowledge extracted
-from data analysis”. It provides a frame of reference for
-data science to orient the engineering of information sys-
-tems for big data processing, toward the generation of
-knowledge and value. The author incorporates the value
-term on the big data paradigm, in this case defined by the
-5V’s: volume, velocity, variety, veracity, and value.
-In this regard, big data management refers to the pro-
-cess of “controlling flows of large volume, high velocity,
-heterogeneous and/or uncertain data to create value”. To
-ensure that the project is effectively focused on value cre-
-ation, business and IT alignment is an essential principle.
-The presented Big Data Management Canvas consists of
-the following five phases: 1) Data preparation: combi-
-nation of data from different sources into a single plat-
-form with consistent access for analytics 2) Data analyt-
-ics: extraction of actionable knowledge directly from data
-through a process of discovery, hypothesis formulation and
-hypothesis testing. 3) Data interaction: definition of how
-users interfere with the data analysis results. 4) Data ef-
-fectuation: use of data analysis results to create value in
-products and services. 5) Data intelligence: ability of the
-organization to acquire and apply knowledge and skills in
-data management. In this sense, there are three types of
-knowledge and skills: a) knowledge generated from data
-b) knowledge about data and data management and c)
-knowledge and skills necessary for data analytics and man-
-agement
-This framework is based on an epistemic model of big
-data management as a cognitive system: it theorizes that
-knowledge emerges not by passive observation, but by “it-
-erative closed loops of purposely creating and observing
-changes in the environment”. Targeting this vision to-
-wards data analytics, it claims that the knowledge that
-big data analytics generates emerges from the interaction
-of data scientists and end-users with existing databases
-and analysis results.
-Overall, this methodology offers a different perspective
-of data science, explicitly prioritizing the value creation
-from data. Most approaches to big data research aim at
-data storage, computation and analytics instead of knowl-
-edge and value, that should be the result of big data pro-
-cessing. This change of perspective affects the project de-
-velopment, continuously balancing and aligning business
-and technology.
-4 Prioritizes value creation from data, rather than fo-
-cusing on storage, computation and analytics.
-5 Team management challenges are not addressed
-4.10. Agile Delivery Framework
-Larson and Chang [73] propose a framework based on the
-synthesis of agile principles with Business Intelligence (BI),
-fast analytics and data science. There are two layers of
-strategic tasks: (A) the top layer includes BI delivery and
-(B) the bottom layer includes fast analytics and data sci-
-ence.
-In the top layer there are five sequential steps: discov-
-ery, design, development, deployment and value delivery.
-A1) “discovery” is where stakeholders determine the busi-
-ness requirements and define operating boundaries. A2)
-“design” focuses on modeling and establishing the archi-
-tecture of the system. A3) “development” is a very broad
-phase that includes a wide array of activities, for instance,
-coding ETLs or scripting scheduling jobs. A4) “deploy-
-ment” focuses on integration of new functionalities and
-capabilities into production. A5) “value delivery” includes
-maintenance, change management and end user feedback.
-13
-Figure 10: Big Data Management
-Canvas
-Figure 11: Agile Delivery Frame-
-work
-Figure 12: Systematic Research
-on Big Data
-Figure 13: Big Data Managing
-Framework
-The bottom layer includes six sequential steps: scope,
-data acquisition, analysis, model development, validation
-and deployment. B1) “scope” defines the problem state-
-ment and the scope of data sources. B2) “data acquisition”
-acquires the data from the data lake and assesses the value
-of the data sources. B3) “analysis” visualizes the data and
-creates a data profiling report. B4) “model development”
-fits statistical and machine learning models to the data.
-B5) “validation” ratifies the quality of the model. Both
-the model development and the validation are carried out
-via timeboxed iterations and agile methods. B6) “deploy-
-ment” prepares dashboards and other visualization tools.
-The framework is designed to encourage successful busi-
-ness and IT stakeholder collaboration. For the authors,
-data science is inherently agile as the process is carried
-out through iterations, and data science teams are usu-
-ally composed by small teams and require collaboration
-between business partners and technical experts. Simi-
-larly, the BI lifecycle has three phases in which the agile
-approach can be suitable: the discovery, design and devel-
-opment phases may benefit from iterative cycles and small
-time-boxed increments, even though there are not any soft-
-ware programming tasks. The main novel approach of this
-methodology is that completely separates the business in-
-telligence and the data analysis worlds. In fact, it proposes
-two methodologies that evolve parallel to each other and
-by means of agile methods pledges an effective collabora-
-tion between these two parts.
-4 Two methodologies for business intelligence and the
-data analysis that work in parallel
-5 Data management challenges and reproducibility is-
-sues are omitted
-4.11. Systematic Research on Big Data
-Das et al. [17] explore the systematization of data-driven
-research practices. The presented process is composed of
-eight Agile analytic steps, that start with a given dataset
-and end with the research output. In this sense, [74] is the
-recommended development style for the process.
-First, information is extracted and cleaned. Even though
-the core of data-driven research is the data, the authors
-claim that the process should start from a question of
-what is intended to obtain from the research and the data.
-Therefore, the next phase is the preliminary data analy-
-sis, in which some patterns and information are revealed
-from the data. These patterns can be extracted with the
-help of unsupervised methods, and will be used to find
-an appropriate target and starting point of the research.
-Hence, the generated data patterns and discoveries lead to
-the definition of the research goal or research hypothesis.
-Once the setup of the research goal is defined, more
-work can be put on the extracted data. Otherwise, the re-
-search goal must be modified, and preliminary data anal-
-ysis tasks such as descriptive analytics need to be carried
-out again. Therefore, further analysis can be done given
-the goal of the research, selecting the most relevant fea-
-tures and building machine learning models. The output
-from these models or predictive systems is further evalu-
-ated. Within an Agile process, the output evaluation can
-be done in iterative enhancements. Finally, it is important
-to communicate and report the results effectively, using
-meaningful infographics and data visualization techniques.
-These steps may be repeated in an iterative fashion until
-the desired results or level of performance is achieved.
-This methodology suggests to execute the above work-
-flow with a small subset of the dataset, identify issues
-early on, and only when satisfactory, expand to the entire
-dataset. In addition to the use of iterative Agile planning
-and execution, the authors claim that a generalized dataset
-and a standardized data processing can make data-driven
-research more systematic and consistent.
-In general, this framework provides a process for per-
-forming systematic research on big data and is supported
-by Agile methodologies along the development process.
-Agile can promote frequent collaboration and a value-driven
-development in an iterative, incremental fashion. How-
-ever, not enough effort is put by the authors on defining
-the roles and interactions of the team members across the
-different stages of the project. Overall, this methodology is
-closer to the research and academic world, and since data
-science finds itself between research activities and business
-applications, it is very valuable to have a methodology to
-bring out the best from at least, one of the worlds.
-4 Research-focused and systematic approach
-5 Does not define roles and interactions between team
-members across the different stages of the project
-14
-4.12. Big Data Managing Framework
-Dutta et al. [75] present a new framework for implement-
-ing big data analytics projects that combines the change
-management aspects of an IT project management frame-
-work with the data management aspects of an analytics
-framework. This methodology presents a iterative and
-cyclical process for a big data project, which is organized
-into three distinct phases: strategic groundwork, data an-
-alytics and implementation.
-The strategic groundwork phase involves the identifi-
-cation of the business problem, brainstorming activities,
-the conceptualization of the solution to be adopted and
-the formation of the project teams. More in detail, the
-“business problem” phase sets the right expectations of
-the stakeholders, and dissipate any myths about what a
-big data project can achieve. The “research” phase studies
-how similar problems have been solved and it also looks for
-different analytics products available in the market. Then
-the team is conformed, and it recommends building it up
-with people from various backgrounds: business units, IT
-experts, data scientist, experts in the field, business de-
-cision makers, etc. Thus, this framework stands up for
-cross-functional and multidisciplinary teams. With all of
-this, the project roadmap is prepared, gathering up the
-major activities of the project, with timelines and desig-
-nated people. This roadmap must be flexible enough, and
-should focus on execution and delivery rather than aiming
-to a strict adherence to the plan.
-The data analytics phase has a clear structure, formed
-by “data collection and examination”, “data analysis and
-modeling”, “data visualization” and “insight generation”.
-As observed in other methodologies, the use of a prelimi-
-nary phase for data collection and exploration is widely
-used. Nevertheless, relying on data visualization tech-
-niques to present the results of data analysis tasks is a
-novel point, and indicates that the authors are very much
-concerned about getting all the stakeholders involved on
-the project development. Besides, innovative visual rep-
-resentation of the data can help in insight generation and
-in detecting similar and anomalous patterns in data. The
-data analytics phase is concluded with the insight gener-
-ation step, which is another innovative point occasionally
-omitted by other methodologies. It is important to under-
-stand the underlying latent reasons behind data trends.
-This last step takes the analysis to insights and possible
-actionable business input that can be of value to the orga-
-nization.
-Finally, during the implementation phase the solution
-is integrated with the IT system and the necessary people
-are trained to learn how to use it. The integration is a
-friction-prone phase, since it involves dealing with exist-
-ing IT systems and designing a robust architecture is an
-challenging task. To make the implementation of the new
-system easier, users need to be “trained in how to use the
-tools and the data that is available”. In this way, users
-will feel more comfortable with a new source of insights
-while taking their business decisions.
-4 Emphasizes change management aspects, such as cross-
-functional team formation and training of people
-5 Not enough emphasis is given to the validation of
-data analytics and machine learning models
-4.13. Data Science Edge
-The Data Science Edge (DSE) methodology is introduced
-along two articles by Grady et al. [64, 76]. It is a enhanced
-process model to accommodate big data technologies and
-data science activities. DSE provides a complete analytics
-lifecycle, with a five step model - plan, collect, curate,
-analyze, act, which are organized around the maturity of
-the data to address the project requirements. The authors
-divide the lifecycle into four quadrants - assess, architect,
-build and improve - which are detailed here below.
-The first quadrant - assess - consists in the planning,
-analysis of alternatives and rough order of magnitude es-
-timation process. It includes the requirements and defini-
-tion of any critical success factors. The activities within
-this first assessment phase correspond to the “plan” stage:
-defining organizational boundaries, justifying the invest-
-ment and attending policy and governance concerns.
-“Architect” is the second quadrant and it consists on
-the translation of the requirements into a solution. The
-“collect” and “curate” stages are included on this phase.
-More specifically, the “collect” stage is responsible for the
-databases management, data distribution and dynamic re-
-trieval. Likewise, during the “curate” stage the following
-activities are gathered: exploratory visualization, privacy
-and data fusion activities, and data quality assessment
-checks, among others.
-The “build” quadrant comprises the “analyze” and “act”
-stages and consists of the development, test and deploy-
-ment of the technical solution. Novel activities in the stage
-are: the search for simpler questions, latency and concur-
-rency, or the correlation versus causation problem. The
-last quadrant, “improve” consists of the operation and
-management of the system as well as an analysis of “inno-
-vative ways the system performance could be improved”.
-On the whole, Grady et al. propose a novel big data
-analytics process model that extends CRISP-DM and that
-provides useful enhancements. It is claimed that DSE
-serves as a complete lifecycle to knowledge discovery, which
-includes data storage, collection and software development.
-The authors explain how the DSE process model aligns to
-agile methodologies and propose the required conceptual
-changes to adopt agile in data analytics. Finally, the au-
-thors conclude that by following the agile methodologies,
-the outcomes could be expected more quickly to make a
-decision and to validate the current state of the project.
-4 Enhanced CRISP-DM process model to accommo-
-date big data technologies and data science activities
-5 Challenges related to team management are omitted
-15
-Figure 14: Data Science Edge Figure 15: FMDS Figure 16: Analytics Canvas Figure 17: AI Ops
-4.14. Foundational Methodology for Data Science
-The Foundational Methodology for Data Science [77] by
-IBM has some similarities with CRISP-DM, but it provides
-a number of new practices. FMDS’s ten steps illustrate
-an iterative nature of the process of data science, with
-several phases joined together by closed loops. The ten
-stages are self-explanatory: 1) business understanding 2)
-analytic approach 3) data requirements 4) data collection
-5) data understanding 6) data preparation 7) modeling 8)
-evaluation 9) deployment 10) feedback.
-It should be pointed out the interesting position of the
-analytic approach phase at the beginning of the project,
-just after understanding the business and without having
-any data collection nor exploratory analysis. Even though
-author’s point of view is understood, in reality data scien-
-tists have difficulties to chose the analytic approach prior
-to the exploring the data. Framing the business problem
-in the context of statistical and machine learning tech-
-niques usually requires a preliminary study using descrip-
-tive statistics and visualization techniques. Overall this
-methodology structures a data science project in more
-phases (10) than CRISP-DM (6), but has the same draw-
-backs, in terms of lack a definition of the different roles of
-the team, and zero concerns on reproducibility, knowledge
-accumulation and data security.
-4 Provides new practices and extends CRISP-DM pro-
-cess model
-5 Inherits some of the drawbacks of CRISP-DM, espe-
-cially on team and data management
-4.15. Analytics Canvas
-The Analytics Canvas by Arno Kuhn [47] is a semi-formal
-specification technique for the conceptual design of data
-analytics projects. It describes an analytics use case and
-documents the necessary data infrastructure during the
-early planning of an analytics project. It proposes a four
-layer model which differentiates between analytic use case,
-data analysis, data pools and data sources.
-The first step is understanding the domain and iden-
-tifying the analytics use case: root-cause analysis, pro-
-cess monitoring, predictive maintenance or process con-
-trol. Management agents usually initiate this stage, as
-they have a wide vision of the company. Based on the
-analytics use case, data sources are specified by domain
-experts: sensors, control systems, ERP systems, CRM,
-etc. In addition to knowing where the data comes from,
-it is necessary to specify the places where data is stored.
-For this purpose, the IT expert is the assigned person.
-Finally, the analytics use case is linked to a correspond-
-ing data analysis task: descriptive, diagnostic, predictive
-or prescriptive. Here the data scientist is the main agent
-involved.
-Therefore, the Analytics Canvas assigns a specialized
-role to each phase: management, domain expert, IT ex-
-pert, data scientist. The team is also supervised by the
-analytics architect. This canvas is very useful to structure
-the project in its early stages and identify its main con-
-structs. Incorporating such a tool helps setting up clear
-objectives and promotes a transparent communication be-
-tween stakeholders. Apart from describing the analytics
-use case and the necessary data infrastructure, the Ana-
-lytics Canvas allows clear description and differentiation of
-the roles of stakeholders, and thus enables interdisciplinary
-communication and collaboration.
-4 Helps on the conceptual design of data analytics projects,
-primarily during the early phases
-5 Hard to implement as an scalable framework along
-the entire project development
-4.16. AI Ops
-John Thomas presents a systematic approach to “opera-
-tionalizing” data science [78], which covers managing the
-complete end-to-end lifecycle of data science. The author
-referrers to these set of considerations as AI Ops, which
-include: a) Scope b) Understand c) Build (dev) d) Deploy
-and run (QA) and e) Deploy, run, manage (Prod)
-For each stage, AI-Ops defines the necessary roles: data
-scientist, business user, data steward, data provider, data
-consumer, data engineer, software engineer, AI operations,
-etc. which helps organizing the project and improves co-
-ordination. However, there are no guidelines for how these
-roles collaborate and communicate with each other.
-During the scope stage, the methodology insists on
-having clear business KPIs. Proceeding without clear KPIs
-may result in the team evaluating the project success by
-the model performance, rather than by its impact on the
-16
-business. In this sense, correlating model performance
-metrics and trust/transparency elements to the business
-KPIs is indeed a frequent challenge. Without this infor-
-mation, it is difficult for the business to get a view of
-whether a project is succeeding.
-The data understanding phase is pivotal: AI-Ops pro-
-poses to establish the appropriate rules and policies to gov-
-ern access to data. For instance, it empowers data science
-teams to shop for data in a central catalog: first exploring
-and understanding data, after which they can request a
-data feed and exploit it on the build phase.
-This methodology splits the deployment stage into two
-separated steps: quality assessment (QA) and production
-(prod), in order to make sure that any model in production
-meets the business requirements and the quality standards
-as well. Overall this methodology is focused on the oper-
-ationalization of the project, thus giving more importance
-to the deployment, the investment on IT infrastructure
-and continuous development and integration stages.
-4 Primarily focused on the deployment and operational-
-ization of the project
-5 Does not offer guidelines for how different roles col-
-laborate and communicate with each other
-Reproducibility and knowledge retaining issues are
-left unexplored during model building phase
-4.17. Data Science Workflow
-Data Science Workflow [79] by Philip Guo introduces a
-modern research programming workflow. There are four
-main phases: preparation of the data, alternating between
-running the analysis and reflection to interpret the out-
-puts, and finally dissemination of results.
-In the preparation phase data scientists acquire the
-data and clean it. The acquisition can be challenging in
-terms of data management, data provenance and data stor-
-age, but the definition of this preliminary phase is quite
-straightforward. From there follows the core activity of
-data science, that is, the analysis phase. Here Guo presents
-a separate iterative process in which programming scripts
-are prepared and executed. The outputs of these scripts
-are inspected and after a debugging task, the scripts are
-further edited. Guo claims that the faster the data scien-
-tist can make it through each iteration, the more insights
-could potentially be obtained per unit time.
-Whereas the analysis phase involves programming, the
-reflection phase involves thinking and communicating about
-the outputs of analyses. After inspecting a set of output
-files, a data scientist might take notes, hold meetings and
-make comparisons. The insights obtained from this reflec-
-tion phase are used to explore new alternatives by adjust-
-ing script code and execution parameters.
-The final phase is disseminating the results, most com-
-monly in the form of written reports. The challenge here is
-to take all the various notes, sketches, scripts and output
-data files created throughout the process to aid in writing.
-Some data scientists also distribute their software so that
-other researchers can reproduce their experiments.
-Overall, discerning the analysis from the reflection phase
-is the main strength of this workflow by Guo. The ex-
-ploratory nature of data science projects makes challeng-
-ing to establish a waterfall execution and development.
-Hence, usually it is needed to go back and forth to find
-the appropriate insights and the optimal model for the
-business. Separating the pure programming tasks (analy-
-sis) from the discussion of the results is very valuable for
-data scientists, that can get lost within the programming
-spiral.
-4 Discerns the analysis phase from the reflection phase
-5 Explicitly focused on research/science, not immedi-
-ately applicable in business case
-4.18. EMC Data Analytics Lifecycle
-EMC Data Analytics Lifecycle by EMC [80] is a frame-
-work for data science projects that was designed to convey
-several key points: A) Data science projects are iterative
-B) Continuously test whether the team has accomplished
-enough to move forward C) Focus work both up front, and
-at the end of the projects
-This methodology defines the key roles for a successful
-analytics project: business user, project sponsor, project
-manager, business intelligence analyst, database admin,
-data engineer, data scientist. EMC also encompasses six
-iterative phases, which are shown in a circle figure: data
-discovery, data preparation, model planning, model build-
-ing, communication of the results, and operationalization.
-During the discovery phase, the business problem is
-framed as an analytics challenge and the initial hypothe-
-sis are formulated. The team also assesses the resources
-available (people, technology and data). Once enough in-
-formation is available to draft an analytic plan, data is
-transformed for further analysis on the data preparation
-phase.
-EMC separates the model planning from the model
-building phase. During the model planning, the team de-
-termines the methods, techniques, and workflow it intends
-to follow for the subsequent model building phase. The
-team explores the data to learn about the relationships be-
-tween variables and subsequently selects key variables and
-the most suitable models. Isolating the model planning
-from the building phase is a smart move, since it assists
-the iterative process of finding the optimal model. The
-back and forth process of obtaining the best model can be
-chaotic and confusing: a new experiment can take weeks
-to prepare, program and evaluate. Having a clear sepa-
-ration between model planning and model building sure
-enough helps during that stage.
-Presented as a separated phase, the communication of
-the results is a distinctive feature of this methodology. In
-17
-Figure 18: Data Science Workflow
-Figure 19: EMC Data Analytics
-Lifecycle
-Figure 20: Toward data mining
-engineering
-this phase, the team, in collaboration with major stake-
-holders, determines if the results of the project are a suc-
-cess or a failure based on the criteria developed in the
-discovery phase. The team should identify key findings,
-quantify the business value, and develop a narrative to
-summarize and convey findings to stakeholders. Finally,
-on the operationalization phase, the team delivers final
-reports, briefings, code, and technical documents.
-Overall, the EMC methodology provides a clear guide-
-line for the data science lifecycle, and a definition of the
-key roles. It is very concerned about teams excessively
-focusing on phases two through four (data preparation,
-model planning and model building), and explicitly pre-
-vents them from jumping into doing modeling work before
-they are ready. Even though it establishes the key roles
-in a data science project and how they should collaborate
-and coordinate, it does not get into detail on how teams
-should communicate more effectively.
-4 Prevents data scientists from jumping prematurely
-into modeling work
-5 Lacks a reproducibility and knowledge management
-setup
-4.19. Toward data mining engineering
-Marbán et al. [81] propose to reuse ideas and concepts
-from software engineering model processes to redefine and
-add to the CRISP-DM process, and make it a data mining
-engineering standard.
-The authors propose a standard that includes all the
-activities in a well-organized manner, describing the pro-
-cess phase by phase. Here only the distinctive points
-are discussed. The activities missing from CRISP-DM
-are primarily project management processes, integral pro-
-cesses and organizational processes. The project manage-
-ment processes establish the project structure and coordi-
-nate the project resources throughout the project lifecycle.
-CRISP-DM only takes into account the project plan, which
-is a small part of the project management. This method-
-ology includes the lifecycle selection, and more processes
-that will not be further explained: acquisition, supply, ini-
-tiation, project planning and project monitoring and con-
-trol.
-The integral processes are necessary to successfully com-
-plete the project activities. In this category the processes
-of evaluation, configuration management, documentation
-and user training are included. The organizational pro-
-cesses help to achieve a more effective organization, and
-it is recommended to adapt the SPICE standard. This
-group includes the processes of improvement (gather best
-practices, methods and tools), infrastructure (build best
-environments) and training.
-The core processes in data science engineering projects
-are the development processes which are divided into pre-,
-KDD-, and post-development processes. The proposed en-
-gineering process model is very complete and almost cov-
-ers all the dimensions for a successful project execution.
-It is based on very well studied and designed engineering
-standards and as a result are very suitable for large cor-
-porations and data science teams. Nevertheless, excessive
-effort is put into the secondary, supporting activities (orga-
-nizational, integral and project processes) rather than on
-the core development activities. This extra undertaking
-may produce non-desired effects, burdening the execution
-of the project and creating inefficiencies due to processes
-complexity. In general terms, this methodology is very
-powerful in project management and information manage-
-ment aspects, as it conveys full control over every aspect
-of the project.
-4 Thorough engineering process model for a successful
-project execution
-5 Team related challenges are left unexplored
-5. Discussion
-So far, the challenges that arise when executing data sci-
-ence projects have been gathered on section 2, and a criti-
-cal review of methodologies has been conducted as summa-
-rized on section 4. Based on the reviewed methodologies a
-taxonomy of methodologies is proposed, as illustrated on
-Figure 21
-The criteria for such taxonomy has focused on sum-
-marizing the categories each methodology adequately cov-
-ers. For example, the EMC data analytics lifecycle [80]
-methodology is resilient on project and team management
-challenges, whereas MIDST [70] clearly leans toward team
-18
-Figure 21: Taxonomy of methodologies for data science projects
-management. This taxonomy is meant to better under-
-stand the types of methodologies that are available for
-executing data science projects.
-Apart from the lack of a methodology usage in real
-data science projects that was mentioned on section 2,
-there is an absence of complete or integral methodolo-
-gies across the literature. In this sense, of the 19 re-
-viewed methodologies, only 4 are classified as “in-
-tegral”. Among these “integral” methodologies, certain
-aspects could be improved: TSDP [65] has a strong de-
-pendence on Microsoft tools and technologies and their
-roles stick too closely to Microsoft services. For instance,
-TDSP’s data scientist role is limited to the cloning of sev-
-eral repositories and to merely executing the data science
-project. The data scientist role should be broken down to
-more tangible roles, and detail their responsibilities out-
-side the Microsoft universe.
-DominoLab lifecycle [59] lacks tests to check the limi-
-tations and quality of data, and even though it integrates
-a team-based approach, it does not describe how teams
-should work to communicate, coordinate and collaborate
-effectively. RAMSYS [68] not completely address repro-
-ducibility and traceability assurance, and the investment
-on IT resources is not fully taken into account.Lastly, Agile
-Data Science Lifecycle [69] is not overly concerned about
-the limitations of Machine Learning techniques, data se-
-curity and privacy, nor does propose methods for results
-evaluation.
-Besides, other methodologies which focus on project
-management tend to forget about the team executing the
-project, and often leave the management of data & infor-
-mation behind. What is needed is a management method-
-ology that takes into account the various data-centric needs
-of data science while also keeping in mind the application-
-focused uses of the models and other artifacts produced
-during an data science lifecycle, as proposed on [82]. In
-view of the reviewed methodologies, we think that, as ev-
-ery data science project has its own characteristics and it
-is hard to cover all the possibilities, it would be recom-
-mendable to establish the foundation for building an inte-
-gral methodology. Consequently, we propose a conceptual
-framework that takes in the general features that a inte-
-gral methodology for managing data science project could
-have. A framework that could cover all the pitfalls and
-issues listed above once provided with a set of processes
-and best practices from industry, business and academic
-projects. This framework can be used by other researchers
-as a roadmap to expand currently used methodologies or
-to design new ones. In fact, anyone with the vision for
-a new methodology could take this boiler-template and
-build its own methodology.
-In this sense, we claim that an efficient data science
-methodology should not rely on project management method-
-ologies alone, nor should be solely based on team manage-
-ment methodologies. In order to offer a complete solution
-for executing data science projects, three areas should be
-covered, as it is illustrated on Figure 22:
-Figure 22: Proposed foundation stones of integral methodologies for
-data science projects
-Project methodologies are generally task-focused
-kind of methodologies that offer a guideline with the steps
-to follow, sometimes presented as a diagram-flow. Basi-
-cally they try to define the data science lifecycle, which in
-most cases is very similar between different named method-
-ologies [83]: business problem understanding, data gath-
-ering, data modeling, evaluation, implementation. Thus,
-their main goal is to prepare the main stages of a project
-so that it can be successfully completed.
-It seems true that data science projects are very hard to
-manage due to the uncertain nature of data among other
-factors, and thus their project failure rate is very elevated.
-One of the most critical points is that at the beginning of
-any project, data scientists are not familiar with the data,
-and thus it is hard to know the data quality and its poten-
-tial to accomplish certain business objectives. This compli-
-19
-PROJECT MANAGEMENT TEAM MANAGEMENT DATA & INFORMATION MANAGEMENT
-Definition of data science lifecycle workflow
-Standardization of folder structure
-Continuous project documentation
-Visualization of project status
-Alignment of data science & business goals
-Consolidation of performance & success metrics
-Separation of prototype & product
-Promotion & communication of
-scientific findings
-Role definition to aid
-coordination between team
-members and across
-stakeholders
-Boost team collaboration: git
-workflow & coding agreements
-Reproducibility: creation of knowledge repository
-Robust deployment: versioning code, data & models
-Model creation for knowledge and value generation
-Traceability reinforcement: put journey over target
-Table 5: Summary of the proposed principles of integral methodologies for data science projects
-cates a lot the project definition and the establishment of
-SMART objectives. Therefore, having an effective project
-management methodology is fundamental for the success
-of any project, and specially for data science projects, since
-they can: a) monitor in which stage the project is at any
-moment b) setup the project goals, its stages, outcomes of
-the project, its deliverables and c) manage the task scopes,
-and deliverables deadlines.
-Regarding team management, data science is no more
-considered an individual task undertaken by ”unicorn”
-data scientists. It is definitely a team effort, which re-
-quires a methodology that guides the way the team mem-
-bers communicate, coordinate and collaborate. That is
-why we need to add another dimension to the data science
-methodology, one that can help managing the role and
-responsibilities of each team member and helps also effi-
-ciently communicating the team progress. That is the ob-
-jective of the so-called team management methodolo-
-gies. The important point in this regard is that no project
-management methodology alone can ensure the success of
-the data science project. It is necessary to establish a
-teamwork methodology that coordinates and manages the
-tasks to be performed and their priority.
-We could say that these two dimensions, project and
-team management could be applied to almost any project.
-Of course, the methodologies for each case would need to
-be adapted and adjusted. However, data science projects
-inherently work with data, and usually with lots of data,
-to extract knowledge that can answer some specific ques-
-tions of a business, a machine, a system o an agent, thus
-generating value from the data. Therefore, we believe it
-is fundamental to have a general approach that guides the
-generation of insights and knowledge from data, so called
-data & information management.
-The frontier between information and knowledge can
-be delicate, but in words of [84], information is described
-as refined data, whereas knowledge is useful information.
-Based on the DIKW pyramid, from data we can extract
-information, from information knowledge and from knowl-
-edge wisdom. We claim that data science projects are not
-eager to extract wisdom from data, but to extract useful
-information, thus knowledge, from data.
-Therefore, it is necessary to manage data insights and
-communicate the experiments outcomes in a way that con-
-tributes to the team and project knowledge. In the field of
-knowledge management, this means that tacit knowledge
-must be continuously be converted into explicit knowl-
-edge. In order to make this conversion from tacit knowl-
-edge, which is intangible, to explicit knowledge, which can
-be transported as goods, information and a communica-
-tion channel is required. Therefore, the information man-
-agement and the team communication processes are com-
-pletely related.
-Information is usually extracted from data to gain knowl-
-edge, and with that knowledge decisions are made. De-
-pending on the problem in hand and the quality and po-
-tential use of the information, more or less human input
-is necessary to make decisions and further take actions.
-The primary strategic goal of the analytics project (de-
-scriptive, diagnostic, predictive or prescriptive) may affect
-the type of information that needs to be managed, and as
-a consequence also may influence the importance of the
-information management stage. Each strategic goal tries
-to answer different questions and also define the type of
-information that is extracted from data.
-With only descriptive information from the data, it
-is required to control and manage the human knowledge
-under use; whereas with more complex models (diagnostic
-and predictive) it is much more important to manage the
-data, the model, inputs, outputs, etc. Therefore, with
-more useful information extracted from the data, the path
-to decision is shortened.
-Besides, [85] points out that knowledge management
-will be the key source for competitive advantage for com-
-panies. With data science growing with more algorithms,
-more infrastructure, the ability to capture and exploit
-unique insights will be a key differentiator. As the ten-
-dency stands today, in few years time data science and
-the application of machine learning models will become
-more of a commodity. During this transformation data
-science will become less about framework, machine learn-
-ing and statistics expertise and more about data manage-
-ment and successfully articulating business needs, which
-includes knowledge management.
-All things considered, table 5 summarizes the main
-foundations for our framework: the principles are laid
-down so that further research can be developed to design
-the processes and the adequate tools.
-20
-6. Conclusions
-Overall, in this article a conceptual framework is proposed
-for designing integral methodologies for the management
-of data science projects. In this regard the three founda-
-tion stones for such methodologies have been presented:
-project, team and data & information management. It is
-important to point out that this framework must be con-
-stantly evolving and improving to adapt to new challenges
-in data science.
-The proposed framework is built upon a critical review
-of currently available data science methodologies, from
-which a taxonomy of methodologies has been developed.
-This taxonomy is based on a quantitative evaluation of
-how each methodology overcomes the challenges presented
-on section 2. In this regard, the obtained scores were es-
-timated by the authors’ respective research groups. Even
-though this evaluation may contain some bias, we believe
-it gives an initial estimation of the strengths and weak-
-nesses of each methodology. In this sense, we would like
-to extend the presented analysis to experts and researchers
-and also to practitioners in the field.
-Acknowledgements
-This research did not receive any specific grant from fund-
-ing agencies in the public, commercial, or not-for-profit
-sectors.
-Appendix A. Triangular area
-This supplement contains the procedure to calculate the
-area of the triangle taking as origin the first Fermat point.
-The area is a relevant measure for the integrity of each
-methodology, as the distances from the first Fermat point
-represent their percentage score on project, team and in-
-formation management.
-Given the coordinates of the three vertices A, B, C of
-any triangle, the area of the triangle is given by:
-∆ =
-Ax(By − Cy) + Bx(Cy − Ay) + Cx(Ay − By)
-2
-(A.1)
-With the origin of coordinates as the first Fermat point
-of the triangle, the coordinates of the vertices A, B, C are
-defined as:
-Ax = a · cos(π/2); Ay = a · sin(π/2);
-Bx = b · cos(7π/6); By = b · sin(7π/6);
-Cx = c · cos(11π/6); Cy = c · sin(11π/6);
-(A.2)
-Then, inserting these expressions for A, B, C coordi-
-nates into A.1 yields the final expression for the area of
-the triangle. To reach this simplification it must be taken
-into account that cos(7π/6) = −cos(11π/6) =
-√
-3/2 and
-also sin(7π/6) = sin(11π/6) = −1/2.
-∆ =
-√
-3
-4
-(a · b + a · c + b · c) (A.3)
-Figure A.23: Triangular diagram: origin of coordinates, triangle ver-
-tices and corresponding angles
-References
-[1] Nathan Benaich, Ian Hogarth, State of AI 2019.
-[2] VentureBeat, Why do 87% of data science projects never make
-it into production? (2019).
-[3] New Vantage, NewVantage Partners 2019 Big Data and AI Ex-
-ecutive Survey (2019).
-[4] Gartner, Taking a First Step to Advanced Analytics.
-[5] L. Breiman, Statistical modeling: The two cultures (with com-
-ments and a rejoinder by the author), Statistical science 16 (3)
-(2001) 199–231.
-[6] L. Garcı́a Jiménez, An epistemological focus on the concept of
-science: A basic proposal based on kuhn, popper, lakatos and
-feyerabend, Andamios 4 (8) (2008) 185–202.
-[7] J. S. Saltz, The need for new processes, methodologies and
-tools to support big data teams and improve big data project
-effectiveness, in: 2015 IEEE International Conference on
-Big Data (Big Data), 2015, pp. 2066–2071. doi:10.1109/
-BigData.2015.7363988.
-[8] J. Saltz, I. Shamshurin, C. Connors, Predicting data science
-sociotechnical execution challenges by categorizing data science
-projects, Journal of the Association for Information Science and
-Technology 68 (12) (2017) 2720–2728. doi:10.1002/asi.23873.
-[9] J. Saltz, N. Hotz, D. J. Wild, K. Stirling, Exploring project
-management methodologies used within data science teams, in:
-AMCIS, 2018.
-[10] G. Piatetsky, Crisp-dm, still the top methodology for analytics,
-data mining, or data science projects, KDD News.
-[11] Jeffrey Saltz, Nicholas J Hotz, CRISP-DM – Data Science
-Project Management (2019).
-[12] V. Granville, Developing Analytic Talent: Becoming a Data
-Scientist, 1st Edition, Wiley Publishing, 2014.
-[13] Frank Lo, What is Data Science?
-[14] M. Loukides, What is data science?, ” O’Reilly Media, Inc.”,
-2011.
-[15] D. Conway, The data science venn diagram, Retrieved Decem-
-ber 13 (2010) 2017.
-[16] A. Jones-Farmer, R. Hoerl, How is statistical engineering differ-
-ent from data science?
-[17] M. Das, R. Cui, D. R. Campbell, G. Agrawal, R. Ramnath,
-Towards methods for systematic research on big data, in: 2015
-IEEE International Conference on Big Data (Big Data), 2015,
-pp. 2072–2081. doi:10.1109/BigData.2015.7363989.
-[18] J. Saltz, F. Armour, R. Sharda, Data science roles and the types
-of data science programs, Communications of the Association
-for Information Systems 43 (1) (2018) 33.
-[19] Josh Wills, Data scientist definition (2012).
-[20] P. Warden, Why the term ”data science” is flawed but useful -
-O’Reilly Radar (2011).
-[21] E. Ngai, Y. Hu, Y. Wong, Y. Chen, X. Sun, The applica-
-tion of data mining techniques in financial fraud detection: A
-21
-classification framework and an academic review of literature,
-Decision Support Systems 50 (3) (2011) 559 – 569, on quan-
-titative methods for detection of financial fraud. doi:https:
-//doi.org/10.1016/j.dss.2010.08.006.
-[22] P. M. Addo, D. Guegan, B. Hassani, Credit risk analysis using
-machine and deep learning models, Risks 6 (2). doi:10.3390/
-risks6020038.
-[23] B. P. Chamberlain, Â. Cardoso, C. H. B. Liu, R. Pagliari, M. P.
-Deisenroth, Customer life time value prediction using embed-
-dings, CoRR abs/1703.02596. arXiv:1703.02596.
-[24] Y. Kim, W. Street, An intelligent system for customer tar-
-geting: a data mining approach, Decision Support Systems
-37 (2) (2004) 215 – 228. doi:https://doi.org/10.1016/S0167-
-9236(03)00008-3.
-[25] G. Kou, Y. Peng, G. Wang, Evaluation of clustering algorithms
-for financial risk analysis using mcdm methods, Information
-Sciences 275 (2014) 1 – 12. doi:https://doi.org/10.1016/
-j.ins.2014.02.137.
-[26] J. Chen, W. Chen, C. Huang, S. Huang, A. Chen, Finan-
-cial time-series data analysis using deep convolutional neu-
-ral networks, in: 2016 7th International Conference on Cloud
-Computing and Big Data (CCBD), 2016, pp. 87–92. doi:
-10.1109/CCBD.2016.027.
-[27] M. de Bruijne, Machine learning approaches in medical image
-analysis: From detection to diagnosis, Medical Image Anal-
-ysis 33 (2016) 94 – 97, 20th anniversary of the Medical Im-
-age Analysis journal (MedIA). doi:https://doi.org/10.1016/
-j.media.2016.06.032.
-[28] A. Lavecchia, Machine-learning approaches in drug discovery:
-methods and applications, Drug Discovery Today 20 (3) (2015)
-318 – 331. doi:https://doi.org/10.1016/j.drudis.2014.10.012.
-[29] P. Larrañaga, B. Calvo, R. Santana, C. Bielza, J. Galdiano,
-I. Inza, J. A. Lozano, R. Armañanzas, G. Santafé, A. Pérez,
-V. Robles, Machine learning in bioinformatics, Briefings in
-Bioinformatics 7 (1) (2006) 86–112. doi:10.1093/bib/bbk007.
-[30] J. Wan, S. Tang, D. Li, S. Wang, C. Liu, H. Abbas, A. V.
-Vasilakos, A manufacturing big data solution for active preven-
-tive maintenance, IEEE Transactions on Industrial Informatics
-13 (4) (2017) 2039–2047. doi:10.1109/TII.2017.2670505.
-[31] R. Ismail, Z. Othman, A. A. Bakar, Data mining in production
-planning and scheduling: A review, in: 2009 2nd Conference
-on Data Mining and Optimization, 2009, pp. 154–159. doi:
-10.1109/DMO.2009.5341895.
-[32] D. Kwon, H. Kim, J. Kim, S. Suh, I. Kim, K. Kim, A sur-
-vey of deep learning-based network anomaly detection, Cluster
-Computing 22. doi:10.1007/s10586-017-1117-8.
-[33] M. Grbovic, V. Radosavljevic, N. Djuric, N. Bhamidipati,
-J. Savla, V. Bhagwan, D. Sharp, E-commerce in your inbox:
-Product recommendations at scale, in: Proceedings of the
-21th ACM SIGKDD International Conference on Knowledge
-Discovery and Data Mining, KDD ’15, Association for Com-
-puting Machinery, New York, NY, USA, 2015, p. 1809–1818.
-doi:10.1145/2783258.2788627.
-[34] W. X. Zhao, S. Li, Y. He, E. Y. Chang, J. Wen, X. Li, Con-
-necting social media to e-commerce: Cold-start product recom-
-mendation using microblogging information, IEEE Transactions
-on Knowledge and Data Engineering 28 (5) (2016) 1147–1159.
-doi:10.1109/TKDE.2015.2508816.
-[35] X. Fang, J. Zhan, Sentiment analysis using product review data,
-J Big Data 2. doi:10.1186/s40537-015-0015-2.
-[36] M. Bojarski, D. D. Testa, D. Dworakowski, B. Firner, B. Flepp,
-P. Goyal, L. D. Jackel, M. Monfort, U. Muller, J. Zhang,
-X. Zhang, J. Zhao, K. Zieba, End to end learning for self-driving
-cars, CoRR abs/1604.07316. arXiv:1604.07316.
-[37] H. Min, Artificial intelligence in supply chain management: the-
-ory and applications, International Journal of Logistics Re-
-search and Applications 13 (1) (2010) 13–39. doi:10.1080/
-13675560902736537.
-[38] J. Park, Z. Chen, L. Kiliaris, M. L. Kuang, M. A. Masrur,
-A. M. Phillips, Y. L. Murphey, Intelligent vehicle power con-
-trol based on machine learning of optimal control parame-
-ters and prediction of road type and traffic congestion, IEEE
-Transactions on Vehicular Technology 58 (9) (2009) 4741–4756.
-doi:10.1109/TVT.2009.2027710.
-[39] Sue Green, Advancements in streaming data storage, real-time
-analysis and (2019).
-[40] S. Shi, Q. Wang, P. Xu, X. Chu, Benchmarking state-of-the-art
-deep learning software tools, in: 2016 7th International Con-
-ference on Cloud Computing and Big Data (CCBD), 2016, pp.
-99–104. doi:10.1109/CCBD.2016.029.
-[41] Jacob Spoelstra, H. Zhang, Gopi Kumar, Data Science Doesn’t
-Just Happen, It Takes a Process (2016).
-[42] J. A. Espinosa, F. Armour, The big data analytics gold rush:
-A research framework for coordination and governance, in:
-2016 49th Hawaii International Conference on System Sciences
-(HICSS), 2016, pp. 1112–1121. doi:10.1109/HICSS.2016.141.
-[43] M. Colas, I. Finck, J. Buvat, R. Nambiar, R. R. Singh, Cracking
-the data conundrum: How successful companies make big data
-operational, Capgemini Consulting (2014) 1–18.
-[44] Stef Caraguel, Data Science Challenges (2018).
-[45] E. Maguire, Data & Advanced Analytics: High Stakes, High
-Rewards (2017).
-[46] J. S. Saltz, I. Shamshurin, Big data team process method-
-ologies: A literature review and the identification of key fac-
-tors for a project’s success, in: 2016 IEEE International Con-
-ference on Big Data (Big Data), 2016, pp. 2872–2879. doi:
-10.1109/BigData.2016.7840936.
-[47] A. Kühn, R. Joppen, F. Reinhart, D. Röltgen, S. von Enzberg,
-R. Dumitrescu, Analytics canvas – a framework for the de-
-sign and specification of data analytics projects, Procedia CIRP
-70 (2018) 162 – 167, 28th CIRP Design Conference 2018, 23-
-25 May 2018, Nantes, France. doi:https://doi.org/10.1016/
-j.procir.2018.02.031.
-[48] D. K. Becker, Predicting outcomes for big data projects: Big
-data project dynamics (bdpd): Research in progress, in: 2017
-IEEE International Conference on Big Data (Big Data), 2017,
-pp. 2320–2330. doi:10.1109/BigData.2017.8258186.
-[49] Jeffrey Saltz, Nicholas J Hotz, Shortcomings of Ad Hoc – Data
-Science Project Management (2018).
-[50] J. Saltz, I. Shamshurin, C. Connors, A framework for describ-
-ing big data projects, in: W. Abramowicz, R. Alt, B. Franczyk
-(Eds.), Business Information Systems Workshops, Springer In-
-ternational Publishing, Cham, 2017, pp. 183–195.
-[51] Jennifer Prendki, Lessons in Agile Machine Learning from Wal-
-mart (2017).
-[52] A. P. Bhardwaj, S. Bhattacherjee, A. Chavan, A. Deshpande,
-A. J. Elmore, S. Madden, A. G. Parameswaran, Datahub: Col-
-laborative data science & dataset version management at scale,
-CoRR abs/1409.0798. arXiv:1409.0798.
-[53] C. Byrne, Development Workflows for Data Scientists, O’Reilly
-Media, 2017.
-[54] S. Ransbotham, D. Kiron, P. K. Prentice, Minding the analytics
-gap, MIT Sloan Management Review, 2015.
-[55] Kaggle, Kaggle: Your Machine Learning and Data Science Com-
-munity.
-[56] H. Jung, The Competition Mindset: how Kaggle and real-life
-Data Science diverge (2020).
-[57] M. Vanauer, C. Böhle, B. Hellingrath, Guiding the intro-
-duction of big data in organizations: A methodology with
-business- and data-driven ideation and enterprise architecture
-management-based implementation, in: 2015 48th Hawaii In-
-ternational Conference on System Sciences, 2015, pp. 908–917.
-doi:10.1109/HICSS.2015.113.
-[58] E. Colson, Why Data Science Teams Need Generalists, Not Spe-
-cialists, Harvard Business Review.
-[59] Domino Data Lab, Managing Data Science Teams (2017).
-[60] U. Sivarajah, M. M. Kamal, Z. Irani, V. Weerakkody, Critical
-analysis of big data challenges and analytical methods, Jour-
-nal of Business Research 70 (2017) 263 – 286. doi:https:
-//doi.org/10.1016/j.jbusres.2016.08.001.
-[61] M. N. Saunders, C. Rojon, On the attributes of a critical lit-
-erature review, Coaching: An International Journal of The-
-22
-ory, Research and Practice 4 (2) (2011) 156–162. doi:10.1080/
-17521882.2011.596485.
-[62] S. Brown, Likert scale examples for surveys, ANR Program eval-
-uation, Iowa State University, USA.
-[63] C. Shearer, The crisp-dm model: the new blueprint for data
-mining, Journal of data warehousing 5 (4) (2000) 13–22.
-[64] N. W. Grady, Kdd meets big data, in: 2016 IEEE International
-Conference on Big Data (Big Data), 2016, pp. 1603–1608. doi:
-10.1109/BigData.2016.7840770.
-[65] Microsoft, Team Data Science Process Documentation (2017).
-[66] Scott Ellis, Frameworks, Methodologies and Processes (2008).
-[67] Nicholas J Hotz, Jeffrey Saltz, Domino Data Science Lifecycle
-– Data Science Project Management (2018).
-[68] S. Moyle, A. Jorge, Ramsys - a methodology for support-
-ing rapid remote collaborative data mining projects, in:
-ECML/PKDD01 Workshop: Integrating Aspects of Data Min-
-ing, Decision Support and Meta-learning (IDDM-2001), Vol. 64,
-2001.
-[69] R. Jurney, Agile Data Science 2.0: Building Full-stack Data An-
-alytics Applications with Spark, ” O’Reilly Media, Inc.”, 2017.
-[70] K. Crowston, J. S. Saltz, A. Rezgui, Y. Hegde, S. You, Socio-
-technical affordances for stigmergic coordination implemented
-in midst, a tool for data-science teams, Proceedings of the ACM
-on Human-Computer Interaction 3 (CSCW) (2019) 1–25.
-[71] Chetan Sharma, Jan Overgoor, Scaling Knowledge at Airbnb
-(2016).
-[72] M. Kaufmann, Big data management canvas: A reference model
-for value creation from data, Big Data and Cognitive Comput-
-ing 3 (1) (2019) 19. doi:10.3390/bdcc3010019.
-[73] D. Larson, V. Chang, A review and future direction of agile,
-business intelligence, analytics and data science, International
-Journal of Information Management 36 (5) (2016) 700–710.
-[74] K. Collier, Agile analytics: A value-driven approach to business
-intelligence and data warehousing, Addison-Wesley, 2012.
-[75] D. Dutta, I. Bose, Managing a big data project: The case
-of ramco cements limited, International Journal of Produc-
-tion Economics 165 (2015) 293 – 306. doi:https://doi.org/
-10.1016/j.ijpe.2014.12.032.
-[76] N. W. Grady, J. A. Payne, H. Parker, Agile big data ana-
-lytics: Analyticsops for data science, in: 2017 IEEE Interna-
-tional Conference on Big Data (Big Data), 2017, pp. 2331–2339.
-doi:10.1109/BigData.2017.8258187.
-[77] John Rollings, Foundational methodology for data science
-(2015).
-[78] J. Thomas, AI Ops — Managing the End-to-End Lifecycle of
-AI (2019).
-[79] P. J. Guo, Software tools to facilitate research programming,
-Ph.D. thesis, Stanford University Stanford, CA (2012).
-[80] D. Dietrich, Data analytics lifecycle processes, uS Patent
-9,262,493 (Feb. 16 2016).
-[81] O. Marbán, J. Segovia, E. Menasalvas, C. Fernández-Baizán,
-Toward data mining engineering: A software engineering ap-
-proach, Information systems 34 (1) (2009) 87–107.
-[82] K. Walch, Why Agile Methodologies Miss The Mark For AI &
-ML Projects (2020).
-[83] F. Foroughi, P. Luksch, Data science methodology for cyberse-
-curity projects, CoRR abs/1803.04219. arXiv:1803.04219.
-[84] J. C. Terra, T. Angeloni, Understanding the difference between
-information management and knowledge management, KM Ad-
-vantage (2003) 1–9.
-[85] A. Ferraris, A. Mazzoleni, A. Devalle, J. Couturier, Big data
-analytics capabilities and knowledge management: impact on
-firm performance, Management Decision.
-23
+This figure "toronto.png" is available in "png" format from:
+http://arxiv.org/ps/2106.11036v1
 
