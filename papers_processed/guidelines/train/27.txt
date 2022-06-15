@@ -1,0 +1,145 @@
+Towards Fairness Certification in Artificial Intelligence
+Tatiana Tommasi1
+, Silvia Bucci1
+, Barbara Caputo1
+, Pietro Asinari1,2
+1
+Politecnico di Torino
+2
+Istituto Nazionale di Ricerca Metrologica
+Thanks to the great progress of machine learning in the last years, several Artificial Intelligence (AI) techniques
+have been increasingly moving from the controlled research laboratory settings to our everyday life. The most
+simple examples are the spam filters that keep our email account in order, face detectors that help us when
+taking a portrait picture, online recommender systems that suggest which movie and clothing we might like,
+or interactive maps that navigate us towards our vacation home. Artificial intelligence is clearly supportive
+in many decision-making scenarios, but when it comes to sensitive areas such as health care, hiring policies,
+education, banking or justice, with major impact on individuals and society, it becomes crucial to establish
+guidelines on how to design, develop, deploy and monitor this technology. Indeed the decision rules elaborated
+by machine learning models are data-driven and there are multiple ways in which discriminatory biases can
+seep into data. Algorithms trained on those data incur the risk of amplifying prejudices and societal stereotypes
+by over associating protected attributes such as gender, ethnicity or disabilities with the prediction task.
+The discussion about ethical principles for trustworthy AI has attracted the attention of the European Com-
+munity which has recently published a legislative proposal for regulation of AI applications [1]. The goal
+is to guarantee that the most recent technologies are used in a way that is safe and compliant with the law,
+including the respect of fundamental rights. All the sensitive areas mentioned above appear in the proposal
+and the related AI systems are classified as high-risk with an explicit call for data quality and algorithmic
+robustness control against bias. In this scenario, standardisation would play a key role to define technical
+solutions that can be used by AI providers to ensure compliance to EU regulations.
+Starting from the extensive experience of the National Metrology Institute on measurement standards and
+certification roadmaps, and of Politecnico di Torino on machine learning as well as methods for domain bias
+evaluation and mastering, we propose a first joint effort to define the operational steps needed for AI fairness
+certification. Specifically we will overview the criteria that should be met by an AI system before coming into
+official service and the conformity assessment procedures useful to monitor its functioning for fair decisions.
+State of the Art. Defining fairness is very challenging since it involves notions of social science, ethics and
+law. Machine learning fairness has taken a simplified path by looking at the problem from the computational
+perspective. The aim is to ensure that data and models do not encode or enforce prejudice or favoritism
+towards an individual or a group based on their inherent or acquired characteristics. This task is mainly
+formalized by listing a set of protected variables such as gender, age or ethnic origin and evaluating first of
+all whether data are unbalanced with respect to them. An algorithm is said to be fair with respect to these
+attributes when its outcome does not rely on the information they convey. Of course the naive strategy of
+ignoring these attributes (aka fairness through unawareness) does not lead to reliable solutions: machine
+learning and in particular deep learning models are able to discover implicit association of the protected
+variables with closely correlated features and rely on them for the final decision.
+Several statistical metrics have been defined to evaluate fairness [5, 11]. Considering a simple binary objective,
+we can indicate with Y the label, with Ŷ the model output and with A the protected attribute in the data. The
+Demographic Parity measure specifies that the positive prediction should be the same regardless of whether
+the sample is or not in the protected group (P(Ŷ = 1|A = 0) = P(Ŷ = 1|A = 1)). The Equality of Opportunity
+checks whether the probability of a sample in a positive class being assigned to a positive outcome is equal for
+both protected and unprotected group members (P(Ŷ = 1|A = 0, Y = 1) = P(Ŷ = 1|A = 1, Y = 1)). The
+Equality of Odds extends the previous metric to cover both the positive and negative class(Y = y, y ∈ {0, 1}).
+The Predictive Parity or Calibration corresponds to the equality of opportunity but holds in the case of
+continuous model output S by setting a threshold τ (P(Ŷ = 1|A = 0, S > τ) = P(Ŷ = 1|A = 1, S > τ)). In
+more complex scenarios than binary prediction and also in case of multiple protected attributes, how to assess
+fairness becomes more complex and the evaluation largely benefit from research on Optimal Transport [6, 14]
+and Causal Reasoning [10, 11].
+The current strategies for bias mitigation can be organized in three main groups [9]. The pre-processing
+techniques try to transform the data so that the underlying discrimination is removed [3]. The in-processing
+strategies modify state-of-the-art learning algorithms in order to remove discrimination during the model
+training process [2, 15]. This is generally obtained by including auxiliary objective functions to minimize
+the existing bias on the basis of one of the metrics described above. Post-processing [11] is finally helpful in
+1
+arXiv:2106.02498v1
+[cs.AI]
+4
+Jun
+2021
+all those cases in which the learning algorithm cannot be modified but its output can be re-scored during
+deployment.
+Current Gaps and Recommended Actions. From a preliminary analysis of the most recent machine learning
+fairness research results we draw few observations on existing procedural gaps and propose possible beneficial
+actions towards certification rules for AI system.
+Data. Although the EU proposal for regulation indicates the need for data governance, the metrics about
+quantity and suitability of the used data set are not specified. Depending on the considered task and
+related bias risk it would be helpful to have
+1. a list of data aspects that must be evaluated. The protected attributes in each data collection should
+be accurately defined, paying attention to their categorical or continuous nature;
+2. a list of statistical hypothesis tests on each attribute and related confidence interval ranges consid-
+ered safe for certification;
+3. a list of suggested methods to repair training data in order to enforce the attribute conditional
+independence that guarantees fairness (e.g. [4, 13]). Quantifying the effect of those methods
+provides an indication of the effort needed to move the data towards the acceptable fairness level.
+Algorithms. Starting from the existing fairness metrics it is necessary to
+1. specify the extent to which the equations can be violated. Taking for instance the demographic parity,
+a bound should be declared on the conditional probability difference P(Ŷ = 1|A = 0) − P(Ŷ =
+1|A = 1) < ;
+2. sort by importance or exclude some of the criteria. Indeed it might be infeasible to satisfy all the
+criteria at once except in highly constrained cases [7].
+3. assess the trade-off between accuracy and fairness. The maximum limit to which fairness condi-
+tions can compromise the model prediction accuracy should be declared, especially taking into
+consideration the accuracy for non-protected groups;
+4. maintain transparency. Interpretability and fairness should not be conflicting requirements and in
+particular it is crucial to set transparency rules that explain how fairness is met [12].
+Monitoring. The algorithms should be analyzed both in its training and deployment phase considering
+that
+1. most of the learning procedures start from pre-trained models. As well as the data, the pre-trained
+models should pass a fairness screening that indicates how much they affect the final algorithm
+performance in the downstream task;
+2. the impact of on individuals or groups may change over time as an effect of the adopted fairness
+safety measures [8]. Thus it is important to maintain a temporal record and periodic update of the
+algorithm behavior;
+3. establishing the consequence of failure in novel unexpected situation is crucial. Depending on the
+intended target scenario, several stress-tests should be designed to assess the algorithm robustness
+(in terms of accuracy and fairness) under different level of domain shift [16].
+References
+[1] https://digital-strategy.ec.europa.eu/en/library/proposal-regulation-laying-down-har
+monised-rules-artificial-intelligence.
+[2] Ehsan Adeli, Qingyu Zhao, Adolf Pfefferbaum, Edith V. Sullivan, Li Fei-Fei, Juan Carlos Niebles, and
+Kilian M. Pohl. Representation learning with statistical independence to mitigate bias. In Proceedings of
+the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV), 2021.
+[3] R. K. E. Bellamy, K. Dey, M. Hind, S. C. Hoffman, S. Houde, K. Kannan, P. Lohia, J. Martino, S. Mehta,
+A. Mojsilović, S. Nagar, K. Natesan Ramamurthy, J. Richards, D. Saha, P. Sattigeri, M. Singh, K. R.
+Varshney, and Y. Zhang. Ai fairness 360: An extensible toolkit for detecting and mitigating algorithmic
+bias. IBM Journal of Research and Development, 63(4/5):4:1–4:15, 2019.
+[4] Ching-Yao Chuang and Youssef Mroueh. Fair mixup: Fairness via interpolation. In International Conference
+on Learning Representations, 2021.
+2
+[5] Mengnan Du, Fan Yang, Na Zou, and Xia Hu. Fairness in deep learning: A computational perspective.
+ArXiv preprint 1908.08843, 2020.
+[6] Paula Gordaliza, Eustasio Del Barrio, Gamboa Fabrice, and Jean-Michel Loubes. Obtaining fairness using
+optimal transport theory. In Proceedings of the International Conference on Machine Learning, 2019.
+[7] Jon Kleinberg, Sendhil Mullainathan, and Manish Raghavan. Inherent trade-offs in the fair determination
+of risk scores. In Proceedings of Innovations in Theoretical Computer Science, 2017.
+[8] Lydia T. Liu, Sarah Dean, Esther Rolf, Max Simchowitz, and Moritz Hardt. Delayed impact of fair machine
+learning. In Proceedings of the International Conference on Machine Learning, 2018.
+[9] Ninareh Mehrabi, Fred Morstatter, Nripsuta Saxena, Kristina Lerman, and Aram Galstyan. A survey on
+bias and fairness in machine learning. ArXiv preprint 1908.09635, 2019.
+[10] Razieh Nabi, Daniel Malinsky, and Ilya Shpitser. Learning optimal fair policies. In Proceedings of the
+International Conference on Machine Learning, 2019.
+[11] Luca Oneto and Silvia Chiappa. Fairness in Machine Learning, pages 155–196. Springer International
+Publishing, Cham, 2020.
+[12] Novi Quadrianto, Viktoriia Sharmanska, and Oliver Thomas. Discovering fair representations in the data
+domain. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR),
+June 2019.
+[13] Babak Salimi, Luke Rodriguez, Bill Howe, and Dan Suciu. Interventional fairness: Causal database repair
+for algorithmic fairness. In Proceedings of the 2019 International Conference on Management of Data,
+2019.
+[14] Chiappa Silvia, Jiang Ray, Stepleton Tom, Pacchiano Aldo, Jiang Heinrich, and Aslanides John. A general
+approach to fairness with optimal transport. In Proceedings of the AAAI Conference on Artificial Intelligence,
+2020.
+[15] Zeyu Wang, Klint Qinami, Ioannis Christos Karakozis, Kyle Genova, Prem Nair, Kenji Hata, and Olga
+Russakovsky. Towards fairness in visual recognition: Effective strategies for bias mitigation. In Proceedings
+of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2020.
+[16] Garrett Wilson and Diane J. Cook. A survey of unsupervised deep domain adaptation. ACM Trans. Intell.
+Syst. Technol., 11(5), July 2020.
+3
+

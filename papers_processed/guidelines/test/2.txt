@@ -1,0 +1,577 @@
+Toward Designing Social Human-Robot Interactions for Deep
+Space Exploration
+Huili Chen
+MIT Media Lab
+hchen25@media.mit.edu
+Cynthia Breazeal
+MIT Media Lab
+cynthiab@media.mit.edu
+ABSTRACT
+In planning for future human space exploration, it is important to
+consider how to design for uplifting interpersonal communications
+and social dynamics among crew members. What if embodied social
+robots could help to improve the overall team interaction experi-
+ence in space? On Earth, social robots have been shown effective
+in providing companionship, relieving stress and anxiety, fostering
+connection among people, enhancing team performance, and medi-
+ating conflicts in human groups. In this paper, we introduce a set of
+novel research questions exploring social human-robot interactions
+in long-duration space exploration missions.
+KEYWORDS
+Human-robot Interaction, Long-duration Human Space Mission,
+Space Robot Companion, Social Connection
+ACM Reference Format:
+Huili Chen and Cynthia Breazeal. 2021. Toward Designing Social Human-
+Robot Interactions for Deep Space Exploration. In CHI ’21 workshop SpaceCHI:
+Human-Computer Interaction for Space Exploration. 5 pages.
+1 INTRODUCTION
+1.1 Human Factors in LDSE Missions
+NASA is actively planning for long-duration space exploration
+(LDSE) missions such as an anticipated manned mission to Mars in
+the 2030s [33]. In planning for future LDSE missions, one major risk
+area pertaining to human factors concerns the ability of astronauts
+to adapt to the isolated, confined, and extreme (ICE) conditions [34].
+Living in ICE conditions for a long duration is highly stressful. The
+psycho-environmental factors of living and working in such ICE
+environments, as documented by studies of these ICE analogues
+and evidence from past spaceflights, include crowding, lack of pri-
+vacy, social isolation, and sensory restriction [35, 36]. The sense
+of isolation will become further heightened with longer distances
+from Earth and communication lag with Earth [34].
+To ensure the success of a LDSE mission, adaptation is needed
+for both individual astronauts and the crew team as a whole. On
+the individual level, astronauts will need to cope with a variety
+of observed behavioral, physiological and psychological problems
+including anger, anxiety, interpersonal conflict, social withdrawal,
+Permission to make digital or hard copies of part or all of this work for personal or
+classroom use is granted without fee provided that copies are not made or distributed
+for profit or commercial advantage and that copies bear this notice and the full citation
+on the first page. Copyrights for third-party components of this work must be honored.
+For all other uses, contact the owner/author(s).
+CHI ’21 Workshop SpaceCHI, May 8-13, 2021, Yokohama, Japan (Online Virtual Confer-
+ence)
+© 2021 Copyright held by the owner/author(s).
+sleep deprivation, decrease in group cohesion, and decrease in mo-
+tivation [8]. On the team level, factors related to interpersonal
+communications and group dynamics among astronauts also deci-
+sively impact mission success. For example, astronauts will have to
+live in an ICE condition for the entirety of the mission, necessitating
+group living skills to combat potential interpersonal problems [11].
+Their diverse cultural backgrounds may additionally impact coping
+in an ICE environment and interplanetary crew’s behavior [49].
+Unlike shorter-duration space missions, LDSE missions require as-
+tronauts to have an unprecedented level of autonomy, leading to
+greater importance of interpersonal communication among crew
+members for mission success. The real-time support and interven-
+tions from human specialists on Earth (e.g., psychologist, doctor,
+conflict mediator) are reduced to minimal due to costly communi-
+cation and natural delays in communication between space and
+Earth. All these human factor risks could lead to serious detrimental
+impacts on a LDSE mission if left unmitigated. To address them,
+socially interactive technologies such as social robots offer great
+opportunities of delivering effective interventions.
+1.2 Human-robot Interaction (HRI) in Space
+Exploration
+In the past decades, most research on HRI in space exploration
+focused on the engineering and cognitive aspects of space robot-
+ics. Space robots were often envisioned with advanced cognitive
+systems (e.g.,CARACaS) capable of model building, continuous
+planning/re-planning, self-diagnosis, and novel situation under-
+standing [15]. These space robots could assist crew members with a
+variety of physical and cognitive tasks, but they did not necessarily
+support social and affective communications with crew members.
+In recent years, sociable space robots started to emerge, able to
+display and recognize social cues. An in-cabin flying robot named
+Astronaut Assistant Robot (AAR) [24] allows astronauts to use hand
+gestures to communicate with it face-to-face [12]. As the first free-
+floating, sphere-shaped interactive companion robot in space, Crew
+Interactive Mobile Companion (CIMON) designed by NASA and
+IBM [31] can display human-like facial expressions on its screen
+and respond to voice questions or directions without the need for a
+tablet or computer when assisting astronauts in their daily work.
+The potential benefits of social robots in space are also suggested
+by prior HRI work conducted on Earth, which found social robots
+effective in improving people’s mental health and well-being [39]
+as well as human group dynamics and team performance [41]. In
+LDSE missions, the needs of astronauts for social robots will very
+likely become heightened given the LDSE-related human factor
+risks listed in Section 1.1, thereby providing a greater motivation
+for more research on social HRI in space. In this paper, we focus on
+the opportunity of using social robots as a multimodal medium for
+arXiv:2105.08631v1
+[cs.RO]
+18
+May
+2021
+CHI ’21 Workshop SpaceCHI, May 8-13, 2021, Yokohama, Japan (Online Virtual Conference) Huili Chen and Cynthia Breazeal
+ameliorating interpersonal communications and group dynamics
+of crew members in LDSE missions.
+2 SOCIAL HRI ON EARTH
+2.1 Robot Social Roles in Human Groups
+Social robots can play a variety of roles ranging from highly knowl-
+edgeable agents to social-emotional companions across human
+group interaction contexts. When engaging with a human group
+as a highly knowledgeable agent and expert in a task area, a social
+robot, for example, can provide counseling to couples [53], offer
+direction guide in public space [9], host group game activities [56],
+and allocate turns to players [3]. In contrast to an expert role, a
+robot can take a peer role that strategically displays its vulnerability
+or emotions with the goal of ameliorating human group dynamics.
+For example, a robot Kip1 was designed as a peripheral conversation
+companion that promotes non-aggressive conversation between
+people by expressing either curious interest or fear via its gesture
+cues [14]. Similarly, vulnerable statements made by a robot in a
+human group can positively impact the dynamics and collaboration
+among the group members (e.g., more equal conversation distribu-
+tion and more positive group perception [51]).
+In addition to the expert and social-emotional companion roles,
+a robot can take a mediator role to directly resolve human team con-
+flicts. For example, a social robot can improve people’s interpersonal
+conflict resolution skills by flagging a conflict onset and offering
+prompts for conflict resolution [43]. Mediation via the Telenoid
+robot was also found to produce more agreements and more inte-
+grative agreements among human teammates in comparison with
+both a screen mediator and a human mediator [6]. The last social
+role category that a robot often takes in a human group is a moder-
+ator/supporter role. When taking this role, a robot could improve a
+human group’s social dynamics [46] and a dyadic human team’s
+performance on a collaborative task by posing questions [48].
+Overall, a robot’s social role in a human group interaction dis-
+tinctly shapes how humans interact with each other and how they
+perceive the robot.
+2.2 Robot Social Behaviors in Human Groups
+Both of a robot’s verbal and nonverbal social behaviors can posi-
+tively influence human groups when displayed appropriately, though
+in their unique ways. Specifically, a robot’s verbal communication
+can support its expressions of emotion [4, 23] and share informa-
+tional content [38] with humans. It can also improve a variety of
+affective phenomena in human-human interactions such as trust
+building [4], group engagement [27], psychological safety of out-
+group team members [40], equality and positivity within conversa-
+tional groups [51], and the inclusion of human members within a
+team [42].
+In addition to its verbal utterances, a robot’s nonverbal behaviors
+such as gestures [25], gaze [32, 47] navigation [19, 28], and physical
+orientation [44, 54] can influence people’s responses in a group
+interaction and their perception of the group [41]. For example,
+robots were designed, in some interactions [7, 50], as peripheral
+or passive entities that shaped human group dynamics via implicit
+nonverbal behaviors without eliciting users’ awareness. Often in-
+spired by Ju’s theory of implicit interactions [16], this alternative
+design situates a robot as a passive entity in a group. For example,
+a robotic microphone that exhibits implicit engagement behaviors
+(e.g., nonverbal backchanneling) in a group problem solving context
+encouraged more active participation from passive human members
+and promoted more effective group collaboration performance [50].
+As shown above, a robot’s social influence on human groups can be
+achieved through both its use of speech and nonverbal social cues.
+Nevertheless, an excessive or inappropriate display of social cues
+may distract or interrupt humans in some circumstances [18, 55].
+For example, the frequency and length of a robot’s speech affected
+humans’ interaction outcomes more significantly than its content
+due to the disturbing effects of the inappropriate speech display [17,
+45]. Penalizing high frequency of speech as the “communication
+cost” can yield more effective human-robot communication [52].
+For nonverbal behaviors, a robot’s congruent display of social cues,
+e.g., contingent gaze and pointing gestures, can elicit greater human
+participation in an interaction [26], while the asynchrony of social
+cues, e.g. robot head-gazes and pointing gestures made in different
+directions, may lead to interference effects and slow down human
+processing time [20, 21].
+Hence, understanding the relations between the display of robot
+social behaviors and interaction contexts is crucial for designing
+successful multi-party HRI.
+2.3 Human Trust in Robots
+Trust is a result of dynamic interactions [29]. Successful interac-
+tions will lead to feelings of security, trust and optimism, while
+failed interactions may result in human’s unsecured feelings or mis-
+trust. Much empirical evidence shows trust essential for successful
+human-human interactions [30]. In human-robot interactions, hu-
+mans’ trust in robots also plays a critical role such as influencing
+their willingness to accept information from robots [13] and to
+cooperate with robots [10]. A person’s trust in a robot is often in-
+tertwined with the robot’s task performance, display of nonverbal
+behaviors, and interaction personalization. A single error of the
+robot can impact humans’ trust of it, especially in critical situa-
+tions [37]. If a robot displays nonverbal signals that humans often
+exhibit to indicate distrust, the robot would also be perceived as
+less trustworthy [5]. In the context of workplace-based long-term
+HRI, a personalized human-robot discussion was found to increase
+the person’s rapport and cooperation with the robot as compared
+with a social but not personalized discussion [22]. Humans’ trust
+in robots, given its importance in HRIs, is often used as an evalua-
+tion measure on robot decision making [2] and human-robot team
+effectiveness [10] across contexts and tasks.
+3 FUTURE SOCIAL HRI IN SPACE
+EXPLORATION
+Despite extensive HRI research conducted on Earth, we barely know
+to what extent these prior findings can be readily applied to the
+deep space exploration context. Contextualizing the HRI research
+in LDSE missions would unlock the full potential of using social
+robots to foster positive interpersonal communications and social
+dynamics among crew members in future space exploration. Hence,
+we propose a set of key design questions (DQ) pertaining to social
+HRI in space.
+Toward Designing Social Human-Robot Interactions for Deep Space Exploration CHI ’21 Workshop SpaceCHI, May 8-13, 2021, Yokohama, Japan (Online Virtual Conference)
+3.1 Robot Social Role Design
+When interacting with a human group, social robots have been tak-
+ing a variety of roles from resource providers to listeners, each of
+which offers unique benefits contingent on the interaction context.
+However, barely any prior work focused on the design and impact
+of robot roles on the group dynamics and processes of space crew
+teams, posing a new urgency to investigate the nuanced challenges
+for social HRI in space. For example, a robot mediator has been
+empirically shown to resolve people’s interpersonal conflicts more
+effectively than a screen mediator or a human mediator [6], but the
+design considerations for a robot mediation in astronaut-astronaut
+interactions remain unexplored. Understanding astronauts’ percep-
+tion, acceptance and needs of social robots in different LDSE-related
+interaction contexts would help design for more astronaut-centered
+HRI. Therefore, we propose the first two research questions as fol-
+lows:
+• DQ1: What robot interactions would astronauts perceive to
+be socially, cognitively and affectively beneficial to the crew
+team in a LDSE mission?
+• DQ2: How would individual characteristics and cultural
+backgrounds of astronauts affect their perception, accep-
+tance and preference of social HRI in space?
+In LDSE missions, crew members engage in a variety of group
+interactions ranging from highly-critical team cooperation and ur-
+gent problem-solving meetings to leisure and recreational activities.
+In these activities, the crew team’s social dynamics may vary as
+the social roles of the members are adaptive to the context, e.g.,
+superior-subordinate communication and peer interaction. The way
+a social robot engages with the team should thus be contingent on
+the team’s social dynamics. Designing a diverse set of robot social
+roles customized to different group interaction contexts could po-
+tentially promote the overall positive astronaut-robot interaction
+experience in space. We summarize this research topic as follows:
+• DQ3: What robot role(s) could be designed for each crew
+team interaction context in a LDSE mission?
+Since all group interactions take place in an ICE environment
+with limited physical space and resources for a long duration, dif-
+ferent robot roles designed for specific group contexts, e.g., coach,
+peer and mediator, may likely have to share a robot hardware
+embodiment rather than each owning a different physical embodi-
+ment. This constraint on robot hardware resources further poses
+additional design challenges pertaining to robot role and identity
+switching, as summarized below.
+• DQ4: Should a robot’s social identity (e.g., name, memory
+and personality) remain consistent while its social role switches
+across interaction contexts, as illustrated in Figure 1a? Should
+its social identity switch across contexts so that each robot
+role is uniquely associated with a distinct robot identity, as
+illustrated in Figure 1b?
+• DQ5: How should a physical robot embodiment identify
+group contexts and dynamics, and proactively switch its
+social role or identity to effectively promote positive crew
+team experience?
+(a) Robot Role Switching
+(b) Robot Identity Switching
+Figure 1: Two design approaches to address the constraint
+on robot hardware resources in LDSE missions.
+• DQ6: How would the aforementioned role-switching and
+identity-switching approaches influence astronauts’ percep-
+tion and acceptance of robot interactions such as their trust
+in robots?
+3.2 Robot Social Behavior Design
+Robots can positively influence a human group via diverse combi-
+nations of social cues, from actively utilizing animated speech to
+solely using nonverbal cues without eliciting human awareness. In
+order to be interpreted correctly and efficiently, robot social cues
+need be contingent on specific interactions as well as congruent
+with other social cues being utilized. Unlike the Earth environments
+where the most prior HRI studies were conducted, outer space envi-
+ronment imposes much more stressful challenges on human bodies
+and minds, resulting in a variety of expected physiological, psycho-
+logical, cognitive and physical changes of astronauts. Investigating
+how astronauts encode and decode multimodal social cues when
+interacting with a robot in various physical and mental conditions
+would help design for space robots that can adapt their social-
+affective expression styles based on both physical environment and
+in-the-moment states of astronauts to improve human-robot and
+human-human communications. Thus, we summarize this design
+question on robot social cues as follows:
+• DQ7: How would different gravity conditions, e.g., micro-
+gravity, lunar and Martian gravity, impact astronauts’ social,
+cognitive and affective reactions to a variety of robot social
+cues, e.g., gaze sharing, body motion and speech, in both
+CHI ’21 Workshop SpaceCHI, May 8-13, 2021, Yokohama, Japan (Online Virtual Conference) Huili Chen and Cynthia Breazeal
+group and single-person HRI contexts? What social cues
+would astronauts prefer to use for human-robot communi-
+cations in different gravity conditions?
+Living in ICE conditions for a long duration exposes astronauts
+to long-term sensory restriction. Unaffected by ICE conditions,
+social robots hence have great potential of delivering high-quality
+consistent multi-sensory intervention to astronauts. This design
+question is summarized as follows:
+• DQ8: How could different robot social cues and behaviors
+be designed to provide positive multi-sensory stimulation to
+the crew team as well as enhance multimodal social-affective
+communications among crew members, e.g., rapport, social
+touch, and social reciprocity?
+3.3 Robot Social Adaptation Design
+Human adaptability for deep space environment is crucial for mis-
+sion success. In addition to traditional coping and resource strate-
+gies for astronauts’ adaptation [1], a space robot’s social adaptability
+to astronauts could also facilitate their adaptation to deep space
+with the long-term goal of maintaining their health and productiv-
+ity. Multiple social-affective signal modalities of astronauts could
+be leveraged to develop a robot social adaptation system, includ-
+ing their physiological signals (e.g., blood pressure, sleep patterns),
+physical conditions (e.g., malnutrition), as well as their psychologi-
+cal and cognitive states (e.g., depressive mood, anxiety, loneliness),
+alongside the robot’s audiovisual observation of the naturalistic
+crew interactions. For example, if a robot can monitor each astro-
+naut’s sleep quality, it can adapt its social role and social cues to
+minimize the negative effect of astronauts’ sleep deprivation on
+team decision making and other cognitive processes. The access to
+a more diverse set of astronauts’ social-affective signal modalities
+would enable a robot’s more strategic and timely adaptation. How-
+ever, a robot’s overaggressive data-driven adaptation may increase
+the risk of exacerbating astronauts’ perceived lack of privacy in
+an ICE environment and weakening their interpersonal trust in
+the robot and the team, potentially resulting in lower overall crew
+team dynamics and productivity. Investigating the optimal robot
+adaptation in LDSE missions requires an astronaut-centered design
+approach. Therefore, we propose two astronaut-centered design
+questions as follows:
+• DQ9: What social-affective signal modalities of astronauts
+could a robot have access to for its long-term social adapta-
+tion?
+• DQ10: How to design a robot’s social adaptation system that
+can maintain and even foster crew members’ perceived pri-
+vacy and interpersonal trust in the robot and other members
+in LDSE missions?
+4 CONCLUSION
+This paper introduces novel opportunities for social human-robot
+interactions in deep space exploration. We believe that exploring
+the design questions listed in the paper would help shed light on
+how social robotics could be potentially used to promote interper-
+sonal communications and facilitate group interactions among crew
+members in long-duration space exploration missions.
+REFERENCES
+[1] Paul T. Bartone, Robert R. Roland, Jocelyn V. Bartone, Gerald P. Krueger, Albert A.
+Sciarretta, and Bjorn Helge Johnsen. 2019. Human Adaptability for Deep Space
+Missions: An Exploratory Study. Journal of Human Performance in Extreme
+Environments 15 (2019). Issue 1. https://doi.org/10.7771/2327-2937.1124
+[2] Min Chen, Stefanos Nikolaidis, Harold Soh, David Hsu, and Siddhartha Srinivasa.
+2018. Planning with Trust for Human-Robot Collaboration. In Proceedings of the
+2018 ACM/IEEE International Conference on Human-Robot Interaction (Chicago,
+IL, USA) (HRI ’18). Association for Computing Machinery, New York, NY, USA,
+307–315. https://doi.org/10.1145/3171221.3171264
+[3] Houston Claure, Yifang Chen, Jignesh Modi, Malte Jung, and Stefanos Niko-
+laidis. 2020. Multi-Armed Bandits with Fairness Constraints for Distributing
+Resources to Human Teammates. In Proceedings of the 2020 ACM/IEEE Inter-
+national Conference on Human-Robot Interaction (Cambridge, United Kingdom)
+(HRI ’20). Association for Computing Machinery, New York, NY, USA, 299–308.
+https://doi.org/10.1145/3319502.3374806
+[4] Filipa Correia, Samuel Mascarenhas, Rui Prada, Francisco S. Melo, and Ana Paiva.
+2018. Group-Based Emotions in Teams of Humans and Robots. In Proceedings of
+the 2018 ACM/IEEE International Conference on Human-Robot Interaction (Chicago,
+IL, USA) (HRI ’18). Association for Computing Machinery, New York, NY, USA,
+261–269. https://doi.org/10.1145/3171221.3171252
+[5] David DeSteno, Cynthia Breazeal, Robert H. Frank, David Pizarro, Jolie
+Baumann, Leah Dickens, and Jin Joo Lee. 2012. Detecting the Trust-
+worthiness of Novel Partners in Economic Exchange. Psychological Sci-
+ence 23, 12 (2012), 1549–1556. https://doi.org/10.1177/0956797612448793
+arXiv:https://doi.org/10.1177/0956797612448793 PMID: 23129062.
+[6] Daniel Druckman, Lin Adrian, Malene Flensborg Damholdt, Michael Filzmoser,
+Sabine T Koszegi, Johanna Seibt, and Christina Vestergaard. 2020. Who is Best at
+Mediating a Social Conflict? Comparing Robots, Screens and Humans. Group
+Decision and Negotiation (2020). https://doi.org/10.1007/s10726-020-09716-9
+[7] Julia Fink, Séverin Lemaignan, Pierre Dillenbourg, Philippe Rétornaz, Florian
+Vaussard, Alain Berthoud, Francesco Mondada, Florian Wille, and Karmen
+Franinović. 2014. Which Robot Behavior Can Motivate Children to Tidy up
+Their Toys? Design and Evaluation of "Ranger". In Proceedings of the 2014
+ACM/IEEE International Conference on Human-Robot Interaction (Bielefeld, Ger-
+many) (HRI ’14). Association for Computing Machinery, New York, NY, USA,
+439–446. https://doi.org/10.1145/2559636.2559659
+[8] Christopher F Flynn. 2005. An operational approach to long-duration mission
+behavioral health and performance factors. Aviation, space, and environmental
+medicine 76, 6 Suppl (jun 2005), B42–51.
+[9] Marlena R. Fraune, Selma Šabanović, and Takayuki Kanda. 2019. Human Group
+Presence, Group Characteristics, and Group Norms Affect Human-Robot In-
+teraction in Naturalistic Settings. Frontiers in Robotics and AI 6 (jun 2019).
+https://doi.org/10.3389/frobt.2019.00048
+[10] A. Freedy, E. DeVisser, G. Weltman, and N. Coeyman. 2007. Measurement of trust
+in human-robot collaboration. In 2007 International Symposium on Collaborative
+Technologies and Systems. 106–114. https://doi.org/10.1109/CTS.2007.4621745
+[11] Laura Galarza and Albert W. Holland. 1999. Critical Astronaut Proficiencies
+Required for Long-Duration Space Flight, In SAE Technical Paper. https://doi.
+org/10.4271/1999-01-2096
+[12] Qing Gao, Jinguo Liu, Zhaojie Ju, Yangmin Li, Tian Zhang, and Lu Zhang. 2017.
+Static Hand Gesture Recognition with Parallel CNNs for Space Human-Robot
+Interaction. In Intelligent Robotics and Applications, YongAn Huang, Hao Wu,
+Honghai Liu, and Zhouping Yin (Eds.). Springer International Publishing, Cham,
+462–473.
+[13] Peter Hancock, Deborah Billings, Kristin Schaefer, Jessie Chen, Ewart de Visser,
+and Raja Parasuraman. 2011. A Meta-Analysis of Factors Affecting Trust in
+Human-Robot Interaction. Human factors 53 (10 2011), 517–27. https://doi.org/
+10.1177/0018720811417254
+[14] Guy Hoffman, Oren Zuckerman, Gilad Hirschberger, Michal Luria, and Tal
+Shani Sherman. 2015. Design and Evaluation of a Peripheral Robotic Con-
+versation Companion. In Proceedings of the Tenth Annual ACM/IEEE Interna-
+tional Conference on Human-Robot Interaction (Portland, Oregon, USA) (HRI
+’15). Association for Computing Machinery, New York, NY, USA, 3–10. https:
+//doi.org/10.1145/2696454.2696495
+[15] Terry Huntsberger and Adrian Stoica. 2010. Envisioning cognitive robots for
+future space exploration. In Multisensor, Multisource Information Fusion: Architec-
+tures, Algorithms, and Applications 2010, Jerome J. Braun (Ed.), Vol. 7710. Interna-
+tional Society for Optics and Photonics, SPIE. https://doi.org/10.1117/12.853284
+[16] W. Ju and L. Leifer. 2008. The Design of Implicit Interactions: Making Interactive
+Systems Less Obnoxious. Design Issues 24 (2008), 72–84.
+[17] Malte F. Jung, Nikolas Martelaro, and Pamela J. Hinds. 2015. Using Robots to
+Moderate Team Conflict: The Case of Repairing Violations. In Proceedings of the
+Tenth Annual ACM/IEEE International Conference on Human-Robot Interaction
+(Portland, Oregon, USA) (HRI ’15). Association for Computing Machinery, New
+York, NY, USA, 229–236. https://doi.org/10.1145/2696454.2696460
+Toward Designing Social Human-Robot Interactions for Deep Space Exploration CHI ’21 Workshop SpaceCHI, May 8-13, 2021, Yokohama, Japan (Online Virtual Conference)
+[18] James Kennedy, Paul Baxter, and Tony Belpaeme. 2015. The Robot Who Tried Too
+Hard: Social Behaviour of a Robot Tutor Can Negatively Affect Child Learning.
+In Proceedings of the Tenth Annual ACM/IEEE International Conference on Human-
+Robot Interaction (Portland, Oregon, USA) (HRI ’15). Association for Computing
+Machinery, New York, NY, USA, 67–74. https://doi.org/10.1145/2696454.2696457
+[19] H. Kidokoro, T. Kanda, D. Bršcic, and M. Shiomi. 2013. Will I bother here? -
+A robot anticipating its influence on pedestrian walking comfort. In 2013 8th
+ACM/IEEE International Conference on Human-Robot Interaction (HRI). 259–266.
+https://doi.org/10.1109/HRI.2013.6483597
+[20] S. Langton and V. Bruce. 2000. You must see the point: automatic processing
+of cues to the direction of social attention. Journal of experimental psychology.
+Human perception and performance 26 2 (2000), 747–57.
+[21] Stephen R. H. Langton. 2000. The Mutual Influence of Gaze and Head Orientation
+in the Analysis of Social Attention Direction. The Quarterly Journal of Experimen-
+tal Psychology Section A 53, 3 (2000), 825–845. https://doi.org/10.1080/713755908
+arXiv:https://doi.org/10.1080/713755908 PMID: 10994231.
+[22] Min Kyung Lee, J. Forlizzi, S. Kiesler, Paul E. Rybski, John Antanitis, and Sarun
+Savetsila. 2012. Personalization in HRI: A longitudinal field experiment. 2012
+7th ACM/IEEE International Conference on Human-Robot Interaction (HRI) (2012),
+319–326.
+[23] I. Leite, A. Pereira, Samuel Mascarenhas, C. Martinho, R. Prada, and Ana Paiva.
+2013. The influence of empathy in human-robot relations. Int. J. Hum. Comput.
+Stud. 71 (2013), 250–260.
+[24] Jinguo Liu, Qing Gao, Zhiwei Liu, and Yangmin Li. 2016. Attitude control for
+astronaut assisted robot in the space station. International Journal of Control,
+Automation and Systems 14, 4 (2016), 1082–1095. https://doi.org/10.1007/s12555-
+014-0568-4
+[25] P. Liu, D. F. Glas, T. Kanda, H. Ishiguro, and N. Hagita. 2013. It’s not polite to point
+Generating socially-appropriate deictic behaviors towards people. In 2013 8th
+ACM/IEEE International Conference on Human-Robot Interaction (HRI). 267–274.
+https://doi.org/10.1109/HRI.2013.6483598
+[26] K. S. Lohan, K. Rohlfing, J. Saunders, C. Nehaniv, and B. Wrede. 2012. Contingency
+scaffolds language learning. In 2012 IEEE International Conference on Development
+and Learning and Epigenetic Robotics (ICDL). 1–6. https://doi.org/10.1109/DevLrn.
+2012.6400848
+[27] Yoichi Matsuyama, Iwao Akiba, Shinya Fujie, and Tetsunori Kobayashi. 2015.
+Four-participant group conversation: A facilitation robot controlling engagement
+density as the fourth participant. Computer Speech and Language 33, 1 (sep 2015),
+1–24. https://doi.org/10.1016/j.csl.2014.12.001
+[28] C. Mavrogiannis, A. M. Hutchinson, J. Macdonald, P. Alves-Oliveira, and R. A.
+Knepper. 2019. Effects of Distinct Robot Navigation Strategies on Human Behav-
+ior in a Crowded Environment. In 2019 14th ACM/IEEE International Conference
+on Human-Robot Interaction (HRI). 421–430. https://doi.org/10.1109/HRI.2019.
+8673115
+[29] Roger C. Mayer, James H. Davis, and F. David Schoorman. 1995. An Integrative
+Model of Organizational Trust. The Academy of Management Review 20, 3 (1995),
+709–734. http://www.jstor.org/stable/258792
+[30] Daniel J. McAllister. 1995. Affect- and Cognition-Based Trust as Foundations
+for Interpersonal Cooperation in Organizations. The Academy of Management
+Journal 38, 1 (1995), 24–59. http://www.jstor.org/stable/256727
+[31] T. I. Murphy. 2018. Hello, i am cimon! http://www.airbus.com/newsroom/press-
+releases/en/2018/02/hello--i-am-cimon-.html
+[32] Bilge Mutlu, Toshiyuki Shiwa, Takayuki Kanda, Hiroshi Ishiguro, and Nori-
+hiro Hagita. 2009. Footing in Human-Robot Conversations: How Robots Might
+Shape Participant Roles Using Gaze Cues. In Proceedings of the 4th ACM/IEEE
+International Conference on Human Robot Interaction (La Jolla, California, USA)
+(HRI ’09). Association for Computing Machinery, New York, NY, USA, 61–68.
+https://doi.org/10.1145/1514095.1514109
+[33] NASA. [n.d.]. NASA’s Journey to Mars. https://www.nasa.gov/content/nasas-
+journey-to-mars
+[34] NASA. 2020. Risk of Adverse Cognitive or Behavioral Conditions and Psychiatric
+Disorders. https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=99
+[35] L. Palinkas and D. Browner. 1995. Effects of Prolongea Isolation in Extreme
+Environments on Stress, Coping, and Depression1. Journal of Applied Social
+Psychology 25 (1995), 557–576.
+[36] Douglas Raybeck. 1991. Proxemics and Privacy: Managing the Problems of Life
+in Confined Environments. In From Antarctica to Outer Space, Albert A. Harrison,
+Yvonne A. Clearwater, and Christopher P. McKay (Eds.). Springer New York, New
+York, NY, 317–330.
+[37] Paul Robinette, Ayanna M. Howard, and Alan R. Wagner. 2017. Effect of Ro-
+bot Performance on Human-Robot Trust in Time-Critical Situations. IEEE
+Transactions on Human-Machine Systems 47, 4 (Aug. 2017), 425–436. https:
+//doi.org/10.1109/THMS.2017.2648849
+[38] Alessandra Maria Sabelli and Takayuki Kanda. 2016. Robovie as a Mascot: A Qual-
+itative Study for Long-Term Presence of Robots in a Shopping Mall. International
+Journal of Social Robotics 8, 2 (2016), 211–221. https://doi.org/10.1007/s12369-
+015-0332-9
+[39] Arielle AJ Scoglio, Erin D Reilly, Jay A Gorman, and Charles E Drebing. 2019. Use
+of Social Robots in Mental Health and Well-Being Research: Systematic Review.
+J Med Internet Res 21, 7 (24 Jul 2019), e13322. https://doi.org/10.2196/13322
+[40] Sarah Sebo, Ling Liang Dong, Nicholas Chang, Michal Lewkowicz, Michael
+Schutzman, and Brian Scassellati. 2020. The Influence of Robot Verbal Support on
+Human Team Members: Encouraging Outgroup Contributions and Suppressing
+Ingroup Supportive Behavior. Frontiers in Psychology 11 (2020), 3584. https:
+//doi.org/10.3389/fpsyg.2020.590181
+[41] Sarah Sebo, Brett Stoll, Brian Scassellati, and Malte F Jung. 2020. Robots in
+Groups and Teams: A Literature Review. Proc. ACM Hum.-Comput (2020), 37.
+https://doi.org/10.1145/3415247
+[42] Sarah Strohkorb Sebo, Ling Liang Dong, Nicholas Chang, and Brian Scassellati.
+2020. Strategies for the inclusion of human members within human-robot teams.
+In ACM/IEEE International Conference on Human-Robot Interaction. IEEE Com-
+puter Society, New York, NY, USA, 309–317. https://doi.org/10.1145/3319502.
+3374808
+[43] Solace Shen, Petr Slovak, and Malte F. Jung. 2018. "stop. i See a Conflict Happen-
+ing.": A Robot Mediator for Young Children’s Interpersonal Conflict Resolution. In
+ACM/IEEE International Conference on Human-Robot Interaction. IEEE Computer
+Society, 69–77. https://doi.org/10.1145/3171221.3171248
+[44] M. Shiomi, T. Kanda, H. Ishiguro, and N. Hagita. 2010. A larger audience, please! —
+Encouraging people to listen to a guide robot. In 2010 5th ACM/IEEE International
+Conference on Human-Robot Interaction (HRI). 31–38. https://doi.org/10.1109/
+HRI.2010.5453270
+[45] E. Short and M. J. Mataric. 2017. Robot moderation of a collaborative game:
+Towards socially assistive robotics in group interactions. In 2017 26th IEEE Inter-
+national Symposium on Robot and Human Interactive Communication (RO-MAN).
+385–390.
+[46] Elaine Schaertl Short, Katherine Sittig-Boyd, and M. Mataric. 2016. Modeling
+Moderation for Multi-Party Socially Assistive Robotics. In RO-MAN 2016.
+[47] Gabriel Skantze. 2017. Predicting and Regulating Participation Equality in Human-
+Robot Conversations: Effects of Age and Gender. In Proceedings of the 2017
+ACM/IEEE International Conference on Human-Robot Interaction (Vienna, Austria)
+(HRI ’17). Association for Computing Machinery, New York, NY, USA, 196–204.
+https://doi.org/10.1145/2909824.3020210
+[48] S. Strohkorb, E. Fukuto, N. Warren, C. Taylor, B. Berry, and B. Scassellati. 2016.
+Improving human-human collaboration between children with a social robot. In
+2016 25th IEEE International Symposium on Robot and Human Interactive Commu-
+nication (RO-MAN). 551–556.
+[49] Carole Tafforin and Francisco Giner Abati. 2017. Cultural ethology as a new
+approach of interplanetary crew’s behavior. Acta Astronautica 139 (2017), 102–110.
+https://doi.org/10.1016/j.actaastro.2017.06.017
+[50] H. Tennent, S. Shen, and M. Jung. 2019. Micbot: A Peripheral Robotic Object to
+Shape Conversational Dynamics and Team Performance. In 2019 14th ACM/IEEE
+International Conference on Human-Robot Interaction (HRI). 133–142.
+[51] Margaret L. Traeger, Sarah Strohkorb Sebo, Malte Jung, Brian Scassellati, and
+Nicholas A. Christakis. 2020. Vulnerable robots positively shape human con-
+versational dynamics in a human-robot team. Proceedings of the National Acad-
+emy of Sciences of the United States of America 117, 12 (mar 2020), 6370–6375.
+https://doi.org/10.1073/pnas.1910402117
+[52] Vaibhav V. Unhelkar, Shen Li, and Julie A. Shah. 2020. Decision-Making for
+Bidirectional Communication in Sequential Human-Robot Collaborative Tasks.
+In Proceedings of the 2020 ACM/IEEE International Conference on Human-Robot In-
+teraction (Cambridge, United Kingdom) (HRI ’20). Association for Computing Ma-
+chinery, New York, NY, USA, 329–341. https://doi.org/10.1145/3319502.3374779
+[53] D. Utami and T. Bickmore. 2019. Collaborative User Responses in Multiparty
+Interaction with a Couples Counselor Robot. In 2019 14th ACM/IEEE International
+Conference on Human-Robot Interaction (HRI). 294–303.
+[54] M. Vázquez, E. J. Carter, B. McDorman, J. Forlizzi, A. Steinfeld, and S. E. Hud-
+son. 2017. Towards Robot Autonomy in Group Conversations: Understanding
+the Effects of Body Orientation and Gaze. In 2017 12th ACM/IEEE International
+Conference on Human-Robot Interaction (HRI. 42–52.
+[55] Elmira Yadollahi, Wafa Johal, Ana Paiva, and Pierre Dillenbourg. 2018. When
+Deictic Gestures in a Robot Can Harm Child-Robot Collaboration. In Proceedings
+of the 17th ACM Conference on Interaction Design and Children (Trondheim,
+Norway) (IDC ’18). Association for Computing Machinery, New York, NY, USA,
+195–206. https://doi.org/10.1145/3202185.3202743
+[56] Mateusz Żarkowski. 2019. Multi-party Turn-Taking in Repeated Human–Robot
+Interactions: An Interdisciplinary Evaluation. International Journal of Social
+Robotics 11, 5 (dec 2019), 693–707. https://doi.org/10.1007/s12369-019-00603-1
+

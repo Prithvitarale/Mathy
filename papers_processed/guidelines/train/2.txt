@@ -1,0 +1,1081 @@
+arXiv:2106.11036v1
+[cs.CY]
+31
+May
+2021
+Know Your Model (KYM): Increasing Trust in AI and Machine
+Learning
+Mary Roszel
+University of Luxembourg
+Luxembourg
+mary.roszel@uni.lu
+Robert Norvill
+University of Luxembourg
+Luxembourg
+robert.norvill@uni.lu
+Jean Hilger
+Banque et Caisse d’Epargne de l’Etat
+Luxembourg
+jean.hilger@ext.uni.lu
+Radu State
+University of Luxembourg
+Luxembourg
+radu.state@uni.lu
+ABSTRACT
+The widespread utilization of AI systems has drawn attention to
+the potential impacts of such systems on society. Of particular con-
+cern are the consequences that prediction errors may have on real-
+world scenarios, and the trust humanity places in AI systems. It is
+necessary to understand how we can evaluate trustworthiness in
+AI and how individuals and entities alike can develop trustworthy
+AI systems. In this paper, we analyze each element of trustworthi-
+ness and provide a set of 20 guidelines that can be leveraged to en-
+sure optimal AI functionality while taking into account the greater
+ethical, technical, and practical impacts to humanity. Moreover, the
+guidelines help ensure that trustworthiness is provable and can be
+demonstrated, they are implementation agnostic, and they can be
+applied to any AI system in any sector.
+1 INTRODUCTION
+Artiﬁcial intelligence (AI) systems are being utilized in nearly ev-
+ery sector, with notable applications in autonomous systems, bank-
+ing, education, medical, manufacturing, and robotics. In recent years,
+advancements in the ﬁeld of AI have drawn attention to concerns
+of the large-scale impacts of such AI systems [2], urging aware-
+ness of the potential harm that these systems may cause. With the
+increasing utilization of AI systems, particularly in high-stakes ar-
+eas such as autonomous vehicles, health-care services, and surveil-
+lance, it is vital that we consider their trustworthiness.
+Consider, for example, the use of AI in medical diagnoses and
+decisions where an AI assists medical personnel in making deci-
+sions based on diagnostic scans. In theory, these systems would be
+of great use by allowing for faster and more accurate diagnoses,
+allowing hospitals to treat additional patients, and reduce human
+error. However, while these systems perform well in controlled en-
+vironments, in real-world applications they often perform poorly
+and increase the time required to make the diagnosis [5]. In this ex-
+ample, the issue of trust in such a system comes into consideration
+on multiple levels: the system must have the trust of the medical
+personnel utilizing it, the patient, and its greater community. How
+do we trust that the decisions these systems make are accurate,
+and who takes the blame if a patient is misdiagnosed, or if time is
+wasted on attempting to use a faulty system?
+Trustworthiness of an AI system implies that the development
+of such a system considers the greater ethical, technical, and practi-
+cal impacts to humanity. Our paper frames trustworthy AI around
+eight key principles as discussed in Fjeld et al. [14]: accountabil-
+ity, fairness and non-discrimination, human control of technology,
+privacy, professional responsibility, promotion of human values,
+safety and security, and transparency and explainability. To en-
+courage large-scale AI adoption and increase trust, the burden is
+on the creators should address these principles in their deployed
+systems. However, developing a completely trustworthy AI system
+is a diﬃcult task. Currently, there is no formal method for tracking
+and reporting how developers address issues of trust. Without such
+a method, the wide-scale development of trustworthy AI systems
+is greatly hindered.
+Further, the development of such systems may lead to prob-
+lems including scalability and compliance; with the development
+of complex models, how do companies and individuals ensure their
+systems are trustworthy, and at what cost? For example, in the ﬁ-
+nancial sector, Know Your Customer (KYC) refers to the legal re-
+quirements institutions have to ensure they know the true identity
+of their clients. State-of-the-art technologies have been success-
+fully leveraged to ease the burden of compliance [36]. We envis-
+age a similar regulatory landscape for the use of AI tools whereby
+institutions utilizing AI must be able to prove their tools can be
+trusted. Moreover, ensuring compliance with current and future
+legislation will enable the data economy to operate, ensuring AI is
+put to the best possible use.
+Toward developing trust in AI (and easing regulatory burden),
+we propose the concept of Know Your Model (KYM), the idea that
+all models have a unique identity and that model characteristics
+can be leveraged to know and trust models. The concept of KYM
+is inﬂuenced by the idea that all models have a unique identity and
+that model characteristics can be leveraged to know and trust mod-
+els. To "know" a model implies collecting, recording, and storing
+detailed records of the processes undergone during the develop-
+ment of a model, subsequently establishing model identity.
+To know a model, we propose 20 key guidelines that creators
+should address to establish a model’s identity, particularly in re-
+spect 4 core concepts: eﬃcacy, reliability, safety, and responsi-
+bility. These guidelines provide a general framework that is appli-
+cable to any and all AI implementations, rather than prescribing
+a particular implementation. The proposed guidelines are concise
+suggestions of important aspects that creators should be able to
+address about their AI systems in regards to processes, methodol-
+ogy, and trust. These guidelines can be leveraged by creators to in-
+crease transparency and trustworthiness in their AI development
+processes.
+Our aim is not to provide a deﬁnitive solution for developing
+trust in AI, rather to suggest key areas for increased attention in
+development, considering technical, ethical, and legal aspects in
+addition to trust. Therefore, the primary aim of this paper is to out-
+line a method to establish model identity with a general framework
+that all creators can apply to AI system development. The informa-
+tion required to fulﬁll the guidelines will vary by the complexity
+of each system, with more complex systems requiring greater at-
+tention to nuances in their use of data and modeling processes.
+This attention to detail will beneﬁt creators by ensuring that the
+appropriate information is collected during each stage of AI devel-
+opment and easing the burden of proof for the eﬀectiveness and
+trustworthiness of their systems.
+The rest of this paper is structured as follows. Section 2 dis-
+cusses the current ﬁeld of trustworthy AI and eight principles fre-
+quently observed in trustworthy AI research. Section 3 presents
+related work in tracking the development of AI systems. Section 4
+provides an overview of KYM, emphasizing the need for eﬃcacy,
+reliability, safety, and responsibility. This section describes in de-
+tail the 4 core concepts of KYM. Section 5 lists the guidelines KYM
+and how developers can leverage them. Finally, Section 6 summa-
+rizes the contributions in this paper and discusses the challenges
+and future work needed to establish KYM and increase trust in AI.
+2 TRUSTWORTHY AI
+The domain of trustworthy AI has gained traction in recent years
+with an increase in concern about the impact of AI deployment on
+society. When developing AI systems we often consider its accu-
+racy in decision making, but accuracy alone is not enough in high-
+stake scenarios (such as judicial decisions, and fraud detection)
+where an incorrect decision may have undesirable consequences.
+The large-scale adoption of AI systems greatly depends on devel-
+oping trust in not only their performance but also their greater pur-
+pose and transparency. Developing trust in AI is a dynamic process,
+it is crucial to continuously develop and maintain trust throughout
+all stages of development and deployment [41].
+While no consensus has been found on the formal deﬁnition
+of trustworthy AI, focus has been placed on eight key principles
+frequently observed in the domain: accountability, fairness and
+non-discrimination, human control of technology, privacy, profes-
+sional responsibility, promotion of human values, safety and se-
+curity, and transparency and explainability [14]. Increasing trust
+in AI requires that companies and developers closely analyze how
+they address these key principles during the development of their
+systems. In this section, we outline these key areas and the chal-
+lenges they pose in the development of trustworthy AI systems.
+2.1 Accountability
+With AI becoming increasingly prevalent in society, there is in-
+creasing concern about who will be accountable for the decisions
+and impact of AI technologies. The principle of accountability calls
+for the veriﬁability and replicability of AI systems, as well as call-
+ing attention to the need for auditing, regulatory, and legal require-
+ments and responsibility [14].
+In particular, the veriﬁability and replicability of AI systems are
+paramount for building trust. Developers should ensure that all
+experiments and results are replicable (reproducible), and provide
+enough information to be able to be validated. Without this infor-
+mation, users may ﬁnd the systems, and organizations who made
+them, untrustworthy.
+Further, the principle of accountability is particularly important
+when considering regulatory conditions. For regulatory bodies stan-
+dards for accountability in AI remain an open question as they seek
+a balance between creator responsibility and taking full advantage
+of the capabilities of AI [13].
+2.2 Fairness & Non-Discrimination
+The fairness and non-discrimination principle calls for the consid-
+eration, detection, and prevention of discrimination and bias in the
+development of AI systems. As these systems are often used in
+sensitive or high-stakes areas, it is vital that decisions are made
+without discriminatory or biased inﬂuence toward particular de-
+mographic groups or populations. Biased and discriminatory prac-
+tices in AI have been identiﬁed in nearly every type of system, in-
+cluding, advertisement, chatbots, employment decisions, legal de-
+cisions, facial and voice recognition, and search engines [32]. Cre-
+ators need to consider how their systems make decisions and po-
+tential harmful eﬀects they may cause.
+Research in this area provides many solutions for auditing, and
+improving bias and fairness in AI systems. Typically, bias is un-
+intentionally introduced with biased training data and can be ad-
+dressed with statistical methods applied to data or models [6]. For a
+complete survey of such methods, we suggest the article by Mehrabi
+et al. [32].
+2.3 Human Control of Technology
+With the increasing amount of AI systems making sensitive and
+high-stakes decisions, it is vital to consider where we shift con-
+trol of decision-making from humans to AI. Consider the case of
+autonomous vehicles: self-driving vehicles are able to make deci-
+sions and operate without human control, but there are continual
+ethical concerns about the decisions made in accident-scenarios
+[37].
+Research in this area calls for the ability for humans to review
+the decisions made by AI, or for AI to be built with the ability for
+humans to intervene, especially in the case of dangerous or costly
+decisions [24]. In particular, the ﬁeld of human-computer interac-
+tion includes a great body of work on human control in AI but has
+found it diﬃcult to establish guidelines for the design of AI systems
+with adequate human control [48].
+2.4 Privacy
+Privacy is a signiﬁcant concern in all systems where the use of
+personal data has signiﬁcant social and economic impact [29]. Con-
+cerns over privacy in AI systems are particularly prevalent, with
+the high volume of data used for sensitive decisions, such as adver-
+tisement, surveillance, health-care decisions, and money lending
+2
+[14]. In the European Union, the General Data Protection Regula-
+tion (GDPR) highly regulates the use of personal and private data
+in AI, with large ﬁnancial penalties levied on businesses who do
+not comply [47]. In particular, the clause that provides users with
+the "right to be forgotten", where users have the right to request
+that their personal data be deleted, is particularly important in AI
+privacy. Researchers have called attention to the issues with ap-
+plying this clause to AI, pointing out that the complete deletion of
+private data in AI may be impossible as AI systems do not "forget"
+data in the same way as humans [46].
+2.5 Professional Responsibility
+Professional Responsibility targets the individuals and entities in-
+volved in AI system design, development, and deployment [14]. As
+these individuals have a direct eﬀect on the behavior and impacts
+of AI systems, it is vital for us to consider the intentions, abilities,
+integrity, and trustworthiness of such individuals. Research in this
+ﬁeld focuses on developer responsibility (ethical, legal, and scien-
+tiﬁc) for the design and impact of their systems [10].
+2.6 Promotion of Human Values
+The promotion of human values (often also called the beneﬁcence
+principle [15]) is of particular importance when considering the
+ethical implications of AI systems. This principle implies that AI
+should be designed and strongly inﬂuenced by human values, in-
+cluding moral, ethical, and societal norms [11]. This principle also
+includes ensuring that AI are leveraged to beneﬁt society, aim to-
+ward positive change, and consider sustainability and environmen-
+tal impact [20]. This principle is very broadand lacks a concrete
+deﬁnition within the ﬁeld, making technical implementations chal-
+lenging [18]. There are no known tools that deal directly with pro-
+viding technical applications for human values-alignment during
+AI development [34].
+2.7 Safety & Security
+Safety and security are both vital to consider when developing
+trustworthy AI. In recent years, damages caused by autonomous
+vehicles, manipulation of public-facing AI systems, and software
+problems have harmed public perceptions of the safety and secu-
+rity of AI systems in society [2]. This principle covers AI safety,
+assessing the safety of AI systems, and security, assessing how se-
+cure an AI system is, and ensuring the robustness of an AI system
+from adversarial attacks.
+AI safety is both a technical and ethical concern, where poten-
+tially negative impacts on society could occur due to unintended
+accidents or failures [45]. Security ﬂaws can contribute to these
+failures, where attacks bymalicious actors can misclassify inputs
+to worsen or manipulate performance or gain information about
+the model and data it was trained on [26]. Often, the principles of
+privacy and safety and security are interconnected, where issues
+in one domain are likely to have an impact on the other. For ex-
+ample, [31] found that information leakage in the privacy domain
+aﬀects model robustness and adversarial security.
+Several solutions have been proposed to improve the safety and
+security of AI systems. To achieve safety, one may consider the four
+principles of safety: Inherently safe design, Safety reserves, Safe
+fail and Procedural safeguards [33]. In regards to security, while
+no solution is complete, systems can be developed to detect and
+address adversarial issues and attacks [35].
+2.8 Transparency & Explainability
+Transparency and explainability refer to the principle that the op-
+erations and outcomes of an AI model should be understandable
+to a human. This area of research is quite active, with many advo-
+cating for explainable decisions and transparency in sharing data
+and model information. These concepts are particularly vital to in-
+creasing trust in AI [30].
+Research into explainability and transparency aims toward in-
+terpretablity, developing AI in which a person can understand a
+model and its decisions, which in turn increases trust in the sys-
+tem [12]. At the base level, users should understand how a model
+is developed, its function, and how it reached its outcomes. This
+requires transparency. Ideally, developers should be transparent
+about an AI system’s quality, intent, performance, and reasoning
+[28].
+However, as modeling becomes more complex, understanding
+becomes more diﬃcult and opaque. Providing an interpretation for
+how an AI model works becomes a signiﬁcant issue, as does provid-
+ing a metric for measuring a model’s explainability. In addition, the
+type of explanation needed depends on the user, and therefore so
+does the metric needed to measure explainability, further compli-
+cating the issue [22]. The ﬁeld of explainability and transparency
+is interdisciplinary and additional research is needed to formalize
+model interpretability, its evaluation, and how transparent creators
+should be about their models [1]. The ﬁeld is very active, with so-
+lutions including utilizing transparent algorithms and models and
+providing post-hoc explanations about decisions. For a complete
+analysis of this ﬁeld, we suggest the article by Arrieta et al. [4].
+3 RELATED WORK
+In recent years, there has been an increase in attempts to improve
+the transparency of the creation and deployment of AI. This in-
+cludes transparency in model and data sharing, data lineage, and
+tracking the entire machine learning lifecycle. This section describes
+related work in tracking the development of AI systems, including
+a summary of the current state-of-the-art in AI provenance and
+transparency trends, data lineage, and machine learning lifecycle
+tracking.
+3.1 Current Trends Toward AI Transparency
+Transparency in AI development and deployment requires clear
+communication of a variety of factors, such as the attainment and
+use of data, model development, deployment, and updating, and
+the functional details and purpose of systems. In particular, in re-
+cent years, importance has been placed on machine learning and
+data provenance. Provenance in AI includes the collection and pro-
+cessing of information about the end-to-end development process
+of an AI system or use of data, aiming to improve replication, trac-
+ing, quality, and trust [19].
+3
+3.1.1 Data Transparency. As the outcomes of AI systems depend
+directly on training data use (and misuse), data transparency, in-
+cluding transparency in data collection, utilization, and storage, is
+an area of signiﬁcant concern in trustworthy AI.
+Data provenance (or data lineage) methods aim to improve repli-
+cation, tracing, quality assessment in data use and data transforma-
+tion processes [19]. Several researchers have proposed data prove-
+nance and lineage solutions for the tracking of data and data trans-
+formations during the machine learning lifecycle [43, 44, 51]. Fur-
+ther, Bertino et al. [8] proposes the use of blockchain technology to
+encourage data transparency and ensure that data collection and
+utilization coincide with ethical principles.
+While these solutions assist with internal data provenance, sev-
+eral researchers have also advocated for private, secure, and stan-
+dardized methods for data sharing. Gebru et al. [16] proposeddatasheets
+for datasets, a standardization method for the documentation of
+datasets. These datasheets include information on "operating char-
+acteristics, test results, recommended uses, ... motivation, compo-
+sition, collection process, [and] recommended uses", providing de-
+tailed questions for dataset creators to provide. Similarly, Bender
+and Friedman [7] propose data statements for dataset characteriza-
+tion in natural language processing, considering also the general-
+ization of experiments and composition of datasets in respect to
+bias. Further, Holland et al. [23] propose a standardized diagnostic
+method for an overview of the core components of a dataset with
+the dataset nutrition label.
+Considering legality and regulations, Yanisky-Ravid and Hal-
+lisey [49] propose the AI Data Transparency Model, encouraging
+data audits by both stakeholders and third-parties to assess data
+use (and misuse) and storage, to encourage replicability and com-
+pliance.
+3.1.2 Model Transparency. Due to the rising complexity in mod-
+eling, model transparency and provenance methods have quickly
+gained traction. Research has focused both on end-to-end tracking
+of provenance information in the machine learning lifecycle, and
+in evaluation of models for performance and trust.
+Several modeling provenance solutions have been proposed.Schel-
+ter et al. [40] propose a system for the extraction and storage of
+meta-data and provenance information commonly observed in the
+machine learning lifecycle. Hummer et al. [25] propose ModelOps,
+a cloud-based framework for end-to-end AI pipeline management,
+including support for addressing several trustworthy principles,
+such as reliability, traceability, quality control, and reproducibility.
+Further, several tools for complete asset tracking of AI pipelines
+have also been developed, focusing on tracking modeling inputs,
+results, and production processes [17, 27, 50].
+In regards to AI documentation, a recent trend is the use of Fact-
+Sheets. Arnold et al. [3] proposes FactSheets to communicate "pur-
+pose, performance, safety, security, and provenance information"
+from the creator to the user of an AI service. Sokol and Flach [42]
+extended this with a taxonomy for characterizing and assessing
+explainability in AI with Explainability FactSheets. However, Hind
+et al. [21] found that developers found these FactSheets challeng-
+ing and time-consuming to complete, noting issues with developer
+recall about modeling details, data transformation documentation,
+privacy and ownership concerns, and lack of clarity.
+3.2 Summary
+It is clear that academics and industry alike have established prac-
+tices to encourage transparency and increase trust in AI develop-
+ment and deployment. The current focus is placed on data and
+model provenance, aiming to improve replicability, tracing, qual-
+ity assessment, and trustworthiness in the AI lifecycle.
+While research has focused on tracking information about AI
+development, there are no concrete solutions for integrating trans-
+parent solutions with trustworthy principles. Current solutions fo-
+cus primarily on one stage of the AI lifecycle, or only a handful
+of trustworthy principles, neglecting to give proper attention to
+the "whole picture" required in developing a trustworthy system.
+To increase trust in AI, we propose a framework that creators can
+leverage to increase the transparency and trustworthiness of their
+AI development processes.
+4 KNOW YOUR MODEL (KYM)
+In this section, we provide an overview of ourproposedKYM frame-
+work. We propose 20 guidelines that provide clarity on the eﬃ-
+cacy, reliability, safety, and responsibility of a given AI sys-
+tem’s purpose, data treatment, modeling processes, and trustwor-
+thiness. These guidelines provide a framework for creators to lever-
+age in their AI development processes to increase transparency
+and trustworthiness. This framework aims toward increasing user
+trust in AI systems and outcomes and easing the burden on cre-
+ators by providing a clear set of guidelines that considers prove-
+nance, trust, and technical, ethical, and legal responsibility.
+The concept of KYM is inﬂuenced by the idea that all models
+have a unique identity and that model characteristics can be lever-
+aged to know and trust models. To "know" a model implies col-
+lecting, recording, and storing detailed records of the processes
+undergone during the development of a model, subsequently es-
+tablishing model identity. A developer should record enough infor-
+mation about a model to clearly establish its identity. In this case,
+model identity refers to the minimum information to distinguish
+one model from another, or establish a model’s uniqueness. KYM
+strives for all models to have a unique model identity, allowing
+model characteristics to be leveraged to know and trust models.
+To encourage large-scale AI adoption, we must increase the trust
+that users have in models and modeling processes. The user may
+be a customer, employee, or the developer of the system, trust from
+each is equally important. While a solution to create a perfect trust-
+worthy AI system is not currently available, by increasing trans-
+parency in how developers record how they address each principle,
+we believe that users will have the information needed to assess a
+model’s trustworthiness.
+This need for transparency highlights the necessity of the KYM
+framework. KYM provides a framework for developers to address
+key areas about their AI systems, focusing on eﬃcacy, reliability,
+safety, and responsibility. These four key concepts cover all eight
+principles of trustworthy AI to ensure complete coverage in KYM.
+Further, KYM includes guidelines for the utilization and prepara-
+tion of data, modeling processes (model type, hyperparameter tun-
+ing, feature extraction, etc.), and methods for addressing aspects
+of trustworthiness in model development.
+4
+While the framework of KYM addresses all principles, it is the
+developers’ responsibility to decide which guidelines are most im-
+portant to address for their system. We advocate for transparency
+in the use of data, development of models, and how issues of AI
+trustworthiness are addressed, while recognizing that this trans-
+parency is diﬀerent among the various types of AI systems. As
+deﬁnitively proving that a model is trustworthy is quite diﬃcult,
+we suggest that developers maintain thorough records on meth-
+ods taken to address trust concerns. Developers should record tech-
+niques and tools they used to address issues in each area, and jus-
+tiﬁcations for why a check was not completed or required. Due
+to the rapidly evolving nature of AI development and AI research,
+KYM suggests that developers remain vigilant in addressing issues
+of trust with regular checks and updates, particularly in respect to
+fairness, privacy, security, safety, user understanding, and reliabil-
+ity.
+The rest of this section outlines the four principles of KYM. In
+the following section, the guidelines for KYM are proposed.
+4.1 Eﬃcacy
+Eﬃcacy in KYM ensures that models produce the desired result.
+With the increase in the use of AI in everyday settings, it is vital
+to ensure that the outcomes of models are appropriate for their
+intended purpose, that the model performs well, and that outcomes
+are fair and beneﬁcial to society. As systems can have unintended
+outcomes, it should be veriﬁed that models perform in the way that
+the developer intended.
+The concept of Eﬃcacy addresses the trustworthy AI principles
+of Transparency & Explainability and Fairness & Non-Discrimination.
+In KYM, the principle of eﬃcacy calls for:
+• Transparency in the purpose, intentions, and outcomes of
+models, including intended purpose, use, target groups, and
+expected outputs.
+• Eﬀortstoward improving human understanding of processes,
+operations, and outcomes of the AI pipeline.
+• Careful attention to fairness and non-discrimination in data
+and modeling to reduce bias and discrimination in outcomes.
+4.2 Reliability
+Reliability in KYM ensures that models are reliable in their outputs
+and developmental processes. The concept of reliability in KYM
+primarily addresses the trustworthy AI principle of Accountability.
+Here, it is important to consider the processes that are used in de-
+velopment: Is the process appropriate for the intended purpose?
+Are the outcomes and processes veriﬁable, reproducible, and reli-
+able? Would another method produce more reliable results? Are
+the appropriate regulatory and legal processes followed?
+Of critical importance in this concept is replicability: developers
+should be able to reproduce the outcomes of their models and trace
+the model back to its origin. This includes ensuring proper prove-
+nance with records of data used, data transformations undergone,
+modeling processes (development environment, model type, hy-
+perparameter tuning, etc.), and inference veriﬁcation. Users should
+be able to verify the developmental products of models. KYM ad-
+vocates that developers keep clear records of their model develop-
+ment so that a clear auditing process can be completed.
+Additionally, attention should be given to data and modeling
+quality. The collection, preparation, and treatment of data are vital
+to consider when considering model identity. Data has a profound
+impact on the modeling process. The type and quality of data used
+for the development of an AI system have direct consequences on
+the quality of the models and inferences. For instance, data of poor
+quality or poorly leveraged data can lead to unreliable and incor-
+rect models [38]. Therefore, careful attention to data processes is
+required. KYM requires reliability in the data use and data trans-
+formation in modeling systems.
+The principle of reliability calls for:
+• Transparency in developmental processes, including the use
+and transformation processes of data, and feature extrac-
+tion, training and testing, and prediction outcomes.
+• Reliability in outcomes and developmental processes, includ-
+ing the appropriate use of methods, availability, and consis-
+tency.
+• Replicability or veriﬁability of outcomes and processes.
+• Attention to data quality to avoid bad, inadequate or inap-
+propriate data collection, utilization, or transformation pro-
+cesses.
+• Data and model provenance.
+• Attention to ethical, legal, and regulatory environments and
+requirements.
+This concept is particularly important in regulatory environ-
+ments, where developers may be required to verify the exact pro-
+cesses undergone during model development and reproduce rele-
+vant results.
+4.3 Safety
+The large-scale adoption of AI requires that users are conﬁdent
+that AI systems are safe to use and do not pose undue harm to
+the user or society as a whole. The need for safety is considered
+with great importance in KYM. The concept of Safety in KYM ad-
+dresses the trustworthy AI principles of Safety & Security and Pri-
+vacy. Here, the concept of safety includes assessing the safety, secu-
+rity, and privacy of AI systems from unintended accidents, breaches,
+and threats to user privacy.
+This principle calls for:
+• Building AI systems with careful attention to safety, includ-
+ing safe design, contingencies in case of error or failure, and
+audits or standards to assess initial and continuous system
+safety.
+• System and model stability, including attention to failures
+and their causes, maintenance to address and ﬁx failures
+upon occurrence, and reducing failure rates [39].
+• Robustness to threats to security, including robustness to
+attacks from adversaries or malicious actors and continual
+attention to state-of-the-art security techniques.
+• Careful attention to user privacy, including (personal) data
+collection, utilization, and storage. This also includes any
+legal or regulatory requirements for securing user informa-
+tion.
+5
+4.4 Responsibility
+Responsibility in KYM bridges the gap between technical imple-
+mentation and legal and ethical implications, addressing the trust-
+worthy AI principles of Professional Responsibility, Human Control
+of Technology, and Promotion of Human Values. In addition to tech-
+nical information about AI systems, creators must pay close atten-
+tion to societal, social, and developer roles in the overarching im-
+pact of their systems.
+The principle of responsibility in KYM is perhaps the most ab-
+stract. With the large variation in the applications of AI systems,
+responsibility will have a diﬀerent meaning to each creator. Rather
+than providing concrete guidelines in this area, KYM encourages
+creators to be transparent about the impacts and purposes of their
+systems, who was involved in their creation, and the level at which
+human control is required and provided.
+The principle of responsibility calls for:
+• Transparency about developer or creator identity, includ-
+ing transparency about stakeholders and entities involved
+in the design and deployment of AI systems.
+• Careful attention to the level at which human control is re-
+quired and provided, including clarity on the implementa-
+tion of human control in a system, opportunities for human
+intervention and review, and safeguards in the absence of
+human control.
+• Consideration of the societal impact, purpose, and value of
+AI systems, and methods to maximize their beneﬁt to soci-
+ety.
+5 KEY GUIDELINES OF KYM
+In this section, we deﬁne the key guidelines of KYM. These guide-
+lines summarize the information developers are encouraged to record
+to establish model identity. The key words "MUST", "MUST NOT",
+"REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+"RECOMMENDED", "MAY", and "OPTIONAL" in this document
+are to be interpreted as described in RFC 2119 [9].
+Example applications of each of these guidelines are provided
+in Tables 1 and 2 .
+5.1 Eﬃcacy
+5.1.1 E1: Creators SHOULD describe the intended purpose, use, tar-
+get user, and outputs of the system. Creators SHOULD record infor-
+mation on the intentions of their AI systems. This may include
+brief descriptions of the intended purpose or goals of the system,
+expected use, sample use-cases, target user of the system and its
+outcomes, release dates, and time-frame-of-validity of the system.
+In cases where intentions and outcomes are misaligned, the ex-
+tent of the misalignment and any positive and negative impacts
+SHOULD be known and recorded. Further, Creators SHOULD (brieﬂy)
+be transparent about the expected outputs of the system, as the ex-
+pected and observed outputs may diﬀer.
+5.1.2 E2: Creators MUST record (statistical) metrics about training
+and test datasets. To ensure that the training and test dataset dis-
+tributions match, metrics about the datasets MUST be recorded. If
+applicable, this SHOULD include metrics on demographic informa-
+tion.
+5.1.3 E3: Creators SHOULD describe the expected performance on
+unseen data. Once deployed, AI systems may experience data that
+is vastly diﬀerent than the data used to train/test the system. Cre-
+ators SHOULD describe the expected performance on unseen data,
+such as data from diﬀerent distributions.
+5.1.4 E4: Creators SHOULD record methods taken to reduce bias,
+discrimination, and fairness issues in data and modeling outcomes,
+and SHOULD record specific metrics on bias, discrimination, and
+fairness.. Creators SHOULD record any methods taken to address
+bias, discrimination, and fairness issues in data or modeling out-
+comes. This may include data treatment techniques and remedia-
+tion, model checks and remediation, and outcome veriﬁcation.
+Even in cases where careful attention is paid to reduce bias in
+input data, algorithms may still exhibit biased behaviors. Develop-
+ers are encouraged to pursue methods to measure fairness in their
+outcomes, using state-of-the-art methods and tools.
+5.1.5 E5: Creators SHOULD aim for increased understandability.
+Developers SHOULD attempt to increase understanding of all stages
+of AI development to diﬀerent users and groups. Detail eﬀorts taken
+to improve explainability, transparency, human-AI interactions (re-
+view, validation, etc.) of the developmental processes and outcomes
+of AI systems. This may include providing explanations on model
+decisions, clarity in model processes and techniques utilized, and
+interpreting model development and functionality in language ap-
+propriate to the target user.
+5.2 Reliability
+5.2.1 RL1: Creators MUST record the processes followed in the de-
+velopment of the AI system. Document and justify the implemented
+algorithms and techniques, collection, utilization, and storage of
+data, veriﬁcation and testing methods, and output generation of
+the system. Documentation MUST be thorough and include all in-
+formation needed to identify and justify utilized methods, iden-
+tify storage locations, and replicate outcomes. The extent of the
+required information will vary greatly depending on system type.
+5.2.2 RL2: Creators MUST ensure adequate provenance for data.
+Creators MUST maintain clear records of data collection, utiliza-
+tion, and transformation processes. Records MUST be adequate,
+clear, and complete enough to determine the origin of the data,
+assess data quality, and understand any transformations that oc-
+curred. Records may include, but are not limited to, data collection
+process and techniques, the identity of data owner or licensing en-
+tity, dataset creation time, type and amount of data utilized, dataset
+utilization in development, and data updating practices.
+5.2.3 RL3: Creators MUST ensure adequate provenance for end-to-
+end model development. Developers MUST maintain clear records
+of developmental processes undergone in AI design, development,
+and deployment. These records MUST be complete enough to be
+able to replicate model results and outcomes. Records may include
+data (and/or meta-data) on feature extraction, training and testing,
+and prediction outcomes, date and time of modeling stages, devel-
+opment environment (development language, packages used, etc.),
+model version, time of the last update, changes in performance
+6
+Table 1: The Know Your Model (KYM) Guidelines for Eﬃcacy (E#) and Reliability (RL#). An example application of each guide-
+line is provided. These examples are simpliﬁed. Real-world applications may require longer and more technical justiﬁcations.
+Know Your Model Guidelines Example Application of Guideline
+E1 Creators SHOULD describe the intended
+purpose, use, target user, and output of
+the system.
+[Navigation] "The system is a navigation system that users can use to map the most
+eﬃcient path from one location to another. The system outputs the shortest path as
+deﬁned by the estimated travel time from one input to another, utilizing available
+geographical information at the time of request."
+E2 Creators MUST record (statistical) met-
+rics about training and test datasets.
+[Logistics AI] "The system was trained on a combination of our weekly, quarterly,
+and annual volume information. This data shows an average purchase of 10,000
+units.(sd = 1,000), with higher throughput events with an average of 15,000 units
+(sd=2,500) occurring around holidays. It was conﬁrmed that the training and test
+datasets exhibit identical distributions."
+E3 Creators SHOULD describe the expected
+performance on unseen data
+[Medical AI] "Data from low-quality or outdated equipment will result in poor
+performance. Shadowing or blurring in images may negatively aﬀect model per-
+formance."
+E4 Creators SHOULD record methods taken
+to reduce bias, discrimination, and fair-
+ness issues in data and modeling out-
+comes, and SHOULD record speciﬁc met-
+rics on bias, discrimination, and fair-
+ness.
+[Criminal Sentencing AI] "In order to ensure racial fairness in sentences, all poten-
+tially identifying racial information has been removed from the dataset. Addition-
+ally, the system was evaluated by experts in racial justice and equality in order to
+mitigate potential problems with bias. Bias remediation was performedusing [state-
+of-the-art tool]. A bias was identiﬁed and mitigated with a re-weighing method."
+E5 Creators SHOULD aim for increased un-
+derstandability.
+[Medical AI] "This model is designed to be used by trained doctors. The system
+provides diagnostic information and justiﬁcations that explain the qualities used
+for each decision. Furthermore, the system provides documentation to provide ad-
+ditional information."
+RL1 Creators MUST record the processes fol-
+lowed in the development of the AI sys-
+tem.
+[E-Commerce AI] "This model leverages neural network technology, building on re-
+search previously published in the domain. Model training and testing were tracked
+locally and will be stored for three years following the end-of-life of the product.
+Data is collected and stored in accordance with international regulation."
+RL2 Creators MUST ensure adequate prove-
+nance for data.
+[Social Media AI] "Textual data was parsed from three social media websites be-
+tween the dates of January and May 2020, and stored on a private server. Data were
+not checked for quality. Datasets are documented internally. The system maintains
+an index of all data as well as a log of all changes to the data set. Unigram transfor-
+mation and punctuation removal were utilized."
+RL3 Creators MUST ensure adequate prove-
+nance for end-to-end model develop-
+ment.
+[Advertising AI] "Complete records of metadata from model training, testing, and
+prediction were taken utilizing an end-to-end asset tracking tool."
+RL4 Creators MUST record evaluation and
+performance metrics.
+[Classiﬁcation AI] "Models were trained using a 70/30 test/train split, 10-fold cross-
+validation, and evaluated using prediction accuracy and AUC. The chosen model
+has an 80.2% accuracy rate, with a sensitivity/speciﬁcity rate of 74.5%/61.8% respec-
+tively."
+RL5 Creators SHOULD track model update
+performance and information inges-
+tion.
+[Social Media AI] "We capture user data upon each deployment and retrain the
+model with the captured data. Model performance is analyzed with each update
+and must remain within ±15%."
+RL6 Creators SHOULDrecord metrics on out-
+come replicability.
+[Robotics AI] "In order to reproduce the system results, a docker ﬁle has been pro-
+vided. By leveraging this dataset and docker ﬁle, the system will produce the same
+results. This docker ﬁle was created using the following dataset and model settings."
+between updates, algorithms and techniques used, training condi-
+tions (i.e. hyperparameters), use of the dataset in each stage, testing
+performance & results, etc.
+5.2.4 RL4: Creators MUST record evaluation and performance met-
+rics. Developers MUST record detailed records of the evaluation
+and performance processes used. Creators MUST maintain a record
+of the metrics and techniques that were used to measure the per-
+formance of their systems, such as accuracy, precision/recall, error
+rates, F-1 scores, AUC, etc. It is suggested that signiﬁcant techni-
+cal data is recorded. Metrics for both intermediary and ﬁnal models
+are encouraged.
+7
+Table 2: The Know Your Model (KYM) Guidelines for Safety (S#) and Responsibility (RS#). An example application of each
+guideline is provided. These examples are simpliﬁed. Real-world applications may require longer and more technical justiﬁ-
+cations.
+Know Your Model Guidelines Example Application of Guideline
+S1 Creators MUST assess safety to users
+and society.
+[Robotics AI] "In the event of detected compromise, the system can be placed into
+a fail-safe state by the activation of a hardware cutoﬀ or a software shutdown. In
+order to comply with safety standards, this system has several human-tracking
+safety features that override the AI in situations where humans can potentially be
+harmed."
+S2 Creators MUST assess potential security,
+safety, and privacy failure points.
+[Finance AI] "The system was designed with the following threat model in mind.
+The system is an online banking platform with the potential for both denial-of-
+service, and database attacks. Additionally, the model is trained on user-data which
+has been anonymized, however, attacks do exist that could de-anonymize users.
+Finally, the model itself is vulnerable to data poisoning or similar attacks. "
+S3 Creators SHOULD record metrics for se-
+curity robustness.
+[E-Commerce AI] "Our system is regularly tested to comply with PCI DSS stan-
+dards. We have also received ISO/IEC 27001:2013 certiﬁcation for our handling of
+critical data."
+S4 Creators MUST ensure user privacy, and
+appropriate treatment and use of pri-
+vate data.
+[E-Commerce AI] "Only data that is relevant to the product is collected, with con-
+sent of the individual. Private data is stored on an encrypted server."
+S5 Creators SHOULD ensure secure data
+utilization and storage.
+[Personal Services AI] "Data is stored on an encrypted disk, where access is granted
+by keys. All data changes are signed by key, for easy traceability."
+RP1 Creators SHOULD disclose or record
+all entities involved in system develop-
+ment.
+[Human Resource AI] "Our team is composed of machine learning engineers, statis-
+ticians, and social scientists, all graduates of accredited universities. We consulted
+with an AI domain expert during development."
+RP2 Creators SHOULD detail the implemen-
+tation of human-AI interactions.
+[Medical AI] "The system uses patient characteristics and health information to for-
+mulate diagnoses. The decisions must be conﬁrmed by a human before a diagnosis
+can be made."
+RP3 Creators SHOULD describe the impact,
+value, and beneﬁt of the system.
+[Chatbot] "The system allows for rapid interactions with customers. This increases
+availability, provides immediate assistance to customers, and reduces the need for
+customer service staﬀ. The system is only used for our business and does not have
+any larger foreseen societal impacts."
+RP4 Creators MUST comply with legal and
+regulatory requirements.
+[Finance AI] "Our system complies with GDPR regulations on the use of private
+data, and internal regulations on the use of private data and clarity in decisions."
+5.2.5 RL5: Creators SHOULD track model update performance and
+information ingestion. Developers SHOULD clearly track model up-
+dates and how new data is used and aﬀects performance. If new
+data is ingested after deployment, developers SHOULD record the
+origin of the new data, how it is integrated into the system, and if
+there are any bounds for performance changes.
+5.2.6 RL6: Creators SHOULD record metrics on outcome replicabil-
+ity. Developers SHOULD measure the replicability of outcomes of
+their AI systems, utilizing state-of-the-art metrics.
+5.3 Safety
+5.3.1 S1: Creators MUST assess safety to users and society. The de-
+velopment of systems MUST consider safety at the forefront. De-
+velopers MUST pay careful attention to safe design, failure con-
+tingencies, and safety standards. Consideration MUST be given to
+how the AI system impacts its surroundings, individuals, and soci-
+ety as a whole, and whether its use or deployment poses any safety
+risks. In the case that there are safety concerns, creators MUST be
+transparent in any safety concerns or issues the AI system may
+have.
+5.3.2 S2: Creators MUST assess potential security, safety, and pri-
+vacy failure points. Assessments of potential security, safety, and
+privacy failure points present in models (and solutions if available)
+MUST be undertaken.
+5.3.3 S3: Creators SHOULD record metrics for security robustness.
+Creators SHOULD record metrics taken for improving the robust-
+ness of their systems from adversarial attacks and malicious actors
+(i.e. checks undergone for adversarial concerns). Due to the rapidly
+evolving nature of AI security, developers SHOULD continuously
+engage in improving security robustness utilizing state-of-the-art
+techniques.
+5.3.4 S4: Creators MUST ensure user privacy, and appropriate treat-
+ment and use of private data. Developers MUST be acutely aware of
+the treatment of user data and the role of user data in their systems
+development and outcomes. For private data, creators SHOULD
+8
+consider regulatory requirements for storage, deletion, and use of
+data, including requirements for consent.
+5.3.5 S5: Creators SHOULD ensure secure data utilization and stor-
+age. Creators SHOULD ensure that all data is used and stored se-
+curely.
+5.4 Responsibility
+5.4.1 RP1: Creators SHOULD disclose or record all entities involved
+in system development. Record the identities (or aﬃliations), qual-
+iﬁcations, and diversity of all entities involved (including stake-
+holders, businesses, domain experts, individuals, teams, etc.) in the
+design, development, and deployment of the AI system. This may
+include the experience and credentials of developers, team diver-
+sity, and the investments and interests of developers (and other
+stakeholders) in model development.
+5.4.2 RP2: Creators SHOULD detail the implementation of human-
+AI interactions. Creators SHOULD understand the implementation
+of human-AI interactions in the system. This may include areas
+where human review is allowed and/or required, opportunities for
+human intervention, and human role in AI decisions.
+5.4.3 RP3: Creators SHOULD describe the impact, value, and bene-
+fit of the system. Creators SHOULD justify the impacts, values, and
+beneﬁts that the AI system has to society. This may also include
+any potential detriments to society (and justiﬁcations for why the
+AI system maintains value).
+5.4.4 RP4: Creators MUST comply with legal and regulatory re-
+quirements. With the rising legal and regulatory requirements for
+AI development, careful attention MUST be given to national, inter-
+national, and vocational requirements for AI design, development,
+and deployment.
+6 DISCUSSION AND FUTURE WORK
+With the proliferation of AI into greater society, members of academia
+and industry alike should strive for the development of robust,
+trustworthy systems. The complexity and wide array of applica-
+tions in AI systems complicate the process of creating trust, placing
+the burden on each creator to establish a method for building and
+maintaining trust. Toward developing trust in AI, we propose the
+Know Your Model (KYM) framework, a set of guidelines that can
+be leveraged to establish model identity and increase transparency
+and trust in their AI development processes.
+The KYM guidelines aim to provide a comprehensive frame-
+work for creators to leverage to address both provenance and prin-
+ciples of trust in the design, development, and deployment of their
+AI systems. Although previous eﬀorts have been made to increase
+transparency and trust in AI, the focus has been placed primarily
+on provenance rather than trust. In those methods that do address
+trust, attention is only given to one or two principles, neglecting
+the importance of others. Our framework aims to merge prove-
+nance methods with a focus on trust, providing a complete frame-
+work for creators to assess their current and future AI processes.
+Further, our framework considers the importance of technical, eth-
+ical, and legal responsibility, providing guidelines that bridge the
+gap between research and industry.
+As deﬁnitively proving that a system or model is trustworthy
+is quite diﬃcult, we suggest that developers maintain thorough
+records on methods taken to address trust concerns. By increas-
+ing transparency, developers ensure clarity on how key issues are
+addressed, and users have the information needed to assess trust
+where necessary. Areas of trust to address include the eight princi-
+ples of trustworthy AI: accountability, fairness and non-discrimination,
+human control, privacy, professional responsibility, promotion of
+human values, safety and security, and transparency and explain-
+ability. Developers should record techniques and tools they used to
+address issues in each area, and justiﬁcations for why a check was
+not completed or required. These should be frequently checked
+and updated for every new model or model update. Given the cur-
+rent state of trust in AI, we believe that increasing transparency in
+this way is the next step in increasing overall trust.
+It should be noted that while KYM provides a set of guidelines
+for creators to leverage, it does not provide a method for shar-
+ing this information among users, or outside of an organization.
+This distinction should be made by the creator depending on the
+unique factors of their systems. In general, we advocate for thor-
+ough records and complete transparency within the development
+team and internal users (where applicable), but understand that in-
+formation sharing and transparency will be considerably diﬀerent
+with external users, such as customers and the general public.
+We believe that further attention is warranted on developing a
+formalized system for KYM. As the state of AI research is rapidly
+evolving, we do not suggest speciﬁc methodologies to address the
+KYM guidelines technically (such as speciﬁc tools or software to
+analyze fairness or bias). It would be of beneﬁt to develop a for-
+malized system which includes up-to-date methods to analyze the
+guidelines technically. Further, it would be of extreme value if the
+guidelines of KYM could be streamlined into an automated system
+for record-keeping for creators to leverage. Future work in this
+area is needed. This may include clear avenues for the sharing of
+information with external users, such as customers or the general
+public.
+It is our hope that KYM, model identity, and transparency in AI
+become more prevalent over time. With KYM, we strive to provide
+a framework to guide creators in increasing transparency and trust
+in AI. With these guidelines, we hope to encourage a new era of
+transparency and trust in AI.
+REFERENCES
+[1] Amina Adadi and Mohammed Berrada. 2018. Peeking inside the black-box: a
+survey on explainable artiﬁcial intelligence (XAI). IEEE access 6 (2018), 52138–
+52160.
+[2] Dario Amodei, Chris Olah, Jacob Steinhardt, Paul Christiano, John Schul-
+man, and Dan Mané. 2016. Concrete problems in AI safety. arXiv preprint
+arXiv:1606.06565 (2016).
+[3] Matthew Arnold, Rachel KE Bellamy, Michael Hind, Stephanie Houde, Sameep
+Mehta, Aleksandra Mojsilović, Ravi Nair, K Natesan Ramamurthy, Alexandra
+Olteanu, David Piorkowski, et al. [n.d.]. FactSheets: Increasing trust in AI ser-
+vices through supplier’s declarations of conformity. IBM Journal of Research and
+Development ([n. d.]).
+[4] Alejandro Barredo Arrieta, Natalia Díaz-Rodríguez, Javier Del Ser, Adrien Ben-
+netot, Siham Tabik, Alberto Barbado, Salvador García, Sergio Gil-López, Daniel
+Molina, Richard Benjamins, et al. 2020. Explainable Artiﬁcial Intelligence (XAI):
+Concepts, taxonomies, opportunities and challenges toward responsible AI. In-
+formation Fusion 58 (2020), 82–115.
+[5] Emma Beede, Elizabeth Baylor, Fred Hersch, Anna Iurchenko, Lauren Wilcox,
+Paisan Ruamviboonsuk, and Laura M Vardoulakis. 2020. A human-centered
+evaluation of a deep learning system deployed in clinics for the detection of
+9
+diabetic retinopathy. In Proceedings of the 2020 CHI conference on human factors
+in computing systems. 1–12.
+[6] Rachel KE Bellamy, Kuntal Dey, Michael Hind, Samuel C Hoﬀman, Stephanie
+Houde, Kalapriya Kannan, Pranay Lohia, Jacquelyn Martino, Sameep Mehta,
+Aleksandra Mojsilovic, et al. 2018. AI Fairness 360: An extensible toolkit for
+detecting, understanding, and mitigating unwanted algorithmic bias. arXiv
+preprint arXiv:1810.01943 (2018).
+[7] Emily M Bender and Batya Friedman. 2018. Data statements for natural lan-
+guage processing: Toward mitigating system bias and enabling better science.
+Transactions of the Association for Computational Linguistics 6 (2018), 587–604.
+[8] Elisa Bertino, Ahish Kundu, and Zehra Sura. 2019. Data transparency with
+blockchain and AI ethics. Journal of Data and Information Quality (JDIQ) 11,
+4 (2019), 1–8.
+[9] Scott Bradner. 1997. RFC2119: Key words for use in RFCs to Indicate Require-
+ment Levels.
+[10] Mark Coeckelbergh. 2020. Artiﬁcial intelligence, responsibility attribution, and
+a relational justiﬁcation of explainability. Science and engineering ethics 26, 4
+(2020), 2051–2068.
+[11] Virginia Dignum. 2017. Responsible artiﬁcial intelligence: designing AI for hu-
+man values. (2017).
+[12] Finale Doshi-Velez and Been Kim. 2017. Towards a rigorous science of inter-
+pretable machine learning. arXiv preprint arXiv:1702.08608 (2017).
+[13] Finale Doshi-Velez, Mason Kortz, Ryan Budish, Chris Bavitz, Sam Gershman,
+David O’Brien, Kate Scott, Stuart Schieber, James Waldo, DavidWeinberger, et al.
+2017. Accountability of AI under the law: The role of explanation. arXiv preprint
+arXiv:1711.01134 (2017).
+[14] Jessica Fjeld, Nele Achten, Hannah Hilligoss, Adam Nagy, and Madhulika Sriku-
+mar. 2020. Principled artiﬁcial intelligence: Mapping consensus in ethical and
+rights-based approaches to principles for AI. Berkman Klein Center Research
+Publication 2020-1 (2020).
+[15] Luciano Floridi and Josh Cowls. 2019. A uniﬁed framework of ﬁve principles for
+AI in society. Issue 1.1, Summer 2019 1, 1 (2019).
+[16] Timnit Gebru, Jamie Morgenstern, Briana Vecchione, Jennifer Wortman
+Vaughan, Hanna Wallach, Hal Daumé III, and Kate Crawford. 2018. Datasheets
+for datasets. arXiv preprint arXiv:1803.09010 (2018).
+[17] Gharib Gharibi, Vijay Walunj, Raju Nekadi, Raj Marri, and Yugyung Lee. 2021.
+Automated end-to-end management of the modeling lifecycle in deep learning.
+Empirical Software Engineering 26, 2 (2021), 1–33.
+[18] Thilo Hagendorﬀ. 2020. The ethics of AI ethics: An evaluation of guidelines.
+Minds and Machines 30, 1 (2020), 99–120.
+[19] Melanie Herschel, Ralf Diestelkämper, and Houssem Ben Lahmar.2017. A survey
+on provenance: What for? What form? What from? The VLDB Journal 26, 6
+(2017), 881–906.
+[20] High-Level Expert Group on AI. 2019. Ethics guidelines
+for trustworthy AI. Report. European Commission, Brussels.
+https://ec.europa.eu/digital-single-market/en/news/ethics-guidelines-trustworthy-ai
+[21] Michael Hind, Stephanie Houde, Jacquelyn Martino, Aleksandra Mojsilovic,
+David Piorkowski, John Richards, and Kush R Varshney. 2020. Experiences with
+improving the transparency of ai models and services. In Extended Abstracts of
+the 2020 CHI Conference on Human Factors in Computing Systems. 1–8.
+[22] Robert R Hoﬀman, Shane T Mueller, Gary Klein, and Jordan Litman. 2018. Met-
+rics for explainable AI: Challenges and prospects. arXiv preprint arXiv:1812.04608
+(2018).
+[23] Sarah Holland, Ahmed Hosny, Sarah Newman, Joshua Joseph, and Kasia
+Chmielinski. 2018. The dataset nutrition label: A framework to drive higher
+data quality standards. arXiv preprint arXiv:1805.03677 (2018).
+[24] Kristina Höök. 2000. Steps to take before intelligent user interfaces become real.
+Interacting with computers 12, 4 (2000), 409–426.
+[25] Waldemar Hummer, Vinod Muthusamy, Thomas Rausch, Parijat Dube, Kaoutar
+El Maghraoui, Anupama Murthi, and Punleuk Oum. 2019. Modelops: Cloud-
+based lifecycle management for reliable and trusted ai. In 2019 IEEE International
+Conference on Cloud Engineering (IC2E). IEEE, 113–120.
+[26] Olakunle Ibitoye, Rana Abou-Khamis, Ashraf Matrawy, and M Omair Shaﬁq.
+2019. The Threat of Adversarial Attacks on Machine Learning in Network
+Security–A Survey. arXiv preprint arXiv:1911.02621 (2019).
+[27] Samuel Idowu, Daniel Strüber, and Thorsten Berger. 2021. Asset Management
+in Machine Learning: A Survey. arXiv preprint arXiv:2102.06919 (2021).
+[28] Rahul Iyer, Yuezhang Li, Huao Li, Michael Lewis, Ramitha Sundar, and Katia
+Sycara. 2018. Transparency and explanation in deep reinforcement learning
+neural networks. In Proceedings of the 2018 AAAI/ACM Conference on AI, Ethics,
+and Society. 144–150.
+[29] Zhanglong Ji, Zachary C Lipton, and Charles Elkan. 2014. Diﬀerential privacy
+and machine learning: a survey and review. arXiv preprint arXiv:1412.7584
+(2014).
+[30] Zachary C Lipton. 2018. The Mythos of Model Interpretability: In machine learn-
+ing, the concept of interpretability is both important and slippery. Queue 16, 3
+(2018), 31–57.
+[31] Qiang Liu, Pan Li, Wentao Zhao, Wei Cai, Shui Yu, and Victor CM Leung. 2018.
+A survey on security threats and defensive techniques of machine learning: A
+data driven view. IEEE access 6 (2018), 12103–12117.
+[32] Ninareh Mehrabi, Fred Morstatter, Nripsuta Saxena, Kristina Lerman, and Aram
+Galstyan. 2019. A surveyon bias and fairness in machine learning. arXiv preprint
+arXiv:1908.09635 (2019).
+[33] Niklas Möller and Sven Ove Hansson. 2008. Principles of engineering safety:
+Risk and uncertainty reduction. Reliability Engineering & System Safety 93, 6
+(2008), 798–805.
+[34] Jessica Morley, Luciano Floridi, Libby Kinsey, and Anat Elhalal. 2019. From what
+to how. An overview of AI ethics tools, methods and research to translate prin-
+ciples into practices. arXiv preprint arXiv:1905.06876 (2019).
+[35] Maria-Irina Nicolae, Mathieu Sinn, Minh Ngoc Tran, Beat Buesser, Ambrish
+Rawat, Martin Wistuba, Valentina Zantedeschi, Nathalie Baracaldo, Bryant
+Chen, Heiko Ludwig, et al. 2018. Adversarial Robustness Toolbox v1. 0.0. arXiv
+preprint arXiv:1807.01069 (2018).
+[36] Robert Norvill, Cyril Cassanges, Wazen Shbair, Jean Hilger, Andrea Cullen, and
+Radu State. 2020. A security and privacy focused kyc data sharing platform. In
+Proceedings of the 2nd ACM International Symposium on Blockchain and Secure
+Critical Infrastructure. 151–160.
+[37] Sven Nyholm and Jilles Smids. 2016. The ethics of accident-algorithms for self-
+driving cars: An applied trolley problem? Ethical theory and moral practice 19, 5
+(2016), 1275–1289.
+[38] Hillary Sanders and Joshua Saxe. 2017. Garbage in, garbage out: How purport-
+edly great ML models can be screwed up by bad data. Proceedings of Blackhat
+2017 (2017).
+[39] Suchi Saria and Adarsh Subbaswamy. 2019. Tutorial: safe and reliable machine
+learning. arXiv preprint arXiv:1904.07204 (2019).
+[40] Sebastian Schelter, Joos-Hendrik Boese, Johannes Kirschnick, Thoralf Klein, and
+Stephan Seufert. 2017. Automatically tracking metadata and provenance of ma-
+chine learning experiments. In Machine Learning Systems Workshop at NIPS. 27–
+29.
+[41] Keng Siau and Weiyu Wang. 2018. Building trust in artiﬁcial intelligence, ma-
+chine learning, and robotics. Cutter Business Technology Journal 31, 2 (2018),
+47–53.
+[42] Kacper Sokol and Peter Flach. 2020. Explainability fact sheets: a framework
+for systematic assessment of explainable approaches. In Proceedings of the 2020
+Conference on Fairness, Accountability, and Transparency. 56–67.
+[43] Renan Souza, Leonardo Azevedo, Vítor Lourenço, Elton Soares, Raphael Thiago,
+Rafael Brandão, Daniel Civitarese, Emilio Brazil, Marcio Moreno, Patrick Val-
+duriez, et al. 2019. Provenance data in the machine learning lifecycle in com-
+putational science and engineering. In 2019 IEEE/ACM Workﬂows in Support of
+Large-Scale Science (WORKS). IEEE, 1–10.
+[44] Renan Souza, Leonardo Azevedo, Raphael Thiago, Elton Soares, Marcelo Nery,
+Marco AS Netto, Emilio Vital, Renato Cerqueira, Patrick Valduriez, and Marta
+Mattoso. 2019. Eﬃcient runtime capture of multiworkﬂow data using prove-
+nance. In 2019 15th International Conference on eScience (eScience). IEEE, 359–
+368.
+[45] Kush R Varshney and Homa Alemzadeh. 2017. On the safety of machine learn-
+ing: Cyber-physical systems, decision sciences, and data products. Big data 5, 3
+(2017), 246–255.
+[46] Eduard Fosch Villaronga, Peter Kieseberg, and Tiﬀany Li. 2018. Humans forget,
+machines remember: Artiﬁcial intelligence and the right to be forgotten. Com-
+puter Law & Security Review 34, 2 (2018), 304–313.
+[47] Paul Voigt and Axel von dem Bussche. 2017. The EU General Data Protection
+Regulation (GDPR): A Practical Guide (1st ed.). Springer Publishing Company,
+Incorporated.
+[48] Qian Yang, Aaron Steinfeld, Carolyn Rosé, and John Zimmerman. 2020. Re-
+examining whether, why, and how human-ai interaction is uniquely diﬃcult to
+design. In Proceedings of the 2020 chi conference on human factors in computing
+systems. 1–13.
+[49] Shlomit Yanisky-Ravid and Sean K Hallisey. 2019. Equality and Privacy by De-
+sign: A New Model of Artiﬁcial Intelligence Data Transparency Via Auditing,
+Certiﬁcation, and Safe Harbor Regimes. Fordham Urb. LJ 46 (2019), 428.
+[50] Matei Zaharia,Andrew Chen, Aaron Davidson, Ali Ghodsi, Sue Ann Hong, Andy
+Konwinski, Siddharth Murching, Tomas Nykodym, Paul Ogilvie, Mani Parkhe,
+et al. 2018. Accelerating the Machine Learning Lifecycle with MLﬂow. IEEE Data
+Eng. Bull. 41, 4 (2018), 39–45.
+[51] Zhao Zhang, Evan R Sparks, and Michael J Franklin. 2017. Diagnosing machine
+learning pipelines with ﬁne-grained lineage. In Proceedings of the 26th Interna-
+tional Symposium on High-Performance Parallel and Distributed Computing. 143–
+153.
+10
+This figure "toronto.png" is available in "png" format from:
+http://arxiv.org/ps/2106.11036v1
+

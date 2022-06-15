@@ -94,7 +94,7 @@ class Recommend:
                        0.056332398077600154,
                        0.009358646111296443]
 
-        topic_embedding_file = os.path.join('..\\embeddings', topic + 'test.json')
+        topic_embedding_file = os.path.join('..\\embeddings', topic + 'test_neg.json')
         if not os.path.isfile(topic_embedding_file):
             self.df = pd.DataFrame(columns=['target', 'text', 'embedding'])
 
@@ -204,7 +204,7 @@ class Recommend:
         coef = self.reg.coef_
         exp = (self.X.toarray() * coef)[index]
 
-        # test multiplication
+        # test_neg multiplication
         df = pd.DataFrame(exp / exp.sum(), index=self.linreg_vectorizer.get_feature_names(), columns=["TF-IDF score"])
         df = df.sort_values('TF-IDF score', ascending=False)
         print(f'explanation for ${feed} paper  ${str(index)}')

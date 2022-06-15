@@ -11,7 +11,7 @@ conda env export > environment.yml
 
 #TODO:
 # get feed of 300 random arxiv papers
-# train the two concepts on the test set
+# train the two concepts on the test_neg set
 # check top 10 recommended papers at 0, 250, 1000 weights
 # BASICALLY have no target for y --> only use weights to differentiate
 # 1. generate embeddings, but with no labels in df (method for this?) - done
@@ -19,7 +19,7 @@ conda env export > environment.yml
 # 3. ur done
 
 #TODO:
-# get dataset papers embeddings
+# get dataset_pos papers embeddings
 # train pipeline on papers
 # see plots (whether they indicate good results or not)
 
@@ -47,6 +47,7 @@ from tqdm import tqdm
 from time import sleep
 from sklearn import linear_model
 from sklearn.preprocessing import StandardScaler
+import json
 
 
 class RecommendationDataset:
@@ -60,7 +61,7 @@ class RecommendationDataset:
     def preprocess_papers(self, data_dir, feed):
         self.feed = feed
         topic_embedding_file = os.path.join('..\\embeddings', feed + '.json')
-        # topic_embedding_file = os.path.join('..', 'embeddings', 'dataset.json')
+        # topic_embedding_file = os.path.join('..', 'embeddings', 'dataset_pos.json')
         if not os.path.isfile(topic_embedding_file):
             # self.df = pd.DataFrame(columns=['target', 'text', 'embedding'])
             self.df = pd.DataFrame(columns=['text', 'embedding'])
@@ -165,7 +166,7 @@ class RecommendationDataset:
 
 class HybridModel:
     def __init__(self, dataset, update_alg, seed=46, model_type="logistic"):
-        # opaque features, concept, explanatory vocabulary, train data, test data
+        # opaque features, concept, explanatory vocabulary, train data, test_neg data
         self.loaded_model = None
         self.new_features = []
         self.dataset = dataset
@@ -213,6 +214,15 @@ class HybridModel:
             train_test_split(self.X, self.Y, self.docs, test_size=0.33, random_state=self.seed)
         self.clf_model = self.get_clf_class()
         self.clf_model.fit(self.X_train, self.y_train)
+
+    def get_top_papers_ranked(self):
+        predictions = self.clf_model.predict_proba(self.X_test)[:, 1]
+        df = pd.DataFrame(self.docs_test, columns=['text'])
+        df['predictions'] = predictions
+        df = df.sort_values('predictions', ascending=False)
+        top_10_papers = df['text'].head(10)
+        return top_10_papers
+        # TODO: return json (save somewhere)
 
     def get_model(self):
         return self.clf_model
@@ -463,7 +473,8 @@ class HybridModel:
         # plt.xlim([600, 800])
         name = concept_name + "_" + topic + "_importance_" + alg + "_" + max_weight + "_" + seed_num
         # plt.savefig(f"..\\experiment2_final_plots\\{name}")
-        plt.savefig(os.path.join('..', "experiment2_dataset_concept", name))
+        plt.savefig(f"..\\experiment2_abstract_plots\\{name}")
+        # plt.savefig(os.path.join('..', "experiment2_dataset_concept", name))
 
         plt.figure(2, figsize=(8.55, 5.5))
         plt.grid()
@@ -473,10 +484,11 @@ class HybridModel:
         plt.ylabel("Model Accuracy on Test Set")
         # plt.xticks(np.arange(0, 1000, 200))
         # plt.yticks(np.arange(0.4, 1.01, 0.2))
-        plt.ylim([0.3, 1])
+        # plt.ylim([0.3, 1])
         name = concept_name + "_" + topic + "_accuracy_" + alg + "_" + max_weight + "_" + seed_num
         # plt.savefig(f"..\\experiment2_final_plots\\{name}")
-        plt.savefig(os.path.join('..', "experiment2_dataset_concept", name))
+        plt.savefig(f"..\\experiment2_abstract_plots\\{name}")
+        # plt.savefig(os.path.join('..', "experiment2_dataset_concept", name))
 
         plt.figure(3, figsize=(8.55, 5.5))
         plt.grid()
@@ -488,7 +500,8 @@ class HybridModel:
         # plt.ylim([17000, 17800])
         name = concept_name + "_" + topic + "_rank_" + alg + "_" + max_weight + "_" + seed_num
         # plt.savefig(f"..\\experiment2_final_plots\\{name}")
-        plt.savefig(os.path.join('..', "experiment2_dataset_concept", name))
+        plt.savefig(f"..\\experiment2_abstract_plots\\{name}")
+        # plt.savefig(os.path.join('..', "experiment2_dataset_concept", name))
 
         plt.figure(4, figsize=(8.55, 5.5))
         plt.grid()
@@ -497,9 +510,11 @@ class HybridModel:
         plt.xlabel("Concept Weight")
         plt.ylabel("Relative Importance of Concept")
         # plt.xlim([600, 800])
+        plt.ylim([0, 1])
         name = concept_name + "_" + topic + "_relative_importance_" + alg + "_" + max_weight + "_" + seed_num
         # plt.savefig(f"..\\experiment2_final_plots\\{name}")
-        plt.savefig(os.path.join('..', "experiment2_dataset_concept", name))
+        plt.savefig(f"..\\experiment2_abstract_plots\\{name}")
+        # plt.savefig(os.path.join('..', "experiment2_dataset_concept", name))
 
         plt.show()
 
@@ -544,7 +559,7 @@ class HumanConcept:
         return np.mean(pos_embeddings, axis=0)
 
     def get_representative_X_2(self):
-        topic_embedding_file = os.path.join('..', 'embeddings', 'dataset.json')
+        topic_embedding_file = os.path.join('..', 'embeddings', 'dataset_pos.json')
         df = pd.read_json(topic_embedding_file)
 
         pos_embeddings = df.query('target==1')  # TODO:
@@ -622,12 +637,15 @@ def experiment2():
     parser.add_argument("--concept")
     parser.add_argument("--model_type")
     parser.add_argument("--algorithm")
+    parser.add_argument("--weight")
     args = parser.parse_args()
 
     r = RecommendationDataset()
     r.preprocess_papers(args.data_dir, args.feed)
     print("Papers preprocessed.")
     e = Eval()
+
+    # python hybrid_model.py - -data_dir "C:\Users\Cindy Su\source\Mathy" - -feed fairness_abstracts - -concept mathy_abstracts - -model_type logistic - -algorithm alg1 --weight 100
 
     # concept = "pos_mathy"
     # c = classify()
@@ -663,13 +681,14 @@ def experiment2():
     # weights = np.concatenate((np.linspace(0, 600, 50), np.linspace(600, 800, 200)))
 
     # weights = np.linspace(0, 3000, 600)
-    weights = np.linspace(0, 100, 20)
+    # weights = np.linspace(0, 3000, 30)
+    weights = np.linspace(0, args.weight, 100)
     max_weight = np.amax(weights)
     seeds = range(0, 1)
 
     data = {'concept weight':[], 'seed':[],'importance score':[],'accuracy':[], 'feature rank':[], 'relative importance':[]}
 
-    concept_path = f'{args.concept}_model.pkl'
+    concept_path = f'concept_models/{args.concept}_model.pkl'
     concept = HumanConcept(args.concept, concept_path)
 
     for i, weight in enumerate(weights):
@@ -692,11 +711,10 @@ def experiment2():
     data_df = pd.DataFrame(data)
 
     # USE THIS CODE TO STORE DATA_DF
-    # data_df.to_csv(os.path.join('..', 'experiment2_dataset_concept', 'test.csv'))
-
+    # data_df.to_csv(os.path.join('..', 'experiment2_data', 'dataset_xai.csv'))
     # loaded_data_df = pd.read_csv('../experiment2_data/mathy_fairness_concept_weight_data_50_seeds_alg_3.csv')
     # loaded_data_df = pd.read_csv('../experiment2_data/ridge_' + args.concept + '_' + args.feed + '.csv')
-    # loaded_data_df = pd.read_csv(os.path.join('..', 'experiment2_dataset_concept', 'test.csv'))
+    # loaded_data_df = pd.read_csv(os.path.join('..', 'experiment2_data', 'dataset_xai.csv'))
 
     h = HybridModel(r, args.model_type)
     # h.plot_concept_weight(loaded_data_df, args.feed, concept.get_concept_name(), args.algorithm, str(int(max_weight)), str(len(seeds)))
@@ -714,7 +732,7 @@ def experiment3():
     r = RecommendationDataset()
     r.preprocess_papers(args.data_dir, args.feed)
 
-    concept_path = f'new_{args.concept}_model.pkl'
+    concept_path = f'{args.concept}_model.pkl'
     concept = HumanConcept(args.concept, concept_path)
 
     weight = 1000
@@ -736,8 +754,46 @@ def preprocess():
     r = RecommendationDataset()
     r.preprocess_papers(args.data_dir, args.feed)
 
+def get_preevaluated_json():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data_dir")
+    parser.add_argument("--feed")
+    parser.add_argument("--concept")
+    parser.add_argument("--model_type")
+    parser.add_argument("--algorithm")
+    parser.add_argument("--weight")
+    args = parser.parse_args()
 
-main()
+    r = RecommendationDataset()
+    r.preprocess_papers(args.data_dir, args.feed)
+    print("Papers preprocessed.")
+
+    # json =
+
+    concept_path = f'concept_models/{args.concept}_model.pkl'
+    concept = HumanConcept(args.concept, concept_path)
+
+    seed = 1
+    h = HybridModel(r, args.algorithm, seed, args.model_type)
+    h.train()
+    h.refine_and_train(concept, weight=args.weight)
+    ranked_papers = h.get_top_papers_ranked()
+    ranked_papers = ranked_papers.to_json()
+    print(ranked_papers)
+
+    with open(args.feed + '_' + args.concept + '_' + args.weight + '.json', 'w') as json_file:
+        json.dump(ranked_papers, json_file)
+
+
+
+    # explanation, relative_explanation = h.get_global_explanation()
+    #
+    # sorted_features = sorted(explanation.keys(), key=lambda x: -explanation[x])
+    # rank = sorted_features.index(concept.get_concept_name())
+
+
+# main()
 # experiment2()
 # experiment3()
 # preprocess()
+get_preevaluated_json()

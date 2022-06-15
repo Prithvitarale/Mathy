@@ -1,0 +1,428 @@
+† Pietro Mascagni and Deepak Alapatt contributed equally and share first co-authorship.
+Correspondence to: Pietro Mascagni, M.D., p.mascagni@unistra.fr
+This work was partially supported by French State Funds managed by the “Agence Nationale de la Recherche (ANR)” through
+the “Investissements d’Avenir” (Investments for the Future) Program under Grant ANR-10-IAHU-02 (IHU-Strasbourg) and
+through the National AI Chair program under Grant ANR-20-CHIA-0029-01 (Chair AI4ORSafety).
+Surgical data science for safe cholecystectomy:
+a protocol for segmentation of hepatocystic anatomy and
+assessment of the critical view of safety
+Pietro Mascagni1, 2, 3†
+, M.D.; Deepak Alapatt1†
+, M.Sc.; Alain Garcia3
+, M.D.;
+Nariaki Okamoto4
+, M.D.; Armine Vardazaryan1
+, M.Sc.; Guido Costamagna2
+,
+M.D., Ph.D.; Bernard Dallemagne3, 4
+, M.D.; Nicolas Padoy1, 3
+, Ph.D.
+1. ICube, University of Strasbourg, CNRS, France
+2. Fondazione Policlinico Universitario A. Gemelli IRCCS, Rome, Italy
+3. IHU-Strasbourg, Institute of Image-Guided Surgery, Strasbourg, France
+4. Institute for Research against Digestive Cancer (IRCAD), Strasbourg, France
+Keywords: Critical View of Safety; Laparoscopic Cholecystectomy; Surgical Data Science;
+Deep Learning; Annotation protocol; Segmentation.
+Minimally invasive image-guided surgery heavily relies on vision. Deep learning models for
+surgical video analysis could therefore support visual tasks such as assessing the critical view of
+safety (CVS) in laparoscopic cholecystectomy (LC), potentially contributing to surgical safety and
+efficiency. However, the performance, reliability and reproducibility of such models are deeply
+dependent on the quality of data and annotations used in their development. Here, we present a
+protocol, checklists, and visual examples to promote consistent annotation of hepatocystic
+anatomy and CVS criteria. We believe that sharing annotation guidelines can help build
+trustworthy multicentric datasets for assessing generalizability of performance, thus accelerating
+the clinical translation of deep learning models for surgical video analysis.
+Annotation Protocol for Safe Cholecystectomy 2
+Index
+1. Vision: the double-edged sword of modern surgery.......................................................... 3
+2. Deep learning for safe cholecystectomy........................................................................... 4
+3. Need for shared annotation protocols............................................................................. 5
+4. Annotation protocol and workflow ................................................................................. 6
+4.1 Collecting LC videos for CVS assessment ..............................................................................6
+4.2 Defining a region of interest for CVS assessment....................................................................7
+4.3 Video annotation.................................................................................................................7
+4.3.1 Assessing CVS criteria in videos.............................................................................................................7
+4.4 Image annotation.................................................................................................................7
+4.4.1 Extracting key CVS images for manual annotation.................................................................................7
+4.4.2 Assessing CVS criteria in images ............................................................................................................8
+4.4.3 Segmenting hepatocystic anatomy in images ..........................................................................................8
+4.5. Notes on annotation............................................................................................................9
+4.5.1 Annotators..............................................................................................................................................9
+4.5.2 Annotation process.............................................................................................................................. 10
+4.5.3 Annotation tools.................................................................................................................................. 10
+5. Conclusion..................................................................................................................11
+6. CVS criteria checklist ...................................................................................................12
+7. Segmentation rules of thumb ........................................................................................13
+8. CVS criteria annotation flashcards.................................................................................14
+9. Hepatocystic anatomy segmentation flashcards...............................................................18
+10. References.................................................................................................................23
+Annotation Protocol for Safe Cholecystectomy 3
+1. Vision: the double-edged sword of modern surgery
+Image-guided procedures such as laparoscopic, endoscopic, and radiological interventions
+heavily rely on imaging to guide gestures (1). Such minimally invasive approaches have shown
+significant value for patients and healthcare systems. However, the subconscious assumptions
+typical of human visual perception can lead to erroneous interpretations of endoscopic and
+radiological images, contributing to serious adverse events that were rarer during traditional, open
+surgery procedures (2).
+The Shepard elephant depicted in Figure 1 is a classic example of this type of optical illusion (3).
+Figure 1. Shepard elephant or the impossible elephant. This is considered an impossible
+object, a type of optical illusion derived from the subconscious projection of a two-dimensional
+object in the three-dimensional space performed instantly by the visual system.
+Annotation Protocol for Safe Cholecystectomy 4
+2. Deep learning for safe cholecystectomy
+The problem of bile duct injuries (BDIs) in laparoscopic cholecystectomy (LC) well exemplifies
+the case of a serious adverse event caused by visual illusion. In fact, it was found that 97% of
+BDIs happen due to visual perceptual illusions (2). In the classical BDI, the surgical operator
+believes to be clipping and cutting the cystic duct while actually dividing the common bile duct.
+To prevent the visual illusion causing BDI, in 1995 Strasberg et al (4) proposed to perform the
+critical view of safety (CVS) technique to conclusively identify the cystic duct. Today, this safety
+view has been so extensively studied that all guidelines on safe LC recommended obtaining CVS
+prior to the division of the cystic duct (5–7). However, CVS assessment is qualitative and subject
+to observer interpretation (8–10). This might explain the non-decreasing rate of BDI (11),
+remaining at least 3 times more common in LC than open cholecystectomy despite 3 decades of
+CVS and efforts from the surgical community (12).
+Surgical data science, a multidisciplinary field using the vast amount of digital data generated in
+surgery to enhance care (13), could help in this regard. In fact, deep learning models for surgical
+video analysis can be trained to guide the surgeons towards safe areas of dissection (14), reliably
+segment hepatocystic anatomy and unequivocally assess CVS (15) (Figure 2), and produce
+selective video documentation of this safety step of LC (16). Once thoroughly validated in their
+performance and ability to generalize, such models could be used intraoperatively to enhance
+surgeons awareness, potentially contributing towards surgical safety.
+Figure 2. Schematic representation of DeepCVS (15). This 2-stage model analyses laparoscopic images by first
+segmenting hepatocystic anatomy and surgical tools and then passing this information to a network tasked with
+classifying each of the 3 CVS criteria as achieved or not.
+Annotation Protocol for Safe Cholecystectomy 5
+3. Need for shared annotation protocols
+Deep learning is notably highly dependent on the quantity and quality of data. In surgery, large
+and well annotated datasets are scarce if not absent, limiting research and development efforts
+despite the widely recognized potential of computer assistance (17).
+The sensitive and private nature of surgical data is certainly a factor contributing to such paucity
+of publicly available datasets. However, processes to collect and share clinical data exists (17).
+We believe a significant bottleneck for the generation of meaningful surgical datasets resides in
+annotation. Annotating surgical data with ground truth, the gold standard information used to
+train and assess learning models, can be a difficult and costly process (18). This is especially true
+when annotating instances of high surgical semantics such as CVS in LC, requiring the
+development of methods for consistent assessments from overburdened healthcare professionals
+(10, 19).
+Sharing annotation protocols would accelerate the construction and allow the amalgamation of
+annotated datasets from multiple centres, greatly contributing to the development of robust and
+reliable deep learning models. Furthermore, published annotation protocols would facilitate the
+development of external, annotated datasets. These datasets could be used to independently test
+models, thereby mitigating the need for a posteriori analysis of models outputs (20).
+Finally, publishing annotation protocols would also help gain better insights and discuss the
+clinical relevance of models performance. In fact, by inspecting how annotations were defined,
+one could appraise the clinical soundness of the ground truth used to compute models accuracy.
+In brief, publishing annotation protocols could contribute towards:
+• Reproducibility, by providing guidelines for collaborators and researchers wanting to
+perform an independent assessment of models
+• Trust, by offering insights on clinical relevance and reliability of the ground truth used
+for training and testing deep learning models
+Annotation Protocol for Safe Cholecystectomy 6
+Overall, we believe public and shared annotation protocols could help accelerate the clinical
+assessment and uptake of deep learning models for surgical video analysis.
+4. Annotation protocol and workflow
+The annotation process described below includes the collection of surgical videos, the video
+assessment of CVS criteria, the extraction of video-frames and, finally, the segmentation of
+hepatocystic anatomy and annotation of CVS criteria on the extracted images. The whole process
+is illustrated in Figure 3.
+Figure 3. Schematic representation of the annotation process. The top of the figure shows the
+visual cues marking the first incision on the hepatocystic triangle, a criterion becoming
+evaluable (in this case, the cystic duct and artery start to be visible in their tubular appearance)
+and the first clip applied on the cystic duct, the 3 timestamps defining the region of interest for
+video assessment of CVS and video frames extraction. The bottom of the figure represents the
+extraction of key frames for manual segmentation of hepatocystic anatomy and CVS criteria
+annotation.
+4.1 Collecting LC videos for CVS assessment
+Endoscopic videos of LC procedures are the primary source of data used for hepatocystic
+anatomy segmentation and CVS assessment. Consecutive and unselected LC videos are collected
+to generate a representative and diverse dataset, including videos of procedures with anatomical
+variations and varying degree of inflammation. However, videos showing one of the following
+deviations from the normal procedural workflow induced by failure to achieve CVS were
+Annotation Protocol for Safe Cholecystectomy 7
+excluded: fundus first or anterograde cholecystectomy, subtotal or partial cholecystectomy,
+intraoperative cholangiogram, conversion to open surgery and abortion of the LC procedure.
+4.2 Defining a region of interest for CVS assessment
+Surgically, CVS should be achieved prior to the division of the cystic duct and artery by careful
+dissection of the hepatocystic triangle. It follows that the region of interest for CVS assessment
+should start with the hepatocystic triangle dissection and end when the first clip is applied on the
+cystic duct or the cystic artery (Figure 3). This region of interest of the video is used for training
+and testing deep learning models for hepatocystic anatomy segmentation and CVS criteria
+assessment.
+4.3 Video annotation
+4.3.1 Assessing CVS criteria in videos
+According to Strasberg et al (4, 21), CVS is defined as the view of 2 tubular structures, the cystic
+duct and the cystic artery, connected to the gallbladder (2-structure criterion, C1), a hepatocystic
+triangle cleared from fat and connective tissues (hepatocystic triangle criterion, C2) and the lower
+part of the gallbladder separated from the liver bed (cystic plate criterion, C3). For consistency,
+each of these 3 CVS criteria should be assessed as either achieved or not, in a binary fashion; if
+3 out of 3 criteria are achieved, then CVS is obtained (10).
+4.4 Image annotation
+4.4.1 Extracting key CVS images for manual annotation
+To populate the dataset, CVS images are extracted from videos and manually annotated. A video-
+frame extraction process was designed to minimize selection bias and to find a good trade-off
+between the annotation effort and having a representative and sizeable dataset. This process
+entails the following steps (Figure 3):
+Annotation Protocol for Safe Cholecystectomy 8
+1. The region of interest of the video is reviewed to annotate the first moment (i.e.,
+timestamp) when any of the 3 CVS criteria is considered evaluable (Criterion x
+evaluable).
+i. A criterion is considered evaluable when its anatomical elements can be seen but
+the criterion is not achieved, e.g, part of the cystic duct is visible but 2 tubular
+structures are not clearly visible => C1 evaluable. Note, it is important to be
+conservative with the “Criterion x evaluable” timestamp (i.e., place the timestamp
+as soon as elements of a criterion start to be visible) to avoid missing images that
+should be manually annotated.
+2. Video-frames between the start of the region of interest for CVS assessment and the
+“Criterion x evaluable” timestamp are automatically marked as having no criteria
+achieved.
+3. Temporally regularly spaced key video-frames between the “Criterion x evaluable”
+timestamp and the end of the region of interest are manually annotated.
+i. If no “Criterion x evaluable” timestamp occurs during the procedure, temporally
+regularly spaced key frames from the entire region of interest are manually
+annotated.
+4.4.2 Assessing CVS criteria in images
+CVS is more difficult to assess in static images, with several investigations reporting a lower inter-
+rater agreement in photo assessment compared to video assessment of CVS (10, 22, 23).
+A checklist to improve consistency of CVS criteria assessments during annotation and revision
+of images is presented at the end of the manuscript.
+4.4.3 Segmenting hepatocystic anatomy in images
+The following instances are pixel-wise segmented due to their relevance to CVS:
+• Gallbladder: The pear-shaped organ excised during LC.
+Annotation Protocol for Safe Cholecystectomy 9
+• Cystic duct: The tubular-shaped biliary structure divided during LC.
+• Cystic artery: The tubular-shaped vascular structure divided during LC.
+• Cystic plate: The connective tissue exposed separating the gallbladder from the liver bed.
+• Hepatocystic triangle dissection: The dissected “windows” in the hepatocystic triangle
+exposed during LC.
+• Surgical instruments: The laparoscopic tools used during LC.
+• Ignore: Label used to mark anatomical variations.
+• Background: An implicitly segmented class corresponding to every pixel not
+corresponding to one of the above-mentioned classes.
+Rules of thumb to improve segmentation consistency is presented at the end of the manuscript.
+4.5. Notes on annotation
+4.5.1 Annotators
+Assessing CVS criteria entails evaluating the quality of the surgical dissection, requiring
+annotators with domain knowledge. For this reason, annotators of CVS criteria should be
+surgeons specifically trained on the principles of a safe cholecystectomy (24). In addition, three
+or more surgeons should independently assess each video/image to allow the deep learning
+model to learn the most commonly held interpretation of CVS rather than a single assessment.
+Finally, disagreements in CVS criteria assessments should not be mediated to avoid introducing
+biases.
+Gross hepatocystic anatomy can be more objectively defined, especially when assessed on videos,
+outside of the time-constraints and stress of operating rooms. Furthermore, contouring variability
+(i.e., including or excluding a few pixels around an anatomical structure) should not have clinical
+implications in our use-case. For this reason, semantic segmentation of surgical images is
+performed by computer scientists trained on the fundamentals of hepato-biliary anatomy and
+surgeons alike. Given the time required to extensively segment surgical images, each extracted
+Annotation Protocol for Safe Cholecystectomy 10
+frame is semantically segmented once. However, all semantic segmentations are revised by at
+least one independent annotator to improve consistency.
+4.5.2 Annotation process
+Before starting the annotation process, an annotation protocol, checklists, and flashcards should
+be shared with enrolled annotators to collect feedback and discuss improvements.
+During the annotation process, regular meetings should be held with all the involved annotators
+to give feedback based on randomized and anonymized reviews of annotations to rule out major
+inconsistencies with the provided definitions. Such reviews are qualitative or make use of
+standard inter-rater agreements metrics such as Cohen’s kappa.
+To promote consistency, annotators should watch videos before annotating images and should
+return to videos in case contextual information is needed to conclusively identify anatomical
+structures present in the frame being annotated. Finally, annotators should review all images
+extracted from a single procedure sequentially to spot and correct eventual annotation
+inconsistencies.
+4.5.3 Annotation tools
+In our experience, annotating LC videos with timestamps and an assessment of CVS criteria can
+be done using any compatible media player and word editor.
+On the other hand, to efficiently annotate a large number of images with CVS criteria and
+segmentation we required specific annotation software.
+A custom software was developed for effective annotation of CVS criteria in images. The custom
+CVS annotation software developed at CAMMA (Computational Analysis and Modeling of
+Medical Activities research group, ICube, University of Strasbourg, IHU Strasbourg, France)
+allows to quickly navigate between images, label CVS criteria and extra information with forms
+or free text comments and open videos at the exact time point showing the image to annotate for
+quick review.
+Annotation Protocol for Safe Cholecystectomy 11
+Finally, LabelMe (25), a freely available, open-source software was used for polygon-based
+semantic segmentation of surgical images. The source code of LabelMe was also modified to
+allow opening videos at the exact time point showing the image to annotate.
+5. Conclusion
+Here, we stress the need for strictly defining and sharing guidelines to annotate surgical images
+and present our protocol for consistent hepatocystic anatomy segmentation and CVS criteria
+assessment. We hope that this effort will set a precedent and facilitate a discussion with
+clinicians and computer scientists alike on the clinical value and technical challenges associated
+with developing meaningful surgical datasets. The development of such datasets could strongly
+accelerate the translation of deep learning models to enhance safety and efficiency of surgical
+care.
+Annotation Protocol for Safe Cholecystectomy 12
+6. CVS criteria checklist
+C1 – 2-structure criterion
+Definition: The cystic duct and the cystic artery are the only 2 tubular structures connected to
+the gallbladder
+Not achieved:
+a) ≠2 tubular structures
+b) Not tubular-appearing due to incomplete dissection, point of view, instrument
+occlusion, etc.
+c) Not seen entering the gallbladder due to incomplete dissection, point of view,
+instrument occlusion, etc.
+Achieved:
+b) View of 2 tubular structures connected to the gallbladder
+I. Note: The criterion is considered achieved even if the presence of an
+extra tubular structure cannot be excluded due to insufficient dissection
+(i.e., non-achievement of C2 and/or C3)
+C2 – Hepatocystic triangle criterion
+Definition: The hepatocystic triangle is cleared of fat and/or connective tissue so that an
+unimpeded view of the hepatocystic triangle is obtained
+Not achieved:
+a) No full-thickness dissection (i.e., the underlying anatomy is not visible through
+the dissected windows)
+b) Inability to confirm/exclude the presence of other structures running between
+the cystic duct and the cystic artery and between the cystic artery and the cystic
+plate
+Achieved:
+c) The presence of 2 full-thickness dissected windows in the hepatocystic triangle
+(between the cystic duct and the cystic artery, between the cystic artery and the
+cystic plate) is verified through vision or interposition of an instrument
+I. Note: In cases with a single tubular structure connected to the
+gallbladder (i.e., no cystic artery), there will not be 2 windows, but the
+criterion can still be achieved
+C3 – Cystic plate criterion
+Definition: The lower part of the gallbladder is divided from the liver bed to expose the cystic
+plate
+Not achieved:
+a) The cystic plate is not visible along the whole inferior margin of the gallbladder
+due to incomplete anterior or posterior dissection, instrument or blood
+occluding the view, etc.
+b) Inability to confirm/exclude the presence of other structures running on the
+cystic plate
+Achieved:
+c) The cystic plate is visible below the whole inferior margin (i.e., from anterior to
+posterior view) of the gallbladder
+I. Note: Should resemble a “hanging gallbladder” in open cholecystectomy
+II. Note: A fatty/thick cystic plate and a dissection between the subserosa
+inner and subserosa outer layers (i.e., dissection close to the gallbladder)
+does not prevent the criterion from being achieved
+Note, redundancy between the "Not achieved” and “Achieved” rows is purposefully included to
+reiterate and explicitly elaborate the criteria definitions for annotators.
+Annotation Protocol for Safe Cholecystectomy 13
+7. Segmentation rules of thumb
+Segment only well dissected structures
+a) Only segment the tubular appearing, texture-specific cystic duct and artery
+b) If a window of the hepatocystic triangle is only partially dissected (i.e., the background is not
+visible), don’t segment it
+Segment only what is visible
+c) When any labelled class is visible through the hepatocystic triangle (e.g., gallbladder, cystic
+plate in tangential views, etc.), label the visible class instead of the dissected hepatocystic
+triangle
+d) When margins are not clearly visible due to poor lighting, adjust the image brightness
+Anatomical margins
+e) To define the lower margin of the gallbladder and the distal margins of the cystic duct and
+the cystic artery, follow a straight line that passes through the intersection of the gallbladder
+with the cystic duct and the cystic artery
+Anatomical variations
+f) Segment the cystic duct and the cystic artery only if you are 100% sure of their correct
+identification. Use the video to confirm anatomy
+g) If the third tubular structure arises from a bifurcation of what you have conclusively
+identified as the cystic artery, then segment both bifurcation branches as cystic artery
+h) When you cannot conclusively identify a tubular structure, segment it with the “Ignore” label
+Surgical instruments
+i) The anatomy or a separate tool visible through the fenestrated jaws of instrument (e.g.,
+fenestrated grasper, bipolar) should not be segmented. If a portion of the same tool is visible
+through the fenestrated jaws, then segment it
+Annotation Protocol for Safe Cholecystectomy 14
+8. CVS criteria annotation flashcards
+Here, we present and describe a set of laparoscopic images labelled with an assessment of CVS
+criteria in order to illustrate and explicit the rationale behind CVS annotation.
+Annotation Protocol for Safe Cholecystectomy 15
+Annotation Protocol for Safe Cholecystectomy 16
+Annotation Protocol for Safe Cholecystectomy 17
+Annotation Protocol for Safe Cholecystectomy 18
+9. Hepatocystic anatomy segmentation flashcards
+Here, we present a few illustrations of manual segmentation to visualize rules for annotation of
+hepatocystic anatomy and surgical tools.
+• Segmentation legend
+• Complete segmentation of hepatocystic anatomy in a CVS achieved case
+• Segment any extra tissue sitting on anatomical structures
+Annotation Protocol for Safe Cholecystectomy 19
+• Unless texture specific transitions are visible, use the inferior margin of the gallbladder
+to draw a border between the gallbladder and cystic duct/cystic artery
+• Adjust image brightness if needed to better identify margins of structures
+Annotation Protocol for Safe Cholecystectomy 20
+• Use the video only to identify and delineate structures that are visible in the frame you
+are annotating
+• Label any relevant anatomy or tools visible through or occluding the hepatocystic
+triangle dissection
+Annotation Protocol for Safe Cholecystectomy 21
+• Label the region visible through the fenestrated jaws of instruments such as grasper and
+bipolar as background unless a portion of the same instrument is visible through it
+• Perform a sanity check by reviewing consistency between consecutive frames of video
+Annotation Protocol for Safe Cholecystectomy 22
+• Use the “Ignore” label (white) to mark out anatomical variants
+Annotation Protocol for Safe Cholecystectomy 23
+10. References
+1. Mascagni P, Longo F, Barberio M, et al. New intraoperative imaging technologies:
+Innovating the surgeon’s eye toward surgical precision. Journal of Surgical Oncology
+2018;118:265–282.
+2. Way LW, Stewart L, Gantert W, et al. Causes and prevention of laparoscopic bile duct
+injuries: analysis of 252 cases from a human factors and cognitive psychology perspective.
+Annals of Surgery 2003;237:460–469.
+3. Shepard RN. Mind Sights: Original Visual Illusions, Ambiguities, and Other Anomalies,
+with a Commentary on the Play of Mind in Perception and Art. W.H. Freeman and Company;
+1990.
+4. Strasberg SM, Hertl M, Soper NJ. An analysis of the problem of biliary injury during
+laparoscopic cholecystectomy. Journal of the American College of Surgeons 1995;180:101–
+125.
+5. Brunt LM, Deziel DJ, Telem DA, et al. Safe Cholecystectomy Multi-society Practice
+Guideline and State of the Art Consensus Conference on Prevention of Bile Duct Injury
+During Cholecystectomy. Annals of Surgery 2020;272:3–23.
+6. Conrad C, Wakabayashi G, Asbun HJ, et al. IRCAD recommendation on safe laparoscopic
+cholecystectomy. Journal of Hepato-Biliary-Pancreatic Sciences 2017;24:603–615.
+7. Wakabayashi G, Iwashita Y, Hibi T, et al. Tokyo Guidelines 2018: surgical management of
+acute cholecystitis: safe steps in laparoscopic cholecystectomy for acute cholecystitis (with
+videos). Journal of Hepato-Biliary-Pancreatic Sciences 2018;25:73–86.
+8. Nijssen MAJ, Schreinemakers JMJ, Meyer Z, et al. Complications after laparoscopic
+cholecystectomy: a video evaluation study of whether the critical view of safety was reached.
+World Journal of Surgery 2015;39:1798–1803.
+9. Stefanidis D, Chintalapudi N, Anderson-Montoya B, et al. How often do surgeons obtain
+the critical view of safety during laparoscopic cholecystectomy? Surgical Endoscopy
+2017;31:142–146.
+10. Mascagni P, Fiorillo C, Urade T, et al. Formalizing video documentation of the Critical
+View of Safety in laparoscopic cholecystectomy: a step towards artificial intelligence assistance
+to improve surgical safety. Surgical Endoscopy 2019:1–6.
+11. Pucher PH, Brunt LM, Davies N, et al. Outcome trends and safety measures after 30 years
+of laparoscopic cholecystectomy: a systematic review and pooled data analysis. Surgical
+Endoscopy 2018;32:2175–2183.
+12. Anon. A Prospective Analysis of 1518 Laparoscopic Cholecystectomies: The Southern
+Surgeons Club. New England Journal of Medicine 1991;324:1073–1078.
+13. Maier-Hein L, Vedula SS, Speidel S, et al. Surgical data science for next-generation
+interventions. Nature Biomedical Engineering 2017;1:691–696.
+Annotation Protocol for Safe Cholecystectomy 24
+14. Madani A, Namazi B, Altieri MS, et al. Artificial Intelligence for Intraoperative Guidance:
+Using Semantic Segmentation to Identify Surgical Anatomy During Laparoscopic
+Cholecystectomy. Annals of Surgery 2021: In Press.
+15. Mascagni P, Vardazaryan A, Alapatt D, et al. Artificial Intelligence for Surgical Safety:
+Automatic Assessment of the Critical View of Safety in Laparoscopic Cholecystectomy Using
+Deep Learning. Annals of Surgery 2020; In Press.
+16. Mascagni P, Alapatt D, Urade T, et al. A Computer Vision Platform to Automatically
+Locate Critical Events in Surgical Videos: Documenting Safety in Laparoscopic
+Cholecystectomy. Annals of Surgery 2021;274:e93.
+17. Maier-Hein L, Eisenmann M, Sarikaya D, et al. Surgical Data Science -- from Concepts to
+Clinical Translation. arXiv 2020; 2011.02284.
+18. Ward TM, Fer DM, Ban Y, et al. Challenges in surgical video annotation. Computer
+Assisted Surgery 2021;26:58–68.
+19. Sanford DE, Strasberg SM. A simple effective method for generation of a permanent
+record of the critical view of safety during laparoscopic cholecystectomy by intraoperative
+“doublet” photography. Journal of the American College of Surgeons 2014;218:170–178.
+20. Korndorffer Jr JR, Hawn MT, Spain DA, et al. Situating Artificial Intelligence in Surgery: A
+Focus on Disease Severity. Annals of Surgery 2020;272:523–528.
+21. Strasberg SM, Brunt LM. Rationale and use of the critical view of safety in laparoscopic
+cholecystectomy. Journal of the American College of Surgeons 2010;211:132–138.
+22. Emous M, Westerterp M, Wind J, et al. Registering the critical view of safety: photo or
+video? Surgical Endoscopy 2010;24:2527–2530.
+23. Buddingh KT, Morks AN, ten Cate Hoedemaker HO, et al. Documenting correct
+assessment of biliary anatomy during laparoscopic cholecystectomy. Surgical Endoscopy
+2012;26:79–85.
+24. Anon. The SAGES Safe Cholecystectomy Program - Strategies for Minimizing Bile Duct
+Injuries. SAGES. Available at: https://www.sages.org/safe-cholecystectomy-program/. Accessed
+October 8, 2020.
+25. Wada K. Labelme: Image Polygonal Annotation with Python. 2016. Available at:
+https://github.com/wkentaro/labelme . Accessed June 21, 2021.
+

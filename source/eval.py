@@ -86,7 +86,7 @@ class Eval:
                 'size': 45}
         matplotlib.rc('font', **font)
 
-        # 0.8 -> seeds -> training subsets, test fixed
+        # 0.8 -> seeds -> training subsets, test_neg fixed
         t, c = train_test_split(list(zip(x, y)), test_size=0.50, random_state=42)
         x, y = zip(*t)
         test_x, test_y = zip(*c)

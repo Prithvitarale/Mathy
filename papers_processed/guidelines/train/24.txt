@@ -1,0 +1,1680 @@
+Articles
+WINTER 2014 105
+Copyright © 2014, Association for the Advancement of Artificial Intelligence. All rights reserved. ISSN 0738-4602
+Power to the People:
+The Role of Humans in
+Interactive Machine Learning
+Saleema Amershi, Maya Cakmak, W. Bradley Knox, Todd Kulesza1
+M
+achine learning is a powerful tool for transforming
+data into computational models that can drive
+user-facing applications. However, potential users
+of such applications, who are often domain experts for the
+application, have limited involvement in the process of
+developing them. The intricacies of applying machine-learn-
+ing techniques to everyday problems have largely restricted
+their use to skilled practitioners. In the traditional applied
+machine-learning workflow, these practitioners collect data,
+select features to represent the data, preprocess and trans-
+form the data, choose a representation and learning algo-
+rithm to construct the model, tune parameters of the algo-
+rithm, and finally assess the quality of the resulting model.
+This assessment often leads to further iterations on many of
+the previous steps. Typically, any end-user involvement in
+this process is mediated by the practitioners and is limited to
+providing data, answering domain-related questions, or giv-
+ing feedback about the learned model. This results in a
+design process with lengthy and asynchronous iterations
+and limits the end users’ ability to affect the resulting mod-
+els.
+Consider the following case study of machine-learning
+practitioners working with biochemists to develop a protein
+taxonomy by clustering low-level protein structures (Carua-
+na et al. 2006). The project lead recounted their experience
+in an invited talk at the Intelligent User Interfaces’s 2013
+Workshop on Interactive Machine Learning (Amershi et al.
+2013). First, the practitioners would create a clustering of the
+protein structures. Then, they would meet with the bio-
+chemists to discuss the results. The biochemists would cri-
+tique the results (for example, “these two proteins should /
+should not be in the same cluster” or “this cluster is too
+small”), providing new constraints for the next iteration.
+Following each meeting, the practitioners would carefully
+adjust the clustering parameters to adhere to the given con-
+n Systems that can learn interactively from
+their end-users are quickly becoming wide-
+spread. Until recently, this progress has been
+fueled mostly by advances in machine learn-
+ing; however, more and more researchers are
+realizing the importance of studying users of
+these systems. In this article we promote this
+approach and demonstrate how it can result
+in better user experiences and more effective
+learning systems. We present a number of
+case studies that demonstrate how interactiv-
+ity results in a tight coupling between the sys-
+tem and the user, exemplify ways in which
+some existing systems fail to account for the
+user, and explore new ways for learning sys-
+tems to interact with their users. After giving
+a glimpse of the progress that has been made
+thus far, we discuss some of the challenges we
+face in moving the field forward.
+Articles
+106 AI MAGAZINE
+straints and recompute clusters for the next meeting.
+Frustrated by the inefficiency of this laborious
+process, Caruana and colleagues went on to develop
+learning algorithms that enable interactive explo-
+ration of the clustering space and incorporation of
+new clustering constraints (Cohn, Caruana, and
+McCallum 2003; Caruana et al. 2006). These algo-
+rithms were intended to give people the ability to
+rapidly iterate and inspect many alternative cluster-
+ings within a single sitting.
+Their later approach is an example of interactive
+machine learning, where learning cycles involve
+more rapid, focused, and incremental model updates
+than in the traditional machine-learning process.
+These properties enable everyday users to interac-
+tively explore the model space and drive the system
+toward an intended behavior, reducing the need for
+supervision by practitioners. Consequently, interac-
+tive machine learning can facilitate the democratiza-
+tion of applied machine learning, empowering end
+users to create machine-learning-based systems for
+their own needs and purposes. However, enabling
+effective end-user interaction with interactive
+machine learning introduces new challenges that
+require a better understanding of end-user capabili-
+ties, behaviors, and needs.
+This article promotes the empirical study of the
+users of interactive machine-learning systems as a
+method for addressing these challenges. Through a
+series of case studies, we illustrate the following
+propositions:
+Rapid, focused, and incremental learning cycles result
+in a tight coupling between the user and the system,
+where the two influence one another. As a result it is
+difficult to decouple their influence on the resulting
+model and study such systems in isolation.
+Explicitly studying user interaction can challenge
+assumptions of traditional learning systems about
+users and better inform the design of interactive learn-
+ing systems.
+The ways in which end users interact with learning
+systems can be expanded to ways in which practition-
+ers do (for example, tuning parameters or defining
+new constraints); however, novel interaction tech-
+niques should be carefully evaluated with potential
+end users.
+While the presented case studies paint a broad pic-
+ture of recent research in user interaction with inter-
+active machine learning, this article does not exhaus-
+tively survey the literature in this space. Rather, these
+case studies are selected to highlight the role and
+importance of the user within the interactive
+machine-learning process, serving as an introduction
+to the topic and a vehicle for considering this body of
+research altogether. We conclude this article with a
+discussion of the current state of the field, identifying
+opportunities and open challenges for future interac-
+tive machine-learning research.
+Interactive Machine Learning
+The applied machine-learning workflow often
+involves long and complex iterations. The process
+starts with data provided by domain experts or specifi-
+cally collected for the target application. Machine-
+learning practitioners then work with domain experts
+to identify features to represent the data. Next, the
+practitioners experiment with different machine-
+learning algorithms, iteratively tuning parameters,
+tweaking features, and sometimes collecting more
+data to improve target performance metrics. Results
+are then further examined both by practitioners and
+domain experts to inform the subsequent iteration. At
+the end of this long cycle, the model is updated in sev-
+eral ways and can be drastically different from the pre-
+vious iteration. Furthermore, this iterative exploration
+of the model space is primarily driven by the machine-
+learning practitioners, who rely on their understand-
+ing of machine-learning techniques to make informed
+model updates in each iteration.
+In contrast, model updates in interactive machine
+learning are more rapid (the model gets updated
+immediately in response to user input), focused (only
+a particular aspect of the model is updated), and incre-
+mental (the magnitude of the update is small; the
+model does not change drastically with a single
+update). This allows users to interactively examine the
+impact of their actions and adapt subsequent inputs to
+obtain desired behaviors. As a result of these rapid
+interaction cycles, even users with little or no
+machine-learning expertise can steer machine-learn-
+ing behaviors through low-cost trial and error or
+focused experimentation with inputs and outputs. Fig-
+ure 1 illustrates traditional applied machine learning
+and interactive machine learning, highlighting their
+contrasting characteristics.
+Perhaps the most familiar examples of interactive
+machine learning in real-world applications are rec-
+ommender systems such as Amazon product recom-
+mendations, Netflix movie recommendations, and
+Pandora music recommendations. Users of recom-
+mender systems are often asked targeted questions
+about their preferences for individual items2 (which
+they provide by liking or disliking them, for example).
+These preferences are then promptly incorporated in
+the underlying learning system for subsequent recom-
+mendations. If a recommender system begins recom-
+mending undesired items after incorporating new
+preferences, the user may attempt to redirect the sys-
+tem by correcting it or providing different preference
+information in the future.
+We next present two case studies that exemplify the
+interactive machine-learning process and demonstrate
+its potential as an end-user tool.
+Interactive Machine Learning
+for Image Segmentation
+Fails and Olsen (2003) were the first to introduce the
+Articles
+WINTER 2014 107
+term interactive machine learning in the human-com-
+puter interaction community, characterizing it with
+rapid train-feedback-correct cycles, where users itera-
+tively provide corrective feedback to a learner after
+viewing its output. They demonstrated this process
+with their Crayons system, which allowed users with
+no machine-learning background to train pixel clas-
+sifiers by iteratively marking pixels as foreground or
+background through brushstrokes on an image. After
+each user interaction, the system responded with an
+updated image segmentation for further review and
+corrective input.
+Evaluations of Crayons through user studies
+revealed that the immediate output provided by the
+system allowed users to quickly view and correct mis-
+classifications by adding new training data in the
+most problematic areas. As illustrated in figure 2,
+after an initial classification, the user provides
+Crayons with more data at the edges of the hand
+where the classifier failed. When asked what they
+were thinking while interacting with the system,
+most users stated that they were focused on seeing
+parts of the image that were classified incorrectly.
+Fails and Olsen’s work on Crayons demonstrated
+that users modify their behavior based on a learner’s
+outputs, which is an underlying premise for much of
+the following research on interactive machine learning.
+Interactive Machine Learning
+for Gesture-Based Music
+Another example of an interactive machine-learning
+system comes from the realm of music composition
+Figure 1. Traditional Applied and Interactive Machine Learning.
+In machine learning, people iteratively supply information to a learning system and then observe and interpret the outputs of the system
+to inform subsequent iterations. In interactive machine learning, these iterations are more focused, frequent, and incremental than tradi-
+tional machine learning. The tighter interaction between users and learning systems in interactive machine learning necessitates an
+increased focus on studying the user’s involvement in the process.
+data
+design
+parameters data
+and
+insight
+Learning
+System
+OUTPUTS
+INPUTS
+Learning
+System
+OUTPUTS
+INPUTS
+features,
+model choice,
+algorithm choice,
+thresholds, ...
+predictions,
+recommendations,
+clusters, ...
+precision/recall,
+visualizations, ...
+Traditional process for constructing
+machine learning systems
+data,design
+parameters, and other
+User
+predictions, recommendations,
+clusters, precision/recall
+visualizations, queries, ...
+Interactive machine learning process
+samples, labels, preferences,
+features, model and algorithm
+choice, thresholds, error
+preferences, corrections,
+guidance, answers...
+samples, labels, preferences, ...
+time time
+model
+update
+model
+update
+model
+update
+INPUTS
+OUTPUTS
+INPUTS
+OUTPUTS
+Model
+change
+Iteration
+cycles
+time
+Model
+change
+Iteration
+cycles
+time
+sample outputs
+questions, ...,
+usage (testing)
+development (training)
+simultaneous development & usage
+User
+Expert
+and performance. This domain is naturally interac-
+tive: musicians are accustomed to receiving immedi-
+ate feedback when interacting with a musical instru-
+ment. Fiebrink, Cook, and Trueman (2011)
+developed the Wekinator, a machine-learning system
+for enabling people to interactively create novel ges-
+ture-based instruments, such as moving an arm in
+front of a web camera to produce different sounds
+based on the arm’s position, speed, or rotation. In
+this system, a neural network receives paired gestures
+and sounds from the user as input and learns how to
+interpolate from unobserved gesture positions to a
+range of sounds. Users evaluate their instruments
+directly by gesturing and assessing the produced
+sounds.
+While observing students using Wekinator in an
+interdisciplinary music and computer science course,
+the authors found that as students trained their
+respective instruments, the interactive nature of the
+system also helped train the students. For example,
+the students learned how to recognize noise in their
+training samples and provide clearer examples to the
+learner. In some cases, students even adjusted their
+goals to match the observed capabilities of the learn-
+er. In a follow-up investigation with a professional
+cellist (Fiebrink, Cook, and Trueman 2011), the cellist
+identified flaws in her playing technique while try-
+ing to train a gesture recognizer. The process revealed
+that the cellist’s bowing articulation was not as pre-
+cise as she had believed. By observing the outputs of
+the system in real time, Wekinator users were able to
+modify their behavior in ways that allowed them to
+create instruments to their satisfaction.
+Summary
+These examples illustrate the rapid, focused, and
+incremental interaction cycles fundamental to inter-
+active machine learning; it is these cycles that facili-
+tate end-user involvement in the machine-learning
+process. These cycles also result in a tight coupling
+between the user and the system, making it impossi-
+ble to study the system in isolation from the user.
+This necessitates an increased focus on studying how
+users can effectively influence the machine-learning
+system and how the learning system can appropri-
+ately influence the users. The following section
+examines how explicitly studying end users can chal-
+lenge assumptions of traditional machine learning
+and better inform the development of interactive
+machine-learning systems. Many of the case studies
+to follow additionally consider less traditional types
+of input and output, moving beyond labeled exam-
+ples and observations of learner predictions.
+Articles
+108 AI MAGAZINE
+Figure 2. Interactive Training of the Crayons System.
+The system takes pixels labeled as background/foreground as input (provided through brush strokes), and gives a fully segmented image as
+output (obtained through a classifier that labels each pixel as foreground/background). The user’s input is focused on areas where the clas-
+sifier is failing in previous iterations (Fails and Olsen 2003).
+Input Data
+Segmentation
+Iteration 1 Iteration 2 Iteration 3
+Studying User Interaction with
+Interactive Machine Learning
+The increased interaction between users and learning
+systems in interactive machine learning necessitates
+an increased understanding of how end-user involve-
+ment affects the learning process. In this section, we
+present case studies illustrating how such an under-
+standing can ultimately lead to better-informed sys-
+tem designs. First, we present case studies demon-
+strating how people may violate assumptions made
+by traditional machine learners, resulting in unex-
+pected outcomes and user frustration. Next, we pres-
+ent case studies indicating that people may want to
+interact with machine-learning systems in richer
+ways than anticipated, suggesting new input and
+output capabilities. Finally, we present case studies
+that experiment with increasing transparency about
+how machine-learning systems work, finding that
+such transparency can improve the user experience
+in some scenarios, as well as the accuracy of resulting
+models.
+Users Are People, Not Oracles
+Active learning is a machine-learning paradigm in
+which the learner chooses the examples from which
+it will learn (Settles 2010). These examples are select-
+ed from a pool of unlabeled samples based on some
+selection criterion (for example, samples for which
+the learner has maximum uncertainty). For each
+selected sample the learner queries an oracle to
+request a label. This method has had success in accel-
+erating learning (that is, requiring fewer labels to
+reach a target accuracy) in applications like text clas-
+sification and object recognition, where oracles are
+often paid to provide labels over a long period of
+time. However, Cakmak and colleagues (2010) dis-
+covered that when applied to interactive settings,
+such as a person teaching a task to a robot by exam-
+ple, active learning can cause several problems.
+Cakmak’s study (figure 3) found that the constant
+stream of questions from the robot during the inter-
+action was perceived as imbalanced and annoying.
+The stream of questions also led to a decline in the
+user’s mental model of how the robot learned, caus-
+ing some participants to “turn their brain off” or
+“lose track of what they were teaching” (according
+to their self report) (Cakmak, Choa, and Thomaz
+2010). Guillory and Bilmes (2011) reported similar
+findings for an active movie recommendation sys-
+tem they developed for Netflix. These studies reveal
+that users are not necessarily willing to be simple
+oracles (that is, repeatedly telling the computer
+whether it is right or wrong), breaking a fundamen-
+tal assumption of active learning. Instead, these sys-
+tems need to account for human factors such as
+interruptibility or frustration when employing meth-
+ods like active learning.
+People Tend to Give More Positive
+Than Negative Feedback to Learners
+In reinforcement learning, an agent senses and acts
+in a task environment and receives numeric reward
+values after each action. With this experience, the
+learning agent attempts to find behavioral policies
+that improve its expected accumulation of reward. A
+Articles
+WINTER 2014 109
+Figure 3. Users Teaching New Concepts to a Robot by Providing Positive and Negative Examples.
+Left: Passive learning: examples are chosen and presented by the user. Right: Active learning: particular examples are requested by the learn-
+er. Although active learning results in faster convergence, users get frustrated from having to answer the learner’s long stream of questions
+and not having control over the interaction.
+number of research projects have investigated the
+scenario in which this reward comes as feedback
+from a human user rather than a function predefined
+by an expert (Isbell et al. 2006, Thomaz and Breazeal
+2008, Knox and Stone 2012). In evaluating the feasi-
+bility of nonexpert users teaching through reward
+signals, these researchers aimed to both leverage
+human knowledge to improve learning speed and
+permit users to customize an agent’s behavior to fit
+their own needs.
+Thomaz and Breazeal (2008) observed that people
+have a strong tendency to give more positive rewards
+than negative rewards. Knox and Stone (2012) later
+confirmed this positive bias in their own experi-
+ments. They further demonstrated that such bias
+leads many agents to avoid the goal that users are
+teaching it to reach (for example, the water in figure
+4). This undesirable consequence occurs with a com-
+mon class of reinforcement learning algorithms:
+agents that value reward accrued over the long term
+and are being taught to complete so-called episodic
+tasks. This insight provided justification for the pre-
+viously popular solution of making agents that hedo-
+nistically pursue only short-term human reward, and
+it led Knox and Stone (2013) to create an algorithm
+that successfully learns by valuing human reward
+that can be gained in the long term. Agents trained
+through their novel approach were more robust to
+environmental changes and behaved more appropri-
+ately in unfamiliar states than did more hedonistic
+(that is, myopic) variants. These agents and the algo-
+rithmic design guidelines Knox and Stone created
+were the result of multiple iterations of user studies,
+which identified positive bias and then verified its
+hypothesized effects.
+People Want to Demonstrate
+How Learners Should Behave
+In an experiment by Thomaz and Breazeal (2008)
+users trained a simulated agent to bake a cake
+through a reinforcement learning framework. In their
+interface, users gave feedback to the learner by click-
+ing and dragging a mouse — longer drags gave larg-
+er-magnitude reward values, and the drag direction
+determined the valence (+/–) of the reward value (fig-
+ure 4). Further, users could click on specific objects to
+signal that the feedback was specific to that object,
+but they were told that they could not communicate
+which action the agent should take.
+Thomaz and Breazeal found evidence that people
+nonetheless gave positive feedback to objects that
+they wanted the agent to manipulate, such as an
+empty bowl that the agent is in position to pick up.
+These users violated the instructions by applying
+what could be considered an irrelevant degree of free-
+dom — giving feedback to objects that had not been
+recently manipulated — to provide guidance to the
+agent about future actions, rather than actual feed-
+back about previous actions. After Thomaz and
+Breazeal adapted the agent’s interface and algorithm
+to incorporate such guidance, the agent’s learning
+performance significantly improved.
+Other researchers have reached similar conclu-
+sions. In a Wizard-of-Oz study (that is, the agent’s
+outputs were secretly provided by a human) by
+Kaochar and colleagues (2011), users taught a simu-
+Articles
+110 AI MAGAZINE
+Time: 16
+Figure 4. Two Task Domains for Reinforcement Learning Agents Taught by Human Users.
+Left: A cooking robot that must pick up and use the ingredients in an acceptable order (Thomaz and Breazeal 2006). The green vertical bar
+displays positive feedback given by a click-and-drag interface. Right: A simulated robot frog that users teach how to navigate to the water
+(Knox and Stone 2012).
+lated unmanned aerial vehicle (UAV) to conduct var-
+ious missions. At any time, these users chose whether
+to teach by demonstration, by feedback, or by pro-
+viding an example of a concept. They could also test
+the agent to see what it had learned. The authors
+found that users never taught exclusively by feed-
+back, instead generally using it after teaching by the
+other available means. Together, these two studies
+provide insight into the design of natural interfaces
+for teaching agents.
+People Naturally Want to
+Provide More Than Just Data Labels
+Labeling data remains the most popular method for
+end-user input to interactive machine-learning sys-
+tems because of its simplicity and ease of use. How-
+ever, as demonstrated in previous case studies, label-
+based input can have drawbacks (for example,
+negative attitudes toward being treated as an oracle).
+In addition, emerging research suggests that in some
+scenarios users may desire richer control over
+machine-learning systems than simply labeling data.
+For example, Stumpf and colleagues (2007) con-
+ducted a study to understand the types of input end
+users might provide to machine-learning systems if
+unrestricted by the interface. The authors generated
+three types of explanations for predictions from a
+text classification system operating over email mes-
+sages. These explanations were presented to people
+in the form of paper-based mockups to avoid the
+impression of a finished system and encourage peo-
+ple to provide more feedback. People were then asked
+to give free-form feedback on the paper prototypes
+with the goal of trying to correct the classifier’s mis-
+takes. This experiment generated approximately 500
+feedback instances from participants, which were
+then annotated and categorized. The authors found
+that people naturally provided a wide variety of input
+types to improve the classifier’s performance, includ-
+ing suggesting alternative features to use, adjusting
+the importance or weight given to different features,
+and modifying the information extracted from the
+text. These results present an opportunity to develop
+new machine-learning algorithms that might better
+support the natural feedback people want to provide
+to learners, rather than force users to interact in lim-
+ited, learner-centered ways.
+People Value Transparency in
+Learning Systems
+In addition to wanting richer controls, people some-
+times desire more transparency about how their
+machine-learning systems work. Kulesza and col-
+leagues (2012) provided users of a content-based
+music recommender with a 15-minute tutorial dis-
+cussing how the recommender worked and how var-
+ious feedback controls (for example, rating songs,
+steering toward specific feature values, and so on)
+would affect the learner. Surprisingly, participants
+responded positively to learning these details about
+the system. In addition, the researchers found that
+the more participants learned about the recom-
+mender while interacting with it, the more satisfied
+they were with the recommender’s output. This case
+study provides evidence that users are not always sat-
+isfied by “black box” learning systems — sometimes
+they want to provide nuanced feedback to steer the
+system, and they are willing and able to learn details
+about the system to do so.
+Examining transparency at a more social level,
+Rashid and colleagues (2006) examined the effect of
+showing users the value of their potential movie rat-
+ings to a broader community in the MovieLens rec-
+ommendation system. Users who were given infor-
+mation about the value of their contribution to the
+entire MovieLens community provided more ratings
+than those who were not given such information,
+and those given information about value to a group
+of users with similar tastes gave more ratings than
+those given information regarding the full Movie-
+Lens community.
+Transparency Can Help People
+Provide Better Labels
+Sometimes users make mistakes while labeling, thus
+providing false information to the learner. Although
+most learning systems are robust to the occasional
+human error, Rosenthal and Dey set out to solve this
+problem at the source. They sought to reduce user mis-
+takes by providing targeted information when a label
+is requested in an active learning setting. The infor-
+mation provided to the user included a combination
+of contextual features of the sample to be labeled,
+explanations of those features, the learner’s own pre-
+diction of the label for the sample, and its uncertainty
+in this prediction (Rosenthal and Dey 2010).
+They conducted two studies to determine the
+subset of such information that is most effective in
+improving the labeling accuracy of users. The first
+involved people labeling strangers’ emails into cat-
+egories, as well as labeling the interruptability of
+strangers’ activities; the second involved people
+labeling sensory recordings of their own physical
+activity. Both studies found that the highest label-
+ing accuracy occurred when the system provided
+sufficient contextual features and current predic-
+tions without uncertainty information. This line of
+research demonstrates that the way in which infor-
+mation is presented (for example, with or without
+context) can greatly affect the quality of the
+response elicited from the user. This case study also
+shows that not all types of transparency improve
+the performance of interactive machine-learning
+systems, and user studies can help determine what
+information is most helpful to the intended audi-
+ence.
+Articles
+WINTER 2014 111
+Summary
+Understanding how people actually interact — and
+want to interact — with machine-learning systems is
+critical to designing systems that people can use effec-
+tively. Exploring interaction techniques through user
+studies can reveal gaps in a designer’s assumptions
+about their end users and may suggest new algorith-
+mic solutions. In some of the cases we reviewed, peo-
+ple naturally violated assumptions of the machine-
+learning algorithm or were unwilling to comply with
+them. Other cases demonstrated that user studies can
+lead to helpful insights about the types of input and
+output that interfaces for interactive machine learning
+should support. In general, this type of research can
+produce design suggestions and considerations, not
+only for people building user interfaces and developing
+the overall user experience, but for the machine-learn-
+ing community as well.
+Novel Interfaces for Interactive
+Machine Learning
+As many of the case studies in the previous section
+showed, end users often desire richer involvement in
+the interactive machine-learning process than label-
+ing instances. In addition, research on cost-benefit
+trade-offs in human-computer interaction has shown
+that people will invest time and attention into com-
+plex tasks if they perceive their efforts to have greater
+benefits than costs (Blackwell 2002). For example,
+research on end-user programming has shown that
+end users program often (for example, through
+spreadsheets, macros, or mash-ups), but do so prima-
+rily to accomplish some larger goal (Blackwell 2002).
+The act of programming is an investment, and the
+expected benefit is using the program to accomplish
+their goal sooner or with less effort than doing it
+manually. Similarly, this theory suggests that people
+will invest time to improve their machine learners
+only if they view the task as more beneficial than
+costly or risky — that is, when they perceive the ben-
+efits of producing an effective learner as outweighing
+the costs of increased interaction. Therefore, we
+believe there is an opportunity to explore new, rich-
+er interfaces that can leverage human knowledge and
+capabilities more efficiently and effectively.
+In this section, we present case studies that explore
+novel interfaces for interactive machine-learning sys-
+tems and demonstrate the feasibility of richer inter-
+actions. Interface novelty in these cases can come
+from new methods for receiving input or providing
+output. New input techniques can give users more
+control over the learning system, allowing them to
+move beyond labeling examples. Such input tech-
+niques include methods for feature creation,
+reweighting of features, adjusting cost matrices, or
+modifying model parameters. Novel output tech-
+niques can make the system’s state more transparent
+or understandable. For example, a system could
+group unlabeled data to help users label the most
+informative items, or it could communicate uncer-
+tainty about the system’s predictions.
+These case studies also reinforce our proposition
+that interactive machine-learning systems should be
+evaluated with potential end users. Such evaluations
+are needed both to validate that these systems per-
+form well with real users and to gain insights for fur-
+ther improvement. Many of the novel interfaces
+detailed in this section were found to be beneficial,
+but some of the case studies also demonstrate that
+certain types of input or output may lead to obstacles
+for the user or reduce the accuracy of the resulting
+learner. Therefore, novel interfaces should be
+designed with care and appropriately evaluated
+before deployment.
+Supporting Assessment of Model Quality
+In each iteration of the interactive machine-learning
+process, the user may assess the quality of the current
+model and then decide how to proceed with further
+input. A common technique for conveying model
+quality in supervised learning is to present a person
+with all of the unlabeled data sorted by their predict-
+ed scores for some class (for example, classification
+probabilities or relevance rankings). After evaluating
+this presentation, a person then decides how to pro-
+ceed in training by selecting additional examples to
+label for further input. Although straightforward, this
+technique inefficiently illustrates learner quality and
+provides the user with no guidance in selecting addi-
+tional training examples.
+Fogarty and colleagues (2008) investigated novel
+techniques for presenting model quality in CueFlik,
+an interactive machine-learning system for image
+classification (figure 5). Through a user study, the
+authors demonstrated that a technique of presenting
+users with only the best- and worst-matching exam-
+ples enabled users to evaluate model quality more
+quickly and, in turn, train significantly better models
+than the standard technique of presenting the user
+with all of the data. In a follow-up investigation with
+CueFlik, Amershi and colleagues (2009) went on to
+show that presentation techniques designed to sum-
+marize model quality for users while providing them
+with high-value examples to choose from as further
+input to the model led users to train better models
+than the best- and worst-matching technique from
+previous work. These case studies demonstrate that
+presentation matters and designing interfaces that
+balance the needs of both end users and machine
+learners is more effective than optimizing user inter-
+faces for end users in isolation.
+Supporting Experimentation
+with Model Inputs
+Interactive machine learning enables rapid and incre-
+mental iterations between the end user and the
+Articles
+112 AI MAGAZINE
+machine learner. As a result, users may want to exper-
+iment with alternative inputs and examine resulting
+model outputs before committing to any model
+input. To support end-user experimentation, Amer-
+shi and colleagues (2010) augmented the CueFlik sys-
+tem (figure 6) discussed previously with a history
+visualization to facilitate model comparison and sup-
+port for model revision (through undo or redo,
+removing labels, and reverting to previous models
+using the history visualization). In a user study,
+Amershi et al. showed that end users used revision
+when it was available and this led them to achieve
+better final models in the same amount of time (even
+while performing more actions) compared to when
+these supports were unavailable. Furthermore, being
+able to examine and revise actions is consistent with
+how people expect to interact with their applica-
+tions. One participant in this study commented that
+without revision “it felt a little like typing on a key-
+board without a backspace key.” This case study illus-
+trates that end users may be willing and may expect
+options to experiment and revise their inputs to
+machine learners during the interactive machine-
+learning process.
+Appropriately Timing Queries to the User
+As discussed earlier, applying active learning to inter-
+active settings can be undesirable to the user when
+questions come in a constant stream from the learn-
+ing system. To address this problem, Cakmak and
+Thomaz (2010) proposed intermittently active learn-
+ing, in which only a subset of the examples provided
+by the user are obtained through queries. This brings
+a new challenge for the learner: deciding when to
+query as opposed to letting the user choose an exam-
+ple. Cakmak and Thomaz explored two approach-
+es. In the first, the learner made queries only when
+certain conditions were met. It took into account the
+quality of examples chosen by the user and the prob-
+ability that the user could randomly provide useful
+examples. In the second approach, the user decided
+when the learner was allowed to ask questions (that
+is, a query was made only when the user said “do you
+have any questions?”).
+A study comparing intermittently active learning
+with fully active and passive learning demonstrated
+its advantage over these two extremes (Cakmak,
+Chao, and Tomaz 2010). The study showed that both
+intermittent approaches resulted in learning as fast
+as the fully active approach, while being subjective-
+ly preferred over fully active or fully passive
+approaches. The interactions with the intermittent-
+ly active learners were found to be more balanced,
+enjoyable, and less frustrating. When asked to
+choose between the two alternative approaches,
+users preferred the teacher-triggered queries, men-
+tioning that they liked having full control over the
+learner’s queries. As exemplified in this case study,
+building interactive learning systems that fit user
+preferences can sometimes require the modification
+of existing methods in fundamental ways.
+Enabling Users to Query the Learner
+In addition to the learner querying the user as in the
+Articles
+WINTER 2014 113
+Standard presentation using
+a ranked list of examples
+Best and worst matching
+examples presentation
+Figure 5. Comparing the Quality of a Machine-Learned Visual Concept.
+Fogarty et al.’s work (2008) with CueFlik compared two methods of illustrating the quality of a machine-learned visual concept.The stan-
+dard method (left) presented users with examples ranked by their likelihood of membership to the positive class. The best and worst match-
+es method (right) instead showed examples predicted as positive or negative with high certainty by CueFlik. A user study showed that the
+best- and worst-matches technique led users to train significantly better learners than the standard presentation.
+active learning paradigm, sometimes the user may
+want to query the learner. Kulesza and colleagues
+(2011) developed an approach to let users ask a text
+classifier why it was behaving in a particular way (for
+example, “Why was this classified as X instead of
+Y?”). The learner’s responses were interactive, thus
+providing a way for users not only to understand
+why the system had made a particular prediction, but
+also to adjust the learner’s reasoning if its prediction
+was wrong. For example, the learner could display a
+bar graph showing that it associated the word “job”
+with the topic of “news” more than the topic of
+“résumés”; if the user disagreed with this reasoning,
+he or she could adjust the graph to tell the learner
+that “jobs” should be associated with “résumés”
+more than “news”.
+Most participants exposed to this why-oriented
+interaction approach significantly increased the
+accuracy of their naïve Bayes text classifiers; howev-
+er, every participant encountered a number of barri-
+ers while doing so. In particular, participants had
+trouble selecting features to modify from the thou-
+sands in the bag-of-words feature set. Also, once par-
+ticipants did select features to adjust, they had trou-
+ble understanding how changes to a single feature
+altered the learner’s predictions for seemingly unre-
+lated items. This study suggests that for learners with
+large feature sets or complex interactions between
+features, users will need additional support to make
+sense of which features are most responsible for an
+item’s classification.
+Enabling Users to Critique Learner Output
+Some machine-learning systems help users navigate
+an otherwise unnavigable search space. For example,
+recommender systems help people find specific
+items of interest, filtering out irrelevant items. Vig,
+Sen, and Riedl (2011) studied a common problem in
+this domain: recommending results that are close,
+but not quite close enough, to what the user was
+looking for. Researchers developed a prototype to
+support tag-based “critiques” of movie recommen-
+dations. Users could respond to each recommenda-
+tion with refinements such as “Like this, but less vio-
+lent” or “Like this, but more cerebral,” where violent
+and cerebral are tags that users had applied to vari-
+ous movies. A k-nearest-neighbor approach was then
+used to find similar items that included the user-
+specified tags.
+This relatively simple addition to the MovieLens
+website garnered an overwhelmingly positive reac-
+tion, with 89 percent of participants in a user study
+saying that they liked it, and 79 percent requesting
+that it remain a permanent feature on the site. This
+example helps illustrate both the latent desire
+among users for better control over machine-learn-
+Articles
+114 AI MAGAZINE
+Labeled positive and
+negative examples
+Undo and redo
+All images
+ranked
+History
+visualization
+Figure 6. CueFlik.
+CueFlik augmented with a history visualization to facilitate model comparison and support for model revision. Amershi et al. (2010) showed
+that these supports for experimentation during interactive machine learning enabled end users to train better quality models than when
+these supports were unavailable.
+Articles
+WINTER 2014 115
+ing systems and that, by supporting such control in
+an interactive fashion, user attitudes toward the
+learner can be greatly enhanced.
+Allowing Users to Specify
+Preferences on Errors
+People sometimes want to refine the decision bound-
+aries of their learners. In particular, for some classi-
+fiers it might be critical to detect certain classes cor-
+rectly, while tolerating errors in other classes (for
+example, misclassifying spam as regular email is typ-
+ically less costly than misclassifying regular email as
+spam). However, refining classifier decision bound-
+aries is a complex process even for experts, involving
+iterative parameter tweaking, retraining, and evalua-
+tion. This is particularly difficult because among
+parameters there are often dependencies that lead to
+complex mappings between parameter values and
+the behavior of the system.
+To address these difficulties, Kapoor and colleagues
+(2010) created ManiMatrix (figure 7), a tool for people
+to specify their preferences on decision boundaries
+through interactively manipulating a classifier’s con-
+fusion matrix (that is, a breakdown of the correct and
+incorrect predictions it made for each class). Given
+these preferences, ManiMatrix employs Bayesian deci-
+sion theory to compute decision boundaries that min-
+imize the expected cost of different types of errors, and
+then visualizes the results for further user refinement.
+A user study with machine-learning novices demon-
+strated that participants were able to quickly and effec-
+tively modify decision boundaries as desired with the
+ManiMatrix system. This case study demonstrates that
+nonexperts can directly manipulate a model’s learn-
+ing objective, a distinctly different form of input than
+choosing examples and labeling them.
+Combining Models
+An ensemble classifier is a classifier that builds its pre-
+diction from the predictions of multiple subclassi-
+fiers, each of which are functions over the same space
+as the ensemble classifier. Such ensembles often out-
+perform all of their subclassifiers and are a staple of
+applied machine learning (for example, AdaBoost by
+Freund and Schapire [1995]). A common workflow
+for creating ensemble classifiers is to experiment with
+different features, parameters, and algorithms
+through trial and error or hill-climbing through the
+model space. Even for machine-learning experts,
+however, this approach can be inefficient and lead to
+suboptimal performance.
+To facilitate the creation of ensemble classifiers,
+Talbot and colleagues (2009) developed Ensem-
+bleMatrix, a novel tool for helping people interac-
+tively build, evaluate, and explore different ensem-
+bles (figure 8). EnsembleMatrix visualizes the current
+ensemble of individual learners through a confusion
+matrix. The user can then experiment with and eval-
+uate different linear combinations of individual
+learners by interactively adjusting the weights of all
+models through a single two-dimensional interpola-
+tion widget (top right in figure 8). EnsembleMatrix’s
+novel interface also allows people to make use of
+their visual processing capabilities to partition the
+confusion matrix according to its illustrated per-
+formance, effectively splitting the ensemble into
+subensembles that can be further refined as neces-
+sary. A user study showed that EnsembleMatrix
+enabled people to create ensemble classifiers on par
+with the best published ensembles on the same data
+set. Furthermore, they managed to do so in a single,
+one-hour session. The study involved participants
+ranging from machine-learning novices to experts.
+Figure 7. ManiMatrix System.
+The ManiMatrix system displays the confusion matrix of the classifier and allows the user to directly increase or decrease the different types
+of errors using arrows on the matrix cells. ManiMatrix provides feedback to the user by highlighting cells that change value as a result of
+the user’s click (red indicates a decrease and green indicates an increase).
+Rain
+Rain
+loud
+unn
+Rain
+loud
+unn
+Rain
+loud
+unn
+Rain
+loud
+unn
+350 13 12
+350 13 12
+350 13 12
+358 10 7
+5 205 18
+5 205 16
+5 205 16
+6 204 16
+11 16 158
+11 16 193
+11 16 193
+15 14 195
+Cloudy Sunny
+Rain Cloudy Sunny
+Rain Cloudy Sunny
+Rain Cloudy Sunny
+This case study illustrates that effectively combining
+human intuition and input with machine processing
+can enable people to create better classifiers in less
+time than standard approaches that ignore these
+powerful human capabilities.
+Summary
+Whether a new interface will improve the user’s
+experience or the system’s performance can only be
+assessed through evaluation with potential end
+users. In the case studies above, permitting richer
+user interactions was often beneficial, but not always
+so. Different users have different needs and expecta-
+tions of the systems they employ. In addition, rich
+interaction techniques may be appropriate for some
+scenarios and not others. Thus, conducting user
+studies of novel interactive machine-learning sys-
+tems is critical not only for discovering promising
+modes of interaction, but also to uncover obstacles
+that users may encounter in different scenarios and
+unspoken assumptions they might hold about
+machine learners. The accumulation of such research
+can facilitate the development of design guidelines
+for building future interactive machine-learning sys-
+tems, much like those that exist for traditional soft-
+ware systems (for example, Shneiderman et al.
+[2009]).
+Discussion
+Interactive machine learning is a potentially power-
+ful technique for enabling end-user interaction with
+machine learning. As this article illustrates, studying
+how people interact with interactive machine-learn-
+ing systems and exploring new techniques for
+enabling those interactions can result in better user
+experiences and more effective machine learners.
+However, research in this area has only just begun,
+and many opportunities remain to improve the
+interactive machine-learning process. This section
+Articles
+116 AI MAGAZINE
+Figure 8. EnsembleMatrix.
+EnsembleMatrix visualizes the current ensemble (left) of individual learners (bottom right) through a confusion matrix. Users can adjust
+the weights of individual models through a linear combination widget (top right) to experiment with different ensembles. Users can also
+partition the confusion matrix to split and refine subensembles.
+caltech101_1
+caltech101_1
+caltech101_2
+caltech101_2
+caltech101_3
+caltech101_3
+caltech101_4
+caltech101_4
+caltech101_5
+caltech101_5
+caltech101_6
+caltech101_6
+caltech101_7
+caltech101_7
+caltech101_8
+caltech101_8
+Selected Node Accuracy
+Overall Accuracy
+describes open challenges and opportunities for
+advancing the state of the art in human interaction
+with interactive machine-learning systems.
+Developing a Common Language
+Across Diverse Fields
+As shown by the variety of case studies presented in
+this article, many fields of computer science already
+employ interactive machine learning to solve differ-
+ent problems, such as search in information retrieval,
+filtering in recommender systems, and task learning
+in human-robot interaction. However, different fields
+often refer to interactive machine learning or parts of
+the interactive machine-learning process in domain-
+specific terms (for example, relevance feedback, pro-
+gramming by demonstration, debugging machine-
+learned programs, socially guided machine learning).
+This diversity in terminology impedes awareness of
+progress in this common space and can potentially
+lead to duplicate work. Seeking to develop a common
+language and facilitate the development of new
+interactive machine-learning systems, some
+researchers have begun to examine this body of work
+and abstract away domain-specific details from exist-
+ing solutions to characterize common variables and
+dimensions of the interactive machine-learning
+process itself (for example, Amershi [2012]; Porter,
+Theiler, and Hush [2013]).
+For example, Amershi (2012) examined interactive
+machine-learning systems across several fields
+(including information retrieval, context-aware com-
+puting, and adaptive and intelligent systems) and
+identified specific design factors influencing human
+interaction with machine-learning systems (for
+example, the expected duration of model use, the
+focus of a person’s attention during interaction, the
+source and type of data over which the machine will
+learn) and design dimensions that can be varied to
+address these factors (for example, the type and visi-
+bility of model feedback, the granularity and direc-
+tion of user control, and the timing and memory of
+model input). In another example, Porter, Theiler,
+and Hush (2013) break down the interactive
+machine-learning process into three dimensions: task
+decomposition (defining the level of coordination
+and division of labor between the end user and the
+machine learner), training vocabulary (defining the
+type of input end users can provide the machine
+learner), and the training dialogue (defining the lev-
+el and frequency of interaction between the end user
+and the learner). Design spaces such as these can help
+to form a common language for researchers and
+developers to communicate new interactive
+machine-learning solutions and share ideas. Howev-
+er, there are many ways to dissect and describe the
+various interaction points between people and
+machine learners within the interactive machine-
+learning process. Therefore, an important opportuni-
+ty remains for converging on and adopting a com-
+mon language across these fields to help accelerate
+research and development in this space.
+Distilling Principles and Guidelines for
+How to Design Human Interaction with
+Machine Learning
+In addition to developing a common language, an
+opportunity remains for generalizing from existing
+solutions and distilling principles and guidelines for
+how we should design future human interaction
+with interactive machine learning, much like we
+have for designing traditional interfaces (for exam-
+ple, Schneiderman et al. [2009]; Moggridge and
+Smith [2007]; Dix et al. [2004]; Winograd [1996];
+Norman [1988]). For example, Schneiderman’s gold-
+en rules of interface design advocate for designating
+the users as the controllers of the system and offer-
+ing them informative feedback after each interac-
+tion.
+Some principles for designing traditional inter-
+faces can directly translate to the design of interac-
+tive machine learning interfaces — interactive
+machine-learning systems inherently provide users
+with feedback about their actions and, as this article
+discusses, giving users more control over machine-
+learning systems can often improve a user’s experi-
+ence. However, interactive machine-learning sys-
+tems also often inherently violate many existing
+interface design principles. For example, research has
+shown that traditional interfaces that support under-
+standability (that is, systems that are predictable or
+clear about how they work) and actionability (that
+is, systems that make it clear how a person can
+accomplish his or her goals and give the person the
+freedom to do so) are generally more usable than
+interfaces that do not support these principles. Many
+machine-learning systems violate both principles:
+they are inherently difficult for users to understand
+fully and they largely limit the control given to the
+end user. Thus, there is an opportunity to explore
+how current design principles apply to the human-
+computer interaction in interactive machine learn-
+ing.
+Some researchers have started to suggest new prin-
+ciples for designing end-user interaction with gener-
+al artificial intelligence systems, many of which
+could translate to end-user interaction with interac-
+tive machine learning (for example, Norman [1994];
+Höök [2000]; Horvitz [1999]; Jameson [2009]). For
+example, Norman (1994) and Höök (2000) both
+identified safety and trust as key factors to consider
+when designing intelligent systems, referring to the
+assurance against and prevention of unwanted adap-
+tations or actions. Others have stated that artificial-
+ly intelligent and machine-learning-based systems
+should manage expectations to avoid misleading or
+frustrating the user during interaction (for example,
+Norman [1994]; Höök [2000]; Jameson [2009]). In
+Horvitz’s formative paper on mixed-initiative inter-
+Articles
+WINTER 2014 117
+can deal with this problem through
+more iterations, algorithms that are
+both fast and accurate would improve
+the quality of learned models and
+reduce the number of iterations need-
+ed to obtain useful models. Second, as
+some of the case studies described in
+this article showed, users may desire to
+interact with machine-learning sys-
+tems in ways that are not supported by
+existing machine-learning methods.
+Addressing this challenge requires the
+development of new frameworks and
+algorithms that can handle different
+inputs and outputs that are desirable
+and natural for end users.
+Increasing Collaboration
+Across the Fields of Human
+Computer Interaction and
+Machine Learning
+The inherent coupling of the human
+and machine in interactive machine
+learning underscores the need for col-
+laboration across the fields of human-
+computer interaction and machine
+learning. This collaboration will bene-
+fit human-computer interaction
+researchers in solving the algorithmic
+problems discussed above and provide
+more powerful tools to end users. In
+turn, machine-learning researchers
+would benefit by having new methods
+evaluated with potential users to
+address practical issues and by devel-
+oping new frameworks that support
+realistic assumptions about users.
+Finally, we believe that the diversity
+of perspectives will benefit both com-
+munities. For example, when dealing
+with noisy problems, machine-learn-
+ing researchers have often attempted
+to develop algorithms that work
+despite the noise, whereas human-
+computer interaction researchers often
+try to develop interaction techniques
+to reduce the noise that end users
+induce. Collaboration between these
+two communities could leverage the
+benefits of both solutions.
+Conclusion
+The case studies presented in this arti-
+cle support three key points. First,
+interactive machine learning differs
+from traditional machine learning.
+The interaction cycles in interactive
+machine learning are typically more
+faces (1999), he proposed several prin-
+ciples for balancing artificial intelli-
+gence with traditional direct-manipu-
+lation constructs. For example, Horvitz
+emphasized consideration of the tim-
+ing of interactive intelligent services,
+limiting the scope of adaptation or
+favoring direct control under severe
+uncertainty, and maintaining a work-
+ing memory of recent interactions.
+While these suggestions can help guide
+the design of future systems, more
+work remains to develop a compre-
+hensive set of guidelines and principles
+that work in various settings. Often
+such design principles are distilled
+from years of experience developing
+such interactions. Alternatively, we
+may accelerate the development of
+such guidelines by extracting dimen-
+sions that can be manipulated to
+design interactive machine-learning
+systems and systematically evaluating
+general solutions in varying settings.
+Developing Techniques and
+Standards for Appropriately
+Evaluating Interactive
+Machine-Learning Systems
+Although systematic evaluation can
+facilitate generalization and transfer of
+ideas across fields, the interleaving of
+human interaction and machine-
+learning algorithms makes reductive
+study of design elements difficult. For
+example, it is often difficult to tease
+apart whether failures of proposed
+solutions are due to limitations of the
+particular interface or interaction
+strategies used, the particular algo-
+rithm chosen, or the combination of
+the interaction strategy with the par-
+ticular algorithm used. Likewise, inap-
+propriately attributing success or fail-
+ure to individual attributes of
+interactive machine-learning solutions
+can be misleading. Therefore, new
+evaluation techniques may be neces-
+sary to appropriately gauge the effec-
+tiveness of new interactive machine-
+learning systems. In addition, as our
+case studies illustrated, some interac-
+tion techniques may be appropriate for
+certain scenarios of use but not others.
+Evaluations should therefore be careful
+not to overgeneralize successes or fail-
+ures of specific interaction techniques.
+Rather, the scenarios and contexts of
+use should be generalized to better
+understand when to apply certain
+techniques over others.
+Leveraging the Masses During
+Interaction with Machine
+Learning
+Most of the case studies in this article
+focused on a single end user interact-
+ing with a single machine-learning sys-
+tem. However, the increasing prolifera-
+tion of networked communities and
+crowd-powered systems provides evi-
+dence of the power of the masses to
+collaborate and produce content. An
+important opportunity exists to inves-
+tigate how crowds of people might col-
+laboratively drive interactive machine-
+learning systems, potentially scaling
+up the impact of such systems. For
+example, as interactive machine learn-
+ing becomes more prevalent in our
+everyday applications, people should
+be able to share and reuse machine
+learners rather than have to start from
+scratch. Moreover, people should be
+able to bootstrap, build upon, and
+combine learners to configure more
+sophisticated data processing and
+manipulation. A few have started to
+explore such opportunities (for exam-
+ple, Hoffman et al. [2009]; Kamar,
+Hacker, and Horvitz [2012]; Law and
+von Ahn [2009]), but more work
+remains to fully understand the poten-
+tial of multiple end users interacting
+with machine-learning systems. For
+example, work remains in understand-
+ing how people can meaningfully
+describe, compare, and search for exist-
+ing machine learners in order to build
+upon them, in understanding how
+learners can be generalized or trans-
+formed for new situations and purpos-
+es, in understanding how we can cre-
+ate composable learners to enable
+more powerful automation, and in
+understanding how we can coordinate
+the efforts of multiple people interact-
+ing with machine-learning systems.
+Algorithmic Problems in
+Interactive Machine Learning
+Research on user interactions with
+interactive machine learning raises two
+important technical challenges. First,
+the requirement for rapid model
+updates often necessitates trading off
+accuracy with speed. The resulting
+models are therefore suboptimal.
+Although interactive machine learning
+Articles
+118 AI MAGAZINE
+rapid, focused, and incremental than
+in traditional machine learning. This
+increases the opportunities for users to
+affect the learner and, in turn, for the
+learner to affect the users. As a result,
+the contributions of the system and
+the user to the final outcome cannot
+be decoupled, necessitating an
+increased need to study the system
+together with its potential users.
+Second, explicitly studying the users
+of learning systems is critical to
+advancing this field. Formative user
+studies can help identify user needs
+and desires, and inspire new ways in
+which users could interact with
+machine-learning systems. User stud-
+ies that evaluate interactive machine-
+learning systems can reveal false
+assumptions about potential users and
+common patterns in their interaction
+with the system. User studies can also
+help to identify common barriers
+faced by users when novel interfaces
+are introduced.
+Finally, the interaction between
+learning systems and their users need
+not be limited. We can build powerful
+interactive machine-learning systems
+by giving more control to end users
+than the ability to label instances, and
+by providing users with more trans-
+parency than just the learner’s predict-
+ed outputs. However, more control for
+the user and more transparency from
+the learner do not automatically result
+in better systems, and in some situa-
+tions may not be appropriate or
+desired by end users. We must contin-
+ue to evaluate novel interaction meth-
+ods with real users to understand
+whether they help or hinder users’
+goals.
+In addition to demonstrating the
+importance and potential of research
+in interactive machine learning, this
+article characterized some of the chal-
+lenges and opportunities that current-
+ly confront this field. By acknowledg-
+ing and embracing these challenges,
+we can move the field of interactive
+machine learning forward toward
+more effective interactions. We believe
+this will lead not only to more capable
+machine learners, but also more capa-
+ble end users.
+Notes
+1. All authors contributed equally to this
+article.
+Articles
+WINTER 2014 119
+2. In this article we examine interactive
+machine-learning systems in which the
+human is consciously interacting with the
+machine learner in order to improve it. That
+is, we do not consider interactive machine-
+learning systems that obtain user feedback
+implicitly (for example, websites that may
+automatically adapt their presentation to a
+user’s click history without the user’s
+knowledge).
+References
+Amershi, S. 2012. Designing for Effective
+End-User Interaction with Machine Learn-
+ing. Ph.D. Dissertation, Department of
+Computer Science. University of Washing-
+ton, Seattle, WA.
+(hdl.handle.net/1773/22006)
+Amershi, S.; Cakmak, M.; Knox, W. B.;
+Kulesza, T.; and Lau, T. 2013. IUI Work-
+shop on Interactive Machine Learning.
+In Proceedings of the Companion Publication
+of the 2013 International Conference on Intel-
+ligent User Interfaces, 121–124. New York:
+Association for Computing Machinery.
+dx.doi.org/10.1145/2451176.2451230
+Amershi, S.; Fogarty, J.; Kapoor, A.; and Tan,
+D. 2010. Examining Multiple Potential
+Models in End-User Interactive Concept
+Learning. In Proceedings of the SIGCHI Con-
+ference on Human Factors in Computing Sys-
+tems, 2010 (CHI 2010), 1357–1360. New
+York: Association for Computing Machin-
+ery.
+Amershi, S.; Fogarty, J.; Kapoor, A.; and Tan,
+D. 2009. Overview-Based Example Selection
+in Mixed-Initiative Concept Learning. In
+Proceedings of the ACM Symposium on User
+Interface Software and Technology, 2009 (UIST
+2009), 47–256. New York: Association for
+Computing Machinery.
+Blackwell, A. F. 2002. First Steps in Pro-
+gramming: A Rationale for Attention
+Investment Models. In Proceedings of the
+2002 IEEE Symposium on Human Centric
+Computing Languages and Environments, 2–
+10. Piscataway, NJ: Institute for Electrical
+and Electronics Engineers.
+Cakmak, M., and Thomaz, A. L. 2010.
+Optimality of Human Teachers for Robot
+Learners. In Proceedings of the 2010 IEEE 9th
+International Conference on Development and
+Learning (ICDL), 64–69. Piscataway, NJ:
+Institute for Electrical and Electronics Engi-
+neers.
+Cakmak, M.; Chao, C.; and Thomaz, A. L.
+2010. Designing Interactions for Robot
+Active Learners. Autonomous Mental Devel-
+opment 2(2): 108–118. dx.doi.org/10.1109/
+TAMD.2010.2051030
+Caruana, R.; Elhaway, M.; Nguyen, N.; and
+Smith, C. 2006. Meta Clustering. In Proceed-
+ings of the Sixth IEEE International Conference
+on Data Mining, 2006. (ICDM’06), 107–118.
+Piscataway, NJ: Institute for Electrical and
+Electronics Engineers.
+Cohn, D.; Caruana, R.; and McCallum, A.
+2003. Semi-Supervised Clustering with User
+Feedback. Constrained Clustering: Advances in
+Algorithms, Theory, and Applications 4(1): 17–
+32.
+Dix, A.; Finlay, J.; Abowd, G. D.; and Beal, R.
+2004. Interaction Design Basics. In Human
+Computer Interaction, 3rd edition, chapter 5,
+189–224. Harlow, England: Pearson Educa-
+tion Ltd.
+Fails, J. A., and Olsen Jr, D. R. 2003. Inter-
+active Machine Learning. In Proceedings of
+the 8th International Conference on Intelligent
+User Interfaces, 39–45. New York: Associa-
+tion for Computing Machinery.
+Fiebrink, R.; Cook, P. R.; and Trueman, D.
+2011. Human Model Evaluation in Interac-
+tive Supervised Learning. In Proceedings of
+the Conference on Human Factors in Comput-
+ing Systems (CHI 2011), 147–156. New York:
+Association for Computing Machinery.
+dx.doi.org/10.1145/1978942.1978965
+Fogarty, J.; Tan, D.; Kapoor, A.; and
+Winder, S. 2008. CueFlik: Interactive Con-
+cept Learning in Image Search. In Proceed-
+ings of the SIGCHI Conference on Human Fac-
+tors in Computing Systems, 29–38. New York:
+Association for Computing Machinery.
+Freund, Y., and Schapire, R. E. (1995). A
+Decision-Theoretic Generalization of On-
+Line Learning and an Application to Boost-
+ing. In Proceedings of the Second European
+Conference on Computational Learning Theo-
+ry, 23–37. Berlin, Heidelberg: Springer.
+dx.doi.org/10.1007/3-540-59119-2_166
+Guillory, A., and Bilmes, J. A. 2011. Simul-
+taneous Learning and Covering with Adver-
+sarial Noise. In Proceedings of the 28th Inter-
+national Conference on Machine Learning
+(ICML-11), 369–376). Princeton, NJ: Inter-
+national Machine Learning Society, Inc.
+Hoffman R.; Amershi, S.; Patel, K.; Wu, F.;
+Fogarty, J.; and Weld, D. S. 2009. Amplify-
+ing Community Content Creation with
+Mixed-Initiative Information Extraction. In
+Proceedings of the SIGCHI Conference on
+Human Factors in Computing Systems (CHI
+2009), 1849–1858. New York: Association
+for Computing Machinery.
+Höök, K. 2000. Steps to Take Before Intelli-
+gent User Interfaces Become Real. Interacting
+with Computers 12(4): 409–426. dx.doi.org/
+10.1016/S0953-5438(99)00006-5
+Horvitz, E. 1999. Principles of Mixed-Initia-
+tive User Interfaces. In Proceedings of the
+SIGCHI Conference on Human Factors in Com-
+puting Systems, 159–166. New York: Associa-
+tion for Computing Machinery.
+Isbell Jr., C. L.; Kearns, M.; Singh, S.; Shel-
+ton, C. R.; Stone, P.; and Kormann, D.
+2006. Cobot in LambdaMOO: An Adaptive
+Social Statistics Agent. Autonomous Agents
+and Multi-Agent Systems 13(3): 327–354.
+dx.doi.org/10.1007/s10458-006-0005-z
+Jameson, A. 2009. Adaptive Interfaces and
+Agents. Human-Computer Interaction: Design
+Issues, Solutions, and Applications, 105. Boca
+Raton, FL: CRC Press.
+Kamar, E.; Hacker, S.; and Horvitz, E. 2012.
+Combining Human and Machine Intelli-
+gence in Large-Scale Crowdsourcing. In Pro-
+ceedings of the International Conference on
+Autonomous Agents and Multi-Agent Systems
+(AAMAS 2012). Richland, SC: International
+Foundation for Autonomous Agents and
+Multiagent Systems.
+Kaochar, T.; Peralta, R. T.; Morrison, C. T.;
+Fasel, I. R.; Walsh, T. J.; and Cohen, P. R.
+2011. Towards Understanding How
+Humans Teach Robots. In User Modeling,
+Adaption and Personalization, Lecture Notes
+in Computer Science Volume 6787, 347–
+352. Berlin: Springer. dx.doi.org/10.1007/
+978-3-642-22362-4_31
+Kapoor, A.; Lee, B.; Tan, D.; and Horvitz, E.
+2010. Interactive Optimization for Steering
+Machine Classification. In Proceedings of the
+SIGCHI Conference on Human Factors in Com-
+puting Systems, 1343–1352. New York: Asso-
+ciation for Computing Machinery.
+Knox, W. B., and Stone, P. 2013. Learning
+Non-Myopically from Human-Generated
+Reward. In Proceedings of the 2013 Interna-
+tional Conference on Intelligent User Interfaces,
+191–202. New York: Association for Com-
+puting Machinery. dx.doi.org/10.1145/
+2449396.2449422
+Knox, W. B., and Stone, P. 2012. Reinforce-
+ment Learning from Human Reward: Dis-
+counting in Episodic Tasks. In Proceedings of
+the 2012 IEEE International Workshop on
+Robots and Human Interactive Communications
+(RO-MAN), 878–885. Piscataway, NJ: Insti-
+tute for Electrical and Electronics Engineers.
+Kulesza, T.; Stumpf, S.; Burnett, M.; and
+Kwan, I. 2012. Tell Me More?: The Effects of
+Mental Model Soundness on Personalizing
+an Intelligent Agent. In Proceedings of the
+SIGCHI Conference on Human Factors in Com-
+puting Systems, 1–10. New York: Association
+for Computing Machinery.
+Kulesza, T.; Stumpf, S.; Wong, W. K.; Bur-
+nett, M. M.; Perona, S.; Ko, A.; and Oberst,
+I. 2011. Why-Oriented End-User Debugging
+of Naive Bayes Text Classification. ACM
+Transactions on Interactive Intelligent Systems
+1(1): 2. dx.doi.org/10.1145/2030365.
+2030367
+Law, E., and von Ahn, R. 2009. Input-
+Agreement: A New Mechanism for Data
+Collection Using Human Computation
+Games. In Proceedings of the SIGCHI Confer-
+ence on Human Factors in Computing Systems
+(CHI 2009). New York: Association for Com-
+puting Machinery.
+Moggridge, B., and Smith, G. C.
+2007. Designing Interactions, Volume 17.
+Cambridge, MA: The MIT Press.
+Norman, D. A. 1994. How Might People
+Interact with Agents. Communications of the
+ACM 37(7): 68–71. dx.doi.org/10.1145/
+176789.176796
+Norman, D. A. 1988. The Design of Every-
+day Things. New York: Basic Books.
+Porter, R.; Theiler, J.; and Hush, D.
+2013. Interactive Machine Learning in Data
+Exploitation. Technical Report. Los Alamos
+National Laboratories, Los Alamos, NM.
+dx.doi.org/10.2172/1060903
+Pu, P., and Chen, L. 2009. User-Involved
+Preference Elicitation for Product Search
+and Recommender Systems. AI Magazine
+29(4): 93.
+Rashid, A. M.; Ling, K.; Tassone, R. D.;
+Resnick, P.; Kraut, R.; and Riedl, J. 2006.
+Motivating Participation by Displaying the
+Value of Contribution. In Proceedings of the
+SIGCHI Conference on Human Factors in Com-
+puting Systems, 955–958. New York: Associa-
+tion for Computing Machinery.
+Rosenthal, S. L., and Dey, A. K. 2010.
+Towards Maximizing the Accuracy of
+Human-Labeled Sensor Data. In Proceedings
+of the 15th International Conference on Intelli-
+gent User Interfaces, 259–268. New York:
+Association for Computing Machinery.
+dx.doi.org/10.1145/1719970.1720006
+Settles, B. 2010. Active Learning Literature
+Survey. Technical Report, Department of
+Computer Science, University of Wisconsin,
+Madison, Madison, WI.
+Shneiderman, B.; Plaisant, C.; Cohen, M.;
+and Jacobs, S. 2009. Designing the User Inter-
+face: Strategies for Effective Human-Computer
+Interaction, 5th edition. Reading, MA: Addi-
+son-Wesley.
+Stumpf, S.; Rajaram, V.; Li, L.; Burnett, M.;
+Dietterich, T.; Sullivan, E.; Drummond, R.;
+and Herlocker, J. 2007. Toward Harnessing
+User Feedback for Machine Learning. In Pro-
+ceedings of the 12th International Conference
+on Intelligent User Interfaces, 82–91. New
+York: Association for Computing Machin-
+ery. dx.doi.org/10.1145/1216295.1216316
+Talbot, J.; Lee, B.; Kapoor, A.; and Tan, D. S.
+2009. EnsembleMatrix: Interactive Visualiza-
+tion to Support Machine Learning with Mul-
+tiple Classifiers. In Proceedings of the 27th
+International Conference on Human Factors in
+Computing Systems, 1283–1292. New York:
+Association for Computing Machinery.
+Thomaz, A. L., and Breazeal, C. 2008.
+Teachable Robots: Understanding Human
+Teaching Behavior to Build More Effective
+Robot Learners. Artificial Intelligence 172(6):
+716–737.
+Vig, J.; Sen, S.; and Riedl, J. 2011. Navigat-
+ing the Tag Genome. In Proceedings of the
+Articles
+120 AI MAGAZINE
+16th International Conference on Intelligent
+User Interfaces, 93–102. New York: Associa-
+tion for Computing Machinery.
+dx.doi.org/10.1145/1943403.1943418
+Winograd, T. 1996. Bringing Design to Soft-
+ware. New York: Association for Computing
+Machinery.
+Saleema Amershi is a researcher in the
+Computer Human Interactive Learning
+(CHIL) group at Microsoft Research. Her
+research lies at the intersection of human-
+computer interaction and machine learn-
+ing. In particular, her work involves design-
+ing and developing new techniques to
+support effective end-user interaction with
+interactive machine-learning systems.
+Amershi received her Ph.D. in computer sci-
+ence from the University of Washington’s
+Computer Science and Engineering Depart-
+ment in 2012.
+Maya Cakmak is an assistant professor at
+the University of Washington, Computer
+Science and Engineering Department,
+where she directs the Human-Centered
+Robotics lab. She received her Ph.D. in
+robotics from the Georgia Institute of Tech-
+nology in 2012. Her research interests are in
+human-robot interaction and end-user pro-
+gramming. Her work aims to develop assis-
+tive robots that can be programmed and
+controlled by end users, in the context of
+use.
+W. Bradley Knox recently completed a
+postdoctoral researcher position at the MIT
+Media Lab. His research interests span
+machine learning, human-robot interac-
+tion, and psychology, especially machine-
+learning algorithms that learn through
+human interaction. Knox received a Ph.D.
+in computer science at the University of
+Texas at Austin and a BS in psychology from
+Texas A&M University.
+Todd Kulesza is a computer science Ph.D.
+candidate at Oregon State University, work-
+ing under the guidance of Margaret Burnett.
+His research interests are in human interac-
+tions with intelligent systems, with a focus
+on enabling end users to personalize such
+systems efficiently and effectively.
+

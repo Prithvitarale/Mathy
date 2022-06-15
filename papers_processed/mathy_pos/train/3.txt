@@ -1,0 +1,1831 @@
+Games and Economic Behavior 55 (2006) 242–269
+www.elsevier.com/locate/geb
+Competitive auctions ✩
+Andrew V. Goldberg a,1
+, Jason D. Hartline a,2,∗
+, Anna R. Karlin b,3
+,
+Michael Saks c,4
+, Andrew Wright 5
+a Microsoft Research, 1065 La Avenida, Mountain View, CA 94043
+b Computer Science Department, University of Washington, Seattle, WA 98195
+c Department of Mathematics—Hill Center, Rutgers University, 110 Frelinghuysen Road, Piscataway, NJ 08854
+Received 29 January 2002
+Abstract
+We study a class of single-round, sealed-bid auctions for an item in unlimited supply, such as a digital
+good. We introduce the notion of competitive auctions. A competitive auction is truthful (i.e. encourages
+bidders to bid their true valuations) and on all inputs yields profit that is within a constant factor of the
+profit of the optimal single sale price. We justify the use of optimal single price profit as a benchmark for
+evaluating a competitive auctions profit. We exhibit several randomized competitive auctions and show that
+there is no symmetric deterministic competitive auction. Our results extend to bounded supply markets, for
+which we also give competitive auctions.
+ 2006 Elsevier Inc. All rights reserved.
+JEL classification: D42; D44
+✩
+A preliminary version of this paper appeared as [Goldberg, A., Hartline, J., Wright, A., 1999. Competitive auctions
+and digital goods. Technical report STAR-TR-99.09.01. STAR Laboratory, InterTrust Tech. Corp., Santa Clara, CA;
+Goldberg, A., Hartline, J., Wright, A., 2001. Competitive auctions and digital goods. In: Proceedings of the 12th
+Symposium on Discrete Algebra. ACM/SIAM, pp. 735–744]. The new paper contains new results and refines some
+of the results and concepts introduced in the preliminary version.
+* Corresponding author.
+E-mail addresses: goldberg@microsoft.com (A.V. Goldberg), hartline@microsoft.com (J.D. Hartline),
+karlin@cs.washington.edu (A.R. Karlin), saks@math.rutgers.edu (M. Saks), akwright@acm.org (A. Wright).
+1 Part of this work was done while the author was at InterTrust Technologies Corp.
+2 This work was done while the author was at University of Washington and InterTrust Technologies Corp.
+3 Part of the work done while the author was visiting InterTrust.
+4 Supported by NSF grant CCR-9988526. Part of the work was done while visiting Microsoft Research.
+5 This work was done while the author was at InterTrust Technologies Corp.
+0899-8256/$ – see front matter  2006 Elsevier Inc. All rights reserved.
+doi:10.1016/j.geb.2006.02.003
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 243
+1. Introduction
+A combination of recent economic and computational trends, such as the negligible cost of
+duplicating digital goods and, most importantly, the emergence of the Internet as one of the
+most important arenas for resource sharing between parties with diverse and selfish interests,
+has created a number of new and interesting dynamic pricing problems. It has also cast new
+light on more traditional problems such as the problem of profit optimization for the seller in an
+auction. We focus the design and analysis of truthful, a.k.a., incentive compatible or strategy-
+proof, auctions that perform well in worst case in the presence of unknown market conditions.
+The traditional economics approach to the study of profit-maximizing auctions is to construct
+the optimal Bayesian auction given the prior distribution from which the bidders’ valuations, the
+maximum values that they are willing to pay, are drawn. This has led to a number of interesting
+results including the use of the Vickrey auction (Vickrey, 1961) parameterized by a reserva-
+tion price that is adjusted to reflect the seller’s knowledge of the prior distributions (Bulow and
+Roberts, 1989; Myerson, 1981). When the bidders’ valuations are indeed drawn from a known
+distribution this technique gives the optimal auction.
+In contrast, we focus on the design of unparameterized auctions for profit maximization in
+unknown markets, i.e., when information about prior distributions is not available.6 There are a
+number of compelling reasons for considering profit maximization from this perspective. In order
+to use a Bayesian optimal auction the prior distribution, or at least a reasonable approximation
+thereof, must be ascertained in advance. In some cases, determining the prior distribution in
+advance may not be convenient or possible. Moreover, even if prior distributions are known,
+when many auctions are to be run, computing and setting a new reservation price for each one
+may be inconvenient or infeasible.
+The study of profit maximizing auctions for unknown markets provides understanding for auc-
+tion problems where the seller has incomplete knowledge of the distribution of bidder valuations.
+We can determine how well an uninformed mechanism can perform. We can get a quantitative
+understanding of the relative value of being informed. A partially informed auctioneer choosing
+an auction mechanism has to consider the trade-off between using an auction tailored to assump-
+tions about bidder valuations that may or may not be correct versus using an auction designed to
+work as well as possible under unknown market conditions.
+Worst case analysis is the only way to give provable performance guarantees in the presence
+of total uncertainty. As such, we will use worst case analysis to measure the performance of
+uninformed auctions. We will show that it is possible to obtain optimal performance, to within a
+multiplicative constant factor, even under arbitrary, unknown, and worst-case market conditions.
+In the case where the auctioneer has partial information on possible inputs, it is possible to
+tailor the analysis and prove better bounds than are possible in the worst case over all possible
+inputs. As an example, we consider the performance of our auctions in the mass market case,
+where the auctioneer expects to sell many units. In this case, we give an analysis of our auctions
+for the worst input over a practical restriction of bidders’ valuations that is relevant to mass
+market sales. Similarly, though we do not provide the analysis in this paper, a Bayesian analysis
+of our auctions could be performed to obtain tighter bounds for the Bayesian setting (see Baliga
+and Vohra, 2003; Segal, 2003 for such an analysis). An ideal auction has good performance in
+worst case and a better performance when the inputs come from specific prior distributions.
+6 In the literature, such auctions are sometimes called detail-free auctions.
+244 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+To analyze auction performance without making assumptions about the prior input distribu-
+tion, a criterion is needed for gauging auction revenues. Our approach is motivated by competitive
+analysis of on-line algorithms (Borodin and El-Yaniv, 1998; Sleator and Tarjan, 1985), where the
+performance of an on-line algorithm, one that must make decisions without knowledge of the fu-
+ture, is compared to the performance of an optimal off-line algorithm that knows the future. The
+assumption that an on-line algorithm does not know the future in advance is analogous to the
+assumption that an auction does not know the bidders’ valuations in advance. We gauge a truth-
+ful auction’s performance on a particular bid set by comparing it with the profit that would be
+achieved by an “optimal” omniscient auction, one that knows the bids in advance, on the same
+set of bids. An auction is competitive if it achieves a profit that is a constant fraction of optimal
+on every input.
+In this paper, we focus on the case where the auctioneer has an unlimited number of indivis-
+ible units of an item available to sell, each consumer wants at most one unit, and the auctioneer
+has no value for the units. We use the term unlimited supply to describe this supply curve. This
+unlimited supply case is natural for the sale of digital goods where there is negligible cost for
+duplicating and distributing the good. Pay-per-view television and downloadable audio files are
+examples of such goods. All of our results generalize naturally to the limited supply case where
+the auctioneer has a limited number of units to sell (fewer than the number of bidders). Adher-
+ing to the revelation principle (Myerson, 1981), we will restrict our attention to single-round,
+sealed-bid, truthful auction mechanisms. In truthful auctions, truth-telling, i.e., revealing their
+true valuation as their bid, is a dominant strategy for each bidder.
+The rest of the paper is organized as follows. In Section 2 we formally define auction mecha-
+nisms and the bidder model. We also review an algorithmic characterization of deterministic and
+randomized truthful mechanisms.
+In Section 3 we describe the basics of competitive analysis and motivate its use for auction
+problems by contrasting it to Bayesian analysis. We also discuss in detail the competitive frame-
+work that we will be using in this paper for both the worst case and the mass market case.
+In Section 4 we show that no deterministic auction has good worst case performance. This
+motivates the use of randomized auction mechanisms. In Section 5 we give a bound on how
+well any auction can perform in worst case. We give two randomized competitive auctions in
+Section 6 and prove that they perform well in worst case. The first auction uses the optimal
+price for a random sample of the bids as the sale price for the remaining bids, i.e., does market
+analysis on the sample. We show that for mass markets, this auction obtains a near optimal profit,
+and moreover, it performs within a constant factor of optimal in our worst case competitive
+framework. The second auction we introduce is based on a standard cost sharing mechanism.
+Analysis of this auction is much simpler than the first and the bound we obtain on its worst case
+performance is much better.
+In Section 7 we discuss the extension of the results for unlimited supply to the limited supply
+case where there are fewer units for sale than bidders. In Section 8 we give additional motivation
+for our competitive framework by showing that no reasonable auction can outperform the optimal
+omniscient auction that serves as the benchmark in our analysis. We conclude in Section 9 and
+discuss recent results related to this line of research.
+2. Preliminaries and notation
+We consider single-round, sealed-bid auctions for identical units of an item available in un-
+limited supply.
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 245
+Definition 2.1. A single-round sealed-bid auction, A, is one where:
+(1) Each bidder submits a bid, representing the maximum amount they are willing to pay for the
+item. We denote by b the vector of all submitted bids, i.e., the input. The ith component of
+b is bi, the bid submitted by bidder i. We denote by n the number of bidders.
+(2) Given the bid vector b, the auctioneer computes an output consisting of an allocation, x =
+(x1,...,xn), and prices, p = (p1,...,pn). The allocation xi is an indicator for bidder i’s
+receipt of the item (1 if bidder i receives the item and 0 otherwise). If xi = 1, we say that
+bidder i wins. Otherwise, bidder i loses, or is rejected. The price, pi, is what bidder i pays
+the auctioneer. We assume that 0  pi  bi for all winning bidders and that pi = 0 for all
+losing bidders (these are the standard assumptions of no positive transfers and voluntary
+participation. See, e.g., Moulin and Shenker, 2001).
+(3) The profit of the auction (or auctioneer) is A(b) =
+
+i pi.
+We say that an auction is deterministic if the allocation and prices are completely determined
+as a function of the bid vector. We say that the auction is randomized if the procedure by which
+the auctioneer computes the allocation and prices is randomized. Note that if the auction is ran-
+domized, the profit of the auction, the output prices, and the allocation are random variables.
+We make the following assumptions about bidders:
+• Each bidder has a private valuation, representing the true maximum they are willing to pay
+for the item. We denote by vi bidder i’s valuation.
+• Each bidder bids so as to maximize their utility, ui = vixi − pi.
+• Bidders bid with full knowledge of the auctioneer’s mechanism.
+• Bidders do not collude.
+• The bidders in the auction are indistinguishable from the perspective of the auctioneer. Thus,
+the auctioneer cannot perform any knowledgeable market segmentation.
+Finally, we formally define the notion of truthfulness.
+Definition 2.2. We say that a deterministic auction is truthful if, for each bidder i and any choice
+of bid values for all other bidders, bidder i’s utility is maximized by bidding their valuation, i.e.,
+by setting bi = vi.
+Thus, we consider an ex post notion of truthfulness with respect to bidders strategies. Truthful
+auctions encourage rational bidders to bid their valuation if the bid value that maximizes their
+profit is unique. If the bid value is not unique, truthfulness at least does not discourage bidders
+from bidding their valuation.
+For randomized auctions, one natural approach is to say that an auction is truthful if a bidder’s
+expected profit is maximized by bidding their valuation. We use another natural, but stronger
+notion of truthfulness; we require randomized auctions to be truthful ex post with respect to the
+randomness in the mechanism.
+Definition 2.3. A randomized auction is truthful if it can be described as a probability distribution
+over deterministic truthful auctions.
+246 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+Clearly, with this notion of truthfulness, the probability that a bidder’s utility exceeds z is
+simultaneously maximized for every z by bidding truthfully.
+Henceforth we will consider only truthful auctions. As bidding vi is a dominant strategy for
+bidder i in a truthful auction, in the remainder of this paper, we assume that bi = vi.
+2.1. Bid-independent auctions
+Intuitively, if a price a bidder is offered in an auction is independent of the bidder’s bid value,
+the auction is truthful. This is a simple consequence of the well known observation (e.g., Myer-
+son, 1981) that a mechanism is truthful if and only if the allocation rule of the auction is monotone
+(i.e., if a winning bidder increases their bid then they still win). Given such a monotone alloca-
+tion rule, the payment rule that induces truthtelling is fixed. In particular, a winning bidder pays
+their minimum winning bid. Therefore, we can view a truthful mechanism as the function that
+computes this minimum winning bid (which we view as an offer price).
+The following statement of this well known characterization is useful because it emphasizes
+that while the offer price to a bidder should be independent of the bidder’s bid, it can and should
+depend on the bids of all the other bidders. Bid-independent auctions formalize this observation.
+Let b−i denote the vector of bids b with bi removed, i.e., b−i = (b1,...,bi−1,?,bi+1,...,bn).
+We call such a vector masked. Let f be a function from masked vectors to prices (non-negative
+real numbers). The deterministic bid-independent auction defined by f is Af (Definition 2.4).
+Definition 2.4 (Bid-independent Auction, Af (b)). For each bidder i:
+(1) ti ← f (b−i).
+(2) If ti  bi, set xi ← 1 and pi ← ti. (Bidder i wins.)
+(3) Otherwise, set xi = pi = 0. (In this case, we say that bidder i is rejected.)
+In step (2), bid-independence allows the inequality, ti  bi, to be strict or non-strict at the discre-
+tion of f (b−i). Thus f can specify whether to accept bi at price ti if bi is in (ti,∞) or [ti,∞).
+For example, by setting f = max for all i and breaking ties arbitrarily, we obtain the 1-unit
+Vickrey auction, in which the highest bidder wins at the second highest price. Similarly, if f is
+the function that returns the kth highest bid, we get the k-item Vickrey auction.
+Theorem 2.5. A deterministic auction is truthful if and only if it is equivalent to a deterministic
+bid-independent auction.
+Definition 2.6. A randomized bid-independent auction is a probability distribution over bid-
+independent auctions. For these auctions, f (b−i) is a non-negative real-valued random variable.7
+It follows immediately from this definition, Definition 2.3, and Theorem 2.5 that:
+Corollary 2.7. A randomized auction is truthful if and only if it is equivalent to a randomized
+bid-independent auction.
+7 Note that the random variables f (b−i) and f (b−j ) need not be independent.
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 247
+2.2. Optimal omniscient auctions
+In our discussions to follow, it will be useful to compare the performance of truthful auctions
+to that of the optimal single priced and optimal multi-priced omniscient auctions.
+Definition 2.8. The optimal single price omniscient auction, F, is defined as follows: Let b be
+a bid vector, and let zi be the ith largest bid in b. Auction F on input b determines the value k
+such that kzk is maximized. All bidders with bi  zk win at price zk; all remaining bidders lose.
+The profit of F on input b is thus
+F(b) = max
+1in
+izi.
+Definition 2.9. The optimal multiple price omniscient auction, T , is the auction that sells to each
+bidder at his bid value. Thus, the profit of T on input b is
+T (b) =
+
+1in
+bi.
+3. Competitive analysis
+The goal of this section is to motivate and explain the application of worst-case competitive
+analysis to auctions. We begin with an example of an auction that performs well under a Bayesian
+analysis. Then we show that under worst-case analysis, the same auction does poorly. Finally, we
+describe how competitive analysis can be used to give stronger results.
+We begin by considering a natural truthful auction, the Deterministic Optimal Price (DOP)
+auction. To define DOP, we introduce the notion of the optimal sale price for a set of bids.
+Definition 3.1. Let b be a vector of bids. Denote by opt(b) the sale price for b that gives the
+optimal profit, i.e.,
+opt(b) = argmax
+zi
+izi,
+where zi is the ith largest bid in b.
+DOP is the truthful auction defined as follows:
+Definition 3.2. The Deterministic Optimal Price (DOP) auction is defined by the bid independent
+function f :
+f (b−i) = opt(b−i).
+In other words, DOP uses for each bid bi the optimal sale price for the remaining bids b−i.
+Note that the optimal price for b could be the same as the optimal price for b−i but in general
+this is not the case. The following lemma is not difficult to prove.
+Lemma 3.3. Assume that the bids in b are i.i.d. from any bounded support probability distribu-
+tion. Then, as the number of bidders tends to infinity, the profit of the DOP auction converges to
+the optimal profit.
+248 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+Thus, DOP is a profit maximizing auction for a large class of distributions over bid vectors.
+However, it is also easy to exhibit classes of bid vectors where DOP’s profit is very far from
+optimal.
+For example, consider n bidders where n/b of them bid b  1 and the remaining bidders
+bid 1. Running DOP on this bid vector will result in the following: For a bid at value b, we
+remove it and compute opt of the remaining bids. Of the n − 1 bids remaining n/b − 1 of them
+are at b. Thus, opt outputs 1 as n − 1 bids at price 1 gives a higher revenue than n/b − 1 bids at
+price b. Similarly for a bid at value 1, we remove it and compute opt of the remaining bids. Of
+the n − 1 of them, there are n/b of them at b, the rest at 1. Thus, opt chooses to output b because
+n/b bids at price b gives a higher revenue than n − 1 bids at price 1. Thus, all bids at value 1
+are rejected and all bids at value b win the auction and only have to pay 1. DOP’s profit is thus
+n/b (the number of bids at b) whereas the optimal single price profit is n. Thus, for b very large,
+DOP performs arbitrarily worse than the optimal single price profit.
+We note that any input on which the single price omniscient auction finds two different bid
+values that give approximately the same revenue will have a similar worst case. Indeed, we
+extend this result in Section 4 by showing that all deterministic auctions suffer from this type of
+problem.
+In the Bayesian analysis of Lemma 3.3, these bad inputs are very unlikely to occur; analysis
+of the expected profit hides the possibility of messing up on specific inputs. While this is not
+a problem if the bids are from a random source, it is not necessarily reasonable to expect the
+bidders’ valuations to be truly random.
+To expose auctions, like the one above, that have inputs on which they perform poorly, we turn
+to worst-case analysis. The goal of the worst-case analysis we employ here is to get a bound on
+how badly the auction could mess up if an adversary generated the worst possible input. While
+this adversarial view is clearly not a realistic model of how bidders bid either, an auction that
+performs well in the worst case will certainly perform well on the more benign reality. As we
+shall see in this paper, there are auctions that perform well even under worst-case analysis.
+The notion of competitive analysis is a natural one. In the worst case, all input bids could be
+zero (or negligible) and no auction will be able to extract a high profit. Thus, instead of absolute
+profit, we look at auction profit relative to an “optimal” auction on the same input. The correct
+notion of an optimal auction is not obvious. In general, our goal is to get the strongest results we
+can, and thus we will try to compare our truthful auctions against the best possible auction that we
+can feasibly compete with. Once the optimal auction is defined, the best competitive auction is the
+one that minimizes the competitive ratio, the worst case ratio between the optimal auction profit
+and its profit. A fundamental goal of this research is to determine the best metric for comparison,
+the corresponding best competitive ratio, and the auction mechanism that achieves it.
+3.1. Competitive auction framework
+A key part of setting up a competitive framework for analyzing solutions to any problem
+is coming up with the right metric for comparison. As a starting point, we would like to take
+the strongest possible benchmark for comparison that we can: the profit of an auctioneer that is
+perfectly informed about the bidder’s values. This leads us to consider as the two most natural
+metrics for comparison the optimal omniscient multi-priced and single priced auctions, T and F,
+defined in Section 2.2.
+We first compare the performance of F relative to T . Specifically, we observe that in the worst
+case, the maximum ratio of T to F is logarithmic in the number n of bidders.
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 249
+Lemma 3.4. There exist bid vectors b for which
+F(b) = Θ
+
+T (b)/lnn
+
+.
+Moreover, for all bid vectors b
+F(b)  T (b)/lnn.
+Proof. For the first part, let b be the bid vector such that bi = n/i. Then F(b) = n and T (b) =
+n(ln(n) + Θ(1)).
+For the second part, let zi be the ith largest bid in bid vector b. Suppose that F(b) =
+maxi izi = kzk. Then for all i,
+izi  kzk.
+Thus,
+T (b) =
+n
+
+i=1
+zi 
+n
+
+i=1
+kzk
+i
+ F(b)
+n
+
+j=1
+1
+j
+= F(b)
+
+lnn + O(1)
+
+. 2
+Now we show that no truthful auction can be competitive against F (and hence it cannot be
+competitive against T ).
+Lemma 3.5. For any truthful auction Af and any β  1, there is a bid vector b such that the
+expected profit of Af on b is less than F(b)/β.
+Proof. Consider a bid-independent randomized auction on two bids, 1 and x  1. Let h be the
+smallest value greater or equal to 1 such that Pr[f (1)  h]  1/(2β). Then the profit on input
+vector b = (1,H) with H = 4βh is at most
+H
+2β
++ h
+
+1 −
+1
+2β
+
++ 1 < 4h =
+H
+β
+=
+F(b)
+β
+. 2
+Lemma 3.5 shows that we cannot expect to come close to matching the performance of the
+optimal single price omniscient auction in the case where the optimal profit is generated from
+the single highest bid. Thus, we must set our sights slightly lower. Later in the paper we will
+present auctions that are competitive with F(2), the optimal single price omniscient auction that
+sells at least two units. Such auctions perform comparably to F(2) in that they achieve a constant
+fraction of the revenue of F(2) on all inputs.
+Definition 3.6. The optimal single price omniscient auction that sells at least two units, F(2), is
+defined as follows: Let b be a bid vector, and let zi be the ith largest bid in the vector b. Auction
+F(2) on input b determines the value k such that k  2 and kzk is maximized. All bidders with
+bi  zk win at price zk; all remaining bidders lose. The profit of F(2) on input b is thus
+F(2)
+(b) = max
+2kn
+kzk.
+Note that for b where F elects to sell at least two units, F(2)(b) = F(b). Thus, excluding
+bid vectors where only the highest bidder wins in the optimal auction, comparing auction perfor-
+mance to F(2) is identical to comparing it to F.
+250 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+Next we generalize the definition of F(2) to define F(m), as the optimal single price omniscient
+auction that sells at least m units, and formalize our definition of competitiveness.
+Definition 3.7. The m-optimal single price omniscient auction F(m) is defined as follows: Let
+b be a bid vector, and let zi be the ith largest bid in the vector b. Auction F(m) on input b
+determines the value k such that k  m and kzk is maximized. All bidders with bi  zk win at
+price zk; all remaining bidders lose. The profit of F(m) on input b is thus
+F(m)
+(b) = max
+mkn
+kzk.
+Definition 3.8. We say that auction A is β-competitive against F(m) if for all bid vectors b, the
+expected profit of A on b satisfies
+E
+
+A(b)
+
+
+F(m)(b)
+β
+.
+We say that an auction is competitive against F(m) if the auction is β-competitive against F(m)
+for a constant β. We refer to β as the competitive ratio of A.
+The statement that an auction is competitive against F(m) implies that, restricted to inputs b
+such that there are at least m units sold by the optimal auction, i.e., F(m)(b) = F(b), our auctions
+are competitive against F. For m = 2, this restriction precisely excludes the case where it is not
+possible to be competitive – when there is one bidder with a very large valuation.
+Observe that since the profit of F(m) decreases as m increases, as we compete against F(m)
+for larger values of m, we are demanding less and less of the truthful auction. We will thus single
+out the case of competition against m = 2, as F(2) is the strongest omniscient auction that we
+will be able to feasibly compete with.
+Definition 3.9. We say an auction is β-competitive if it is β-competitive against F(2). In cases
+where we do not wish to specify the constant β, we simply say that the auction is competitive.
+By considering competitiveness against F(m) for different values of m, we obtain results that
+are relevant to a wider range of applications. For example, in situations in which the auctioneer
+does not have prior distributions on bidders’ bid values, but nonetheless has a limited amount
+of prior knowledge about the bidders, i.e., that his profit will be maximized by selling at least
+m units, he can use an auction that is tailored to such a situation, and obtain much stronger
+guarantees on the competitive ratio. One such natural example is when there are a large number
+of bidders, and the auctioneer is safe in assuming that all bid values come from a bounded range.
+4. Deterministic auctions are not competitive
+In this section, we show that no symmetric deterministic auction can be competitive. An auc-
+tion is symmetric if the outcome is independent of the order of the bids. More precisely, we say
+that A is symmetric if for all bid vectors b and permutations π of the bidders, the output of A on
+input π(b) is price vector π(p) and allocation π(x) (given that the output of A on b is p and x).
+We now show that no symmetric deterministic auction is competitive. In contrast, in Section 6,
+we will show that there are competitive symmetric randomized auctions.
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 251
+Theorem 4.1. Let Af be any symmetric deterministic auction defined by bid-independent func-
+tion f . Then Af is not competitive: for any 1  m  n there exists a bid vector b of length n
+such that the profit of Af on b is at most F(m)(b)m
+n .
+Proof. Fix n and m and the symmetric bid-independent auction Af . Consider the set of bid
+vectors whose bids are all n or 1. For 0  j  n − 1, write f (j) for the price the auction assigns
+to a masked vector with exactly j bids at n and n − 1 − j bids at 1. Note that if f (0) > 1 then if
+all bids are 1, the auction has profit 0 and the conclusion of the theorem holds trivially. So assume
+f (0)  1 and let k be the largest integer in {0,...,n − 1} such that f (k)  1. Let b be the bid
+vector with k + 1 bids at n and n − k − 1 bids at 1. The profit of Af on b is (k + 1)f (k)  k + 1
+since the only winners are those who bid n. If k  m − 1 then F(m) has profit n. If k  m then
+F(m) has profit at least (k + 1)n. In either case the profit is at most F(m)(b)m
+n . 2
+This result motivates the consideration of randomized mechanisms. As a randomized auction
+is just a randomization over deterministic auctions, it is still the case that a randomized auction
+can perform poorly on unlucky outcomes of our random coin flips. However, the auction can
+be designed such that these unlucky outcomes are very improbable. We note that this use of
+randomness in the mechanism is very different from assuming the bids come from a random
+distribution. The latter is making an external assumption on our inputs, while internal randomness
+in the mechanism is guaranteed and completely under the control of the mechanism. As we will
+show with our development of randomized auctions that are competitive in worst case, there is
+no need to make the assumption that the bids are randomly generated when we can randomize
+the mechanism instead. Of course, the use of randomization in mechanisms and algorithms is a
+standard technique in game theory and computer science.
+5. A lower bound on the competitive ratio
+We have seen that in order to construct competitive truthful auctions, we will need to incor-
+porate randomization into the mechanism. Before showing how this is done, we prove a lower
+bound on the performance of any truthful auction, even a randomized one, compared to F(2): We
+show that for any randomized truthful auction A, there exists an input bid vector b on which
+E
+
+A(b)
+
+
+F(2)(b)
+2.42
+.
+To prove the lower bound, we analyze the behavior of A on a bid vector chosen from a
+probability distribution over bid vectors. The outcome of the auction is then a random variable
+depending on both the randomness in A and the randomness in b. We show that Eb[EA[A(b)]] 
+Eb[F(2)(b)]/2.42. It follows immediately (from the definition of Eb[·]) that there must exist a
+fixed choice of b (depending on A) for which E[A(b)]  F(2)(b)/2.42. This implies that the
+competitive ratio of A is at most 2.42.
+Consider n i.i.d. bids b(n) generated from the distribution with each bid bi satisfying
+Pr[bi > y] = 1/y for all y  1. Consider a truthful auction A. Let Vi be the price offered to
+bi in the bid-independent implementation of A. Vi is a random variable depending on A and all
+of the bj other than bi. Let Pi be the profit from bidder i which is 0 if bi < Vi and Vi otherwise.
+For v  0, E[Pi|Vi = v] = v · Pr[bi > v|Vi = v] = v · Pr[bi > v]  1, since bi is independent
+of Vi. Therefore E[Pi]  1. Thus we have:
+252 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+Lemma 5.1. For b(n) defined above, the expected revenue of any truthful auction, A, is at most n.
+Note that for any bid-independent auction that offers prices of at least one, the expected rev-
+enue is exactly n.
+The proof of the following result is technical and can be found in Appendix C.
+Lemma 5.2. For n bids from the above distribution, the expected value of F(2) is
+E
+
+F(2)
+
+b(n)
+
+= n − n
+n
+
+i=2
+
+−1
+n
+i−1
+i
+i − 1
+
+n − 1
+i − 1
+
+.
+Combining this with the previous lemma we get:
+Lemma 5.3. For bids as defined above, we have
+E[F(2)(b(n))]
+E[A(b(n))]
+= 1 −
+n
+
+i=2
+
+−1
+n
+i−1
+i
+i − 1
+
+n − 1
+i − 1
+
+.
+Interesting special cases are n = 2 where this gives a lower bound of 2 which matches the best
+competitive auction for two bids, the 1-unit Vickrey auction. For n = 3 this gives a lower bound
+of 13/6. A lower bound for the ratio of the best competitive auction on general n is obtained by
+taking the limit.
+Lemma 5.4.
+lim
+n→∞
+1 −
+n
+
+i=2
+
+−1
+n
+i−1
+i
+i − 1
+
+n − 1
+i − 1
+
+= 1 +
+∞
+
+i=2
+(−1)i i
+(i − 1)(i − 1)!
+.
+The proof of the lemma appears in Appendix C. Routine calculations then show that the limit
+value is at least 2.42.
+Theorem 5.5. The competitive ratio of any truthful randomized auction is at least 2.42.
+6. Competitive auctions via random sampling
+We now present two techniques for designing competitive auctions that are based on random
+sampling. Both techniques start by randomly partitioning the input bids into two sets. This is
+done by flipping a fair coin for each bid to decide which partition to assign it. We then use
+one partition for market analysis and plug what we learn into a sub-auction to be run on the
+other partition, and vice versa. In what follows, we explore two choices for the sub-auction.
+Our first auction, the Random Sampling Optimal Price auction, uses a sub-auction that makes a
+single take-it-or-leave-it offer to all bidders.8 Our second auction, the Random Sampling Profit
+Extraction auction, uses a special case of the cost sharing mechanism9 of Moulin and Shenker
+(2001) for the sub-auction.
+8 It is instructive to view this take-it-or-leave-it offer sub-auction as the optimal Bayesian auction, i.e., Vickrey with
+reservation price, simplified to apply to the unlimited supply case.
+9 We will call this special case of the cost sharing mechanism a profit extractor.
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 253
+6.1. Random sampling optimal price auction
+In this section, we present the Random Sampling Optimal Price (RSOP) auction. RSOP is a
+randomized version of the DOP auction presented in Section 3. The RSOP auction is guaranteed,
+on all inputs, to achieve a constant fraction of the profit of F(2), the optimal single-price omni-
+scient auction which sells at least two units. More importantly, on a large class of interesting
+and practical bid vectors, RSOP is guaranteed to get very close to the profit of F, the optimal
+single-price omniscient auction.
+The RSOP auction is defined as follows:
+Definition 6.1 (RSOP). The Random Sampling Optimal Price auction (RSOP) is:
+(1) Partition bids b uniformly at random into two sets: for each bid, with probability 1/2 put the
+bid in b and otherwise b.
+(2) Let p = opt(b) and p = opt(b), the optimal single sale prices for b and b, respectively.
+(See Definition 3.1.)
+(3) Use p as a take-it-or-leave-it offer for all bids in b (i.e., all bids in b of value below p are
+rejected; all remaining bids win at price p).
+(4) Use p as a take-it-or-leave-it offer for all bids in b.
+Note that RSOP is a dual-priced auction. If it is important to have a single-priced auction, one
+can simply skip the 4th step and reject all the bids in b, at the cost of half the expected profit.
+It is readily apparent that RSOP can be implemented bid-independently and thus from Corol-
+lary 2.7:
+Observation 6.2. The RSOP auction is truthful.
+We now discuss the performance of RSOP. Our first result is that on every input, RSOP
+achieves a constant fraction of the profit of F(2).
+Theorem 6.3. RSOP is constant competitive against F(2).
+Proofs of this theorem and the rest of the theorems in this section are technical and thus are
+deferred to Appendix A.
+The constant bound we obtain in this theorem is quite weak. However, there are a number of
+interesting special cases in which RSOP’s performance is significantly better. One such special
+case is presented in the following theorem.
+Theorem 6.4. Let b be any bounded-range bid vector, i.e., any bid vector of n bids with bi ∈ [1,h]
+for all i. Then
+lim
+n→∞
+max
+b
+F(b)
+RSOP(b)
+= 1.
+To prove this theorem, and generalizations thereof, we consider the RSOPr auction, a para-
+meterized version of the RSOP auction. To define RSOPr , we first generalize Definition 3.1.
+254 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+Definition 6.5. Let b be a vector of bids. Denote by optr(b) the sale price for b that gives the
+optimal profit among those sale prices that result in the sale of at least r units, i.e.,
+optr(b) = argmax
+zi:ir
+izi,
+where zi is the ith largest bid in b. If r > n, we arbitrarily define optr(b) = 0.
+Definition 6.6 (RSOPr ). The Parameterized Random Sampling Optimal Price (RSOPr ) auction
+works as follows:
+(1) Partition bids b uniformly at random into two sets: for each bid, with probability 1/2 put the
+bid in b and otherwise b.
+(2) Let p = optr(b) and p = optr(b), the optimal single sale prices that sell at least r units
+for b and b, respectively.
+(3) Use p as a take-it-or-leave-it offer for all bids in b (i.e., all bids in b of value below p are
+rejected; all remaining bids win at price p).
+(4) Use p as a take-it-or-leave-it offer for all bids in b.
+Theorem 6.7. There is an absolute constant C, such that for any  > 0, RSOPm/2−m is (1 + )-
+competitive against F(m), with probability at least 1 − e−C2m.
+Thus, a parameterized version of RSOP asymptotically (as m gets large) matches the profit
+of F(m). Recall that F(m), the optimal single-price auction that is required to have at least m
+winners, is the same as F when F chooses to sell at least m units. Thus F(m) is the best auction
+when the auctioneer is required to use a single price and sell at least m units. An immediate
+corollary of the above theorem is that on any bid vector b such that (a) F(b) = F(m)(b) and
+(b) with high probability RSOP and RSOPm/2−m exhibit the same behavior on b (i.e., for b
+partitioned into b and b, optr(b) = opt(b) and optr(b) = opt(b), where r = m/2 − m), we
+can conclude that with high probability RSOP(b)  F(b)/(1 + ).
+It is easy to check that conditions (a) and (b) hold for the case of bids of bounded support,
+as the number of bidders gets large, yielding Theorem 6.4 as an immediate corollary of Theo-
+rem 6.7.
+Thus, for a large class of inputs, RSOP achieves essentially optimal performance. For worst-
+case inputs, however, the constant in the bound on the competitive ratio of RSOP is weak. It
+is quite clear from studying the proof of Theorem 6.3 (in Appendix A) that the constant upper
+bound we obtain on RSOP’s competitive ratio is far from being tight. The best lower bound for
+the competitive ratio of RSOP is from the following simple example. When b consist of two very
+high bids h and h + , and all other bids are negligible, the expected profit of RSOP = F(2)/4.
+In the next section, we present an auction which achieves this bound: the RSPE auction that is
+4-competitive.
+6.2. Random sampling profit extraction auction
+Now we present another competitive truthful auction based on random sampling that is simple,
+easy to analyze, and achieves a competitive ratio of four.
+We first review a special case of a cost-sharing technique due to Moulin and Shenker (2001).
+The goal of this technique is, given bids b and cost R, to find a subset of the bidders to share the
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 255
+cost R. As our goal is to maximize profit, we view this mechanism as “extracting a profit of R”
+instead of sharing a cost.
+Definition 6.8 (ProfitExtractR). The Profit Extraction auction (ProfitExtractR), given target
+profit R, is defined as follows:
+(1) Find the largest k such that the highest k bidders’ bids are at lease R/k.
+(2) Charge these k bidders R/k and reject all others.
+The two important properties of this mechanism are that
+• ProfitExtractR is truthful.
+• If R  F(b), ProfitExtractR has revenue R; otherwise it has none.
+Definition 6.9 (RSPE). The Random Sampling Profit Extraction auction (RSPE) is works as
+follows:
+(1) Partition bids b uniformly at random into two sets: for each bid, with probability 1/2 put the
+bid in b and otherwise b.
+(2) Compute F = F(b) and F = F(b), the optimal single price profits for b and b, respec-
+tively.
+(3) Compute the auction results by running ProfitExtractF on b and ProfitExtractF on b.
+Because ProfitExtractF and ProfitExtractF are truthful on their respective partitions, we have
+Observation 6.10. RSPE is truthful.
+Next we show that RSPE is competitive.
+Theorem 6.11. RSPE is 4-competitive, and this bound is tight.
+Proof. In the special case that F = F the auction profit is F + F  F(b) and we are done.
+Otherwise, the auction profit is R = min(F,F). Suppose, without loss of generality, that F <
+F. Then ProfitExtractF on b will reject all bids in b. However, ProfitExtractF on b will be
+able to achieve profit F.
+By definition, F(2) on b sells to k  2 bidders at price p for a profit of F(2) = kp. These k
+bidders, all with bid value at least p, are divided uniformly at random between b and b. Let k
+be the number of them in b and k the number in b. As such, F(b)  pk and F(b)  pk.
+Therefore,
+min(F(b),F(b))
+F(2)(b)
+
+min(pk,pk)
+pk
+=
+min(k,k)
+k
+.
+Thus, the competitive ratio
+E[R]
+F(2)
+=
+1
+k
+k−1
+
+i=1
+min(i,k − i)
+
+k
+i
+
+2−k
+=
+1
+2
+−
+
+k − 1
+k
+2
+
+2−k
+.
+256 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+This ratio achieves its minimum of 1/4 for k = 2 and k = 3. As k increases, the ratio approach-
+es 1/2.
+To see that the bound presented on the competitive ratio is tight, consider the case
+where b consists of two very high bids h and h + , and all other bids are negligibly
+small. In this case F = F(2) = 2h, whereas the expected profit of the RSPE auction is
+h · Pr[two high bids are split between b and b] = h/2 = F/4. 2
+The RSPE auction, as described, gets no profit from one of the partitions, and therefore it is
+likely to lose at least half of the potential profit. An alternative is to pick a parameter γ < 1 and
+run ProfitExtract(γ F) and ProfitExtract(γ F). The competitive ratio of the resulting auction is
+4/γ > 4. However, in a setting in which there is some prior knowledge of bidder distributions, a
+proper choice of γ may lead to better performance.
+7. Limited supply
+Up to this point, we have studied the unlimited supply case which is motivated by digital
+good markets. In this section, we consider the case where the number of units available for sale
+is bounded. This case is typical for physical goods markets. We denote the number of units
+available by k. As before, the seller wishes to maximize profit and is not required to sell all the
+units. The definitions of truthful and competitive auctions, stated for the unlimited supply case,
+also apply to the limited supply case. We denote by F(m,k) the profit for the optimal single price
+auction that sells at least m and at most k units. It is this quantity that we wish to be competitive
+with.
+To reduce the limited supply case to the unlimited supply case, we can simply ignore (reject)
+all but the highest k bidders and run the unlimited supply auction on the remaining bids. We
+note that in order for this to be truthful we need to make sure that none of the bidders win at a
+price lower than the highest ignored bid. More formally the bounded supply auction Ak works as
+follows. Let xV and pV be the outcome of simulating k-Vickrey auction on b. Let xA and pA be
+the outcome of simulating A on bA given by bA
+i = xV
+i bi (i.e., b with losers of k-Vickrey treated
+as zero). Compute the outcome of Ak as p with pi = max(pV
+i ,pA
+i ) and x with xi = xV
+i xA
+i .
+This technique allows us to trivially extend all results in this paper to the bounded supply case.
+Thus, for example, for RSOP we obtain:
+Theorem 7.1. The limited supply version of RSOP is constant competitive against F(2,k).
+For RSPE we obtain:
+Theorem 7.2. The limited supply version of RSPE is 4-competitive against F(2,k).
+It is interesting to point out that by using auctions like RSOP and RSPE in a k-unit auction it
+is possible on many bid vectors to obtain profit significantly higher than that of the k-unit Vickrey
+auction.
+8. Better than F?
+Thus far we have demonstrated several auction mechanisms that perform comparably to F(2).
+In that F(2) is comparable to F, these auctions perform comparably to F. As F is the optimal
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 257
+single-price auction it is clear that no auction that always uses a single price can achieve a higher
+revenue than F. This gives good justification for comparing the revenue of single-price auctions
+to F (or F(2)).
+The question remains of whether or not we have chosen the “best” metric possible for com-
+parison for auctions that could be multi-priced. There are two primary goals in choosing the
+metric. First, we wish to achieve the best possible performance and thus we would like to com-
+pare ourselves against the strongest possible benchmark. On the other hand, we would like to
+find a natural metric that comes as close as possible to capturing the performance of the best
+truthful auction across a wide range of inputs.
+Let us reconsider for a moment the strongest possible benchmark, the optimal omniscient
+multi-price auction, T , that achieves as revenue the sum of the bids. Lemma 3.4 showed that the
+profit of T can be a factor of Θ(logn) more than F. There remains the question: Does there
+exist an alternative metric on bids b that captures the benefit of using multiple prices (and hence
+is sometimes larger than the F(b)) that we could compare our truthful multi-priced auctions
+against?
+As evidence to the contrary, we will show that no monotone auction can achieve an expected
+profit higher than F on any input. Monotone auctions are a large class of natural multi-priced
+truthful auctions; all the competitive auctions presented in this paper are monotone. This result
+supports the conjecture that there is no systematic way for an auction to achieve a higher expected
+profit than F.
+8.1. Hard-coded auctions
+We begin with some motivation for the notion of monotonicity by presenting some examples
+of non-monotone auctions. These auctions are not natural in the context of worst-case analysis
+in that while they can achieve significantly higher profit than that of F on certain bid sets (in fact
+they can achieve T (b)), they do so at the cost of having horrendously low profit (and hence very
+bad competitive ratio) on other bid sets.
+We observe that for every b∗ there is a symmetric truthful auction that achieves a profit of
+T (b∗). Consider the bid-independent auction Afb∗ parameterized by b∗ and defined as follows:
+fb∗ (b−i) = bj if π(b−i) = b∗
+−j for some permutation π,
+∞ otherwise.
+The “otherwise” case is arbitrarily chosen. In fact any number of bid vectors that have a pairwise
+difference of at least two bid values can be hard-coded into an auction in this manner. The auction
+will perform very poorly on any input that differs on only one bid value from one of the hard-
+coded bid vectors.
+For worst case profit maximization, this auction is counterintuitive. Consider Afb∗ with b∗
+in which half the bidders bid one and half bid h. When the bid-independent function, fb∗ , sees
+more h values, it outputs one. When it sees less h values, it outputs h. A more intuitive output
+for a profit maximizing auction would be to output h when there are more bids at value h.
+It might be nice to be able to argue that auctions with this unintuitive property are not compet-
+itive; however, this is not true. Note that we can combine a hard-coded auction and a competitive
+auction by flipping a fair coin and running the former or the latter depending on the outcome of
+the toss. The resulting auction is competitive, with the competitive ratio twice that of the under-
+lying competitive auction. Furthermore, on the hard-coded input b∗, the expected revenue of the
+auction is at least T (b∗)/2, which can be significantly bigger than F(b∗).
+258 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+Although a competitive auction can outperform F on some inputs, we conjecture that this
+happens at the expense of the competitive ratio and auctions designed to achieve high competitive
+ratios do not outperform F in this sense. In the next section we introduce the class of monotone
+auctions that includes RSOP, RSPE, DOP, and Vickrey with reservation price. We show that no
+monotone auction can outperform F.
+8.2. Monotonicity
+The intuition underlying our notion of monotonicity is that the bid-independent function defin-
+ing the auction should output higher prices when it sees higher bid values.
+Definition 8.1. An auction is monotone if for any pair of bidders i and j with bi  bj , we have:
+∀x  bi, Pr[bidder i wins at price  x]  Pr[bidder j wins at price  x].
+The intuition is that if bi < bj , then b−i looks like a higher set of bids than b−j . Therefore,
+the price bidder i pays if he wins will tend to be higher than the price bidder j pays if he wins.
+The class of monotone auctions is very general. It is not difficult to verify that the Vickrey
+auction with a reservation price is monotone. Thus, the optimal Bayesian auctions for i.i.d. prior
+distributions are monotone. Analysis of RSOP, RSPE, and DOP, the auctions introduced in this
+paper, shows that they are also monotone. The proofs of these facts are given in Appendix B. Our
+optimal single-price omniscient auction, F, is also monotone.
+We now show that F is the optimal monotone auction. This further justifies our comparison
+to F and the related metric F(2).
+Theorem 8.2. Let A be any monotone (truthful) randomized auction. For all bid vectors b, the
+revenue R = A(b) of A on input b satisfies
+E[R]  F(b).
+Proof. Let f be the bid-independent function defining A. For each i, define gi(x) =
+Pr[f (b−i)  x].
+Now consider the following thought experiment. Let U be a random variable that is uniform
+on [0,1]. Imagine running the bid-independent auction that for each i uses g−1
+i (U) as the of-
+fer price for bidder i, with g−1
+i defined as g−1
+i (y) = inf{x: gi(x) = y}. We denote by RU the
+resulting auction revenue. We observe that the distribution of the offer price for bidder i in this
+experiment is precisely the same as the original distribution of the offer price for bidder i:
+Pr
+
+g−1
+i (U)  x
+
+= Pr
+
+U  gi(x)
+
+= gi(x).
+Therefore, by summing the expectations for the bidders, we obtain
+E[RU ] = E[R].
+We complete the proof by showing that the expected revenue from our thought experiment
+E[RU ] is at most F(b). Conditioned on U = u, let k be the index of the smallest winning bid.
+Thus, g−1
+k (u)  bk. Since A is monotone, for x  bk and all j with bj  bk, we have gk(x) 
+gj (x). Furthermore, gk(x) and gj (x) are monotone non-decreasing functions. Therefore, it must
+be that g−1
+j (u)  g−1
+k (u)  bk  bj and therefore all bidders with bid values at least bk win at
+a price at most bk. Thus, the revenue, Ru, is at most bk times the number of bids with bid value
+least bk which totals to at most F(b). This holds for all u ∈ [0,1], and thus E[RU ]  F(b). 2
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 259
+9. Conclusions and recent progress
+In this paper, we introduced a framework for designing and analyzing profit-maximizing truth-
+ful auctions that are competitive against the optimal single price omniscient auction on all inputs.
+We provided motivation for the framework and presented two competitive auctions.
+Since this paper was originally prepared, there has been significant progress in the study of
+competitive auctions. Here, we have shown an upper bound of four and a lower bound of 2.42
+on the competitive ratio the best competitive auction. Considering the construction of the auc-
+tion with the optimal competitive ratio, Hartline and McGrew (2005) have recently shown that,
+for three bidders, the lower bound derived in this paper is tight by explicitly giving a 13/6-
+competitive three-bidder auction. They then used this auction to derive what is currently the best
+known competitive auction for an arbitrary number of bidders, achieving a competitive ratio of
+3.24. Construction of the optimal auction for four or more bidders is still an open question; how-
+ever, we conjecture that the competitive ratio of the optimal auction matches our lower bound.
+Our analysis here of the random sampling optimal price auction (RSOP) gives a rather poor
+bound on its performance and is fairly complicated to boot. Recently, Feige et al. (2005) gave an
+improved analysis of RSOP which shows that it is in fact at most 15-competitive. We encourage
+interested readers to refer to their proof rather than our original proof given here. It remains open
+to get the best possible bound on RSOP’s competitive ratio – we conjecture that it is in fact
+4-competitive.
+Another interesting recent technique used to design randomized competitive auctions is the
+consensus estimate approach of Goldberg and Hartline (2003). The best known auction based
+on this technique obtains a competitive ratio of 3.39. The consensus estimate technique is also
+useful for designing auctions that use only a single sale price (Goldberg and Hartline, 2003) or
+are collusion resistant (Goldberg and Hartline, 2005) with high probability.
+In further research on the role of randomization in auction design, Aggarwal et al. (2005)
+have shown that asymmetric deterministic competitive auctions exist. In particular they give a
+reduction that shows how to convert a randomized competitive auction into an asymmetric de-
+terministic auction that is competitive with at most a factor of four loss in the competitive ratio.
+Taken together with the results in this paper showing that symmetric deterministic competitive
+auctions do not exist and symmetric randomized competitive auctions do exist, our understanding
+of the role of randomization and asymmetry in competitive auction design seems to be complete.
+Segal (2003) and Baliga and Vohra (2003) consider using techniques related to ours for the
+case where the bidders’ valuations are drawn from an unknown distribution. Among other things,
+they show that the deterministic optimal price (DOP) auction is asymptoticly optimal when the
+bidders’ valuations come from distributions with bounded support. Baliga and Vohra also extend
+their analysis to a double auction problem (which was independently considered in a worst case
+setting by Deshmukh et al., 2002). These papers take an important step towards combining worst-
+case analysis with the traditional (Bayesian) analysis of auctions.
+There has also been a significant amount of recent research on an online version of this auction
+problem where the bidders arrive one at a time and the auctioneer must decide at the time of each
+arrival on the price to offer each bidder. Researchers have considered both unlimited supply (Bar-
+Yossef et al., 2002; Blum and Hartline, 2005; Blum et al., 2003; Kleinberg and Leighton, 2003)
+and limited supply (Hajiaghayi et al., 2004) variants of this online auction problem.
+Finally, we note that a number of recent papers have applied worst-case competitive analysis to
+other mechanism design problems (e.g., Abrams, 2006; Aggarwal and Hartline, 2006; Archer and
+260 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+Tardos, 2002; Balcan et al., 2005; Borgs et al., 2005; Deshmukh et al., 2002; Elkind et al., 2004;
+Fiat et al., 2002; Karlin et al., 2005; Lavi and Nisan, 2000; Talwar, 2003).
+Acknowledgments
+We would like to thank the following people for their contributions and useful discussions
+relating to this work: Amos Fiat, Stuart Haber, Jim Horning, Umesh Maheshwari, Satish Rao,
+Amir Ronen, Ilya Segal, Eva Tardos, Bob Tarjan, Radek Vingralek, and Stephen Weeks. We
+would also like to thank the anonymous referees for their help in improving the presentation.
+Appendix A. Analysis of RSOP
+Below we prove that RSOP is competitive. Moreover, we show that, as m gets large, the
+expected profit of RSOPr tends to F(m) for r = m
+2 (1 − δ) . This implies that for any  > 0,
+there is an m such that for any m  m, RSOPr is (1 + )-competitive against F(m).
+A.1. Preliminaries
+We begin our analysis of RSOPr with some preliminary lemmas. We will use the following
+definitions:
+• For any value v, let Fv = vnv (respectively F
+v = vn
+v and F
+v = vn
+v) where nv is the number
+of bids in b (respectively b and b) greater than or equal to v. Thus, Fv is the profit from
+using v as an offer price for b.
+• Let R be the random variable representing the profit of the auction RSOPr (where the input b
+is implied by the context). Recall from the definition of the RSOPr auction that p = optr(b)
+and p = optr(b) are the offer prices used for b and b respectively. Thus, the profit of the
+auction is R = F
+p + F
+p .
+• Let Eα be the event
+Eα: R  (1 − α)(Fp + Fp ) (1)
+for 1/2  α  1. This event holding for small α indicates a high profit, a significant fraction
+of the total profit achievable using p and p as offer prices.
+• Let r = m
+2 (1 − δ) . Suppose that optm(b) = zk, the kth largest bid in b. Define H to be the
+event that (a) there are at least r bids in b that are at least zk and (b) there are at least r bids
+in b that are at least zk. Note that if H does not occur then RSOPr may be unable to pick
+an offer price of magnitude similar to zk from at least one of the partitions.
+The key lemma we use is the following:
+Lemma A.1. Let 0 < δ < 1 and r = m
+2 (1 − δ) . Then, for any b, RSOPr satisfies
+Pr R 
+1 − α
+α
+F(m)
+(b)  Pr[Eα ∩ H]
+and thus
+E[R] 
+1 − α
+α
+F(m)
+(b)Pr[Eα ∩ H].
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 261
+Proof. Suppose that F(m)(b) = kzk. By definition, optr(b) returns the p that maximizes F
+p
+conditioned on there being r bids that are at least p (likewise for b and p). Notice that,
+conditioned on H, there are at least r elements in each of b and b that are at least zk. Thus, we
+can conclude that
+F
+zk
+ F
+p and F
+zk
+ F
+p .
+We also have
+F(m)
+(b) = Fzk = F
+zk
++ F
+zk
+,
+and thus
+F(m)
+(b)  F
+p + F
+p . (2)
+Event Eα holding, Eq. (1) allows us to lower bound the profit R as
+R  (1 − α)[Fp + Fp ]
+= (1 − α)[F
+p + F
+p + F
+p + F
+p ]
+= (1 − α)[R + F
+p + F
+p ]
+which by Eq. (2) gives
+R  (1 − α)
+
+R + F(m)
+
+.
+Event H holding, we rearrange terms to obtain
+R 
+1 − α
+α
+F(m)
+. 2
+This lemma reduces our problem to studying the events Eα and H.
+To do so, for any j, we define Bj to be the j highest bids in b (i.e., {z1,...,zj }), and let
+n(Bj ) be the number of these bids that are in b.
+Definition A.2. Given c: 0 < c < 1/2, we say that Bj is c-good if
+cj  n
+(Bj )  j − cj .
+Otherwise, Bj is c-bad.
+We prove that Bj is likely to be c-good using the following version of the Chernoff bound:
+Theorem A.3 (see e.g. Motwani and Raghavan, 1995, p. 70). Let Xi, 1  i  n, be independent
+Bernoulli trials such that for all i, Pr[Xi = 1] = 1/2. Then for X =
+
+1in Xi, and 0 < δ  1,
+Pr
+
+X < (1 − δ)
+n
+2
+
+< e−δ2n/4
+.
+Since the partition of b into the two subvectors b and b is done by flipping a fair coin for
+each bid, we can conclude from the Chernoff bound that
+Pr[Bj is c-bad]  2e−(1−2c)2j/4
+.
+262 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+Thus, we can conclude by a simple union bound that
+Pr[Bj is not c-good for some j > t ] 
+
+jt
+2e−(1−2c)2j/4
+and therefore we have
+Lemma A.4.
+Pr[Bj is not c-good for some j > t] 
+2e−(1−2c)2t/4
+1 − e−(1−2c)2/4
+.
+A.2. Analysis of RSOP
+We are now ready to proceed with the analysis of RSOPr . First we show that as m increases,
+the competitive ratio of the auction approaches one.
+Theorem A.5. Let 0 < δ < 1, and let r = m
+2 (1 − δ) . Then there is an absolute constant C > 0
+such that for any b,
+Pr R 
+1 − δ/2
+1 + δ/2
+F(m)
+ 1 − e−Cδ2m
+.
+Thus, as m → ∞, RSOPr is (1 + δ/2)/(1 − δ/2) competitive against F(m).
+Proof. Fix  = δ/2. Let Z be the event that Bj is 1
+2 (1 − )-good for all j > m
+2 (1 − 2). By
+Lemma A.4, there is a constant C1 > 0 such that
+Pr[Z]  1 − e−C1δ2m
+. (3)
+If Z holds, then F
+p  1
+2 (1 + )Fp and F
+p  1
+2 (1 + )Fp and thus
+R = F
+p + F
+p 
+1
+2
+(1 − )(Fp + Fp ).
+Thus,
+Pr
+
+E1
+2 (1+)
+
+ 1 − e−C1δ2m
+. (4)
+We now bound Pr[H]. As before, we assume that optm(b) is the kth largest bid zk. We also
+assume, without loss of generality, that zk is in b, and that z is the smallest bid larger than zk
+that is in b. Let G be the event that there is at least one element zi with m(1 − )  i  m in
+each of b and b. Then
+Pr[G] =
+
+1 − 21−m
+
+If events G and Z hold, then
+m(1 − )   < k. (5)
+Moreover, we can conclude that there are at least m
+2 (1 − ) > r bids above zk in b and at least
+m
+2 (1 − )(1 − ) > r bids above z in b. Thus, from Eqs. (4) and (5), we conclude that there is
+an absolute constant C > 0 such that
+Pr
+
+E1
+2 (1+) ∩ H
+
+ 1 − e−Cδ2m
+. (6)
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 263
+Combining Eq. (6) and Lemma A.1, we obtain the theorem. 2
+Next we show that RSOP is β-competitive for a (relatively large) constant β.
+Theorem A.6. There is a constant β such that RSOP is β-competitive.
+Proof. As before, we denote by zi the value of the ith largest bid. Suppose that opt2(b) is the
+kth largest bid, so that F(2) = kzk. We restrict our attention only to partitions of the bids in which
+the highest bid z1 is in one subvector, without loss of generality, in b, and both z2 and zk are
+in the other subvector. This event, which we shall denote G, occurs with probability 1/4. Let H
+denote the event that for all j  2, Bj is 1
+20 -good and event G holds.
+We first claim that it is an immediate corollary of Lemma A.4 is that
+Pr Bj is
+1
+20
+-good for all j > 20  0.8.
+Moreover, if event G holds, all 2  j  20 are 1
+20 -good, since z1 is in b and z2 is in b. Thus,
+with probability at least 0.8 − Pr[¬G] = 0.8 − 0.75 = 0.05, event H occurs.
+As before, we denote by n
+v (respectively n
+v) the number of bids in b (respectively b) that
+have value at least v.
+Let p = opt(b). Since zk is also in b, we have that
+p
+n
+p  zkn
+zk
+.
+Conditioned on event H, the revenue obtained from the bids in b (the part containing z1) is
+at least
+n
+p p
+ n
+p
+zkn
+zk
+n
+p
+.
+In addition, we have that n
+p  np /20, n
+p  np (1 − 1/20), and n
+zk
+ nzk /20, and thus,
+conditioned on event H,
+n
+p p
+ zknzk
+
+1
+20
+1
+20
+1
+1 − 1
+20
+
+.
+The expected revenue of RSOP is thus at least 0.05
+19·20 F(2), proving that RSOP is constant
+competitive. 2
+Appendix B. Monotonicity of DOP, RSOP, and RSPE
+Recall that the intuition underlying our notion of monotonicity is that the bid-independent
+function defining the auction should output higher prices when it sees higher bid values (Defini-
+tion 8.1).
+B.1. DOP is monotone
+As DOP is a symmetric auction, the order of the bids in the input does not affect the outcome.
+For convenience of notation we will assume that they are indexed from highest, b1, to lowest, bn.
+We denote by t = opt(b) and t1 = opt(b−1) the optimal sale price for b and b−1, respectively.
+264 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+Theorem B.1. DOP is monotone as
+• It uses the single sale price t1 for all winners.
+• All bidders that bid above the lowest winning bid also win.
+Proof. Recall that the bid-independent function that implements DOP is f (b) = opt(b) =
+argmaxbk
+kbk. We will show that for any bidder i that wins the auction, bidder i − 1 also wins
+the auction and at the same price. From this, a simple induction gives the theorem.
+In the case that bi = bi−1 the fact that DOP is symmetric implies that they must both win at
+the same price. Now consider the case that bi−1 > bi. Since bidder i wins, the computation of
+opt(b−i) must find the maximum of kbk for k < i and (k − 1)bk for k > i to be (k∗ − 1)bk∗ for
+k∗ > i. The only difference between the computation of opt(b−i) and of opt(b−i+1) is that for
+opt(b−i) we consider (i −1)bi−1 and for opt(b−i+1) we consider (i −1)bi. Since opt(b−i) finds
+(k∗ − 1)bk∗ bigger than the other values it considers and since (i − 1)bi−1 > (i − 1)bi, it must
+be that (k∗ − 1)bk∗ is the biggest value that opt(b−i+1) considers as well. 2
+B.2. RSOP auction
+We will show that RSOP is monotone with respect to any two bidders i and j. First fix i and
+j such that bi  bj . The randomness of RSOP is in the partitioning. We verify the monotonicity
+of RSOP by presenting a disjoint grouping of the partitionings such that each group is monotone
+with respect to i and j and the RSOP auction is just a randomization over monotone groups.
+We put partitionings with bi and bj in the same partition in their own group. Note that these
+groups are monotone with respect to bi and bj because both bi and bj are offered the same price.
+Any partitioning with bi and bj in opposite partitions we will pair in a group with the parti-
+tioning we get when we swap bi with bj . This gives us a group with two partitionings:
+Partitioning P : B1 ∪ {bi} and B2 ∪ {bj }.
+Partitioning P : B1 ∪ {bj } and B2 ∪ {bi}.
+We show that this group {P,P} is monotone with respect to bi and bj if one of the two partition-
+ings is chosen by flipping a fair coin. Consider the thought experiment where for bi a “heads”
+coin flip means use P and “tails” means use P, but for bj a “heads” coin flip means use P and
+“tails” for P . In this experiment, “heads” results in bi getting the optimal price for B2 ∪ {bj }
+and bj getting the optimal price of B2 ∪ {bi}. This is just the outcome of DOP on the bid set
+B2 ∪ {bi,bj }. Likewise on “tails”, the outcome is that of DOP on the bid set B1 ∪ {bi,bj }. By
+Theorem B.1, both of these outcomes are monotone. Note that the outcome for bi and bj as
+random variables in our thought experiment are the same as the random variables for their actual
+outcomes for this grouping. Thus, this grouping is monotone with respect to bidders i and j.
+B.3. RSPE auction
+To show that RSPE is monotone, we will use the same general approach as for RSOP of
+finding disjoint groupings in the partitionings and showing that each is itself monotone with
+respect to two bids bi and bj with bi  bj .
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 265
+As with RSOP, partitionings with both bi and bj on the same partition are themselves
+monotone as the profit extraction mechanism is monotone: it gives an outcome such that all
+winning bidders pay the same price and all bidders whose bid value is above this price win.
+Likewise, we pair a partitioning with bi and bj in different partitions, with the partitioning
+with bi and bj swapped. We get partitionings P and P as defined above:
+Fj = F
+
+B2 ∪ {bj }
+
+, Fi = F
+
+B1 ∪ {bi}
+
+,
+F
+i = F
+
+B2 ∪ {bi}
+
+, F
+j = F
+
+B1 ∪ {bj }
+
+.
+Since bi  bj , we have:
+Fj  F
+i , F
+j  Fi.
+Note that if bi does not win for either P or P then this grouping is trivially monotone with
+respect to bidders i and j. Otherwise, suppose bi wins in partitioning P and pays price pi. We
+will show that bj wins in P and pays p
+j  pi.
+Let peR be the bid-independent function for ProfitExtractR. Recall that for partitioning P , the
+price for bi is computed by running ProfitExtractFj on B1 ∪ {bi}. For partitioning P the price
+for bj is computed by running ProfitExtractF
+i
+on B1 ∪ {bj }. Thus,
+pi = peFj
+(B1)  peF
+i
+(B1) = pj .
+The intermediate step here follows because Fj  F
+i and because peR is monotone in R.
+Appendix C. Technical proof for Section 5
+First we prove Lemma 5.2 that says that for the prior distribution defined in Section 5, we
+have
+E
+
+F(2)
+
+b(n)
+
+= n − n
+n
+
+i=2
+
+−1
+n
+i−1
+i
+i − 1
+
+n − 1
+i − 1
+
+.
+Proof. In this proof we will get a closed form expression for Pr[F(2)(b(n)) > z] and then inte-
+grate to obtain the expected value. Note that all bids are at least one and therefore, we will assume
+that z  n. Clearly for z < n, Pr[F(2)(b(n)) > z] = 1. To get a formula for Pr[F(2)(b(n))], we
+define a recurrence based on Fn,k defined as
+Fn,k = max
+i
+(k + i)bi
+for bids b(n) sorted from highest to lowest (i.e., bi  bi+1). Intuitively, Fn,k represents the optimal
+single price revenue from b(n) and an additional k consumers each of which has a value equal
+to the highest bid, b1. To define the recurrence, fix n, k, and z and define the events Hi for
+1  i  n. Intuitively, the event Hi represents the fact that i bidders in b(n) and the k additional
+consumers have bid high enough to equally share z, while no larger set of j > i bidders of b(n)
+can do the same:
+Hi = bi  z/(k + i) ∧
+n
+
+j=i+1
+bj < z/(k + j)
+=
+
+n
+i
+
+k + i
+z
+i
+Pr[Fn−i,k+i < z].
+266 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+Note that events Hi are disjoint and that Fn,k is at least z if and only if one of the Hi occurs.
+Thus,
+Pr[Fn,k > z] = Pr
+ n
+
+i=1
+Hi
+
+=
+n
+
+i=1
+Pr[Hi]
+=
+n
+
+i=1
+
+n
+i
+
+k + i
+z
+i
+Pr[Fn−i,k+i < z]. (7)
+Also, note that F0,k = 0. For n bids b(n), F(b(n)) = Fn,0. We are interested in F(2)(b(n)) which
+is the same as F(b(n)) = Fn,0 except that we ignore the H1 case. This gives
+Pr
+
+F(2)
+
+b(n)
+
+> z
+
+= Pr[Fn,0 > z] − Pr[H1]
+= Pr[Fn,0 > z] −
+n
+z
+Pr[Fn−1,1 < z]. (8)
+So in order to obtain Pr[F(2)(b(n))] we need to solve the recurrence Fn,k, i.e., Eq. (7). We will
+show that the solution is:
+Pr[Fn,k > z] = 1 −
+
+z − k
+z
+n
+z − k − n
+z − k
+
+. (9)
+Note that our solution for the recurrence is correct for n = 0. We show that it is true in general
+inductively:
+Pr[Fn,k > z] =
+n
+
+i=1
+
+n
+i
+
+k + i
+z
+i
+Pr[Fn−i,k+i < z].
+Substituting in our solution, we get
+Pr[Fn,k > z] =
+n
+
+i=1
+
+n
+i
+
+k + i
+z
+i
+z − k − i
+z
+n−i
+z − k − n
+z − k − i
+
+=
+z − k − n
+zn
+n
+
+i=1
+
+n
+i
+
+(k + i)i
+(z − k − i)n−i−1
+.
+We now apply the following version of Abel’s (1826) Identity:
+(x + y)n
+x
+=
+n
+
+j=0
+
+n
+j
+
+(x + j)j−1
+(y − j)n−j
+.
+Making the change of variables, j = n − i, x = z − k − n, and y = k + n we get:
+zn
+z − k − n
+=
+n
+
+i=0
+
+n
+i
+
+(k + i)i
+(z − k − i)n−i−1
+.
+We plug this in above and subtract out the i = 0 term to get
+Pr[Fn,k > z] =
+z − k − n
+zn
+
+zn
+z − k − n
+− (z − k)n−1
+
+= 1 −
+
+z − k
+z
+n
+(z − k − n)
+(z − k)
+.
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 267
+Thus, our closed form expression for the recurrence is correct.
+Recall our goal is to compute Pr[F(2)(b(n)) > z]. Equation (9) shows that Pr[Fn,0 > z] = n/z.
+This combined with Eq. (8) and Eq. (9) gives the following for z  n:
+Pr
+
+F(2)
+
+b(n)
+
+> z
+
+=
+n
+z
+−
+n
+z
+Pr[Fn−1,1 < z]
+=
+n
+z
+Pr[Fn−1,1 > z]
+=
+n
+z
+
+1 −
+
+z − 1
+z
+n−1
+z − n
+z − 1
+
+.
+Recall that for z  n, Pr[F(2)(b(n)) > z] = 1. To complete this proof, we use the formula
+E[F(2)(b(n))] =
+ ∞
+0 Pr[F(2)(b(n)) > z]dz = n +
+ ∞
+n Pr[F(2)(b(n)) > z]dz. In the form above,
+this is not easily integrable; however, we can transform it back into a binomial sum which we
+can integrate:
+Pr
+
+F(2)
+
+b(n)
+
+> z
+
+= n
+n
+
+i=2
+
+−1
+z
+i
+i
+
+n − 1
+i − 1
+
+.
+E
+
+F(2)
+
+b(n)
+
+> z
+
+= n + n
+∞
+
+n
+n
+
+i=2
+
+−1
+z
+i
+i
+
+n − 1
+i − 1
+
+dz.
+= n − n
+n
+
+i=2
+
+−1
+n
+i−1
+i
+i − 1
+
+n − 1
+i − 1
+
+. 2
+Next we prove Lemma 5.4 that claims
+lim
+n→∞
+1 −
+n
+
+i=2
+
+−1
+n
+i−1
+i
+i − 1
+
+n − 1
+i − 1
+
+= 1 +
+∞
+
+i=2
+(−1)i i
+(i − 1)(i − 1)!
+.
+Proof. It is sufficient to show that
+
+
+
+
+
+1 +
+n
+
+i=2
+(−1)i i
+(i − 1)(i − 1)!
+− 1 −
+n
+
+i=2
+
+−1
+n
+i−1
+i
+i − 1
+
+n − 1
+i − 1
+ 
+
+
+
+
+= O
+
+1
+n
+
+.
+We use the following fact below: If, for 1  k  K, 0 < ak < 1, then
+K
+
+k=1
+(1 − ak)  1 −
+K
+
+k=1
+ak.
+
+
+
+
+
+1 +
+n
+
+i=2
+(−1)i i
+(i − 1)(i − 1)!
+− 1 −
+n
+
+i=2
+
+−1
+n
+i−1
+i
+i − 1
+
+n − 1
+i − 1
+ 
+
+
+
+
+
+n
+
+i=2
+
+
+
+
+i
+(i − 1)(i − 1)!
+−
+
+1
+n
+i−1
+i
+i − 1
+
+n − 1
+i − 1
+
+
+
+
+=
+n
+
+i=2
+
+
+
+
+i
+(i − 1)(i − 1)!
+
+1 −
+n(n − 1)...(n − i + 2)
+ni−1
+
+
+
+
+268 A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269
+=
+n
+
+i=2
+
+
+
+
+i
+(i − 1)(i − 1)!
+
+1 −
+
+1 −
+1
+n
+
+1 −
+2
+n
+
+···
+
+1 −
+i − 2
+n
+
+
+
+
+
+n
+
+i=2
+
+
+
+
+
+i
+(i − 1)(i − 1)!
+1 − 1 −
+i−2
+
+j=1
+j
+n
+
+
+
+
+
+
+n
+
+i=2
+
+
+
+
+i
+(i − 1)(i − 1)!
+
+i2
+n
+
+
+
+ =
+1
+n
+n
+
+i=2
+i3
+(i − 1)(i − 1)!
+
+1
+n
+∞
+
+i=2
+i3
+(i − 1)(i − 1)!
+.
+As (i − 1)! grows exponentially,
+∞
+i=2
+i3
+(i−1)(i−1)! is bounded by a constant and we have the
+desired result. 2
+References
+Abel, N., 1826. Beweis eines Ausdrucks von welchem die Binomial-Formel ein einzelner Fall ist. Crelles J. Reine Ange-
+wandte Math. 1, 159–160.
+Abrams, Z., 2006. Revenue maximization when bidders have budgets. In: Proceedings of the 17th Annual ACM-SIAM
+Symposium on Discrete Algorithms.
+Aggarwal, G., Fiat, A., Goldberg, A., Hartline, J., Immorlica, N., Sudan, M., 2005. Derandomization of auctions. In:
+Proc. 37th ACM Symposium on the Theory of Computing. ACM Press, New York.
+Aggarwal, G., Hartline, J., 2006. Knapsack auctions. In: Proceedings of the 17th Annual ACM-SIAM Symposium on
+Discrete Algorithms.
+Archer, A., Tardos, E., 2002. Frugal path mechanisms. In: Proc. of the 13th ACM Symposium on Discrete Algorithms.
+Balcan, M.-F., Blum, A., Hartline, J., Mansour, Y., 2005. Mechanism design via machine learning. In: Proceedings of the
+46th IEEE Symposium on Foundations of Computer Science.
+Baliga, S., Vohra, R., 2003. Market research and market design. Adv. Theoret. Econ. 3.
+Bar-Yossef, Z., Hildrum, K., Wu, F., 2002. Incentive-compatible online auctions for digital goods. In: Proceedings of the
+13th Annual ACM-SIAM Symposium on Discrete Algorithms.
+Blum, A., Hartline, J., 2005. Near-optimal online auctions. In: Proceedings of the 16th Annual ACM-SIAM Symposium
+on Discrete Algorithms, pp. 1156–1163.
+Blum, A., Kumar, V., Rudra, A., Wu, F., 2003. Online learning in online auctions. In: Proceedings of the 14th Annual
+ACM-SIAM Symposium on Discrete Algorithms.
+Borgs, C., Chayes, J., Immorlica, N., Mahdian, M., Saberi, A., 2005. Multi-unit auctions with budget-constrained bidders.
+In: Proceedings of the 7th ACM Conference on Electronic Commerce, pp. 44–51.
+Borodin, A., El-Yaniv, R., 1998. Online Computation and Competitive Analysis. Cambridge Univ. Press.
+Bulow, J., Roberts, J., 1989. The simple economics of optimal auctions. J. Polit. Economy 97, 1060–1090.
+Deshmukh, K., Goldberg, A., Hartline, J., Karlin, A., 2002. Truthful and competitive double auctions. In: Proceedings of
+the 10th European Symposium on Algorithms. Springer-Verlag.
+Elkind, E., Sahai, A., Steiglitz, K., 2004. Frugality in path auctions. In: Proc. of the 15th ACM Symposium on Discrete
+Algorithms.
+Feige, U., Flaxman, A., Hartline, J., Kleinberg, R., 2005. On the competitive ratio of the random sampling auction. In:
+Proc. 1st Workshop on Internet and Network Economics.
+Fiat, A., Goldberg, A., Hartline, J., Karlin, A., 2002. Competitive generalized auctions. In: Proceedings of the 34th ACM
+Symposium on the Theory of Computing. ACM Press, New York.
+Goldberg, A., Hartline, J., 2003. Competitiveness via concensus. In: Proceedings of the 14th Symposium on Discrete
+Algebra. ACM/SIAM.
+Goldberg, A., Hartline, J., 2003. Envy-free auctions for digital goods. In: Proceedings of the 5th ACM Conference on
+Electronic Commerce, pp. 29–35.
+Goldberg, A., Hartline, J., 2005. Collusion-resistant mechanisms for single-parameter agents. In: Proceedings of the 16th
+Annual ACM-SIAM Symposium on Discrete Algorithms, pp. 620–629.
+Hajiaghayi, M., Kleinberg, R., Parkes, D., 2004. Adaptive limited-supply online auctions. In: Proceedings of the 5th
+ACM Conference on Electronic Commerce. ACM Press, New York.
+Hartline, J., McGrew, R., 2005. From optimal limited to unlimited supply auctions. In: Proceedings of the 7th ACM
+Conference on Electronic Commerce, pp. 175–182.
+A.V. Goldberg et al. / Games and Economic Behavior 55 (2006) 242–269 269
+Karlin, A., Kempe, D., Tamir, T., 2005. Beyond VCG: Frugality in truthful mechanisms. In: Proceedings of the 46th
+IEEE Symposium on Foundations of Computer Science.
+Kleinberg, R., Leighton, T., 2003. The value of knowing a demand curve: Bounds on regret for online posted-price
+auctions. In: Proceedings of the 44nd IEEE Symposium on Foundations of Computer Science.
+Lavi, R., Nisan, N., 2000. Competitive analysis of incentive compatible on-line auctions. In: The 2nd ACM Conference
+on Electronic Commerce, pp. 233–241.
+Motwani, R., Raghavan, P., 1995. Randomized Algorithms. Cambridge Univ. Press.
+Moulin, H., Shenker, S., 2001. Strategyproof sharing of submodular costs: Budget balance vs. efficiency. Econ. The-
+ory 18, 511–533.
+Myerson, R., 1981. Optimal auction design. Math. Operations Res. 6, 58–73.
+Segal, I., 2003. Optimal pricing mechanism with unknown demand. Amer. Econ. Rev. 93, 509–529.
+Sleator, D., Tarjan, R., 1985. Amortized efficiency of list update and paging rules. Communications ACM 28, 202–208.
+Talwar, K., 2003. The price of truth: Frugality in truthful mechanisms. In: 20th Annual Symposium on Theoretical
+Aspects of Computer Science.
+Vickrey, W., 1961. Counterspeculation, auctions, and competitive sealed tenders. J. Finance 16, 8–37.
+
